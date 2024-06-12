@@ -1,0 +1,28 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "6d2f517a924d12d07841ec8e6ffa605c"
+name = "neat-bundle-builder"
+handle = "neat-bundle-builder"
+application_url = "https://genetics-racks-liabilities-statute.trycloudflare.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = "quickstart-24926068.myshopify.com"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_products"
+
+[auth]
+redirect_urls = [
+  "https://genetics-racks-liabilities-statute.trycloudflare.com/auth/callback",
+  "https://genetics-racks-liabilities-statute.trycloudflare.com/auth/shopify/callback",
+  "https://genetics-racks-liabilities-statute.trycloudflare.com/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2024-04"
+
+[pos]
+embedded = false
