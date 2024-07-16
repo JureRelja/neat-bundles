@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
-import db from "../db.server";
+import { redisClient } from "../shopify.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { topic, shop, session, admin } = await authenticate.webhook(request);
@@ -13,7 +13,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   switch (topic) {
     case "APP_UNINSTALLED":
       if (session) {
-        await db.session.deleteMany({ where: { shop } });
+        const offlineStoreId = `shopify_sessions_${session.id}`;
+        const onlineStoreId = `shopify_sessions_${shop}`;
+
+        await redisClient.del(offlineStoreId);
+        await redisClient.del(onlineStoreId);
       }
 
       break;

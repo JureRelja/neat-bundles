@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://genetics-racks-liabilities-statute.trycloudflare.com"
+application_url = "https://morris-institution-angel-patients.trycloudflare.com"
 embedded = true
 
 [build]
@@ -16,9 +16,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://genetics-racks-liabilities-statute.trycloudflare.com/auth/callback",
-  "https://genetics-racks-liabilities-statute.trycloudflare.com/auth/shopify/callback",
-  "https://genetics-racks-liabilities-statute.trycloudflare.com/api/auth/callback"
+  "https://morris-institution-angel-patients.trycloudflare.com/auth/callback",
+  "https://morris-institution-angel-patients.trycloudflare.com/auth/shopify/callback",
+  "https://morris-institution-angel-patients.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
