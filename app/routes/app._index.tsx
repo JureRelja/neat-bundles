@@ -1,16 +1,12 @@
 import { json } from "@remix-run/node";
 import { useActionData, useNavigation, useSubmit } from "@remix-run/react";
-import { useEffect } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
   Page,
   Layout,
-  Text,
   Card,
   Button,
   BlockStack,
-  Link,
-  InlineStack,
   EmptyState,
   Banner,
   Box,
@@ -19,7 +15,6 @@ import {
   Divider,
   SkeletonPage,
   SkeletonBodyText,
-  SkeletonThumbnail,
   SkeletonDisplayText,
 } from "@shopify/polaris";
 import { PlusIcon, ExternalIcon, StarFilledIcon } from "@shopify/polaris-icons";
@@ -34,6 +29,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
+
   const color = ["Red", "Orange", "Yellow", "Green"][
     Math.floor(Math.random() * 4)
   ];
@@ -106,24 +102,13 @@ export default function Index() {
   const actionData = useActionData<typeof action>();
   const submit = useSubmit();
   const shopify = useAppBridge();
-  const isLoading =
-    ["loading", "submitting"].includes(nav.state) && nav.formMethod === "POST";
-  const initialLoad = nav.state === "loading";
-  const productId = actionData?.product?.id.replace(
-    "gid://shopify/Product/",
-    "",
-  );
+  const isLoading = nav.state === "loading";
 
-  useEffect(() => {
-    if (productId) {
-      shopify.toast.show("Product created");
-    }
-  }, [productId, shopify]);
-  const generateProduct = () => submit({}, { replace: true, method: "POST" });
+  const createBuilder = () => submit({}, { replace: true, method: "POST" });
 
   return (
     <>
-      {initialLoad ? (
+      {isLoading ? (
         <SkeletonPage primaryAction fullWidth>
           <BlockStack gap="500">
             <Layout>
@@ -160,12 +145,17 @@ export default function Index() {
           fullWidth
           title="Dashboard"
           primaryAction={
-            <Button icon={PlusIcon} variant="primary">
+            <Button icon={PlusIcon} variant="primary" onClick={createBuilder}>
               Create builder
             </Button>
           }
           secondaryActions={
-            <Button icon={ExternalIcon} variant="secondary">
+            <Button
+              icon={ExternalIcon}
+              variant="secondary"
+              target="_blank"
+              url="https://help.shopify.com"
+            >
               Watch tutorial
             </Button>
           }
@@ -177,7 +167,11 @@ export default function Index() {
                   <Card>
                     <EmptyState
                       heading="Let’s create the first builder for your customers!"
-                      action={{ content: "Create builder", icon: PlusIcon }}
+                      action={{
+                        content: "Create builder",
+                        icon: PlusIcon,
+                        onAction: createBuilder,
+                      }}
                       fullWidth
                       image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
                     >
@@ -209,6 +203,8 @@ export default function Index() {
                     content: "Watch tutorial",
                     onAction: () => {},
                     icon: ExternalIcon,
+                    url: "https://help.shopify.com",
+                    target: "_blank",
                   }}
                   size="small"
                   description="We recommend watching this short tutorial to get started with creating Neat Bundle Builder"
