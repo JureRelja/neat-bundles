@@ -15,7 +15,7 @@ const engine = new Liquid({
 });
 
 app.engine("liquid", engine.express()); // register liquid engine
-app.set("views", [__dirname + "/partials", __dirname + "/views"]); // specify the views directory
+app.set("views", ["src/partials", "src/views"]); // specify the views directory
 app.set("view engine", "liquid"); // set to default
 
 app.get("/", (_req: Request, res: Response) => {
