@@ -1,13 +1,29 @@
 import express, { Request, Response } from "express";
 import "dotenv/config";
+const { Liquid } = require("liquidjs");
 
 require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 8080;
 
+app.use(express.static("public"));
+
+const engine = new Liquid({
+  root: __dirname, // for layouts and partials
+  extname: ".liquid",
+});
+
+app.engine("liquid", engine.express()); // register liquid engine
+app.set("views", [__dirname + "/partials", __dirname + "/views"]); // specify the views directory
+app.set("view engine", "liquid"); // set to default
+
 app.get("/", (_req: Request, res: Response) => {
-  return res.send("Express Typescript on Vercel");
+  const todos = ["fork and clone", "make it better", "make a pull request"];
+  res.render("todolist", {
+    todos: todos,
+    title: "Welcome to liquidjs!",
+  });
 });
 
 app.get("/ping", (_req: Request, res: Response) => {

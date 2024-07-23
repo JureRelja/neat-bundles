@@ -23,6 +23,7 @@
     "@types/node": "^20.14.11",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "liquidjs": "^10.16.0",
     "nodemon": "^3.1.4",
     "pre-commit": "^1.2.2",
     "rimraf": "^6.0.1",
