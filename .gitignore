@@ -1,0 +1,13 @@
+node_modules
+
+backend/.cache
+backend/build
+backend/app/build
+backend/public/build/
+backend/public/_dev
+backend/app/public/build
+backend/prisma/dev.sqlite
+backend/prisma/dev.sqlite-journal
+database.sqlite
+
+.env
