@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import "dotenv/config";
 const { Liquid } = require("liquidjs");
+import path from "path";
 
 require("dotenv").config();
 
@@ -15,7 +16,11 @@ const engine = new Liquid({
 });
 
 app.engine("liquid", engine.express()); // register liquid engine
-app.set("views", ["src/partials", "src/views"]); // specify the views directory
+app.set("views", [
+  path.join(__dirname, "./views"),
+  path.join(__dirname, "./partials"),
+]); // specify the views directory
+
 app.set("view engine", "liquid"); // set to default
 
 app.get("/", (_req: Request, res: Response) => {

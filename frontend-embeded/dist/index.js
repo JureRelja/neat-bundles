@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 require("dotenv/config");
 const { Liquid } = require("liquidjs");
+const path_1 = __importDefault(require("path"));
 require("dotenv").config();
 const app = (0, express_1.default)();
 const port = process.env.PORT || 8080;
@@ -15,7 +16,10 @@ const engine = new Liquid({
     extname: ".liquid",
 });
 app.engine("liquid", engine.express()); // register liquid engine
-app.set("views", ["src/partials", "src/views"]); // specify the views directory
+app.set("views", [
+    path_1.default.join(__dirname, "./views"),
+    path_1.default.join(__dirname, "./partials"),
+]); // specify the views directory
 app.set("view engine", "liquid"); // set to default
 app.get("/", (_req, res) => {
     const todos = ["fork and clone", "make it better", "make a pull request"];
