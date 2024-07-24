@@ -1,8 +1,9 @@
 import express, { Request, Response } from "express";
 import "dotenv/config";
-const { Liquid } = require("liquidjs");
 import path from "path";
+import home from "./routes/home";
 
+const { Liquid } = require("liquidjs");
 require("dotenv").config();
 
 const app = express();
@@ -11,19 +12,18 @@ const port = process.env.PORT || 8080;
 app.use(express.static("public"));
 
 const engine = new Liquid({
-  root: __dirname, // for layouts and partials
-  extname: ".liquid",
+  root: __dirname, // root for layouts and partials
+  extname: ".liquid", // specify the extension of templates
 });
 
 app.engine("liquid", engine.express()); // register liquid engine
-app.set("views", [
-  path.join(__dirname, "./views"),
-  path.join(__dirname, "./partials"),
-]); // specify the views directory
+app.set("views", ["src/views", "src/partials"]); // specify the views directory
 
 app.set("view engine", "liquid"); // set to default
 
-app.get("/", (_req: Request, res: Response) => {
+app.use("/", home);
+
+app.get("/api", (_req: Request, res: Response) => {
   const todos = ["fork and clone", "make it better", "make a pull request"];
   res.render("todolist", {
     todos: todos,
