@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://between-photos-desired-magnificent.trycloudflare.com"
+application_url = "https://campaigns-sequences-complicated-barcelona.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,13 +17,18 @@ scopes = "unauthenticated_write_checkouts,write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://between-photos-desired-magnificent.trycloudflare.com/auth/callback",
-  "https://between-photos-desired-magnificent.trycloudflare.com/auth/shopify/callback",
-  "https://between-photos-desired-magnificent.trycloudflare.com/api/auth/callback"
+  "https://campaigns-sequences-complicated-barcelona.trycloudflare.com/auth/callback",
+  "https://campaigns-sequences-complicated-barcelona.trycloudflare.com/auth/shopify/callback",
+  "https://campaigns-sequences-complicated-barcelona.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-04"
+
+[app_proxy]
+url = "https://campaigns-sequences-complicated-barcelona.trycloudflare.com"
+subpath = "bundle"
+prefix = "apps"
 
 [pos]
 embedded = false

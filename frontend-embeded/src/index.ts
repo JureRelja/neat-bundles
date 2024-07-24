@@ -2,9 +2,9 @@ import express, { Request, Response } from "express";
 import "dotenv/config";
 import path from "path";
 import home from "./routes/home";
+require("dotenv").config();
 
 const { Liquid } = require("liquidjs");
-require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 8080;

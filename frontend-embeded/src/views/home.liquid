@@ -1,5 +1,6 @@
 {% assign people = "alice, bob, carol" | split: ", " -%}
 
+<h1>{{ name }}</h1>
 <ul>
 {%- for person in people %}
   <li>
