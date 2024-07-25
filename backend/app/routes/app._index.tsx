@@ -1,6 +1,5 @@
-import { json } from "@remix-run/node";
-import { useActionData, useNavigation, useSubmit } from "@remix-run/react";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { Navigate, useNavigation, useSubmit } from "@remix-run/react";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import {
   Page,
   Layout,
@@ -18,7 +17,6 @@ import {
   SkeletonDisplayText,
 } from "@shopify/polaris";
 import { PlusIcon, ExternalIcon, StarFilledIcon } from "@shopify/polaris-icons";
-import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -27,84 +25,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return null;
 };
 
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const { admin } = await authenticate.admin(request);
-
-  const color = ["Red", "Orange", "Yellow", "Green"][
-    Math.floor(Math.random() * 4)
-  ];
-  const response = await admin.graphql(
-    `#graphql
-      mutation populateProduct($input: ProductInput!) {
-        productCreate(input: $input) {
-          product {
-            id
-            title
-            handle
-            status
-            variants(first: 10) {
-              edges {
-                node {
-                  id
-                  price
-                  barcode
-                  createdAt
-                }
-              }
-            }
-          }
-        }
-      }`,
-    {
-      variables: {
-        input: {
-          title: `${color} Snowboard`,
-        },
-      },
-    },
-  );
-  const responseJson = await response.json();
-
-  const variantId =
-    responseJson.data!.productCreate!.product!.variants.edges[0]!.node!.id!;
-  const variantResponse = await admin.graphql(
-    `#graphql
-      mutation shopifyRemixTemplateUpdateVariant($input: ProductVariantInput!) {
-        productVariantUpdate(input: $input) {
-          productVariant {
-            id
-            price
-            barcode
-            createdAt
-          }
-        }
-      }`,
-    {
-      variables: {
-        input: {
-          id: variantId,
-          price: Math.random() * 100,
-        },
-      },
-    },
-  );
-
-  const variantResponseJson = await variantResponse.json();
-
-  return json({
-    product: responseJson!.data!.productCreate!.product,
-    variant: variantResponseJson!.data!.productVariantUpdate!.productVariant,
-  });
-};
-
 export default function Index() {
   const nav = useNavigation();
-  const actionData = useActionData<typeof action>();
-  const submit = useSubmit();
-  const shopify = useAppBridge();
   const isLoading = nav.state === "loading";
-
-  const createBuilder = () => submit({}, { replace: true, method: "POST" });
 
   return (
     <>
@@ -145,8 +68,8 @@ export default function Index() {
           fullWidth
           title="Dashboard"
           primaryAction={
-            <Button icon={PlusIcon} variant="primary" onClick={createBuilder}>
-              Create builder
+            <Button icon={PlusIcon} variant="primary" url="create-bundle">
+              Create bundle
             </Button>
           }
           secondaryActions={
@@ -166,18 +89,18 @@ export default function Index() {
                 <BlockStack gap="500">
                   <Card>
                     <EmptyState
-                      heading="Let’s create the first builder for your customers!"
+                      heading="Let’s create the first custom bundle for your customers!"
                       action={{
-                        content: "Create builder",
+                        content: "Create bundle",
                         icon: PlusIcon,
-                        onAction: createBuilder,
+                        url: "create-bundle",
                       }}
                       fullWidth
                       image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
                     >
                       <p>
-                        Your customers will be able to use the builders you
-                        create to build custom bundles with your products.
+                        Your customers will be able to use the custom bundles
+                        you create to create and buy their own custom bundles.
                       </p>
                     </EmptyState>
                   </Card>
