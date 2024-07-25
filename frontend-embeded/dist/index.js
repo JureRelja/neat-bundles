@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 require("dotenv/config");
-const home_1 = __importDefault(require("./routes/home"));
+const home_router_1 = __importDefault(require("./routes/home.router"));
 require("dotenv").config();
 const { Liquid } = require("liquidjs");
 const app = (0, express_1.default)();
@@ -18,7 +18,8 @@ const engine = new Liquid({
 app.engine("liquid", engine.express()); // register liquid engine
 app.set("views", ["src/views", "src/partials"]); // specify the views directory
 app.set("view engine", "liquid"); // set to default
-app.use("/", home_1.default);
+//home route
+app.use("/", home_router_1.default);
 app.get("/api", (_req, res) => {
     const todos = ["fork and clone", "make it better", "make a pull request"];
     res.render("todolist", {

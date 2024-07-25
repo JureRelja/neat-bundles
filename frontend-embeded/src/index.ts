@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import "dotenv/config";
 import path from "path";
-import home from "./routes/home";
+import home from "./routes/home.router";
 require("dotenv").config();
 
 const { Liquid } = require("liquidjs");
@@ -21,6 +21,7 @@ app.set("views", ["src/views", "src/partials"]); // specify the views directory
 
 app.set("view engine", "liquid"); // set to default
 
+//home route
 app.use("/", home);
 
 app.get("/api", (_req: Request, res: Response) => {

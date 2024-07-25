@@ -8,10 +8,12 @@ const path_1 = __importDefault(require("path"));
 const router = express_1.default.Router();
 router.get("/", (req, res) => {
     // Handle the GET request for the home route
+    console.log(req.query);
+    console.log(req.body);
     res.header("Content-Type", "application/liquid");
     res.render(path_1.default.join(process.cwd(), "src/views/home.liquid"), {
         name: "LiquidJS",
     });
 });
 exports.default = router;
-//# sourceMappingURL=home.js.map
+//# sourceMappingURL=home.router.js.map
