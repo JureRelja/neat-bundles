@@ -21,7 +21,7 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
 import { useState } from "react";
 import BundleStepComponent from "./routeComponents/bundleStep";
-import { Bundle, defaultBundle } from "./types/Bundle";
+import { Bundle, defaultBundle, BundleType } from "./types/Bundle";
 import { BundleStep, defaultBundleStep } from "./types/BundleStep";
 import { GapBetweenSections, GapBetweenTitleAndContent } from "./constants";
 
@@ -212,7 +212,7 @@ individual products.)`,
                     setBundle((prevBundle: Bundle) => {
                       return {
                         ...prevBundle,
-                        type: value[0] as "fixed" | "calculated",
+                        type: value[0] as BundleType,
                       };
                     });
                   }}

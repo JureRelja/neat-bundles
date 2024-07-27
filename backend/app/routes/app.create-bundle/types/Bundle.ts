@@ -1,11 +1,16 @@
 import { BundleStep, defaultBundleStep } from "./BundleStep";
 import { v4 as uuidv4 } from "uuid";
 
+export enum BundleType {
+  FIXED = "fixed",
+  CALCULATED = "calculated",
+}
+
 export type Bundle = {
   id: string;
   title: string;
   description: string;
-  type: "fixed" | "calculated";
+  type: BundleType;
   steps: BundleStep[];
   settings: string[];
 };
@@ -14,7 +19,7 @@ export const defaultBundle: Bundle = {
   id: uuidv4(),
   title: "Super awesome custom bundle",
   description: "Bundle description",
-  type: "fixed",
+  type: BundleType.FIXED,
   steps: [defaultBundleStep(1), defaultBundleStep(2), defaultBundleStep(3)],
   settings: [],
 };

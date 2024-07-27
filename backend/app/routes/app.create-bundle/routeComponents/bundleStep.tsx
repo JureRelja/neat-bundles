@@ -18,12 +18,18 @@ import {
   DeleteIcon,
   PageAddIcon,
 } from "@shopify/polaris-icons";
-import { BundleStep } from "../types/BundleStep";
+import {
+  BundleStep,
+  ProductResourceType,
+  BundleStepType,
+} from "../types/BundleStep";
 import {
   GapBetweenSections,
   GapInsideSection,
   HorizontalGap,
 } from "../constants";
+import PickerModal from "./picker-modal";
+import { BaseResource } from "@shopify/app-bridge-types";
 
 export default function Index({
   stepData,
@@ -32,6 +38,17 @@ export default function Index({
   stepData: BundleStep;
   updateStepData: (stepData: BundleStep) => void;
 }) {
+  //Updating selected products/collections depending on what is choosen in the Resource Picker modal
+  const updateSelectedResources = (productResourceList: BaseResource[]) => {
+    updateStepData({
+      ...stepData,
+      productResources: {
+        ...stepData.productResources,
+        selectedResources: productResourceList,
+      },
+    });
+  };
+
   return (
     <Card>
       <BlockStack gap={GapBetweenSections}>
@@ -71,18 +88,17 @@ export default function Index({
             autoComplete="off"
           />
         </BlockStack>
-        <Divider />
         <ChoiceList
           title="Step type"
           choices={[
             {
               label: "Product step",
-              value: "product",
-              helpText: `Customers can choose one products on this step`,
+              value: BundleStepType.PRODUCT,
+              helpText: `Customers can choose products on this step`,
             },
             {
               label: "Content step",
-              value: "content",
+              value: BundleStepType.CONTENT,
               helpText: `Customer can add text or images on this step`,
             },
           ]}
@@ -90,106 +106,124 @@ export default function Index({
           onChange={(value) => {
             updateStepData({
               ...stepData,
-              stepType: value[0] as "product" | "content",
+              stepType: value[0] as BundleStepType,
             });
           }}
         />
 
-        <Divider />
-        <BlockStack gap={GapInsideSection}>
-          <ChoiceList
-            title="Display products"
-            choices={[
-              {
-                label: "Selected products",
-                value: "product",
-              },
-              {
-                label: "Selected collections",
-                value: "collection",
-              },
-            ]}
-            selected={[stepData.stepType]}
-            onChange={(value) => {
-              updateStepData({
-                ...stepData,
-              });
-            }}
-          />
-          <Button fullWidth variant="primary">
-            Select products
-          </Button>
-        </BlockStack>
-        <Divider />
-        <BlockStack gap={GapInsideSection}>
-          <Text as="p">Rules</Text>
-
-          <InlineGrid columns={2} gap={HorizontalGap}>
-            <TextField
-              label="Minimum products to select"
-              type="number"
-              autoComplete="off"
-              inputMode="numeric"
-              value={stepData.productRules.minProductsOnStep.toString()}
-              onChange={(value) => {
-                updateStepData({
-                  ...stepData,
-                  productRules: {
-                    ...stepData.productRules,
-                    minProductsOnStep: parseInt(value),
+        <Divider borderColor="border-inverse" />
+        {stepData.stepType === BundleStepType.PRODUCT ? (
+          <>
+            <BlockStack gap={GapInsideSection}>
+              <ChoiceList
+                title="Display products"
+                choices={[
+                  {
+                    label: "Selected products",
+                    value: "product",
                   },
-                });
-              }}
-            />
-
-            <TextField
-              label="Maximum products to select"
-              type="number"
-              autoComplete="off"
-              inputMode="numeric"
-              value={stepData.productRules.maxProductsOnStep.toString()}
-              onChange={(value) => {
-                updateStepData({
-                  ...stepData,
-                  productRules: {
-                    ...stepData.productRules,
-                    maxProductsOnStep: parseInt(value),
+                  {
+                    label: "Selected collections",
+                    value: "collection",
                   },
-                });
-              }}
-            />
-          </InlineGrid>
-          <ChoiceList
-            title="Display products"
-            allowMultiple
-            choices={[
-              {
-                label: "Allow customers to select one product more than once",
-                value: stepData.stepRules.allowProductDuplicates
-                  ? "true"
-                  : "false",
-                id: "allowMultiple",
-              },
-              {
-                label: "Show price under each product",
-                value: stepData.stepRules.showProductPrice ? "true" : "false",
-                id: "showPrice",
-              },
-            ]}
-            selected={[stepData.stepType]}
-            onChange={(value) => {
-              const allowMultipleProducts = value[0] === "true";
-              const showProductPrice = value[1] === "true";
-              updateStepData({
-                ...stepData,
-                stepRules: {
-                  allowProductDuplicates: allowMultipleProducts,
-                  showProductPrice: showProductPrice,
-                },
-              });
-            }}
-          />
-        </BlockStack>
+                ]}
+                selected={[stepData.productResources.resourceType]}
+                onChange={(value) => {
+                  updateStepData({
+                    ...stepData,
+                    productResources: {
+                      ...stepData.productResources,
+                      resourceType: value[0] as ProductResourceType,
+                    },
+                  });
+                }}
+              />
+              <PickerModal
+                type={stepData.productResources.resourceType}
+                selectedResources={stepData.productResources.selectedResources}
+                updateSelectedResources={updateSelectedResources}
+              />
+            </BlockStack>
+
+            <Divider />
+            <BlockStack gap={GapInsideSection}>
+              <Text as="p">Rules</Text>
+
+              <InlineGrid columns={2} gap={HorizontalGap}>
+                <TextField
+                  label="Minimum products to select"
+                  type="number"
+                  autoComplete="off"
+                  inputMode="numeric"
+                  min={1}
+                  value={stepData.productRules.minProductsOnStep.toString()}
+                  onChange={(value) => {
+                    updateStepData({
+                      ...stepData,
+                      productRules: {
+                        ...stepData.productRules,
+                        minProductsOnStep: parseInt(value),
+                      },
+                    });
+                  }}
+                />
+
+                <TextField
+                  label="Maximum products to select"
+                  type="number"
+                  autoComplete="off"
+                  inputMode="numeric"
+                  min={1}
+                  value={stepData.productRules.maxProductsOnStep.toString()}
+                  onChange={(value) => {
+                    updateStepData({
+                      ...stepData,
+                      productRules: {
+                        ...stepData.productRules,
+                        maxProductsOnStep: parseInt(value),
+                      },
+                    });
+                  }}
+                />
+              </InlineGrid>
+              <ChoiceList
+                title="Display products"
+                allowMultiple
+                choices={[
+                  {
+                    label:
+                      "Allow customers to select one product more than once",
+                    value: "allowProductDuplicates",
+                  },
+                  {
+                    label: "Show price under each product",
+                    value: "showProductPrice",
+                  },
+                ]}
+                selected={[
+                  stepData.stepRules.allowProductDuplicates
+                    ? "allowProductDuplicates"
+                    : "",
+                  stepData.stepRules.showProductPrice ? "showProductPrice" : "",
+                ]}
+                onChange={(selectedValues) => {
+                  updateStepData({
+                    ...stepData,
+                    stepRules: {
+                      allowProductDuplicates: selectedValues.includes(
+                        "allowProductDuplicates",
+                      ),
+                      showProductPrice:
+                        selectedValues.includes("showProductPrice"),
+                    },
+                  });
+                }}
+              />
+            </BlockStack>
+          </>
+        ) : (
+          <></>
+        )}
       </BlockStack>
     </Card>
   );

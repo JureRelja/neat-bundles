@@ -1,9 +1,28 @@
+import { Product } from "node_modules/@shopify/shopify-api/dist/ts/rest/admin/2024-04/product";
+import { Collection } from "node_modules/@shopify/shopify-api/dist/ts/rest/admin/2024-04/collection";
+import { BaseResource } from "@shopify/app-bridge-types";
+
+export type ProductResourceList = Product[] | Collection[];
+
+export enum ProductResourceType {
+  PRODUCT = "product",
+  COLLECTION = "collection",
+}
+
+export enum BundleStepType {
+  PRODUCT = "product",
+  CONTENT = "content",
+}
+
 export type BundleStep = {
   stepId: number;
   title: string;
-  stepType: "product" | "content";
+  stepType: BundleStepType;
   description: string;
-  products: string[];
+  productResources: {
+    resourceType: ProductResourceType;
+    selectedResources: BaseResource[];
+  };
   productRules: {
     minProductsOnStep: number;
     maxProductsOnStep: number;
@@ -18,9 +37,12 @@ export const defaultBundleStep = (stepId: number): BundleStep => {
   return {
     stepId: stepId,
     title: "Step " + stepId,
-    stepType: "product",
+    stepType: BundleStepType.PRODUCT,
     description: "Step description",
-    products: [],
+    productResources: {
+      resourceType: ProductResourceType.PRODUCT,
+      selectedResources: [],
+    },
     productRules: {
       minProductsOnStep: 1,
       maxProductsOnStep: 3,

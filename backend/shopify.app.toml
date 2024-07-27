@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://geographic-triple-august-conducted.trycloudflare.com"
+application_url = "https://gr-discovered-solutions-minority.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "unauthenticated_write_checkouts,write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://geographic-triple-august-conducted.trycloudflare.com/auth/callback",
-  "https://geographic-triple-august-conducted.trycloudflare.com/auth/shopify/callback",
-  "https://geographic-triple-august-conducted.trycloudflare.com/api/auth/callback"
+  "https://gr-discovered-solutions-minority.trycloudflare.com/auth/callback",
+  "https://gr-discovered-solutions-minority.trycloudflare.com/auth/shopify/callback",
+  "https://gr-discovered-solutions-minority.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-04"
 
 [app_proxy]
-url = "https://geographic-triple-august-conducted.trycloudflare.com"
+url = "https://gr-discovered-solutions-minority.trycloudflare.com"
 subpath = "bundle"
 prefix = "apps"
 
