@@ -14,6 +14,13 @@ export enum BundleStepType {
   CONTENT = "content",
 }
 
+export enum BundleStepInputType {
+  TEXT = "text",
+  IMAGE = "image",
+  NUMBER = "number",
+  NONE = "none",
+}
+
 export type BundleStep = {
   stepId: number;
   title: string;
@@ -30,6 +37,18 @@ export type BundleStep = {
   stepRules: {
     allowProductDuplicates: boolean;
     showProductPrice: boolean;
+  };
+  input1: {
+    type: BundleStepInputType;
+    label: string;
+    maxLength: number;
+    canBeEmpty: boolean;
+  };
+  input2: {
+    type: BundleStepInputType;
+    label: string;
+    maxLength: number;
+    canBeEmpty: boolean;
   };
 };
 
@@ -50,6 +69,18 @@ export const defaultBundleStep = (stepId: number): BundleStep => {
     stepRules: {
       allowProductDuplicates: false,
       showProductPrice: true,
+    },
+    input1: {
+      type: BundleStepInputType.TEXT,
+      label: "Input 1",
+      maxLength: 50,
+      canBeEmpty: false,
+    },
+    input2: {
+      type: BundleStepInputType.IMAGE,
+      label: "Input 2",
+      maxLength: 50,
+      canBeEmpty: false,
     },
   };
 };

@@ -6,7 +6,7 @@ import {
   InlineStack,
   Text,
   ButtonGroup,
-  Box,
+  Select,
   TextField,
   Divider,
   Grid,
@@ -29,6 +29,7 @@ import {
   HorizontalGap,
 } from "../constants";
 import PickerModal from "./picker-modal";
+import ContentStepInputs from "./content-step-inputs";
 import { BaseResource } from "@shopify/app-bridge-types";
 
 export default function Index({
@@ -53,7 +54,7 @@ export default function Index({
     <Card>
       <BlockStack gap={GapBetweenSections}>
         <InlineStack gap="100" align="space-between">
-          <Text as="h2" variant="headingSm">
+          <Text as="h2" variant="headingLg">
             Step #{stepData.stepId}
           </Text>
 
@@ -222,7 +223,21 @@ export default function Index({
             </BlockStack>
           </>
         ) : (
-          <></>
+          <BlockStack gap={GapBetweenSections}>
+            <ContentStepInputs
+              stepData={stepData}
+              title="Input #1"
+              inputId={1}
+              updateStepData={updateStepData}
+            />
+            <Divider />
+            <ContentStepInputs
+              stepData={stepData}
+              title="Input #2"
+              inputId={2}
+              updateStepData={updateStepData}
+            />
+          </BlockStack>
         )}
       </BlockStack>
     </Card>
