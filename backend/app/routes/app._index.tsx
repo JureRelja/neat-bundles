@@ -1,11 +1,11 @@
-import { Navigate, useNavigation, useSubmit } from "@remix-run/react";
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import { redirect, useNavigation, useSubmit } from "@remix-run/react";
+import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import {
   Page,
-  Layout,
   Card,
   Button,
   BlockStack,
+  Layout,
   EmptyState,
   Banner,
   Box,
@@ -16,18 +16,77 @@ import {
   SkeletonBodyText,
   SkeletonDisplayText,
 } from "@shopify/polaris";
-import { PlusIcon, ExternalIcon, StarFilledIcon } from "@shopify/polaris-icons";
-import { authenticate } from "../shopify.server";
+import { PlusIcon, ExternalIcon } from "@shopify/polaris-icons";
+import { authenticate, sessionStorage } from "../shopify.server";
+import prisma from "../db.server";
+import Prisma from "@prisma/client";
+import { create } from "domain";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  await authenticate.admin(request);
+  const { session, admin } = await authenticate.admin(request);
+  const user = await prisma.user.findFirst({
+    where: {
+      storeUrl: session.shop,
+    },
+  });
+
+  if (!user) {
+    const response = await admin.graphql(
+      `#graphql
+      query  {
+        shop {
+          name
+          email
+        }
+      }`,
+    );
+
+    const data = await response.json();
+
+    await prisma.user.create({
+      data: {
+        ownerName: "",
+        storeUrl: session.shop,
+        email: data.data.shop.email,
+        storeName: data.data.shop.name,
+      },
+    });
+  }
 
   return null;
+};
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const { admin, session } = await authenticate.admin(request);
+
+  const bundle = await prisma.bundle.create({
+    data: {
+      user: {
+        connect: {
+          storeUrl: session.shop,
+        },
+      },
+      title: "New bundle",
+      bundleSettings: {
+        create: {
+          bundleColors: {
+            create: {},
+          },
+          bundleLabels: {
+            create: {},
+          },
+        },
+      },
+    },
+  });
+
+  return redirect(`/app/create-bundle/${bundle}`);
 };
 
 export default function Index() {
   const nav = useNavigation();
   const isLoading = nav.state === "loading";
+  const submit = useSubmit();
 
   return (
     <>
@@ -68,7 +127,19 @@ export default function Index() {
           fullWidth
           title="Dashboard"
           primaryAction={
-            <Button icon={PlusIcon} variant="primary" url="create-bundle">
+            <Button
+              icon={PlusIcon}
+              variant="primary"
+              onClick={() =>
+                submit(
+                  {},
+                  {
+                    method: "post",
+                    navigate: false,
+                  },
+                )
+              }
+            >
               Create bundle
             </Button>
           }
@@ -93,7 +164,14 @@ export default function Index() {
                       action={{
                         content: "Create bundle",
                         icon: PlusIcon,
-                        url: "create-bundle",
+                        onAction: () =>
+                          submit(
+                            {},
+                            {
+                              method: "post",
+                              navigate: false,
+                            },
+                          ),
                       }}
                       fullWidth
                       image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"

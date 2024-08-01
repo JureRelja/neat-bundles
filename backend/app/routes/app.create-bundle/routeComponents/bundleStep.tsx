@@ -6,10 +6,8 @@ import {
   InlineStack,
   Text,
   ButtonGroup,
-  Select,
   TextField,
   Divider,
-  Grid,
   InlineGrid,
 } from "@shopify/polaris";
 import {
@@ -28,16 +26,22 @@ import {
   GapInsideSection,
   HorizontalGap,
 } from "../constants";
-import PickerModal from "./picker-modal";
+import PickerModal from "./resource-picker";
 import ContentStepInputs from "./content-step-inputs";
 import { BaseResource } from "@shopify/app-bridge-types";
 
 export default function Index({
   stepData,
   updateStepData,
+  moveStepUpAction,
+  moveStepDownAction,
+  duplicateBundleStepAction,
 }: {
   stepData: BundleStep;
-  updateStepData: (stepData: BundleStep) => void;
+  updateStepData: (stepData: BundleStep | null, stepId?: number) => void;
+  moveStepUpAction: (stepId: number) => void;
+  moveStepDownAction: (stepId: number) => void;
+  duplicateBundleStepAction: (stepId: number) => void;
 }) {
   //Updating selected products/collections depending on what is choosen in the Resource Picker modal
   const updateSelectedResources = (productResourceList: BaseResource[]) => {
@@ -60,18 +64,44 @@ export default function Index({
 
           <ButtonGroup>
             <>
-              <Button icon={ArrowDownIcon} size="slim" variant="plain" />
-              <Button icon={ArrowUpIcon} size="slim" variant="plain" />
+              <Button
+                icon={ArrowDownIcon}
+                size="slim"
+                variant="plain"
+                onClick={() => {
+                  moveStepDownAction(stepData.stepId);
+                }}
+              />
+              <Button
+                icon={ArrowUpIcon}
+                size="slim"
+                variant="plain"
+                onClick={() => {
+                  moveStepUpAction(stepData.stepId);
+                }}
+              />
             </>
-            <Button variant="plain" icon={DeleteIcon} tone="critical">
+            <Button
+              variant="plain"
+              icon={DeleteIcon}
+              tone="critical"
+              onClick={() => {
+                updateStepData(null, stepData.stepId);
+              }}
+            >
               Delete
             </Button>
-            <Button variant="plain" icon={PageAddIcon}>
+            <Button
+              variant="plain"
+              icon={PageAddIcon}
+              onClick={() => duplicateBundleStepAction(stepData.stepId)}
+            >
               Duplicate
             </Button>
           </ButtonGroup>
         </InlineStack>
         <BlockStack gap={GapInsideSection}>
+          <input type="hidden" name="stepId" value={stepData.stepId} />
           <TextField
             label="Step title"
             value={stepData.title}
@@ -79,10 +109,12 @@ export default function Index({
               updateStepData({ ...stepData, title: value });
             }}
             autoComplete="off"
+            name="stepTitle"
           />
           <TextField
             label="Step description"
             value={stepData.description}
+            name="stepDescription"
             onChange={(value) => {
               updateStepData({ ...stepData, description: value });
             }}
@@ -91,6 +123,7 @@ export default function Index({
         </BlockStack>
         <ChoiceList
           title="Step type"
+          name="stepType"
           choices={[
             {
               label: "Product step",
@@ -117,6 +150,7 @@ export default function Index({
           <>
             <BlockStack gap={GapInsideSection}>
               <ChoiceList
+                name="resourceType"
                 title="Display products"
                 choices={[
                   {
@@ -139,6 +173,7 @@ export default function Index({
                   });
                 }}
               />
+
               <PickerModal
                 type={stepData.productResources.resourceType}
                 selectedResources={stepData.productResources.selectedResources}

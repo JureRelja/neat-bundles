@@ -63,7 +63,7 @@ export default function Index({
       </InlineGrid>
       <InlineGrid gap={HorizontalGap} columns={2}>
         <TextField
-          label="Max length"
+          label="Max length (in characters)"
           type="number"
           inputMode="numeric"
           min={1}
