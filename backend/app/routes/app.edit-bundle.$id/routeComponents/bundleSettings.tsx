@@ -20,14 +20,19 @@ import {
   BundlePricing,
 } from "../types/BundleSettings";
 import ColorPickerPopover from "./color-picker";
+import db from "../../../db.server";
+import { authenticate } from "../../../shopify.server";
+import { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 
-export default function Index({
-  updateSettings,
-  bundleSettings,
-}: {
-  updateSettings: (newBundleSettings: BundleSettings) => void;
-  bundleSettings: BundleSettings;
-}) {
+export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+  const { admin, session } = await authenticate.admin(request);
+};
+
+export const action = async ({ request, params }: ActionFunctionArgs) => {
+  const { admin, session } = await authenticate.admin(request);
+};
+
+export default function Index({}: {}) {
   //Left column colors
   const colorsLeft = [
     {

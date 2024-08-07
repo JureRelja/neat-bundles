@@ -18,13 +18,11 @@ import {
 } from "@shopify/polaris";
 import { PlusIcon, ExternalIcon } from "@shopify/polaris-icons";
 import { authenticate, sessionStorage } from "../shopify.server";
-import prisma from "../db.server";
-import Prisma from "@prisma/client";
-import { create } from "domain";
+import db from "../db.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session, admin } = await authenticate.admin(request);
-  const user = await prisma.user.findFirst({
+  const user = await db.user.findFirst({
     where: {
       storeUrl: session.shop,
     },
@@ -67,6 +65,31 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         },
       },
       title: "New bundle",
+      steps: {
+        create: [
+          {
+            stepNumber: 1,
+            title: `Title for step 1`,
+            contentInputs: {
+              create: [{}, {}],
+            },
+          },
+          {
+            stepNumber: 2,
+            title: `Title for step 2`,
+            contentInputs: {
+              create: [{}, {}],
+            },
+          },
+          {
+            stepNumber: 3,
+            title: `Title for step 3`,
+            contentInputs: {
+              create: [{}, {}],
+            },
+          },
+        ],
+      },
       bundleSettings: {
         create: {
           bundleColors: {
@@ -80,12 +103,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     },
   });
 
-  return redirect(`/app/create-bundle/${bundle}`);
+  return redirect(`/app/edit-bundle/${bundle.id}`);
 };
 
 export default function Index() {
   const nav = useNavigation();
-  const isLoading = nav.state === "loading";
+  const isLoading = nav.state === "loading" || nav.state !== "idle";
   const submit = useSubmit();
 
   return (

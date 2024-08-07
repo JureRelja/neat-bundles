@@ -44,6 +44,10 @@ export default function Auth() {
     <PolarisAppProvider i18n={loaderData.polarisTranslations}>
       <Page>
         <Card>
+          <Text variant="headingMd" as="h2">
+            There was an error with your request. Make sure that you are logged
+            in and have the necessary permissions to access this page.
+          </Text>
           <Form method="post">
             <FormLayout>
               <Text variant="headingMd" as="h2">

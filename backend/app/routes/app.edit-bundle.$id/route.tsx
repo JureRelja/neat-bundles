@@ -1,9 +1,10 @@
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import {
   Form,
   useActionData,
   useNavigation,
   useSubmit,
+  useLoaderData,
 } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
@@ -25,30 +26,168 @@ import {
 import { OrderDraftIcon, DeleteIcon, PlusIcon } from "@shopify/polaris-icons";
 import { useAppBridge, Modal, TitleBar } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, FormEvent } from "react";
 import BundleStepComponent from "./routeComponents/bundleStep";
-import { Bundle, defaultBundle } from "./types/Bundle";
-import { BundleStep, defaultBundleStep } from "./types/BundleStep";
 import { GapBetweenSections, GapBetweenTitleAndContent } from "./constants";
-import BundleSettingsComponent from "./routeComponents/bundleSettings";
-import { BundleSettings } from "./types/BundleSettings";
 import BundlePreview from "./bundlePreview";
 import styles from "./route.module.css";
+import db from "../../db.server";
+import { Prisma, BundleStep, BundleSettings } from "@prisma/client";
+import { BundleStepWithAllResources } from "./types/BundleStep";
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+//Defining bundle type
+const bundleSelect = {
+  id: true,
+  title: true,
+  bundleSettings: true,
+  steps: {
+    select: {
+      bundleId: true,
+      id: true,
+      stepNumber: true,
+      title: true,
+      stepType: true,
+      description: true,
+      productResources: true,
+      resourceType: true,
+      minProductsOnStep: true,
+      maxProductsOnStep: true,
+      allowProductDuplicates: true,
+      showProductPrice: true,
+      contentInputs: true,
+    },
+  },
+} satisfies Prisma.BundleSelect;
+
+type BundlePayload = Prisma.BundleGetPayload<{ select: typeof bundleSelect }>;
+
+//
+//
+
+export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
 
-  return null;
+  const bundle = await db.bundle.findFirst({
+    where: {
+      id: Number(params.id),
+    },
+    select: bundleSelect,
+  });
+
+  if (!bundle) {
+    throw new Response(null, {
+      status: 404,
+      statusText: "Not Found",
+    });
+  }
+  return json({ bundle });
 };
 
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const { admin } = await authenticate.admin(request);
+export const action = async ({ request, params }: ActionFunctionArgs) => {
+  await authenticate.admin(request);
 
   const formData = await request.formData();
-  const title = formData.get("title");
-  console.log("formData", formData);
+  const action = formData.get("action") as string;
 
-  return null;
+  switch (action) {
+    //Adding a new step to the bundle
+    case "addStep": {
+      try {
+        const allSteps: BundleStep[] = await db.bundleStep.findMany({
+          where: {
+            bundleId: Number(params.id),
+          },
+        });
+
+        await db.bundleStep.create({
+          data: {
+            stepNumber: allSteps.length + 1,
+            title: `Title for step ${allSteps.length + 1}`,
+            contentInputs: {
+              create: [{}, {}],
+            },
+            bundle: {
+              connect: {
+                id: Number(params.id),
+              },
+            },
+          },
+        });
+      } catch (error) {
+        console.log(error);
+        throw new Response(null, {
+          status: 400,
+          statusText: "Bad Request",
+        });
+      }
+      return null;
+    }
+    //Deleting the step from the bundle
+    case "deleteStep": {
+      try {
+        await db.bundleStep.delete({
+          where: {
+            id: Number(formData.get("stepId")),
+          },
+        });
+        await db.bundleStep.updateMany({
+          where: {
+            bundleId: Number(params.id),
+            stepNumber: {
+              gte: Number(formData.get("stepNumber")),
+            },
+          },
+          data: {
+            stepNumber: {
+              decrement: 1,
+            },
+          },
+        });
+      } catch (error) {
+        console.log(error);
+        throw new Response(null, {
+          status: 400,
+          statusText: "Bad Request",
+        });
+      }
+
+      return null;
+    }
+
+    //Duplicating the step
+    case "duplicateStep": {
+    }
+    //Moving the step up
+    case "moveStepDown": {
+    }
+    //Moving the step down
+    case "moveStepUp": {
+    }
+    //Updating the bundle
+    default:
+      console.log(formData);
+      const bundleData = JSON.parse(formData.get("bundle") as string);
+      console.log(bundleData);
+
+      try {
+        await db.bundle.update({
+          where: {
+            id: Number(bundleData.id),
+          },
+          data: {
+            title: bundleData.title,
+          },
+        });
+      } catch (error) {
+        console.log(error);
+        throw new Response(null, {
+          status: 400,
+          statusText: "Bad Request",
+        });
+      }
+
+      return null;
+  }
 };
 
 export default function Index() {
@@ -56,21 +195,16 @@ export default function Index() {
   const actionData = useActionData<typeof action>();
   const submit = useSubmit();
   const shopify = useAppBridge();
-  const isLoading = nav.state === "loading";
+  const isLoading = nav.state != "idle";
 
-  //
-  //
-  //
-
-  //Bundle state
-  const [bundle, setBundle] = useState<Bundle>(defaultBundle);
-
-  //
-  //
-  //
+  const bundle = useLoaderData<typeof loader>().bundle as BundlePayload;
+  const [bundleState, setBundleState] = useState(bundle);
+  const bundleSteps = bundleState.steps.sort(
+    (a, b) => a.stepNumber - b.stepNumber,
+  );
 
   //Function for checking if there are free steps and displaying a modal if there are not
-  const thereAreFreeSteps = (bundle: Bundle) => {
+  const thereAreFreeSteps = (bundle: BundlePayload) => {
     if (bundle.steps.length >= 5) {
       shopify.modal.show("no-more-steps-modal");
       return false;
@@ -84,151 +218,29 @@ export default function Index() {
       return;
     }
 
-    setBundle((prevBundle: Bundle) => {
-      const newStepId = bundle.steps.length + 1;
-      const newStep: BundleStep = defaultBundleStep(newStepId);
-
-      const updatedBundle: Bundle = {
-        ...prevBundle,
-        steps: [...prevBundle.steps, newStep],
-      };
-      return updatedBundle;
-    });
+    submit({ action: "addStep" }, { method: "post" });
   };
 
   //Function for updating the step with a new data from it's component
-  const updateStepData = (stepData: BundleStep | null, stepId?: number) => {
-    //If stepData is null, it means that the step should be deleted
-    if (stepData === null) {
-      setBundle((prevBundle: Bundle) => {
-        const updatedSteps = prevBundle.steps.filter((step: BundleStep) => {
-          return step.stepId !== stepId;
-        });
-
-        return {
-          ...prevBundle,
-          steps: updatedSteps.map((step, index) => ({
-            ...step,
-            stepId: index + 1,
-          })),
-        };
-      });
-      return;
-    }
-
-    //If stepData is not null, it means that the step should be updated
-    setBundle((prevBundle: Bundle) => {
-      const index = prevBundle.steps.findIndex((step: BundleStep) => {
-        return step.stepId === stepData.stepId;
-      });
+  const updateStepData = (stepData: BundleStepWithAllResources): void => {
+    setBundleState((prevBundle: BundlePayload) => {
+      const index = prevBundle.steps.findIndex(
+        (step: BundleStepWithAllResources) => {
+          return step.id === stepData.id;
+        },
+      );
       prevBundle.steps[index] = stepData;
 
       return { ...prevBundle };
     });
   };
-  //Function for duplicating the step
-  const duplicateBundleStepAction = (clickedFromStepId: number) => {
-    setBundle((prevBundle: Bundle) => {
-      if (!thereAreFreeSteps(prevBundle)) {
-        return prevBundle;
-      }
-
-      const clickedStep = prevBundle.steps.find((step) => {
-        return step.stepId === clickedFromStepId;
-      });
-
-      if (clickedStep) {
-        const newStepId = clickedFromStepId + 1;
-        const newStep: BundleStep = {
-          ...clickedStep,
-          stepId: newStepId,
-        };
-
-        const updatedSteps = prevBundle.steps.map((step) => {
-          if (step.stepId > clickedFromStepId) {
-            return { ...step, stepId: step.stepId + 1 };
-          }
-          return step;
-        });
-        return {
-          ...prevBundle,
-          steps: [...updatedSteps, newStep].sort((a, b) => a.stepId - b.stepId),
-        };
-      }
-      return prevBundle;
-    });
-  };
-
-  //Moving the step up (switching place with the step above it)
-  const moveStepUpAction = (stepId: number) => {
-    setBundle((prevBundle: Bundle) => {
-      const clickedStepIndex = prevBundle.steps.findIndex((step) => {
-        return step.stepId === stepId;
-      });
-
-      if (clickedStepIndex === 0) {
-        return prevBundle;
-      }
-
-      const updatedSteps = prevBundle.steps.map((step, index) => {
-        if (index === clickedStepIndex - 1) {
-          return { ...step, stepId: step.stepId + 1 };
-        }
-        if (index === clickedStepIndex) {
-          return { ...step, stepId: step.stepId - 1 };
-        }
-        return step;
-      });
-
-      return {
-        ...prevBundle,
-        steps: updatedSteps.sort((a, b) => a.stepId - b.stepId),
-      };
-    });
-  };
-
-  //Moving the step down (switching place with the step underneath it)
-  const moveStepDownAction = (stepId: number) => {
-    setBundle((prevBundle: Bundle) => {
-      const clickedStepIndex = prevBundle.steps.findIndex((step) => {
-        return step.stepId === stepId;
-      });
-
-      if (clickedStepIndex === prevBundle.steps.length - 1) {
-        return prevBundle;
-      }
-
-      const updatedSteps = prevBundle.steps.map((step, index) => {
-        if (index === clickedStepIndex + 1) {
-          return { ...step, stepId: step.stepId - 1 };
-        }
-        if (index === clickedStepIndex) {
-          return { ...step, stepId: step.stepId + 1 };
-        }
-        return step;
-      });
-
-      return {
-        ...prevBundle,
-        steps: updatedSteps.sort((a, b) => a.stepId - b.stepId),
-      };
-    });
-  };
-
-  //
-  //
-  //
 
   //Function for updating the settings of the bundle
-  const updateSettings = (newBundleSettings: BundleSettings) => {
-    setBundle((prevBundle: Bundle) => {
+  const updateSettings = (newBundleSettings: BundleSettings): void => {
+    setBundleState((prevBundle: BundlePayload) => {
       return { ...prevBundle, settings: newBundleSettings };
     });
   };
-
-  //
-  //
-  //
 
   //Sticky preview box logic
   const [sticky, setSticky] = useState({ isSticky: false, offset: 0 });
@@ -256,6 +268,15 @@ export default function Index() {
       window.removeEventListener("scroll", handleScrollEvent);
     };
   }, []);
+
+  //Submiting the form
+  const submitForm = (): void => {
+    const newData = new FormData();
+    newData.append("bundle", JSON.stringify(bundleState));
+    submit(newData, {
+      method: "POST",
+    });
+  };
 
   return (
     <>
@@ -295,19 +316,24 @@ export default function Index() {
                 content: "Save as draft",
                 destructive: false,
                 icon: OrderDraftIcon,
-                onAction: () => {},
+                onAction: submitForm,
               },
             ]}
           >
-            <Form
-              data-save-bar
-              data-discard-confirmation
-              method="post"
-              action="/app/create-bundle"
-            >
-              <BlockStack gap={GapBetweenSections}>
-                <Layout>
-                  <Layout.Section variant="oneThird">
+            <BlockStack gap={GapBetweenSections}>
+              <Layout>
+                <Layout.Section variant="oneThird">
+                  <Form
+                    onSubmit={submitForm}
+                    data-save-bar
+                    data-discard-confirmation
+                    method="POST"
+                  >
+                    <input
+                      type="hidden"
+                      name="bundle"
+                      value={JSON.stringify(bundleState)}
+                    />
                     <BlockStack gap={GapBetweenSections}>
                       <Card>
                         <BlockStack gap={GapBetweenTitleAndContent}>
@@ -317,12 +343,12 @@ export default function Index() {
                           <TextField
                             label="Title"
                             autoComplete="off"
-                            name="title"
+                            name="bundleTitle"
                             helpText="Only store staff can see this."
-                            value={bundle.title}
-                            onChange={(value) => {
-                              setBundle((prevBundle: Bundle) => {
-                                return { ...prevBundle, title: value };
+                            value={bundleState.title}
+                            onChange={(newTitile) => {
+                              setBundleState((prevBundle: BundlePayload) => {
+                                return { ...prevBundle, title: newTitile };
                               });
                             }}
                             type="text"
@@ -345,14 +371,11 @@ export default function Index() {
                         </InlineGrid>
                       </Card>
 
-                      {bundle.steps.map((step) => (
+                      {bundleSteps.map((step) => (
                         <BundleStepComponent
-                          key={step.stepId}
+                          key={step.id}
                           stepData={step}
                           updateStepData={updateStepData}
-                          duplicateBundleStepAction={duplicateBundleStepAction}
-                          moveStepUpAction={moveStepUpAction}
-                          moveStepDownAction={moveStepDownAction}
                         ></BundleStepComponent>
                       ))}
                       <Card>
@@ -371,24 +394,23 @@ export default function Index() {
                         </InlineGrid>
                       </Card>
                       <Divider borderColor="border-inverse" />
-                      <BundleSettingsComponent
-                        updateSettings={updateSettings}
-                        bundleSettings={bundle.settings}
-                      />
+                      {/* <BundleSettingsComponent
+                        settingsId={bundle.settings.id}
+                      /> */}
                       <Divider borderColor="transparent" />
                     </BlockStack>
-                  </Layout.Section>
-                  <Layout.Section>
-                    <div
-                      ref={previewBoxRef}
-                      className={`${sticky.isSticky ? styles.sticky : ""}`}
-                    >
-                      <BundlePreview />
-                    </div>
-                  </Layout.Section>
-                </Layout>
-              </BlockStack>
-            </Form>
+                  </Form>
+                </Layout.Section>
+                <Layout.Section>
+                  <div
+                    ref={previewBoxRef}
+                    className={`${sticky.isSticky ? styles.sticky : ""}`}
+                  >
+                    <BundlePreview />
+                  </div>
+                </Layout.Section>
+              </Layout>
+            </BlockStack>
             <PageActions
               primaryAction={{
                 content: "Publish",
@@ -400,6 +422,7 @@ export default function Index() {
                 },
                 {
                   content: "Save as draft",
+                  onAction: submitForm,
                 },
               ]}
             />

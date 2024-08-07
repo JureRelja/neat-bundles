@@ -16,41 +16,47 @@ import {
   DeleteIcon,
   PageAddIcon,
 } from "@shopify/polaris-icons";
-import {
-  BundleStep,
-  ProductResourceType,
-  BundleStepType,
-} from "../types/BundleStep";
+
 import {
   GapBetweenSections,
   GapInsideSection,
   HorizontalGap,
 } from "../constants";
-import PickerModal from "./resource-picker";
+import ResourcePicker from "./resource-picker";
 import ContentStepInputs from "./content-step-inputs";
-import { BaseResource } from "@shopify/app-bridge-types";
+import { StepType, ProductResourceType, ContentInput } from "@prisma/client";
+import { BundleStepWithAllResources } from "../types/BundleStep";
+import { useSubmit } from "@remix-run/react";
 
 export default function Index({
   stepData,
   updateStepData,
-  moveStepUpAction,
-  moveStepDownAction,
-  duplicateBundleStepAction,
 }: {
-  stepData: BundleStep;
-  updateStepData: (stepData: BundleStep | null, stepId?: number) => void;
-  moveStepUpAction: (stepId: number) => void;
-  moveStepDownAction: (stepId: number) => void;
-  duplicateBundleStepAction: (stepId: number) => void;
+  stepData: BundleStepWithAllResources;
+  updateStepData: (newStepData: BundleStepWithAllResources) => void;
 }) {
-  //Updating selected products/collections depending on what is choosen in the Resource Picker modal
-  const updateSelectedResources = (productResourceList: BaseResource[]) => {
+  const submit = useSubmit();
+
+  // Update the content inputs for the step
+  const updateContentInput = (newContentInput: ContentInput) => {
     updateStepData({
       ...stepData,
-      productResources: {
-        ...stepData.productResources,
-        selectedResources: productResourceList,
-      },
+      contentInputs: stepData.contentInputs.map(
+        (contentInput: ContentInput) => {
+          if (contentInput.id === newContentInput.id) {
+            return newContentInput;
+          }
+          return contentInput;
+        },
+      ),
+    });
+  };
+
+  //Updating selected resources
+  const updateSelectedResources = (selectedResources: string[]) => {
+    updateStepData({
+      ...stepData,
+      productResources: selectedResources,
     });
   };
 
@@ -59,7 +65,7 @@ export default function Index({
       <BlockStack gap={GapBetweenSections}>
         <InlineStack gap="100" align="space-between">
           <Text as="h2" variant="headingLg">
-            Step #{stepData.stepId}
+            Step #{stepData.stepNumber}
           </Text>
 
           <ButtonGroup>
@@ -69,7 +75,13 @@ export default function Index({
                 size="slim"
                 variant="plain"
                 onClick={() => {
-                  moveStepDownAction(stepData.stepId);
+                  submit(
+                    {
+                      action: "moveStepDown",
+                      stepNumber: stepData.stepNumber,
+                    },
+                    { method: "POST" },
+                  );
                 }}
               />
               <Button
@@ -77,7 +89,13 @@ export default function Index({
                 size="slim"
                 variant="plain"
                 onClick={() => {
-                  moveStepUpAction(stepData.stepId);
+                  submit(
+                    {
+                      action: "moveStepUp",
+                      stepNumber: stepData.stepNumber,
+                    },
+                    { method: "POST" },
+                  );
                 }}
               />
             </>
@@ -86,7 +104,10 @@ export default function Index({
               icon={DeleteIcon}
               tone="critical"
               onClick={() => {
-                updateStepData(null, stepData.stepId);
+                submit(
+                  { action: "deleteStep", stepId: stepData.id },
+                  { method: "POST" },
+                );
               }}
             >
               Delete
@@ -94,19 +115,29 @@ export default function Index({
             <Button
               variant="plain"
               icon={PageAddIcon}
-              onClick={() => duplicateBundleStepAction(stepData.stepId)}
+              onClick={() =>
+                submit(
+                  {
+                    action: "duplicateStep",
+                    stepNumber: stepData.stepNumber,
+                  },
+                  { method: "POST" },
+                )
+              }
             >
               Duplicate
             </Button>
           </ButtonGroup>
         </InlineStack>
         <BlockStack gap={GapInsideSection}>
-          <input type="hidden" name="stepId" value={stepData.stepId} />
           <TextField
             label="Step title"
             value={stepData.title}
-            onChange={(value) => {
-              updateStepData({ ...stepData, title: value });
+            onChange={(newTitle) => {
+              updateStepData({
+                ...stepData,
+                title: newTitle,
+              });
             }}
             autoComplete="off"
             name="stepTitle"
@@ -115,8 +146,11 @@ export default function Index({
             label="Step description"
             value={stepData.description}
             name="stepDescription"
-            onChange={(value) => {
-              updateStepData({ ...stepData, description: value });
+            onChange={(newDesc) => {
+              updateStepData({
+                ...stepData,
+                description: newDesc,
+              });
             }}
             autoComplete="off"
           />
@@ -127,26 +161,26 @@ export default function Index({
           choices={[
             {
               label: "Product step",
-              value: BundleStepType.PRODUCT,
+              value: StepType.PRODUCT,
               helpText: `Customers can choose products on this step`,
             },
             {
               label: "Content step",
-              value: BundleStepType.CONTENT,
+              value: StepType.CONTENT,
               helpText: `Customer can add text or images on this step`,
             },
           ]}
           selected={[stepData.stepType]}
-          onChange={(value) => {
+          onChange={(selected: string[]) => {
             updateStepData({
               ...stepData,
-              stepType: value[0] as BundleStepType,
+              stepType: selected[0] as StepType,
             });
           }}
         />
 
         <Divider borderColor="border-inverse" />
-        {stepData.stepType === BundleStepType.PRODUCT ? (
+        {stepData.stepType === StepType.PRODUCT ? (
           <>
             <BlockStack gap={GapInsideSection}>
               <ChoiceList
@@ -155,28 +189,27 @@ export default function Index({
                 choices={[
                   {
                     label: "Selected products",
-                    value: "product",
+                    value: ProductResourceType.PRODUCT,
                   },
                   {
                     label: "Selected collections",
-                    value: "collection",
+                    value: ProductResourceType.COLLECTION,
                   },
                 ]}
-                selected={[stepData.productResources.resourceType]}
-                onChange={(value) => {
+                selected={[stepData.resourceType]}
+                onChange={(selected: string[]) => {
+                  console.log(selected);
                   updateStepData({
                     ...stepData,
-                    productResources: {
-                      ...stepData.productResources,
-                      resourceType: value[0] as ProductResourceType,
-                    },
+                    resourceType: selected[0] as ProductResourceType,
+                    productResources: [],
                   });
                 }}
               />
 
-              <PickerModal
-                type={stepData.productResources.resourceType}
-                selectedResources={stepData.productResources.selectedResources}
+              <ResourcePicker
+                resourceType={stepData.resourceType}
+                selectedResources={stepData.productResources}
                 updateSelectedResources={updateSelectedResources}
               />
             </BlockStack>
@@ -192,14 +225,11 @@ export default function Index({
                   autoComplete="off"
                   inputMode="numeric"
                   min={1}
-                  value={stepData.productRules.minProductsOnStep.toString()}
+                  value={stepData.minProductsOnStep.toString()}
                   onChange={(value) => {
                     updateStepData({
                       ...stepData,
-                      productRules: {
-                        ...stepData.productRules,
-                        minProductsOnStep: parseInt(value),
-                      },
+                      minProductsOnStep: parseInt(value),
                     });
                   }}
                 />
@@ -210,14 +240,11 @@ export default function Index({
                   autoComplete="off"
                   inputMode="numeric"
                   min={1}
-                  value={stepData.productRules.maxProductsOnStep.toString()}
+                  value={stepData.maxProductsOnStep.toString()}
                   onChange={(value) => {
                     updateStepData({
                       ...stepData,
-                      productRules: {
-                        ...stepData.productRules,
-                        maxProductsOnStep: parseInt(value),
-                      },
+                      maxProductsOnStep: parseInt(value),
                     });
                   }}
                 />
@@ -237,21 +264,19 @@ export default function Index({
                   },
                 ]}
                 selected={[
-                  stepData.stepRules.allowProductDuplicates
+                  stepData.allowProductDuplicates
                     ? "allowProductDuplicates"
                     : "",
-                  stepData.stepRules.showProductPrice ? "showProductPrice" : "",
+                  stepData.showProductPrice ? "showProductPrice" : "",
                 ]}
                 onChange={(selectedValues) => {
                   updateStepData({
                     ...stepData,
-                    stepRules: {
-                      allowProductDuplicates: selectedValues.includes(
-                        "allowProductDuplicates",
-                      ),
-                      showProductPrice:
-                        selectedValues.includes("showProductPrice"),
-                    },
+                    allowProductDuplicates: selectedValues.includes(
+                      "allowProductDuplicates",
+                    ),
+                    showProductPrice:
+                      selectedValues.includes("showProductPrice"),
                   });
                 }}
               />
@@ -259,19 +284,14 @@ export default function Index({
           </>
         ) : (
           <BlockStack gap={GapBetweenSections}>
-            <ContentStepInputs
-              stepData={stepData}
-              title="Input #1"
-              inputId={1}
-              updateStepData={updateStepData}
-            />
-            <Divider />
-            <ContentStepInputs
-              stepData={stepData}
-              title="Input #2"
-              inputId={2}
-              updateStepData={updateStepData}
-            />
+            {stepData.contentInputs.map((contentInput, index) => (
+              <ContentStepInputs
+                key={contentInput.id}
+                contentInput={contentInput}
+                inputId={index + 1}
+                updateContentInput={updateContentInput}
+              />
+            ))}
           </BlockStack>
         )}
       </BlockStack>

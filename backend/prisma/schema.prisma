@@ -24,7 +24,7 @@ model Bundle {
   title            String
   published        Boolean        @default(false)
   createdAt        DateTime       @default(now())
-  steps            Step[]
+  steps            BundleStep[]
   bundleSettingsId Int            @unique
   bundleSettings   BundleSettings @relation(fields: [bundleSettingsId], references: [id])
   storeUrl         String
@@ -32,20 +32,20 @@ model Bundle {
 }
 
 //Step models
-model Step {
+model BundleStep {
   id                     Int                 @id @default(autoincrement())
   bundleId               Int
   bundle                 Bundle              @relation(fields: [bundleId], references: [id])
   stepNumber             Int
   title                  String
-  stepType               StepType
-  description            String
+  stepType               StepType            @default(PRODUCT)
+  description            String              @default("Description for this step")
   productResources       String[] //Array of shopify product or collection ids
-  resourceType           ProductResourceType //product or collection
-  minProductsOnStep      Int //Minimum number of products that must be selected on this step
-  maxProductsOnStep      Int //Maximum number of products that can be selected on this step
-  allowProductDuplicates Boolean
-  showProductPrice       Boolean
+  resourceType           ProductResourceType @default(PRODUCT) //product or collection
+  minProductsOnStep      Int                 @default(1) //Minimum number of products that must be selected on this step
+  maxProductsOnStep      Int                 @default(3) //Maximum number of products that can be selected on this step
+  allowProductDuplicates Boolean             @default(false)
+  showProductPrice       Boolean             @default(true)
   contentInputs          ContentInput[]
 }
 
@@ -61,20 +61,20 @@ enum ProductResourceType {
 }
 
 model ContentInput {
-  id         Int       @id @default(autoincrement())
-  stepId     Int       @unique
-  step       Step      @relation(fields: [stepId], references: [id])
-  inputType  InputType
-  inputLabel String
-  maxChars   Int
-  required   Boolean
-  inputValue String
+  id         Int        @id @default(autoincrement())
+  stepId     Int
+  step       BundleStep @relation(fields: [stepId], references: [id])
+  inputType  InputType  @default(TEXT)
+  inputLabel String     @default("Input label")
+  maxChars   Int        @default(100)
+  required   Boolean    @default(true)
 }
 
 enum InputType {
   TEXT
   IMAGE
   NUMBER
+  NONE
 }
 
 model BundleSettings {
