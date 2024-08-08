@@ -6,15 +6,18 @@ import {
   InlineGrid,
   ChoiceList,
 } from "@shopify/polaris";
+import { PlusIcon, ExternalIcon } from "@shopify/polaris-icons";
 import { GapInsideSection, HorizontalGap } from "../constants";
 import { ContentInput, InputType } from "@prisma/client";
 
 export default function Index({
   contentInput,
+  stepNumber,
   inputId,
   updateContentInput,
 }: {
   contentInput: ContentInput;
+  stepNumber: number;
   inputId: number;
   updateContentInput: (newContentInput: ContentInput) => void;
 }) {
@@ -27,25 +30,26 @@ export default function Index({
           label="Content type"
           options={[
             { label: "Text", value: InputType.TEXT },
+            { label: "None", value: InputType.NONE },
             { label: "Number", value: InputType.NUMBER },
             { label: "Image", value: InputType.IMAGE },
-            { label: "None", value: InputType.NONE },
           ]}
-          onChange={(newContentType) => {
+          onChange={(newContentType: string) => {
+            console.log(newContentType);
             updateContentInput({
               ...contentInput,
               inputType: newContentType as InputType,
             });
           }}
           value={contentInput.inputType}
-          name={"inputType"}
+          name={`inputType-${stepNumber}-${inputId}`}
         />
 
         <TextField
           label="Label"
-          name="inputLabel"
+          name={`inputLabel-${stepNumber}-${inputId}`}
           value={contentInput.inputLabel}
-          disabled={contentInput.inputType === InputType.NONE}
+          disabled={contentInput.inputType === "NONE"}
           onChange={(newLabel) => {
             updateContentInput({
               ...contentInput,
@@ -55,13 +59,14 @@ export default function Index({
           autoComplete="off"
         />
       </InlineGrid>
-      <InlineGrid gap={HorizontalGap} columns={2}>
+      <InlineGrid gap={HorizontalGap} columns={2} alignItems="end">
         <TextField
           label="Max length (in characters)"
           type="number"
+          name={`maxChars-${stepNumber}-${inputId}`}
           inputMode="numeric"
           min={1}
-          disabled={contentInput.inputType === InputType.NONE}
+          disabled={contentInput.inputType === "NONE"}
           value={contentInput.maxChars.toString()}
           onChange={(newMaxLength) => {
             updateContentInput({
@@ -74,13 +79,15 @@ export default function Index({
         <ChoiceList
           allowMultiple
           title="Input required"
-          disabled={contentInput.inputType === InputType.NONE}
+          name={`required-${stepNumber}-${inputId}`}
+          titleHidden
           choices={[
             {
-              label: "Required",
+              label: "Field is required",
               value: "true",
             },
           ]}
+          disabled={contentInput.inputType === "NONE"}
           selected={[contentInput.required ? "true" : ""]}
           onChange={(selected: string[]) => {
             updateContentInput({

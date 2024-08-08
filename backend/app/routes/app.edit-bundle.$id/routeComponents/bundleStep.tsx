@@ -27,6 +27,7 @@ import ContentStepInputs from "./content-step-inputs";
 import { StepType, ProductResourceType, ContentInput } from "@prisma/client";
 import { BundleStepWithAllResources } from "../types/BundleStep";
 import { useSubmit } from "@remix-run/react";
+import { useState } from "react";
 
 export default function Index({
   stepData,
@@ -58,6 +59,18 @@ export default function Index({
       ...stepData,
       productResources: selectedResources,
     });
+  };
+
+  const [selected, setSelected] = useState<string[]>(["PRODUCT"]);
+
+  const handleChange = (selected: string[]) => {
+    setSelected(selected);
+  };
+
+  const [selected2, setSelected2] = useState<string[]>(["COLLECTION"]);
+
+  const handleChange2 = (selected: string[]) => {
+    setSelected2(selected);
   };
 
   return (
@@ -140,12 +153,12 @@ export default function Index({
               });
             }}
             autoComplete="off"
-            name="stepTitle"
+            name={`stepTitle-${stepData.stepNumber}`}
           />
           <TextField
             label="Step description"
             value={stepData.description}
-            name="stepDescription"
+            name={`stepDescription-${stepData.stepNumber}`}
             onChange={(newDesc) => {
               updateStepData({
                 ...stepData,
@@ -156,8 +169,8 @@ export default function Index({
           />
         </BlockStack>
         <ChoiceList
-          title="Step type"
-          name="stepType"
+          title="Step type:"
+          name={`stepType-${stepData.stepNumber}`}
           choices={[
             {
               label: "Product step",
@@ -184,8 +197,8 @@ export default function Index({
           <>
             <BlockStack gap={GapInsideSection}>
               <ChoiceList
-                name="resourceType"
-                title="Display products"
+                title="Display products:"
+                name={`productResourceType-${stepData.stepNumber}`}
                 choices={[
                   {
                     label: "Selected products",
@@ -198,7 +211,6 @@ export default function Index({
                 ]}
                 selected={[stepData.resourceType]}
                 onChange={(selected: string[]) => {
-                  console.log(selected);
                   updateStepData({
                     ...stepData,
                     resourceType: selected[0] as ProductResourceType,
@@ -224,6 +236,7 @@ export default function Index({
                   type="number"
                   autoComplete="off"
                   inputMode="numeric"
+                  name={`minProductsToSelect-${stepData.stepNumber}`}
                   min={1}
                   value={stepData.minProductsOnStep.toString()}
                   onChange={(value) => {
@@ -239,6 +252,7 @@ export default function Index({
                   type="number"
                   autoComplete="off"
                   inputMode="numeric"
+                  name={`maxProductsToSelect-${stepData.stepNumber}`}
                   min={1}
                   value={stepData.maxProductsOnStep.toString()}
                   onChange={(value) => {
@@ -252,6 +266,7 @@ export default function Index({
               <ChoiceList
                 title="Display products"
                 allowMultiple
+                name={`displayProducts-${stepData.stepNumber}`}
                 choices={[
                   {
                     label:
@@ -290,6 +305,7 @@ export default function Index({
                 contentInput={contentInput}
                 inputId={index + 1}
                 updateContentInput={updateContentInput}
+                stepNumber={stepData.stepNumber}
               />
             ))}
           </BlockStack>

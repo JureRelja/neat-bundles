@@ -256,18 +256,18 @@ export default function Index() {
   };
 
   // add/remove scroll event listener
-  useEffect(() => {
-    let previewBox = previewBoxRef.current?.getBoundingClientRect();
-    const handleScrollEvent = () => {
-      handleScroll(previewBox?.top || 0, previewBox?.height || 0);
-    };
+  // useEffect(() => {
+  //   let previewBox = previewBoxRef.current?.getBoundingClientRect();
+  //   const handleScrollEvent = () => {
+  //     handleScroll(previewBox?.top || 0, previewBox?.height || 0);
+  //   };
 
-    window.addEventListener("scroll", handleScrollEvent);
+  //   window.addEventListener("scroll", handleScrollEvent);
 
-    return () => {
-      window.removeEventListener("scroll", handleScrollEvent);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener("scroll", handleScrollEvent);
+  //   };
+  // }, []);
 
   //Submiting the form
   const submitForm = (): void => {
@@ -325,9 +325,9 @@ export default function Index() {
                 <Layout.Section variant="oneThird">
                   <Form
                     onSubmit={submitForm}
-                    data-save-bar
-                    data-discard-confirmation
-                    method="POST"
+                    // data-save-bar
+                    // data-discard-confirmation
+                    // method="POST"
                   >
                     <input
                       type="hidden"

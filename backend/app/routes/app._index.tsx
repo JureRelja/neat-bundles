@@ -17,7 +17,7 @@ import {
   SkeletonDisplayText,
 } from "@shopify/polaris";
 import { PlusIcon, ExternalIcon } from "@shopify/polaris-icons";
-import { authenticate, sessionStorage } from "../shopify.server";
+import { authenticate } from "../shopify.server";
 import db from "../db.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
