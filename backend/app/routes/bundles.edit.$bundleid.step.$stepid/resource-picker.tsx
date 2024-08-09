@@ -1,6 +1,6 @@
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { Button } from "@shopify/polaris";
-import { bundleTagIndentifier } from "../constants";
+import { bundleTagIndentifier } from "../../constants";
 import {
   BaseResource,
   SelectPayload,
@@ -20,9 +20,11 @@ export default function Index({
   const shopify = useAppBridge();
 
   const showModalPicker = async () => {
-    const selectedResourcesIds = selectedResources.map((resource: Resource) => {
-      return { id: resource.id };
-    });
+    const selectedResourcesIds: { id: string }[] = selectedResources.map(
+      (resource: Resource) => {
+        return { id: resource.id };
+      },
+    );
 
     const type =
       resourceType === ProductResourceType.COLLECTION

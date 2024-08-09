@@ -21,13 +21,12 @@ import {
   GapBetweenSections,
   GapInsideSection,
   HorizontalGap,
-} from "../constants";
+} from "../../constants";
 import ResourcePicker from "./resource-picker";
 import ContentStepInputs from "./content-step-inputs";
 import { StepType, ProductResourceType, ContentInput } from "@prisma/client";
-import { BundleStepWithAllResources } from "../types/BundleStep";
+import { BundleStepWithAllResources } from "../../types/BundleStep";
 import { useSubmit } from "@remix-run/react";
-import { useState } from "react";
 
 export default function Index({
   stepData,
@@ -59,18 +58,6 @@ export default function Index({
       ...stepData,
       productResources: selectedResources,
     });
-  };
-
-  const [selected, setSelected] = useState<string[]>(["PRODUCT"]);
-
-  const handleChange = (selected: string[]) => {
-    setSelected(selected);
-  };
-
-  const [selected2, setSelected2] = useState<string[]>(["COLLECTION"]);
-
-  const handleChange2 = (selected: string[]) => {
-    setSelected2(selected);
   };
 
   return (

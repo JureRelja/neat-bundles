@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://diff-raises-monetary-partially.trycloudflare.com"
+application_url = "https://campus-protest-healthcare-tone.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "unauthenticated_write_checkouts,write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://diff-raises-monetary-partially.trycloudflare.com/auth/callback",
-  "https://diff-raises-monetary-partially.trycloudflare.com/auth/shopify/callback",
-  "https://diff-raises-monetary-partially.trycloudflare.com/api/auth/callback"
+  "https://campus-protest-healthcare-tone.trycloudflare.com/auth/callback",
+  "https://campus-protest-healthcare-tone.trycloudflare.com/auth/shopify/callback",
+  "https://campus-protest-healthcare-tone.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-04"
 
 [app_proxy]
-url = "https://diff-raises-monetary-partially.trycloudflare.com"
+url = "https://campus-protest-healthcare-tone.trycloudflare.com"
 subpath = "bundle"
 prefix = "apps"
 

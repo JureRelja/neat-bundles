@@ -13,88 +13,80 @@ import {
   GapBetweenSections,
   GapInsideSection,
   HorizontalGap,
-} from "../constants";
-import {
-  BundleSettingsDiscountType,
-  BundleSettings,
-  BundlePricing,
-} from "../types/BundleSettings";
-import ColorPickerPopover from "./color-picker";
-import db from "../../../db.server";
-import { authenticate } from "../../../shopify.server";
-import { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
+} from "../../../constants";
+import { BundleSettingsWithAllResources } from "../../../types/BundleSettings";
+import ColorPicker from "./color-picker";
+import { BundlePricing, BundleDiscountType } from "@prisma/client";
+import { useMemo } from "react";
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-  const { admin, session } = await authenticate.admin(request);
-};
-
-export const action = async ({ request, params }: ActionFunctionArgs) => {
-  const { admin, session } = await authenticate.admin(request);
-};
-
-export default function Index({}: {}) {
+export default function Index({
+  bundleSettings,
+  updateSettings,
+}: {
+  bundleSettings: BundleSettingsWithAllResources;
+  updateSettings: (newSettings: BundleSettingsWithAllResources) => void;
+}) {
   //Left column colors
-  const colorsLeft = [
-    {
-      hex: bundleSettings.colors.stepsIcon,
-      label: "Steps icon color",
-      id: "stepsIcon",
-    },
-    {
-      hex: bundleSettings.colors.addToBundleBtn,
-      label: '"Add to bundle" btn',
-      id: "addToBundleBtn",
-    },
-    {
-      hex: bundleSettings.colors.addToBundleText,
-      label: '"Add to bundle" text',
-      id: "addToBundleText",
-    },
-    {
-      hex: bundleSettings.colors.nextStepBtn,
-      label: '"Next step" btn',
-      id: "nextStepBtn",
-    },
-    {
-      hex: bundleSettings.colors.nextStepBtnText,
-      label: '"Next step" btn text',
-      id: "nextStepBtnText",
-    },
-  ];
-  //Right column colors
-  const colorsRight = [
-    {
-      hex: bundleSettings.colors.titleAndDESC,
-      label: '"Title & description"',
-      id: "titleAndDESC",
-    },
-    {
-      hex: bundleSettings.colors.viewProductsBtn,
-      label: '"View products" btn',
-      id: "viewProductsBtn",
-    },
-    {
-      hex: bundleSettings.colors.removeProductBtn,
-      label: '"Remove" btn',
-      id: "removeProductBtn",
-    },
-    {
-      hex: bundleSettings.colors.prevStepBtn,
-      label: '"Previous" btn',
-      id: "prevStepBtn",
-    },
-    {
-      hex: bundleSettings.colors.prevStepBtnText,
-      label: '"Previous" btn text',
-      id: "prevStepBtnText",
-    },
-  ];
+  const colorsLeft = useMemo(() => {
+    return [
+      {
+        hex: bundleSettings.bundleColors.stepsIcon,
+        label: "Steps icon color",
+        id: "stepsIcon",
+      },
+      {
+        hex: bundleSettings.bundleColors.addToBundleBtn,
+        label: '"Add to bundle" btn',
+        id: "addToBundleBtn",
+      },
+      {
+        hex: bundleSettings.bundleColors.addToBundleText,
+        label: '"Add to bundle" text',
+        id: "addToBundleText",
+      },
+      {
+        hex: bundleSettings.bundleColors.nextStepBtn,
+        label: '"Next step" btn',
+        id: "nextStepBtn",
+      },
+      {
+        hex: bundleSettings.bundleColors.nextStepBtnText,
+        label: '"Next step" btn text',
+        id: "nextStepBtnText",
+      },
+      {
+        hex: bundleSettings.bundleColors.titleAndDESC,
+        label: '"Title & description"',
+        id: "titleAndDESC",
+      },
+      {
+        hex: bundleSettings.bundleColors.viewProductBtn,
+        label: '"View products" btn',
+        id: "viewProductsBtn",
+      },
+      {
+        hex: bundleSettings.bundleColors.removeProductsBtn,
+        label: '"Remove" btn',
+        id: "removeProductBtn",
+      },
+      {
+        hex: bundleSettings.bundleColors.prevStepBtn,
+        label: '"Previous" btn',
+        id: "prevStepBtn",
+      },
+      {
+        hex: bundleSettings.bundleColors.prevStepBtnText,
+        label: '"Previous" btn text',
+        id: "prevStepBtnText",
+      },
+    ];
+  }, [bundleSettings.bundleColors]);
 
   const updateColor = (newHexColor: string, colorId: string) => {
     updateSettings({
       ...bundleSettings,
-      colors: {
-        ...bundleSettings.colors,
+      bundleColors: {
+        ...bundleSettings.bundleColors,
         [colorId]: newHexColor,
       },
     });
@@ -103,12 +95,12 @@ export default function Index({}: {}) {
   return (
     <Card>
       <BlockStack gap={GapBetweenSections}>
-        <Text as="h2" variant="headingLg">
+        <Text as="h2" variant="headingMd">
           Bundle Settings
         </Text>
         <ChoiceList
           title="Bundle Pricing"
-          name="bundlePricing"
+          name={`bundlePricing-${bundleSettings.id}`}
           choices={[
             {
               label: "Fixed price",
@@ -124,11 +116,11 @@ export default function Index({}: {}) {
 individual products.)`,
             },
           ]}
-          selected={[bundleSettings.bundlePricing]}
+          selected={[bundleSettings.pricing]}
           onChange={(value) => {
             updateSettings({
               ...bundleSettings,
-              bundlePricing: value[0] as BundlePricing,
+              pricing: value[0] as BundlePricing,
             });
           }}
         />
@@ -137,27 +129,28 @@ individual products.)`,
           <InlineGrid columns={["twoThirds", "oneThird"]} gap={HorizontalGap}>
             <Select
               label="Discount type"
-              name="discountType"
+              name={`discountType-${bundleSettings.id}`}
               options={[
                 {
                   label: "Percentage (e.g. 25% off)",
-                  value: BundleSettingsDiscountType.PERCENTAGE,
+                  value: BundleDiscountType.PERCENTAGE,
                 },
                 {
                   label: "Fixed (e.g. 10$ off)",
-                  value: BundleSettingsDiscountType.FIXED,
+                  value: BundleDiscountType.FIXED,
                 },
 
                 {
                   label: "No discount",
-                  value: BundleSettingsDiscountType.NO_DISCOUNT,
+                  value: BundleDiscountType.NO_DISCOUNT,
                 },
               ]}
               value={bundleSettings.discountType}
               onChange={(newValue) => {
                 updateSettings({
                   ...bundleSettings,
-                  discountType: newValue as BundleSettingsDiscountType,
+                  discountType: newValue as BundleDiscountType,
+                  discountValue: 0,
                 });
               }}
             />
@@ -167,9 +160,17 @@ individual products.)`,
               type="number"
               autoComplete="off"
               inputMode="numeric"
-              name="discountValue"
-              suffix="%"
+              disabled={
+                bundleSettings.discountType === BundleDiscountType.NO_DISCOUNT
+              }
+              name={`discountValue-${bundleSettings.id}`}
+              suffix={
+                bundleSettings.discountType === BundleDiscountType.PERCENTAGE
+                  ? "%"
+                  : "$"
+              }
               min={0}
+              max={"100"}
               value={bundleSettings.discountValue.toString()}
               onChange={(value) => {
                 updateSettings({
@@ -182,13 +183,16 @@ individual products.)`,
           <ChoiceList
             title="Discount banner"
             allowMultiple
-            name="displayDiscountBanner"
+            name={`displayDiscountBanner-${bundleSettings.id}`}
             choices={[
               {
                 label: "Display a discount banner through the order",
                 value: "true",
               },
             ]}
+            disabled={
+              bundleSettings.discountType === BundleDiscountType.NO_DISCOUNT
+            }
             selected={bundleSettings.displayDiscountBanner ? ["true"] : []}
             onChange={(value) => {
               updateSettings({
@@ -202,7 +206,7 @@ individual products.)`,
         <ChoiceList
           title="Cart"
           allowMultiple
-          name="skipTheCart"
+          name={`skipTheCart-${bundleSettings.id}`}
           choices={[
             {
               label: "Skip the cart and go to checkout directly",
@@ -220,7 +224,7 @@ individual products.)`,
         <Divider />
         <ChoiceList
           title="Navigation"
-          name="allowBackNavigation"
+          name={`allowBackNavigation-${bundleSettings.id}`}
           allowMultiple
           choices={[
             {
@@ -241,7 +245,7 @@ individual products.)`,
           <ChoiceList
             title="Navigation"
             allowMultiple
-            name="showOutOfStockProducts"
+            name={`showOutOfStockProducts-${bundleSettings.id}`}
             choices={[
               {
                 label: "Show “out of stock” and unavailable products",
@@ -277,28 +281,17 @@ individual products.)`,
         <BlockStack gap={GapInsideSection}>
           <Text as="p">Colors</Text>
           <InlineGrid columns={2} gap={HorizontalGap}>
-            <BlockStack gap={GapInsideSection} inlineAlign="start">
-              {colorsLeft.map((color) => (
-                <ColorPickerPopover
-                  key={color.label}
-                  color={color.hex}
+            {colorsLeft.map(
+              (color: { hex: string; label: string; id: string }) => (
+                <ColorPicker
+                  key={color.id}
                   label={color.label}
-                  updateColor={updateColor}
+                  color={color.hex} //Hex color code
                   colorId={color.id}
-                />
-              ))}
-            </BlockStack>
-            <BlockStack gap={GapInsideSection}>
-              {colorsRight.map((color) => (
-                <ColorPickerPopover
-                  key={color.label}
-                  color={color.hex}
-                  label={color.label}
                   updateColor={updateColor}
-                  colorId={color.id}
                 />
-              ))}
-            </BlockStack>
+              ),
+            )}
           </InlineGrid>
         </BlockStack>
         <Divider />
@@ -308,14 +301,14 @@ individual products.)`,
             <BlockStack gap={GapInsideSection} inlineAlign="start">
               <TextField
                 label='"Add to bundle" btn label'
-                name="addToBundleBtn"
-                value={bundleSettings.labels.addToBundleBtn}
+                name={`addToBundleBtn-${bundleSettings.id}`}
+                value={bundleSettings.bundleLabels.addToBundleBtn}
                 autoComplete="off"
-                onChange={(newValue) => {
+                onChange={(newValue: string) => {
                   updateSettings({
                     ...bundleSettings,
-                    labels: {
-                      ...bundleSettings.labels,
+                    bundleLabels: {
+                      ...bundleSettings.bundleLabels,
                       addToBundleBtn: newValue,
                     },
                   });
@@ -323,15 +316,15 @@ individual products.)`,
               />
               <TextField
                 label='"Next" button label'
-                name="nextStepBtn"
-                value={bundleSettings.labels.nextStepBtn}
+                name={`nextStepBtn-${bundleSettings.id}`}
+                value={bundleSettings.bundleLabels.nextStepBtn}
                 type="text"
                 autoComplete="off"
-                onChange={(newValue) => {
+                onChange={(newValue: string) => {
                   updateSettings({
                     ...bundleSettings,
-                    labels: {
-                      ...bundleSettings.labels,
+                    bundleLabels: {
+                      ...bundleSettings.bundleLabels,
                       nextStepBtn: newValue,
                     },
                   });
@@ -341,32 +334,32 @@ individual products.)`,
             <BlockStack gap={GapInsideSection}>
               <TextField
                 label='"View product" btn label'
-                name="viewProductsBtn"
-                value={bundleSettings.labels.viewProductsBtn}
+                name={`viewProductBtn-${bundleSettings.id}`}
+                value={bundleSettings.bundleLabels.viewProductBtn}
                 type="text"
                 autoComplete="off"
-                onChange={(newValue) => {
+                onChange={(newValue: string) => {
                   updateSettings({
                     ...bundleSettings,
-                    labels: {
-                      ...bundleSettings.labels,
-                      viewProductsBtn: newValue,
+                    bundleLabels: {
+                      ...bundleSettings.bundleLabels,
+                      viewProductBtn: newValue,
                     },
                   });
                 }}
               />
               <TextField
                 label='"Previous" button label'
-                value={bundleSettings.labels.prevBtn}
+                value={bundleSettings.bundleLabels.prevStepBtn}
                 type="text"
-                name="prevBtn"
+                name={`prevStepBtn-${bundleSettings.id}`}
                 autoComplete="off"
-                onChange={(newValue) => {
+                onChange={(newValue: string) => {
                   updateSettings({
                     ...bundleSettings,
-                    labels: {
-                      ...bundleSettings.labels,
-                      prevBtn: newValue,
+                    bundleLabels: {
+                      ...bundleSettings.bundleLabels,
+                      prevStepBtn: newValue,
                     },
                   });
                 }}

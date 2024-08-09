@@ -6,8 +6,7 @@ import {
   InlineGrid,
   ChoiceList,
 } from "@shopify/polaris";
-import { PlusIcon, ExternalIcon } from "@shopify/polaris-icons";
-import { GapInsideSection, HorizontalGap } from "../constants";
+import { GapInsideSection, HorizontalGap } from "../../constants";
 import { ContentInput, InputType } from "@prisma/client";
 
 export default function Index({
@@ -29,8 +28,8 @@ export default function Index({
         <Select
           label="Content type"
           options={[
+            { label: "None", value: "NONE" },
             { label: "Text", value: InputType.TEXT },
-            { label: "None", value: InputType.NONE },
             { label: "Number", value: InputType.NUMBER },
             { label: "Image", value: InputType.IMAGE },
           ]}

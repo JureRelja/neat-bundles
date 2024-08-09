@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 
-const bundleStepInclude = {
+export const bundleStepInclude = {
   bundleId: true,
   id: true,
   stepNumber: true,
@@ -18,4 +18,15 @@ const bundleStepInclude = {
 
 export type BundleStepWithAllResources = Prisma.BundleStepGetPayload<{
   include: typeof bundleStepInclude;
+}>;
+
+export const bundleStepBasic = {
+  id: true,
+  stepNumber: true,
+  title: true,
+  stepType: true,
+};
+
+export type BundleStepBasicResources = Prisma.BundleStepGetPayload<{
+  select: typeof bundleStepBasic;
 }>;

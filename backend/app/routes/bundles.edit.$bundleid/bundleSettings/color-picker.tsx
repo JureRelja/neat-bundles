@@ -8,17 +8,22 @@ import {
   Box,
   RGBColor,
 } from "@shopify/polaris";
-import { GapInsideSection } from "../constants";
+import { GapInsideSection } from "../../../constants";
 import { useState, useEffect } from "react";
 import { hsbToHex, rgbToHsb } from "@shopify/polaris";
 
+// User can select a color from the color picker or enter a hex code
+// The selected color is displayed in a small square
+
+// Inside this component, color is stored as HSB, but it is displayed as a hex code
+// Inside the database, color is stored as a hex code
 export default function Index({
   color,
   label,
   colorId,
   updateColor,
 }: {
-  color: string;
+  color: string; // Hex color code
   label: string;
   colorId: string;
   updateColor: (newHexColor: string, colorId: string) => void;
