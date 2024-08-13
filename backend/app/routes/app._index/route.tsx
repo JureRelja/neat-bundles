@@ -1,10 +1,9 @@
 import {
   redirect,
   useNavigation,
-  useSubmit,
   json,
   useLoaderData,
-  useActionData,
+  Link,
 } from "@remix-run/react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import {
@@ -25,6 +24,7 @@ import {
   DataTable,
   Text,
   ButtonGroup,
+  Badge,
 } from "@shopify/polaris";
 import {
   PlusIcon,
@@ -33,20 +33,21 @@ import {
   DeleteIcon,
   PageAddIcon,
 } from "@shopify/polaris-icons";
-import { authenticate } from "../shopify.server";
-import db from "../db.server";
-import { Bundle } from "@prisma/client";
+import { authenticate } from "../../shopify.server";
+import db from "../../db.server";
+import { Bundle, User } from "@prisma/client";
 import {
   BundlePayload,
   bundleSelect,
   BundleWithStringDate,
-} from "../types/Bundle";
-import { JsonData } from "../types/jsonData";
+} from "../../types/Bundle";
+import { JsonData } from "../../types/jsonData";
+import { useSubmitAction } from "~/hooks/useSubmitAction";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session, admin } = await authenticate.admin(request);
 
-  const user = await db.user.findFirst({
+  const user: User | null = await db.user.findUnique({
     where: {
       storeUrl: session.shop,
     },
@@ -55,12 +56,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   if (!user) {
     const response = await admin.graphql(
       `#graphql
-      query  {
-        shop {
-          name
-          email
-        }
-      }`,
+        query  {
+          shop {
+            name
+            email
+          }
+        }`,
     );
 
     const data = await response.json();
@@ -105,7 +106,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   switch (action) {
     case "createBundle": {
-      const allUserBundles = await prisma.bundle.findMany({
+      const allUserBundles: Bundle[] = await prisma.bundle.findMany({
         where: {
           user: {
             storeUrl: session.shop,
@@ -113,7 +114,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         },
       });
 
-      const bundle = await prisma.bundle.create({
+      const bundle: Bundle = await prisma.bundle.create({
         data: {
           user: {
             connect: {
@@ -121,44 +122,40 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             },
           },
           title: "New bundle " + (allUserBundles.length + 1),
+          bundleSettings: {
+            create: {},
+          },
           steps: {
             create: [
               {
                 stepNumber: 1,
-                title: `Title for step 1`,
-                contentInputs: {
-                  create: [{}, {}],
+                title: "Step 2",
+                stepType: "PRODUCT",
+                productStep: {
+                  create: {},
                 },
               },
               {
                 stepNumber: 2,
-                title: `Title for step 2`,
-                contentInputs: {
-                  create: [{}, {}],
+                title: "Step 2",
+                stepType: "PRODUCT",
+                productStep: {
+                  create: {},
                 },
               },
               {
                 stepNumber: 3,
-                title: `Title for step 3`,
-                contentInputs: {
-                  create: [{}, {}],
+                title: "Step 3",
+                stepType: "PRODUCT",
+                productStep: {
+                  create: {},
                 },
               },
             ],
           },
-          bundleSettings: {
-            create: {
-              bundleColors: {
-                create: {},
-              },
-              bundleLabels: {
-                create: {},
-              },
-            },
-          },
         },
       });
-      return redirect(`/app/edit-bundle/${bundle.id}`, { status: 200 });
+      return redirect(`/app/bundles/${bundle.id}`);
     }
     case "deleteBundle":
       const bundleId = formData.get("bundleId");
@@ -168,19 +165,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         await prisma.bundle.delete({
           where: {
             id: Number(bundleId),
-          },
-          include: {
-            steps: {
-              include: {
-                contentInputs: true,
-              },
-            },
-            bundleSettings: {
-              include: {
-                bundleColors: true,
-                bundleLabels: true,
-              },
-            },
           },
         });
       } catch (error) {
@@ -199,7 +183,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         );
       }
 
-      return redirect("/bundles", { status: 200 });
+      return redirect("/app/bundles", { status: 200 });
     case "duplicateBundle":
       const bundleToDuplicate: BundlePayload | null =
         await prisma.bundle.findUnique({
@@ -231,7 +215,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             "This is the default action that doesn't do anything.",
           ),
         },
-        { status: 400 },
+        { status: 200 },
       );
     }
   }
@@ -239,19 +223,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function Index() {
   const nav = useNavigation();
-  const isLoading = nav.state === "loading" || nav.state !== "idle";
-  const submit = useSubmit();
+  const isLoading = nav.state !== "idle";
 
-  const postReponse = useActionData<typeof loader>();
-  console.log(postReponse);
+  const loaderResponse: JsonData<BundleWithStringDate[]> =
+    useLoaderData<typeof loader>();
 
-  const getResponse: JsonData<BundleWithStringDate[]> = useLoaderData<
-    typeof loader
-  >() as JsonData<BundleWithStringDate[]>;
+  const bundles: BundleWithStringDate[] = loaderResponse.data;
 
-  const bundles: BundleWithStringDate[] =
-    getResponse.data as BundleWithStringDate[];
-
+  //Sorting the bundles by created date
   const sortedBundles: BundleWithStringDate[] = bundles.sort((a, b) => {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
@@ -299,13 +278,7 @@ export default function Index() {
               icon={PlusIcon}
               variant="primary"
               onClick={() =>
-                submit(
-                  { action: "createBundle" },
-                  {
-                    method: "post",
-                    navigate: false,
-                  },
-                )
+                useSubmitAction("createBundle", true, "/app/bundles")
               }
             >
               Create bundle
@@ -346,23 +319,26 @@ export default function Index() {
                         rows={sortedBundles.map(
                           (bundle: BundleWithStringDate) => {
                             return [
-                              bundle.title,
+                              <Link to={`/app/bundles/${bundle.id}`}>
+                                {bundle.title}
+                              </Link>,
                               bundle.createdAt.split("T")[0],
-                              bundle.published ? "Published" : "Draft",
+                              bundle.published ? (
+                                <Badge tone="success">Active</Badge>
+                              ) : (
+                                <Badge tone="info">Draft</Badge>
+                              ),
+
                               <ButtonGroup>
                                 <Button
                                   icon={DeleteIcon}
                                   variant="secondary"
                                   tone="critical"
                                   onClick={() =>
-                                    submit(
-                                      {
-                                        action: "deleteBundle",
-                                        bundleId: bundle.id,
-                                      },
-                                      {
-                                        method: "post",
-                                      },
+                                    useSubmitAction(
+                                      "deleteBundle",
+                                      true,
+                                      `/app/bundles/${bundle.id}`,
                                     )
                                   }
                                 >
@@ -373,14 +349,10 @@ export default function Index() {
                                   icon={PageAddIcon}
                                   variant="secondary"
                                   onClick={() =>
-                                    submit(
-                                      {
-                                        action: "duplicateBundle",
-                                        bundleId: bundle.id,
-                                      },
-                                      {
-                                        method: "post",
-                                      },
+                                    useSubmitAction(
+                                      "duplicateBundle",
+                                      true,
+                                      `/app/bundles/${bundle.id}`,
                                     )
                                   }
                                 >
@@ -390,7 +362,7 @@ export default function Index() {
                                 <Button
                                   icon={EditIcon}
                                   variant="primary"
-                                  url={`/bundles/edit/${bundle.id}`}
+                                  url={`/app/bundles/${bundle.id}`}
                                 >
                                   Edit
                                 </Button>
@@ -414,11 +386,10 @@ export default function Index() {
                           content: "Create bundle",
                           icon: PlusIcon,
                           onAction: () =>
-                            submit(
-                              {},
-                              {
-                                method: "post",
-                              },
+                            useSubmitAction(
+                              "createBundle",
+                              true,
+                              "/app/bundles",
                             ),
                         }}
                         fullWidth

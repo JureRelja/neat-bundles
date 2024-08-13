@@ -1,9 +1,9 @@
 export class JsonData<T> {
-  private ok: boolean;
-  private status: "success" | "error";
-  private message: string;
-  private error?: string;
-  data?: T;
+  ok: boolean;
+  status: "success" | "error";
+  message: string;
+  error?: string;
+  data: T;
 
   constructor(
     ok: boolean,
@@ -16,6 +16,7 @@ export class JsonData<T> {
     this.status = status;
     this.message = message;
     this.error = error;
-    this.data = data;
+    if (data) this.data = data;
+    else this.data = {} as T;
   }
 }

@@ -40,11 +40,7 @@ const shopify = shopifyApp({
 
 //Redis client for caching
 let redis = createClient({
-  password: "wG4dqntGVFNIO2wFi8txeht2Xspq9upz",
-  socket: {
-    host: "redis-14243.c228.us-central1-1.gce.redns.redis-cloud.com",
-    port: 14243,
-  },
+  url: process.env.REDIS_URL,
 });
 
 await redis.connect();

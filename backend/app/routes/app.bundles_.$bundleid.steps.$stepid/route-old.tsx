@@ -20,29 +20,18 @@ import {
   PageActions,
   SkeletonBodyText,
   SkeletonDisplayText,
-  ButtonGroup,
-  DataTable,
-  EmptyState,
+  InlineGrid,
 } from "@shopify/polaris";
-import {
-  DeleteIcon,
-  PlusIcon,
-  ArrowDownIcon,
-  ArrowUpIcon,
-  PageAddIcon,
-  EditIcon,
-} from "@shopify/polaris-icons";
+import { OrderDraftIcon, DeleteIcon, PlusIcon } from "@shopify/polaris-icons";
 import { useAppBridge, Modal, TitleBar } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
-import { useState } from "react";
-import BundleSettingsComponent from "./bundleSettings";
+import { useState, useRef, useEffect } from "react";
 import { GapBetweenSections, GapBetweenTitleAndContent } from "../../constants";
+import BundlePreview from "./bundlePreview";
+import styles from "./route.module.css";
 import db from "../../db.server";
-import { BundleStep, ContentInput, StepType } from "@prisma/client";
-import {
-  BundleStepBasicResources,
-  BundleStepWithAllResources,
-} from "../../types/BundleStep";
+import { BundleStep } from "@prisma/client";
+import { BundleStepWithAllResources } from "../../types/BundleStep";
 import { BundleSettingsWithAllResources } from "../../types/BundleSettings";
 import { BundlePayload, bundleSelect } from "../../types/Bundle";
 import { JsonData } from "../../types/jsonData";
@@ -298,39 +287,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         { status: 200 },
       );
     }
-    //Moving the step up
-    case "moveStepDown": {
-    }
-    //Moving the step down
-    case "moveStepUp": {
-    }
-    //Updating the bundle
-    case "updateBundle":
-      const bundleData = JSON.parse(formData.get("bundle") as string);
-
-      try {
-        await db.bundle.update({
-          where: {
-            id: Number(bundleData.id),
-          },
-          data: {
-            title: bundleData.title,
-          },
-        });
-      } catch (error) {
-        console.log(error);
-        return json(
-          { error: "Error while updating a bundle" },
-          { status: 400 },
-        );
-      }
-
-      return json(
-        {
-          ...new JsonData(true, "success", "Bundle succesfuly updated"),
-        },
-        { status: 200 },
-      );
 
     default:
       return json(
@@ -358,9 +314,8 @@ export default function Index() {
   >() as JsonData<BundlePayload>;
 
   const [bundleState, setBundleState] = useState(reponse.data as BundlePayload);
-  const bundleSteps: BundleStepBasicResources[] = bundleState.steps.sort(
-    (a: BundleStepBasicResources, b: BundleStepBasicResources): number =>
-      a.stepNumber - b.stepNumber,
+  const bundleSteps = bundleState.steps.sort(
+    (a, b) => a.stepNumber - b.stepNumber,
   );
 
   //Function for checking if there are free steps and displaying a modal if there are not
@@ -385,7 +340,7 @@ export default function Index() {
   const updateStepData = (stepData: BundleStepWithAllResources): void => {
     setBundleState((prevBundle: BundlePayload) => {
       const index = prevBundle.steps.findIndex(
-        (step: BundleStepBasicResources) => {
+        (step: BundleStepWithAllResources) => {
           return step.id === stepData.id;
         },
       );
@@ -403,6 +358,33 @@ export default function Index() {
       return { ...prevBundle, bundleSettings: newBundleSettings };
     });
   };
+
+  //Sticky preview box logic
+  const [sticky, setSticky] = useState({ isSticky: false, offset: 0 });
+  const previewBoxRef = useRef<HTMLDivElement>(null);
+
+  // handle scroll event
+  const handleScroll = (elTopOffset: number, elHeight: number) => {
+    if (window.scrollY > elTopOffset + elHeight) {
+      setSticky({ isSticky: true, offset: elHeight });
+    } else {
+      setSticky({ isSticky: false, offset: 0 });
+    }
+  };
+
+  // add/remove scroll event listener
+  useEffect(() => {
+    let previewBox = previewBoxRef.current?.getBoundingClientRect();
+    const handleScrollEvent = () => {
+      handleScroll(previewBox?.top || 0, previewBox?.height || 0);
+    };
+
+    window.addEventListener("scroll", handleScrollEvent);
+
+    return () => {
+      window.removeEventListener("scroll", handleScrollEvent);
+    };
+  }, []);
 
   //Submiting the form
   const submitForm = (): void => {
@@ -439,12 +421,22 @@ export default function Index() {
           <Page
             fullWidth
             backAction={{ content: "Products", url: "/bundles" }}
-            title="Edit bundle - steps & settings"
-            primaryAction={{
-              content: "Add step",
-              icon: PlusIcon,
-              onAction: addStep,
-            }}
+            title="Edit bundle"
+            primaryAction={<Button variant="primary">Publish</Button>}
+            secondaryActions={[
+              {
+                content: "Delete",
+                destructive: true,
+                icon: DeleteIcon,
+                onAction: () => {},
+              },
+              {
+                content: "Save as draft",
+                destructive: false,
+                icon: OrderDraftIcon,
+                onAction: submitForm,
+              },
+            ]}
           >
             <BlockStack gap={GapBetweenSections}>
               <Layout>
@@ -455,10 +447,15 @@ export default function Index() {
                     // data-discard-confirmation
                     // method="POST"
                   >
+                    {/* <input
+                      type="hidden"
+                      name="bundle"
+                      value={JSON.stringify(bundleState)}
+                    /> */}
                     <BlockStack gap={GapBetweenSections}>
                       <Card>
                         <BlockStack gap={GapBetweenTitleAndContent}>
-                          <Text as="h2" variant="headingMd">
+                          <Text as="h2" variant="headingSm">
                             Bundle title
                           </Text>
                           <TextField
@@ -476,107 +473,60 @@ export default function Index() {
                           />
                         </BlockStack>
                       </Card>
+                      <Card>
+                        <InlineGrid columns={2} alignItems="center">
+                          <Text as="h2" variant="headingMd">
+                            {bundleState.steps.length} steps total
+                          </Text>
+                          <Button
+                            onClick={addStep}
+                            variant="primary"
+                            icon={PlusIcon}
+                            fullWidth
+                          >
+                            Add step
+                          </Button>
+                        </InlineGrid>
+                      </Card>
+
+                      {/* {bundleSteps.map((step) => (
+                        <BundleStepComponent
+                          key={step.id}
+                          stepData={step}
+                          updateStepData={updateStepData}
+                        ></BundleStepComponent>
+                      ))}
+                      <Card>
+                        <InlineGrid columns={2} alignItems="center">
+                          <Text as="h2" variant="headingMd">
+                            {bundleState.steps.length} steps total
+                          </Text>
+                          <Button
+                            onClick={addStep}
+                            variant="primary"
+                            icon={PlusIcon}
+                            fullWidth
+                          >
+                            Add step
+                          </Button>
+                        </InlineGrid>
+                      </Card>
+                      <Divider borderColor="border-inverse" />
                       <BundleSettingsComponent
                         bundleSettings={bundleState.bundleSettings}
                         updateSettings={updateSettings}
                       />
+                      <Divider borderColor="transparent" /> */}
                     </BlockStack>
                   </Form>
                 </Layout.Section>
                 <Layout.Section>
-                  <Card>
-                    <BlockStack>
-                      <Text as="h2" variant="headingMd">
-                        Bundle steps
-                      </Text>
-                      {bundleSteps.length > 0 ? (
-                        <DataTable
-                          columnContentTypes={["text", "text", "text", "text"]}
-                          headings={[
-                            "Step number",
-                            "Title",
-                            "Type",
-                            "Rearange",
-                            "Actions",
-                          ]}
-                          rows={bundleSteps.map(
-                            (step: BundleStepBasicResources) => {
-                              return [
-                                step.stepNumber,
-                                step.title,
-                                step.stepType === StepType.PRODUCT
-                                  ? "Product step"
-                                  : "Content step",
-                                <ButtonGroup>
-                                  <Button
-                                    icon={ArrowDownIcon}
-                                    size="slim"
-                                    variant="plain"
-                                    onClick={() => {
-                                      {
-                                      }
-                                    }}
-                                  />
-                                  <Button
-                                    icon={ArrowUpIcon}
-                                    size="slim"
-                                    variant="plain"
-                                    onClick={() => {
-                                      {
-                                      }
-                                    }}
-                                  />
-                                </ButtonGroup>,
-                                <ButtonGroup>
-                                  <Button
-                                    icon={DeleteIcon}
-                                    variant="secondary"
-                                    tone="critical"
-                                    onClick={() => {}}
-                                  >
-                                    Delete
-                                  </Button>
-
-                                  <Button
-                                    icon={PageAddIcon}
-                                    variant="secondary"
-                                    onClick={() => {}}
-                                  >
-                                    Duplicate
-                                  </Button>
-
-                                  <Button
-                                    icon={EditIcon}
-                                    variant="primary"
-                                    url={`/bundles/edit/step/${step.id}`}
-                                  >
-                                    Edit
-                                  </Button>
-                                </ButtonGroup>,
-                              ];
-                            },
-                          )}
-                        ></DataTable>
-                      ) : (
-                        <EmptyState
-                          heading="Let’s create the first step for your customers to take!"
-                          action={{
-                            content: "Create step",
-                            icon: PlusIcon,
-                            onAction: () => {},
-                          }}
-                          fullWidth
-                          image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
-                        >
-                          <p>
-                            Your customers will be able to select products or
-                            add content (like text or images) at each step to
-                            their bundle.
-                          </p>
-                        </EmptyState>
-                      )}
-                    </BlockStack>
-                  </Card>
+                  <div
+                    ref={previewBoxRef}
+                    className={`${sticky.isSticky ? styles.sticky : ""}`}
+                  >
+                    <BundlePreview />
+                  </div>
                 </Layout.Section>
               </Layout>
             </BlockStack>

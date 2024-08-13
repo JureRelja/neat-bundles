@@ -26,56 +26,56 @@ export default function Index({
   bundleSettings: BundleSettingsWithAllResources;
   updateSettings: (newSettings: BundleSettingsWithAllResources) => void;
 }) {
-  //Left column colors
-  const colorsLeft = useMemo(() => {
+  // colors
+  const colors = useMemo(() => {
     return [
       {
-        hex: bundleSettings.bundleColors.stepsIcon,
+        hex: bundleSettings.bundleColors?.stepsIcon,
         label: "Steps icon color",
         id: "stepsIcon",
       },
       {
-        hex: bundleSettings.bundleColors.addToBundleBtn,
+        hex: bundleSettings.bundleColors?.addToBundleBtn,
         label: '"Add to bundle" btn',
         id: "addToBundleBtn",
       },
       {
-        hex: bundleSettings.bundleColors.addToBundleText,
+        hex: bundleSettings.bundleColors?.addToBundleText,
         label: '"Add to bundle" text',
         id: "addToBundleText",
       },
       {
-        hex: bundleSettings.bundleColors.nextStepBtn,
+        hex: bundleSettings.bundleColors?.nextStepBtn,
         label: '"Next step" btn',
         id: "nextStepBtn",
       },
       {
-        hex: bundleSettings.bundleColors.nextStepBtnText,
+        hex: bundleSettings.bundleColors?.nextStepBtnText,
         label: '"Next step" btn text',
         id: "nextStepBtnText",
       },
       {
-        hex: bundleSettings.bundleColors.titleAndDESC,
+        hex: bundleSettings.bundleColors?.titleAndDESC,
         label: '"Title & description"',
         id: "titleAndDESC",
       },
       {
-        hex: bundleSettings.bundleColors.viewProductBtn,
+        hex: bundleSettings.bundleColors?.viewProductBtn,
         label: '"View products" btn',
         id: "viewProductsBtn",
       },
       {
-        hex: bundleSettings.bundleColors.removeProductsBtn,
+        hex: bundleSettings.bundleColors?.removeProductsBtn,
         label: '"Remove" btn',
         id: "removeProductBtn",
       },
       {
-        hex: bundleSettings.bundleColors.prevStepBtn,
+        hex: bundleSettings.bundleColors?.prevStepBtn,
         label: '"Previous" btn',
         id: "prevStepBtn",
       },
       {
-        hex: bundleSettings.bundleColors.prevStepBtnText,
+        hex: bundleSettings.bundleColors?.prevStepBtnText,
         label: '"Previous" btn text',
         id: "prevStepBtnText",
       },
@@ -83,6 +83,9 @@ export default function Index({
   }, [bundleSettings.bundleColors]);
 
   const updateColor = (newHexColor: string, colorId: string) => {
+    if (!bundleSettings.bundleColors) {
+      return;
+    }
     updateSettings({
       ...bundleSettings,
       bundleColors: {
@@ -91,6 +94,10 @@ export default function Index({
       },
     });
   };
+
+  if (!bundleSettings.bundleColors) {
+    return null;
+  }
 
   return (
     <Card>
@@ -281,12 +288,16 @@ individual products.)`,
         <BlockStack gap={GapInsideSection}>
           <Text as="p">Colors</Text>
           <InlineGrid columns={2} gap={HorizontalGap}>
-            {colorsLeft.map(
-              (color: { hex: string; label: string; id: string }) => (
+            {colors.map(
+              (color: {
+                hex: string | undefined;
+                label: string;
+                id: string;
+              }) => (
                 <ColorPicker
                   key={color.id}
                   label={color.label}
-                  color={color.hex} //Hex color code
+                  color={color.hex as string} //Hex color code
                   colorId={color.id}
                   updateColor={updateColor}
                 />
@@ -302,9 +313,11 @@ individual products.)`,
               <TextField
                 label='"Add to bundle" btn label'
                 name={`addToBundleBtn-${bundleSettings.id}`}
-                value={bundleSettings.bundleLabels.addToBundleBtn}
+                value={bundleSettings.bundleLabels?.addToBundleBtn}
                 autoComplete="off"
                 onChange={(newValue: string) => {
+                  if (!bundleSettings.bundleLabels) return;
+
                   updateSettings({
                     ...bundleSettings,
                     bundleLabels: {
@@ -317,10 +330,11 @@ individual products.)`,
               <TextField
                 label='"Next" button label'
                 name={`nextStepBtn-${bundleSettings.id}`}
-                value={bundleSettings.bundleLabels.nextStepBtn}
+                value={bundleSettings.bundleLabels?.nextStepBtn}
                 type="text"
                 autoComplete="off"
                 onChange={(newValue: string) => {
+                  if (!bundleSettings.bundleLabels) return;
                   updateSettings({
                     ...bundleSettings,
                     bundleLabels: {
@@ -335,10 +349,11 @@ individual products.)`,
               <TextField
                 label='"View product" btn label'
                 name={`viewProductBtn-${bundleSettings.id}`}
-                value={bundleSettings.bundleLabels.viewProductBtn}
+                value={bundleSettings.bundleLabels?.viewProductBtn}
                 type="text"
                 autoComplete="off"
                 onChange={(newValue: string) => {
+                  if (!bundleSettings.bundleLabels) return;
                   updateSettings({
                     ...bundleSettings,
                     bundleLabels: {
@@ -350,11 +365,12 @@ individual products.)`,
               />
               <TextField
                 label='"Previous" button label'
-                value={bundleSettings.bundleLabels.prevStepBtn}
+                value={bundleSettings.bundleLabels?.prevStepBtn}
                 type="text"
                 name={`prevStepBtn-${bundleSettings.id}`}
                 autoComplete="off"
                 onChange={(newValue: string) => {
+                  if (!bundleSettings.bundleLabels) return;
                   updateSettings({
                     ...bundleSettings,
                     bundleLabels: {

@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 
 export const bundleSettingsInclude = {
   id: true,
+  bundleId: true,
   pricing: true,
   discountType: true,
   discountValue: true,
@@ -10,30 +11,8 @@ export const bundleSettingsInclude = {
   allowBackNavigation: true,
   showOutOfStockProducts: true,
   numOfProductColumns: true,
-  bundleColorsId: true,
-  bundleLabelsId: true,
-  bundleColors: {
-    select: {
-      stepsIcon: true,
-      addToBundleBtn: true,
-      addToBundleText: true,
-      nextStepBtn: true,
-      nextStepBtnText: true,
-      titleAndDESC: true,
-      viewProductBtn: true,
-      removeProductsBtn: true,
-      prevStepBtn: true,
-      prevStepBtnText: true,
-    },
-  },
-  bundleLabels: {
-    select: {
-      addToBundleBtn: true,
-      nextStepBtn: true,
-      prevStepBtn: true,
-      viewProductBtn: true,
-    },
-  },
+  bundleColors: true,
+  bundleLabels: true,
 };
 
 export type BundleSettingsWithAllResources = Prisma.BundleSettingsGetPayload<{
