@@ -11,7 +11,7 @@ export function useSubmitAction(
   const formData = new FormData();
   formData.append("action", action);
 
-  submit(formData, {
+  return submit(formData, {
     method: "POST",
     navigate: navigate,
     action: url,

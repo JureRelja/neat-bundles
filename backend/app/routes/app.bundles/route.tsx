@@ -13,13 +13,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   switch (action) {
     case "createBundle": {
-      const allUserBundles: Bundle[] = await db.bundle.findMany({
-        where: {
-          user: {
-            storeUrl: session.shop,
+      const { _max }: { _max: { id: number | null } } =
+        await db.bundle.aggregate({
+          _max: {
+            id: true,
           },
-        },
-      });
+        });
 
       const bundle: Bundle = await db.bundle.create({
         data: {
@@ -28,9 +27,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
               storeUrl: session.shop,
             },
           },
-          title: "New bundle " + (allUserBundles.length + 1),
+          title: "New bundle " + _max.id,
           bundleSettings: {
-            create: {},
+            create: {
+              bundleColors: {
+                create: {},
+              },
+              bundleLabels: {
+                create: {},
+              },
+            },
           },
           steps: {
             create: [

@@ -1,5 +1,5 @@
 import { Prisma, Bundle } from "@prisma/client";
-import { bundleSettingsInclude } from "./BundleSettings";
+import { bundleSettingsSelect } from "./BundleSettings";
 import { bundleStepBasic } from "./BundleStep";
 
 //Defining bundle payload
@@ -9,7 +9,7 @@ export const bundleSelect = {
   published: true,
   createdAt: true,
   bundleSettings: {
-    select: bundleSettingsInclude,
+    select: bundleSettingsSelect,
   },
   steps: {
     select: bundleStepBasic,
@@ -33,12 +33,3 @@ type BundleWithoutDate = Omit<Bundle, "createdAt">;
 export type BundleWithStringDate = BundleWithoutDate & {
   createdAt: string;
 };
-
-// export const bundleCreatePayload = {
-//   ...bundleSelect,
-//   bundleSttings: {
-//     select: {
-//       id: true,
-//     },
-//   },
-// } satisfies Prisma.BundleSelect;

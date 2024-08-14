@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 
-export const bundleSettingsInclude = {
+export const bundleSettingsSelect = {
   id: true,
   bundleId: true,
   pricing: true,
@@ -16,5 +16,5 @@ export const bundleSettingsInclude = {
 };
 
 export type BundleSettingsWithAllResources = Prisma.BundleSettingsGetPayload<{
-  include: typeof bundleSettingsInclude;
+  select: typeof bundleSettingsSelect;
 }>;

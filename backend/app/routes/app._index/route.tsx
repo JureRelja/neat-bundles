@@ -1,10 +1,4 @@
-import {
-  redirect,
-  useNavigation,
-  json,
-  useLoaderData,
-  Link,
-} from "@remix-run/react";
+import { useNavigation, json, useLoaderData, Link } from "@remix-run/react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import {
   Page,
@@ -36,13 +30,9 @@ import {
 import { authenticate } from "../../shopify.server";
 import db from "../../db.server";
 import { Bundle, User } from "@prisma/client";
-import {
-  BundlePayload,
-  bundleSelect,
-  BundleWithStringDate,
-} from "../../types/Bundle";
+import { BundleWithStringDate } from "../../types/Bundle";
 import { JsonData } from "../../types/jsonData";
-import { useSubmitAction } from "~/hooks/useSubmitAction";
+import { useSubmitAction } from "../../hooks/useSubmitAction";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session, admin } = await authenticate.admin(request);
@@ -82,6 +72,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         storeUrl: session.shop,
       },
     },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 
   return json(
@@ -98,129 +91,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   );
 };
 
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const { session } = await authenticate.admin(request);
-
-  const formData = await request.formData();
-  const action = formData.get("action");
-
-  switch (action) {
-    case "createBundle": {
-      const allUserBundles: Bundle[] = await prisma.bundle.findMany({
-        where: {
-          user: {
-            storeUrl: session.shop,
-          },
-        },
-      });
-
-      const bundle: Bundle = await prisma.bundle.create({
-        data: {
-          user: {
-            connect: {
-              storeUrl: session.shop,
-            },
-          },
-          title: "New bundle " + (allUserBundles.length + 1),
-          bundleSettings: {
-            create: {},
-          },
-          steps: {
-            create: [
-              {
-                stepNumber: 1,
-                title: "Step 2",
-                stepType: "PRODUCT",
-                productStep: {
-                  create: {},
-                },
-              },
-              {
-                stepNumber: 2,
-                title: "Step 2",
-                stepType: "PRODUCT",
-                productStep: {
-                  create: {},
-                },
-              },
-              {
-                stepNumber: 3,
-                title: "Step 3",
-                stepType: "PRODUCT",
-                productStep: {
-                  create: {},
-                },
-              },
-            ],
-          },
-        },
-      });
-      return redirect(`/app/bundles/${bundle.id}`);
-    }
-    case "deleteBundle":
-      const bundleId = formData.get("bundleId");
-
-      try {
-        //Delete the bundle along with its steps, contentInputs, bundleSettings, bundleColors, and bundleLabels
-        await prisma.bundle.delete({
-          where: {
-            id: Number(bundleId),
-          },
-        });
-      } catch (error) {
-        console.log(error);
-        return json(
-          {
-            ...new JsonData(
-              false,
-              "error",
-              "There was an error with your request",
-              "There was an error deleting the bundle",
-              error,
-            ),
-          },
-          { status: 400 },
-        );
-      }
-
-      return redirect("/app/bundles", { status: 200 });
-    case "duplicateBundle":
-      const bundleToDuplicate: BundlePayload | null =
-        await prisma.bundle.findUnique({
-          where: {
-            id: Number(formData.get("bundleId")),
-          },
-          select: bundleSelect,
-        });
-
-      if (!bundleToDuplicate) {
-        return json(
-          {
-            ...new JsonData(
-              false,
-              "error",
-              "There was an error with your request",
-              "The bundle you are trying to duplicate does not exist",
-            ),
-          },
-          { status: 400 },
-        );
-      }
-    default: {
-      return json(
-        {
-          ...new JsonData(
-            true,
-            "success",
-            "This is the default action that doesn't do anything.",
-          ),
-        },
-        { status: 200 },
-      );
-    }
-  }
-};
-
 export default function Index() {
   const nav = useNavigation();
   const isLoading = nav.state !== "idle";
@@ -229,11 +99,6 @@ export default function Index() {
     useLoaderData<typeof loader>();
 
   const bundles: BundleWithStringDate[] = loaderResponse.data;
-
-  //Sorting the bundles by created date
-  const sortedBundles: BundleWithStringDate[] = bundles.sort((a, b) => {
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
 
   return (
     <>
@@ -277,9 +142,13 @@ export default function Index() {
             <Button
               icon={PlusIcon}
               variant="primary"
-              onClick={() =>
-                useSubmitAction("createBundle", true, "/app/bundles")
-              }
+              onClick={() => {
+                const act = useSubmitAction(
+                  "createBundle",
+                  true,
+                  "/app/bundles",
+                );
+              }}
             >
               Create bundle
             </Button>
@@ -316,68 +185,66 @@ export default function Index() {
                           "Actions",
                           "Preview",
                         ]}
-                        rows={sortedBundles.map(
-                          (bundle: BundleWithStringDate) => {
-                            return [
-                              <Link to={`/app/bundles/${bundle.id}`}>
-                                {bundle.title}
-                              </Link>,
-                              bundle.createdAt.split("T")[0],
-                              bundle.published ? (
-                                <Badge tone="success">Active</Badge>
-                              ) : (
-                                <Badge tone="info">Draft</Badge>
-                              ),
+                        rows={bundles.map((bundle: BundleWithStringDate) => {
+                          return [
+                            <Link to={`/app/bundles/${bundle.id}`}>
+                              {bundle.title}
+                            </Link>,
+                            bundle.createdAt.split("T")[0],
+                            bundle.published ? (
+                              <Badge tone="success">Active</Badge>
+                            ) : (
+                              <Badge tone="info">Draft</Badge>
+                            ),
 
-                              <ButtonGroup>
-                                <Button
-                                  icon={DeleteIcon}
-                                  variant="secondary"
-                                  tone="critical"
-                                  onClick={() =>
-                                    useSubmitAction(
-                                      "deleteBundle",
-                                      true,
-                                      `/app/bundles/${bundle.id}`,
-                                    )
-                                  }
-                                >
-                                  Delete
-                                </Button>
-
-                                <Button
-                                  icon={PageAddIcon}
-                                  variant="secondary"
-                                  onClick={() =>
-                                    useSubmitAction(
-                                      "duplicateBundle",
-                                      true,
-                                      `/app/bundles/${bundle.id}`,
-                                    )
-                                  }
-                                >
-                                  Duplicate
-                                </Button>
-
-                                <Button
-                                  icon={EditIcon}
-                                  variant="primary"
-                                  url={`/app/bundles/${bundle.id}`}
-                                >
-                                  Edit
-                                </Button>
-                              </ButtonGroup>,
+                            <ButtonGroup>
                               <Button
-                                icon={ExternalIcon}
+                                icon={DeleteIcon}
                                 variant="secondary"
-                                tone="success"
-                                onClick={() => {}}
+                                tone="critical"
+                                onClick={() =>
+                                  useSubmitAction(
+                                    "deleteBundle",
+                                    true,
+                                    `/app/bundles/${bundle.id}`,
+                                  )
+                                }
                               >
-                                Preview
-                              </Button>,
-                            ];
-                          },
-                        )}
+                                Delete
+                              </Button>
+
+                              <Button
+                                icon={PageAddIcon}
+                                variant="secondary"
+                                onClick={() =>
+                                  useSubmitAction(
+                                    "duplicateBundle",
+                                    true,
+                                    `/app/bundles/${bundle.id}`,
+                                  )
+                                }
+                              >
+                                Duplicate
+                              </Button>
+
+                              <Button
+                                icon={EditIcon}
+                                variant="primary"
+                                url={`/app/bundles/${bundle.id}`}
+                              >
+                                Edit
+                              </Button>
+                            </ButtonGroup>,
+                            <Button
+                              icon={ExternalIcon}
+                              variant="secondary"
+                              tone="success"
+                              onClick={() => {}}
+                            >
+                              Preview
+                            </Button>,
+                          ];
+                        })}
                       ></DataTable>
                     ) : (
                       <EmptyState

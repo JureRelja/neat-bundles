@@ -55,7 +55,7 @@ import { useSubmitAction } from "~/hooks/useSubmitAction";
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
 
-  const bundle: BundlePayload | null = await db.bundle.findFirst({
+  const bundle: BundlePayload | null = await db.bundle.findUnique({
     where: {
       id: Number(params.bundleid),
     },
@@ -247,7 +247,7 @@ export default function Index() {
   //Showing the save bar
   useEffect(() => {
     return () => {
-      shopify.saveBar.hide("my-save-bar");
+      //shopify.saveBar.hide("my-save-bar");
     };
   }, []);
 
@@ -257,6 +257,7 @@ export default function Index() {
         <SkeletonPage primaryAction fullWidth></SkeletonPage>
       ) : (
         <>
+          {/* Modal to alert the user that he can't have more tha 5 steps in one bundle. */}
           <Modal id="no-more-steps-modal">
             <Box padding="300">
               <Text as="p">
@@ -291,31 +292,17 @@ export default function Index() {
               },
             }}
             title={`Edit bundle - ` + loaderReponse.data.title}
-            primaryAction={{
-              content: "Publish",
-              onAction: () => submitBundle(true),
-            }}
-            secondaryActions={[
-              {
-                content: "Save as draft",
-                onAction: () => submitBundle(false),
-              },
-            ]}
           >
-            <BlockStack gap={GapBetweenSections}>
-              <Layout>
-                <Layout.Section variant="oneThird">
-                  <Form
-                    method="POST"
-                    data-data-discard-confirmation
-                    data-save-bar="my-save-bar"
-                  >
-                    <input type="hidden" name="action" value="updateBundle" />
-                    <input
-                      type="hidden"
-                      name="bundle"
-                      value={JSON.stringify(bundleState)}
-                    />
+            <Form method="POST" data-discard-confirmation data-save-bar>
+              <input type="hidden" name="action" value="updateBundle" />
+              <input
+                type="hidden"
+                name="bundle"
+                value={JSON.stringify(bundleState)}
+              />
+              <BlockStack gap={GapBetweenSections}>
+                <Layout>
+                  <Layout.Section variant="oneThird">
                     <BlockStack gap={GapBetweenSections}>
                       <Card>
                         <BlockStack gap={GapBetweenTitleAndContent}>
@@ -339,170 +326,174 @@ export default function Index() {
                           />
                         </BlockStack>
                       </Card>
-                      {bundleState.bundleSettings && (
-                        <BundleSettingsComponent
-                          bundleSettings={bundleState.bundleSettings}
-                          updateSettings={updateSettings}
-                        />
-                      )}
+                      {/* Settings for this bundle */}
+                      <BundleSettingsComponent
+                        bundleSettings={bundleState.bundleSettings}
+                        updateSettings={updateSettings}
+                      />
                     </BlockStack>
-                  </Form>
-                </Layout.Section>
-                <Layout.Section>
-                  <Card>
-                    <BlockStack>
-                      <InlineStack align="space-between">
-                        <Text as="h2" variant="headingMd">
-                          Bundle steps
-                        </Text>
+                  </Layout.Section>
+                  <Layout.Section>
+                    <Card>
+                      <BlockStack>
+                        <InlineStack align="space-between">
+                          <Text as="h2" variant="headingMd">
+                            Bundle steps
+                          </Text>
 
-                        <Button
-                          icon={PlusIcon}
-                          size="slim"
-                          variant="primary"
-                          onClick={addStep}
-                        >
-                          Add step
-                        </Button>
-                      </InlineStack>
-                      {bundleSteps.length > 0 ? (
-                        <DataTable
-                          columnContentTypes={["text", "text", "text", "text"]}
-                          headings={[
-                            "Step number",
-                            "Title",
-                            "Type",
-                            "Rearange",
-                            "Actions",
-                          ]}
-                          rows={bundleSteps.map(
-                            (step: BundleStepBasicResources) => {
-                              return [
-                                step.stepNumber,
-                                <Link
-                                  to={`/app/bundles/${params.bundleid}/steps/${step.id}`}
-                                >
-                                  {step.title}
-                                </Link>,
-                                step.stepType === StepType.PRODUCT ? (
-                                  <Badge tone="warning">Product step</Badge>
-                                ) : (
-                                  <Badge>Content step</Badge>
-                                ),
-                                <ButtonGroup>
-                                  <Button
-                                    icon={ArrowDownIcon}
-                                    size="slim"
-                                    variant="plain"
-                                    onClick={() => {
-                                      {
-                                      }
-                                    }}
-                                  />
-                                  <Button
-                                    icon={ArrowUpIcon}
-                                    size="slim"
-                                    variant="plain"
-                                    onClick={() => {
-                                      {
-                                      }
-                                    }}
-                                  />
-                                </ButtonGroup>,
-                                <ButtonGroup>
-                                  <Button
-                                    icon={DeleteIcon}
-                                    variant="secondary"
-                                    tone="critical"
-                                    onClick={() => {
-                                      useSubmitAction(
-                                        "deleteStep",
-                                        true,
-                                        `/app/bundles/${params.bundleid}/steps/${step.id}`,
-                                      );
-                                    }}
+                          <Button
+                            icon={PlusIcon}
+                            size="slim"
+                            variant="primary"
+                            onClick={addStep}
+                          >
+                            Add step
+                          </Button>
+                        </InlineStack>
+                        {bundleSteps.length > 0 ? (
+                          <DataTable
+                            columnContentTypes={[
+                              "text",
+                              "text",
+                              "text",
+                              "text",
+                            ]}
+                            headings={[
+                              "Step number",
+                              "Title",
+                              "Type",
+                              "Rearange",
+                              "Actions",
+                            ]}
+                            rows={bundleSteps.map(
+                              (step: BundleStepBasicResources) => {
+                                return [
+                                  step.stepNumber,
+                                  <Link
+                                    to={`/app/bundles/${params.bundleid}/steps/${step.id}`}
                                   >
-                                    Delete
-                                  </Button>
+                                    {step.title}
+                                  </Link>,
+                                  step.stepType === StepType.PRODUCT ? (
+                                    <Badge tone="warning">Product step</Badge>
+                                  ) : (
+                                    <Badge>Content step</Badge>
+                                  ),
+                                  <ButtonGroup>
+                                    <Button
+                                      icon={ArrowDownIcon}
+                                      size="slim"
+                                      variant="plain"
+                                      onClick={() => {
+                                        {
+                                        }
+                                      }}
+                                    />
+                                    <Button
+                                      icon={ArrowUpIcon}
+                                      size="slim"
+                                      variant="plain"
+                                      onClick={() => {
+                                        {
+                                        }
+                                      }}
+                                    />
+                                  </ButtonGroup>,
+                                  <ButtonGroup>
+                                    <Button
+                                      icon={DeleteIcon}
+                                      variant="secondary"
+                                      tone="critical"
+                                      onClick={() => {
+                                        useSubmitAction(
+                                          "deleteStep",
+                                          true,
+                                          `/app/bundles/${params.bundleid}/steps/${step.id}`,
+                                        );
+                                      }}
+                                    >
+                                      Delete
+                                    </Button>
 
-                                  <Button
-                                    icon={PageAddIcon}
-                                    variant="secondary"
-                                    onClick={() => {
-                                      useSubmitAction(
-                                        "duplicateStep",
-                                        true,
-                                        `/app/bundles/${params.bundleid}/steps/${step.id}`,
-                                      );
-                                    }}
-                                  >
-                                    Duplicate
-                                  </Button>
+                                    <Button
+                                      icon={PageAddIcon}
+                                      variant="secondary"
+                                      onClick={() => {
+                                        useSubmitAction(
+                                          "duplicateStep",
+                                          true,
+                                          `/app/bundles/${params.bundleid}/steps/${step.id}`,
+                                        );
+                                      }}
+                                    >
+                                      Duplicate
+                                    </Button>
 
-                                  <Button
-                                    icon={EditIcon}
-                                    variant="primary"
-                                    url={`/app/bundles/${params.bundleid}/steps/${step.id}`}
-                                  >
-                                    Edit
-                                  </Button>
-                                </ButtonGroup>,
-                              ];
-                            },
-                          )}
-                        ></DataTable>
-                      ) : (
-                        <EmptyState
-                          heading="Let’s create the first step for your customers to take!"
-                          action={{
-                            content: "Create step",
-                            icon: PlusIcon,
-                            onAction: () => {
-                              useSubmitAction(
-                                "createStep",
-                                true,
-                                `/app/bundles/${params.bundleid}/steps`,
-                              );
-                            },
-                          }}
-                          fullWidth
-                          image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
-                        >
-                          <p>
-                            Your customers will be able to select products or
-                            add content (like text or images) at each step to
-                            their bundle.
-                          </p>
-                        </EmptyState>
-                      )}
-                    </BlockStack>
-                  </Card>
-                </Layout.Section>
-              </Layout>
-            </BlockStack>
-            <PageActions
-              primaryAction={{
-                content: "Publish",
-                onAction: () => submitBundle(true),
-              }}
-              secondaryActions={[
-                {
-                  content: "Delete",
-                  destructive: true,
-                  onAction: () => {
-                    useSubmitAction(
-                      "deleteBundle",
-                      true,
-                      `/app/bundles/${params.bundleid}`,
-                    );
+                                    <Button
+                                      icon={EditIcon}
+                                      variant="primary"
+                                      url={`/app/bundles/${params.bundleid}/steps/${step.id}`}
+                                    >
+                                      Edit
+                                    </Button>
+                                  </ButtonGroup>,
+                                ];
+                              },
+                            )}
+                          ></DataTable>
+                        ) : (
+                          <EmptyState
+                            heading="Let’s create the first step for your customers to take!"
+                            action={{
+                              content: "Create step",
+                              icon: PlusIcon,
+                              onAction: () => {
+                                useSubmitAction(
+                                  "createStep",
+                                  true,
+                                  `/app/bundles/${params.bundleid}/steps`,
+                                );
+                              },
+                            }}
+                            fullWidth
+                            image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+                          >
+                            <p>
+                              Your customers will be able to select products or
+                              add content (like text or images) at each step to
+                              their bundle.
+                            </p>
+                          </EmptyState>
+                        )}
+                      </BlockStack>
+                    </Card>
+                  </Layout.Section>
+                </Layout>
+              </BlockStack>
+              <PageActions
+                primaryAction={{
+                  content: "Publish",
+                  type: "submit",
+                }}
+                secondaryActions={[
+                  {
+                    content: "Delete",
+                    destructive: true,
+                    onAction: () => {
+                      useSubmitAction(
+                        "deleteBundle",
+                        true,
+                        `/app/bundles/${params.bundleid}`,
+                      );
+                    },
                   },
-                },
-                {
-                  content: "Save as draft",
-                  onAction: () => submitBundle(false),
-                },
-              ]}
-            />
+                  {
+                    content: "Save as draft",
+                    onAction: () => submitBundle(false),
+                  },
+                ]}
+              />
+            </Form>
           </Page>
         </>
       )}

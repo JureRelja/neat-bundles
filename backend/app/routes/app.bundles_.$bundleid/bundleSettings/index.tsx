@@ -23,9 +23,12 @@ export default function Index({
   bundleSettings,
   updateSettings,
 }: {
-  bundleSettings: BundleSettingsWithAllResources;
+  bundleSettings: BundleSettingsWithAllResources | null;
   updateSettings: (newSettings: BundleSettingsWithAllResources) => void;
 }) {
+  if (!bundleSettings) {
+    return null;
+  }
   // colors
   const colors = useMemo(() => {
     return [
@@ -96,7 +99,8 @@ export default function Index({
   };
 
   if (!bundleSettings.bundleColors) {
-    return null;
+    console.log(bundleSettings);
+    return <p>No settings for this bundle</p>;
   }
 
   return (
