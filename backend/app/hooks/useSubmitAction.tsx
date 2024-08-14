@@ -1,19 +1,21 @@
-import { useSubmit } from "@remix-run/react";
+import { SubmitFunction, useSubmit } from "@remix-run/react";
 
 //Handing the action submit request
-export function useSubmitAction(
+export function useSubmitAction(): (
   action: string,
   navigate: boolean,
   url: string,
-) {
+) => void {
   const submit = useSubmit();
 
-  const formData = new FormData();
-  formData.append("action", action);
+  return (action: string, navigate: boolean, url: string): void => {
+    const formData = new FormData();
+    formData.append("action", action);
 
-  return submit(formData, {
-    method: "POST",
-    navigate: navigate,
-    action: url,
-  });
+    submit(formData, {
+      method: "POST",
+      navigate: navigate,
+      action: url,
+    });
+  };
 }

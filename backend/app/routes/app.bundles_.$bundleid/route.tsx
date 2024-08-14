@@ -190,6 +190,7 @@ export default function Index() {
   const shopify = useAppBridge();
   const isLoading: boolean = nav.state != "idle";
   const params = useParams();
+  const submitAction = useSubmitAction(); //Function for doing the submit action where the only data is action and url
 
   const loaderReponse: JsonData<BundlePayloadDataString> =
     useLoaderData<typeof loader>();
@@ -217,7 +218,7 @@ export default function Index() {
       return;
     }
 
-    useSubmitAction("addStep", true, `/app/bundles/${params.bundleid}`);
+    submitAction("addStep", true, `/app/bundles/${params.bundleid}`);
   };
 
   //Function for updating the settings of the bundle
@@ -405,7 +406,7 @@ export default function Index() {
                                       variant="secondary"
                                       tone="critical"
                                       onClick={() => {
-                                        useSubmitAction(
+                                        submitAction(
                                           "deleteStep",
                                           true,
                                           `/app/bundles/${params.bundleid}/steps/${step.id}`,
@@ -419,7 +420,7 @@ export default function Index() {
                                       icon={PageAddIcon}
                                       variant="secondary"
                                       onClick={() => {
-                                        useSubmitAction(
+                                        submitAction(
                                           "duplicateStep",
                                           true,
                                           `/app/bundles/${params.bundleid}/steps/${step.id}`,
@@ -448,7 +449,7 @@ export default function Index() {
                               content: "Create step",
                               icon: PlusIcon,
                               onAction: () => {
-                                useSubmitAction(
+                                submitAction(
                                   "createStep",
                                   true,
                                   `/app/bundles/${params.bundleid}/steps`,
@@ -473,14 +474,14 @@ export default function Index() {
               <PageActions
                 primaryAction={{
                   content: "Publish",
-                  type: "submit",
+                  onAction: () => submitBundle(true),
                 }}
                 secondaryActions={[
                   {
                     content: "Delete",
                     destructive: true,
                     onAction: () => {
-                      useSubmitAction(
+                      submitAction(
                         "deleteBundle",
                         true,
                         `/app/bundles/${params.bundleid}`,

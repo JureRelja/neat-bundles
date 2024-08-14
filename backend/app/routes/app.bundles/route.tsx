@@ -27,7 +27,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
               storeUrl: session.shop,
             },
           },
-          title: "New bundle " + _max.id,
+          title: `New bundle ${_max.id ? _max.id : ""}`,
           bundleSettings: {
             create: {
               bundleColors: {

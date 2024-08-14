@@ -94,6 +94,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function Index() {
   const nav = useNavigation();
   const isLoading = nav.state !== "idle";
+  const submitAction = useSubmitAction(); //Function for doing the submit action where the only data is action and url
 
   const loaderResponse: JsonData<BundleWithStringDate[]> =
     useLoaderData<typeof loader>();
@@ -143,11 +144,7 @@ export default function Index() {
               icon={PlusIcon}
               variant="primary"
               onClick={() => {
-                const act = useSubmitAction(
-                  "createBundle",
-                  true,
-                  "/app/bundles",
-                );
+                submitAction("createBundle", true, "/app/bundles");
               }}
             >
               Create bundle
@@ -169,6 +166,9 @@ export default function Index() {
               <Layout.Section>
                 <BlockStack gap="500">
                   <Card>
+                    <Text as="p" variant="headingMd">
+                      Bundles
+                    </Text>
                     {bundles.length > 0 ? (
                       <DataTable
                         columnContentTypes={[
@@ -179,7 +179,7 @@ export default function Index() {
                           "text",
                         ]}
                         headings={[
-                          "Bundles",
+                          "Name",
                           "Created",
                           "Status",
                           "Actions",
@@ -202,13 +202,13 @@ export default function Index() {
                                 icon={DeleteIcon}
                                 variant="secondary"
                                 tone="critical"
-                                onClick={() =>
-                                  useSubmitAction(
+                                onClick={() => {
+                                  submitAction(
                                     "deleteBundle",
                                     true,
                                     `/app/bundles/${bundle.id}`,
-                                  )
-                                }
+                                  );
+                                }}
                               >
                                 Delete
                               </Button>
@@ -216,13 +216,13 @@ export default function Index() {
                               <Button
                                 icon={PageAddIcon}
                                 variant="secondary"
-                                onClick={() =>
-                                  useSubmitAction(
+                                onClick={() => {
+                                  submitAction(
                                     "duplicateBundle",
                                     true,
                                     `/app/bundles/${bundle.id}`,
-                                  )
-                                }
+                                  );
+                                }}
                               >
                                 Duplicate
                               </Button>
@@ -253,11 +253,7 @@ export default function Index() {
                           content: "Create bundle",
                           icon: PlusIcon,
                           onAction: () =>
-                            useSubmitAction(
-                              "createBundle",
-                              true,
-                              "/app/bundles",
-                            ),
+                            submitAction("createBundle", true, "/app/bundles"),
                         }}
                         fullWidth
                         image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
