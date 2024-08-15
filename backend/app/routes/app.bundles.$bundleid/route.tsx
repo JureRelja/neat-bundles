@@ -37,17 +37,15 @@ import {
 } from "@shopify/polaris-icons";
 import { useAppBridge, Modal, TitleBar } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
-import { useEffect, useState } from "react";
-import BundleSettingsComponent from "../app.bundles.$bundleid.settings/index-old";
+import { useState } from "react";
 import { GapBetweenSections, GapBetweenTitleAndContent } from "../../constants";
 import db from "../../db.server";
 import { StepType } from "@prisma/client";
 import { BundleStepBasicResources } from "../../types/BundleStep";
-import { BundleSettingsWithAllResources } from "../../types/BundleSettings";
 import {
-  BundleAndStepsBasicClient,
-  BundleAndStepsBasicServer,
-  bundleAndSteps,
+  BundleFullStepBasicClient,
+  BundleFullStepBasicServer,
+  inclBundleFullStepsBasic,
 } from "../../types/Bundle";
 import { JsonData } from "../../types/jsonData";
 import { useSubmitAction } from "~/hooks/useSubmitAction";
@@ -55,11 +53,11 @@ import { useSubmitAction } from "~/hooks/useSubmitAction";
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
 
-  const bundle: BundleAndStepsBasicServer | null = await db.bundle.findUnique({
+  const bundle: BundleFullStepBasicServer | null = await db.bundle.findUnique({
     where: {
       id: Number(params.bundleid),
     },
-    select: bundleAndSteps,
+    include: inclBundleFullStepsBasic,
   });
 
   if (!bundle) {
@@ -109,12 +107,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       return redirect("/app");
     }
     case "duplicateBundle":
-      const bundleToDuplicate: BundleAndStepsBasicServer | null =
+      const bundleToDuplicate: BundleFullStepBasicServer | null =
         await db.bundle.findUnique({
           where: {
             id: Number(params.bundleid),
           },
-          select: bundleAndSteps,
+          include: inclBundleFullStepsBasic,
         });
 
       if (!bundleToDuplicate) {
@@ -138,7 +136,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
     //Updating the bundle
     case "updateBundle":
-      const bundleData: BundleAndStepsBasicClient = JSON.parse(
+      const bundleData: BundleFullStepBasicClient = JSON.parse(
         formData.get("bundle") as string,
       );
 
@@ -192,10 +190,10 @@ export default function Index() {
   const params = useParams();
   const submitAction = useSubmitAction(); //Function for doing the submit action where the only data is action and url
 
-  const loaderReponse: JsonData<BundleAndStepsBasicClient> =
+  const loaderReponse: JsonData<BundleFullStepBasicClient> =
     useLoaderData<typeof loader>();
 
-  const [bundleState, setBundleState] = useState<BundleAndStepsBasicClient>(
+  const [bundleState, setBundleState] = useState<BundleFullStepBasicClient>(
     loaderReponse.data,
   );
   const bundleSteps: BundleStepBasicResources[] = bundleState.steps.sort(
@@ -204,7 +202,7 @@ export default function Index() {
   );
 
   //Function for checking if there are free steps and displaying a modal if there are not
-  const thereAreFreeSteps = (bundle: BundleAndStepsBasicClient): boolean => {
+  const thereAreFreeSteps = (bundle: BundleFullStepBasicClient): boolean => {
     if (bundle.steps.length >= 5) {
       shopify.modal.show("no-more-steps-modal");
       return false;
@@ -221,17 +219,6 @@ export default function Index() {
     submitAction("addStep", true, `/app/bundles/${params.bundleid}`);
   };
 
-  //Function for updating the settings of the bundle
-  const updateSettings = (
-    newBundleSettings: BundleSettingsWithAllResources,
-  ): void => {
-    setBundleState(
-      (prevBundle: BundleAndStepsBasicClient): BundleAndStepsBasicClient => {
-        return { ...prevBundle, bundleSettings: newBundleSettings };
-      },
-    );
-  };
-
   //Submiting the form
   const submitBundle = async (publish: boolean): Promise<void> => {
     await shopify.saveBar.leaveConfirmation();
@@ -246,13 +233,6 @@ export default function Index() {
       method: "POST",
     });
   };
-
-  //Showing the save bar
-  useEffect(() => {
-    return () => {
-      //shopify.saveBar.hide("my-save-bar");
-    };
-  }, []);
 
   return (
     <>
@@ -316,7 +296,7 @@ export default function Index() {
                             value={bundleState.title}
                             onChange={(newTitile) => {
                               setBundleState(
-                                (prevBundle: BundleAndStepsBasicClient) => {
+                                (prevBundle: BundleFullStepBasicClient) => {
                                   return { ...prevBundle, title: newTitile };
                                 },
                               );
@@ -363,7 +343,9 @@ export default function Index() {
                                     <Link
                                       to={`/app/bundles/${params.bundleid}/steps/${step.id}`}
                                     >
-                                      {step.title}
+                                      <Text as="p" tone="base">
+                                        {step.title}
+                                      </Text>
                                     </Link>,
                                     step.stepType === StepType.PRODUCT ? (
                                       <Badge tone="warning">Product step</Badge>

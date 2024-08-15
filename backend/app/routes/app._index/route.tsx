@@ -1,22 +1,20 @@
 import { useNavigation, json, useLoaderData, Link } from "@remix-run/react";
-import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import {
   Page,
   Card,
   Button,
   BlockStack,
-  Layout,
   EmptyState,
   Banner,
+  Text,
   Box,
   MediaCard,
   VideoThumbnail,
-  Divider,
   SkeletonPage,
   SkeletonBodyText,
   SkeletonDisplayText,
   DataTable,
-  Text,
   ButtonGroup,
   Badge,
 } from "@shopify/polaris";
@@ -26,12 +24,12 @@ import {
   EditIcon,
   DeleteIcon,
   PageAddIcon,
+  SettingsIcon,
 } from "@shopify/polaris-icons";
 import { authenticate } from "../../shopify.server";
 import db from "../../db.server";
-import { Bundle, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import {
-  BundleBasic,
   BundleAndStepsBasicServer,
   BundleAndStepsBasicClient,
   bundleAndSteps,
@@ -155,25 +153,27 @@ export default function Index() {
                   columnContentTypes={["text", "text", "text", "text", "text"]}
                   headings={[
                     "Name",
-                    "Created",
                     "Steps",
                     "Status",
                     "Actions",
+                    "Settings",
                     "Preview",
                   ]}
                   rows={bundles.map((bundle: BundleAndStepsBasicClient) => {
                     return [
                       <Link to={`/app/bundles/${bundle.id}`}>
-                        {bundle.title}
+                        <Text as="p" tone="base">
+                          {bundle.title}
+                        </Text>
                       </Link>,
-                      bundle.createdAt.split("T")[0],
                       bundle.steps.length,
-                      bundle.published ? (
-                        <Badge tone="success">Active</Badge>
-                      ) : (
-                        <Badge tone="info">Draft</Badge>
-                      ),
-
+                      <Link to={`/app/bundles/${bundle.id}`}>
+                        {bundle.published ? (
+                          <Badge tone="success">Active</Badge>
+                        ) : (
+                          <Badge tone="info">Draft</Badge>
+                        )}
+                      </Link>,
                       <ButtonGroup>
                         <Button
                           icon={DeleteIcon}
@@ -212,6 +212,14 @@ export default function Index() {
                           Edit
                         </Button>
                       </ButtonGroup>,
+                      <Button
+                        icon={SettingsIcon}
+                        variant="secondary"
+                        tone="success"
+                        url={`/app/bundles/${bundle.id}`}
+                      >
+                        Settings
+                      </Button>,
                       <Button
                         icon={ExternalIcon}
                         variant="secondary"

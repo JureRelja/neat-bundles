@@ -14,10 +14,6 @@ export type BundleStepBasicResources = Prisma.BundleStepGetPayload<{
 
 //Budnle step with all resources
 export const bundleStepFull = {
-  id: true,
-  stepNumber: true,
-  title: true,
-  stepType: true,
   productStep: true,
   contentStep: true,
 } satisfies Prisma.BundleStepSelect;
@@ -32,7 +28,7 @@ export const selectBundleStepProduct = {
   productStep: true,
 } satisfies Prisma.BundleStepSelect;
 
-export type BundleStepContent = Prisma.BundleStepGetPayload<{
+export type BundleStepProduct = Prisma.BundleStepGetPayload<{
   select: typeof selectBundleStepProduct;
 }>;
 
@@ -42,6 +38,6 @@ export const selectBundleStepContent = {
   contentStep: true,
 } satisfies Prisma.BundleStepSelect;
 
-export type BundleStepProduct = Prisma.BundleStepGetPayload<{
+export type BundleStepContent = Prisma.BundleStepGetPayload<{
   select: typeof selectBundleStepContent;
 }>;
