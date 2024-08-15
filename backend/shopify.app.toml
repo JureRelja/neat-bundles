@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://alaska-recover-robbie-ver.trycloudflare.com"
+application_url = "https://representing-magnificent-color-villages.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "unauthenticated_write_checkouts,write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://alaska-recover-robbie-ver.trycloudflare.com/auth/callback",
-  "https://alaska-recover-robbie-ver.trycloudflare.com/auth/shopify/callback",
-  "https://alaska-recover-robbie-ver.trycloudflare.com/api/auth/callback"
+  "https://representing-magnificent-color-villages.trycloudflare.com/auth/callback",
+  "https://representing-magnificent-color-villages.trycloudflare.com/auth/shopify/callback",
+  "https://representing-magnificent-color-villages.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-04"
 
 [app_proxy]
-url = "https://alaska-recover-robbie-ver.trycloudflare.com"
+url = "https://representing-magnificent-color-villages.trycloudflare.com"
 subpath = "bundle"
 prefix = "apps"
 

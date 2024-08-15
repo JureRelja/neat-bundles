@@ -20,14 +20,18 @@ model User {
 }
 
 model Bundle {
-  id             Int             @id @default(autoincrement())
+  id             Int                @id @default(autoincrement())
   title          String
-  published      Boolean         @default(false)
-  createdAt      DateTime        @default(now())
+  published      Boolean            @default(false)
+  createdAt      DateTime           @default(now())
   steps          BundleStep[]
+  pricing        BundlePricing      @default(FIXED)
+  priceAmount    Float?
+  discountType   BundleDiscountType @default(NO_DISCOUNT)
+  discountValue  Float              @default(0)
   bundleSettings BundleSettings?
   storeUrl       String
-  user           User            @relation(fields: [storeUrl], references: [storeUrl], onDelete: Cascade)
+  user           User               @relation(fields: [storeUrl], references: [storeUrl], onDelete: Cascade)
 }
 
 //Step models
@@ -84,17 +88,14 @@ enum InputType {
 }
 
 model BundleSettings {
-  id                     Int                @id @default(autoincrement())
-  bundle                 Bundle             @relation(fields: [bundleId], references: [id], onDelete: Cascade)
-  bundleId               Int                @unique
-  pricing                BundlePricing      @default(FIXED)
-  discountType           BundleDiscountType @default(NO_DISCOUNT)
-  discountValue          Float              @default(0)
-  displayDiscountBanner  Boolean            @default(false)
-  skipTheCart            Boolean            @default(false)
-  allowBackNavigation    Boolean            @default(true)
-  showOutOfStockProducts Boolean            @default(false)
-  numOfProductColumns    Int                @default(3)
+  id                     Int           @id @default(autoincrement())
+  bundle                 Bundle        @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  bundleId               Int           @unique
+  displayDiscountBanner  Boolean       @default(false)
+  skipTheCart            Boolean       @default(false)
+  allowBackNavigation    Boolean       @default(true)
+  showOutOfStockProducts Boolean       @default(false)
+  numOfProductColumns    Int           @default(3)
   bundleColors           BundleColors?
   bundleLabels           BundleLabels?
 }

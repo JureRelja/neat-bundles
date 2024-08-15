@@ -8,7 +8,7 @@ import {
   Box,
   RGBColor,
 } from "@shopify/polaris";
-import { GapInsideSection } from "../../../constants";
+import { GapInsideSection } from "../../constants";
 import { useState, useEffect } from "react";
 import { hsbToHex, rgbToHsb } from "@shopify/polaris";
 

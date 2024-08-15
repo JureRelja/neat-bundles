@@ -1,35 +1,33 @@
 import { Prisma, Bundle } from "@prisma/client";
-import { bundleSettingsSelect } from "./BundleSettings";
 import { bundleStepBasic } from "./BundleStep";
 
 //Defining bundle payload
-export const bundleSelect = {
+export const bundleAndSteps = {
   id: true,
   title: true,
   published: true,
   createdAt: true,
-  bundleSettings: {
-    select: bundleSettingsSelect,
-  },
   steps: {
     select: bundleStepBasic,
   },
 } satisfies Prisma.BundleSelect;
 
-export type BundlePayload = Prisma.BundleGetPayload<{
-  select: typeof bundleSelect;
+// On the server, date is a Date object
+export type BundleAndStepsBasicServer = Prisma.BundleGetPayload<{
+  select: typeof bundleAndSteps;
 }>;
 
-//Bundle payload with string data
-type BundlePayloadWithoutDate = Omit<BundlePayload, "createdAt">;
+//Bundle payload without 'cratedAt'
+type BundleAndStepsBasic_noDate = Omit<BundleAndStepsBasicServer, "createdAt">;
 
-export type BundlePayloadDataString = BundlePayloadWithoutDate & {
+// On the client, Date object is converted to a string
+export type BundleAndStepsBasicClient = BundleAndStepsBasic_noDate & {
   createdAt: string;
 };
 
-//Basic bundle with string data
-type BundleWithoutDate = Omit<Bundle, "createdAt">;
+//Basic bundle with string 'createdAt' date attribute
+type BundleBasic_temp = Omit<Bundle, "createdAt">;
 
-export type BundleWithStringDate = BundleWithoutDate & {
+export type BundleBasic = BundleBasic_temp & {
   createdAt: string;
 };

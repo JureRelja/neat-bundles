@@ -13,8 +13,8 @@ import {
   GapBetweenSections,
   GapInsideSection,
   HorizontalGap,
-} from "../../../constants";
-import { BundleSettingsWithAllResources } from "../../../types/BundleSettings";
+} from "../../constants";
+import { BundleSettingsWithAllResources } from "../../types/BundleSettings";
 import ColorPicker from "./color-picker";
 import { BundlePricing, BundleDiscountType } from "@prisma/client";
 import { useMemo } from "react";
@@ -105,6 +105,27 @@ export default function Index({
 
   return (
     <Card>
+      <BlockStack gap={GapInsideSection}>
+        <Text as="p">Colors</Text>
+        <InlineGrid columns={2} gap={HorizontalGap}>
+          {colors.map(
+            (color: { hex: string | undefined; label: string; id: string }) => (
+              <ColorPicker
+                key={color.id}
+                label={color.label}
+                color={color.hex as string} //Hex color code
+                colorId={color.id}
+                updateColor={updateColor}
+              />
+            ),
+          )}
+        </InlineGrid>
+      </BlockStack>
+    </Card>
+  );
+
+  return (
+    <Card>
       <BlockStack gap={GapBetweenSections}>
         <Text as="h2" variant="headingMd">
           Bundle Settings
@@ -116,15 +137,32 @@ export default function Index({
             {
               label: "Fixed price",
               value: BundlePricing.FIXED,
-              helpText: `All bundles created will be priced the same. 
-(e.g. use case: you want to sell 5 cookies in a bundle at a same discount, but want your customers to be able to select which cookies they want)`,
+              helpText: (
+                <p>
+                  All bundles created will be priced the same.
+                  <b>
+                    (e.g. use case: you want to sell 5 cookies in a bundle at a
+                    same discount, but want your customers to be able to select
+                    which cookies they want)
+                  </b>
+                </p>
+              ),
             },
             {
               label: "Calculated price ",
               value: BundlePricing.CALCULATED,
-              helpText: `Final price is calculated based on the products that customers selects. 
-(e.g. use case: you want to sell shirt, pants, and a hat in a bundle with a 10% discount on whole order and you want the total price before discount to be a sum of the prices of 
-individual products.)`,
+              helpText: (
+                <p>
+                  Final price is calculated based on the products that customers
+                  selects.
+                  <b>
+                    (e.g. use case: you want to sell shirt, pants, and a hat in
+                    a bundle with a 10% discount on whole order and you want the
+                    total price before discount to be a sum of the prices of
+                    individual products.)
+                  </b>
+                </p>
+              ),
             },
           ]}
           selected={[bundleSettings.pricing]}
@@ -289,26 +327,7 @@ individual products.)`,
           />
         </BlockStack>
         <Divider />
-        <BlockStack gap={GapInsideSection}>
-          <Text as="p">Colors</Text>
-          <InlineGrid columns={2} gap={HorizontalGap}>
-            {colors.map(
-              (color: {
-                hex: string | undefined;
-                label: string;
-                id: string;
-              }) => (
-                <ColorPicker
-                  key={color.id}
-                  label={color.label}
-                  color={color.hex as string} //Hex color code
-                  colorId={color.id}
-                  updateColor={updateColor}
-                />
-              ),
-            )}
-          </InlineGrid>
-        </BlockStack>
+
         <Divider />
         <BlockStack gap={GapInsideSection}>
           <Text as="p">Labels</Text>
