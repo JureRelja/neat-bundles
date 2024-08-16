@@ -59,7 +59,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     const data = await response.json();
 
-    await prisma.user.create({
+    await db.user.create({
       data: {
         ownerName: "",
         storeUrl: session.shop,
@@ -69,7 +69,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     });
   }
 
-  const bundles: BundleAndStepsBasicServer[] = await prisma.bundle.findMany({
+  const bundles: BundleAndStepsBasicServer[] = await db.bundle.findMany({
     where: {
       user: {
         storeUrl: session.shop,
@@ -135,16 +135,6 @@ export default function Index() {
               Create bundle
             </Button>
           }
-          secondaryActions={
-            <Button
-              icon={ExternalIcon}
-              variant="secondary"
-              target="_blank"
-              url="https://help.shopify.com"
-            >
-              Watch tutorial
-            </Button>
-          }
         >
           <BlockStack gap="500">
             <Card>
@@ -166,7 +156,9 @@ export default function Index() {
                           {bundle.title}
                         </Text>
                       </Link>,
+                      //
                       bundle.steps.length,
+                      //
                       <Link to={`/app/bundles/${bundle.id}`}>
                         {bundle.published ? (
                           <Badge tone="success">Active</Badge>
@@ -174,6 +166,7 @@ export default function Index() {
                           <Badge tone="info">Draft</Badge>
                         )}
                       </Link>,
+                      //
                       <ButtonGroup>
                         <Button
                           icon={DeleteIcon}
@@ -212,11 +205,12 @@ export default function Index() {
                           Edit
                         </Button>
                       </ButtonGroup>,
+                      //
                       <Button
                         icon={SettingsIcon}
                         variant="secondary"
                         tone="success"
-                        url={`/app/bundles/${bundle.id}`}
+                        url={`/app/bundles/${bundle.id}/settings/`}
                       >
                         Settings
                       </Button>,

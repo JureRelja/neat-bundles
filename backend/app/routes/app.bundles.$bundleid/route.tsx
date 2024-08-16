@@ -1,5 +1,5 @@
 import { json, redirect } from "@remix-run/node";
-import { Link, useNavigate } from "@remix-run/react";
+import { Link, Outlet, useNavigate } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
   Form,
@@ -197,20 +197,17 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 export default function Index() {
   const nav = useNavigation();
   const navigate = useNavigate();
-  const submit = useSubmit();
+
   const shopify = useAppBridge();
   const isLoading: boolean = nav.state != "idle";
   const params = useParams();
   const submitAction = useSubmitAction(); //Function for doing the submit action where the only data is action and url
 
-  const loaderReponse: JsonData<BundleFullStepBasicClient> =
-    useLoaderData<typeof loader>();
+  const serverBundle: BundleFullStepBasicClient =
+    useLoaderData<typeof loader>().data;
 
-  const serverBundle: BundleFullStepBasicClient = loaderReponse.data;
-
-  const [bundleState, setBundleState] = useState<BundleFullStepBasicClient>(
-    loaderReponse.data,
-  );
+  const [bundleState, setBundleState] =
+    useState<BundleFullStepBasicClient>(serverBundle);
   const bundleSteps: BundleStepBasicResources[] = bundleState.steps.sort(
     (a: BundleStepBasicResources, b: BundleStepBasicResources): number =>
       a.stepNumber - b.stepNumber,
@@ -232,21 +229,6 @@ export default function Index() {
     }
 
     submitAction("addStep", true, `/app/bundles/${params.bundleid}`);
-  };
-
-  //Submiting the form with bundle data
-  const submitBundle = async (publish: boolean): Promise<void> => {
-    await shopify.saveBar.leaveConfirmation();
-
-    const newData = new FormData();
-    newData.append("bundle", JSON.stringify(bundleState));
-    newData.append("action", "updateBundle");
-    if (publish) {
-      newData.append("publish", "true");
-    }
-    submit(newData, {
-      method: "POST",
-    });
   };
 
   //Deleting the bundle
@@ -290,7 +272,6 @@ export default function Index() {
                 content: "Preview",
                 accessibilityLabel: "Preview action label",
                 icon: ExternalIcon,
-                onAction: () => alert("Duplicate action"),
               },
             ]}
             titleMetadata={
@@ -305,11 +286,12 @@ export default function Index() {
               onAction: async () => {
                 // Save or discard the changes before leaving the page
                 await shopify.saveBar.leaveConfirmation();
-                navigate("/app");
+                navigate(-1);
               },
             }}
             title={`Edit bundle - ` + serverBundle.title}
           >
+            <Outlet />
             <Form method="POST" data-discard-confirmation data-save-bar>
               <input type="hidden" name="action" value="updateBundle" />
               <input
@@ -324,6 +306,7 @@ export default function Index() {
                       <Card>
                         <ChoiceList
                           title="Bundle Pricing"
+                          name="bundlePricing"
                           choices={[
                             {
                               label: "Calculated price ",
@@ -379,6 +362,7 @@ export default function Index() {
                                     <TextField
                                       label="Price"
                                       type="number"
+                                      name="price"
                                       autoComplete="off"
                                       value={bundleState.priceAmount?.toString()}
                                       prefix="$"
@@ -561,6 +545,7 @@ export default function Index() {
 
                           <Select
                             label="Visibility"
+                            name="bundleVisibility"
                             labelHidden
                             options={[
                               { label: "Active", value: "true" },
@@ -617,6 +602,7 @@ export default function Index() {
                           <BlockStack gap={GapInsideSection}>
                             <Select
                               label="Type"
+                              name="bundleDiscountType"
                               options={[
                                 {
                                   label: "Percentage (e.g. 25% off)",
