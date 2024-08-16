@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://aspect-convertible-nights-ben.trycloudflare.com"
+application_url = "https://organizational-weekends-estate-collaborative.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "unauthenticated_write_checkouts,write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://aspect-convertible-nights-ben.trycloudflare.com/auth/callback",
-  "https://aspect-convertible-nights-ben.trycloudflare.com/auth/shopify/callback",
-  "https://aspect-convertible-nights-ben.trycloudflare.com/api/auth/callback"
+  "https://organizational-weekends-estate-collaborative.trycloudflare.com/auth/callback",
+  "https://organizational-weekends-estate-collaborative.trycloudflare.com/auth/shopify/callback",
+  "https://organizational-weekends-estate-collaborative.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-04"
 
 [app_proxy]
-url = "https://aspect-convertible-nights-ben.trycloudflare.com"
+url = "https://organizational-weekends-estate-collaborative.trycloudflare.com"
 subpath = "bundle"
 prefix = "apps"
 

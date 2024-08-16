@@ -25,7 +25,7 @@ model Bundle {
   published      Boolean            @default(false)
   createdAt      DateTime           @default(now())
   steps          BundleStep[]
-  pricing        BundlePricing      @default(FIXED)
+  pricing        BundlePricing      @default(CALCULATED)
   priceAmount    Float?
   discountType   BundleDiscountType @default(NO_DISCOUNT)
   discountValue  Float              @default(0)
@@ -91,7 +91,6 @@ model BundleSettings {
   id                     Int           @id @default(autoincrement())
   bundle                 Bundle        @relation(fields: [bundleId], references: [id], onDelete: Cascade)
   bundleId               Int           @unique
-  displayDiscountBanner  Boolean       @default(false)
   skipTheCart            Boolean       @default(false)
   allowBackNavigation    Boolean       @default(true)
   showOutOfStockProducts Boolean       @default(false)

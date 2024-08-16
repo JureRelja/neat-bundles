@@ -401,95 +401,78 @@ export default function Index() {
       {isLoading ? (
         <SkeletonPage primaryAction fullWidth></SkeletonPage>
       ) : (
-        <>
-          <Modal id="no-more-steps-modal">
-            <Box padding="300">
-              <Text as="p">
-                You can't add more than 5 steps for one bundle.
-              </Text>
-            </Box>
-            <TitleBar title="Maximum steps reached">
-              <button
-                variant="primary"
-                onClick={() => shopify.modal.hide("no-more-steps-modal")}
-              >
-                Close
-              </button>
-            </TitleBar>
-          </Modal>
-
-          <Page
-            fullWidth
-            backAction={{ content: "Products", url: "/bundles" }}
-            title="Edit bundle"
-            primaryAction={<Button variant="primary">Publish</Button>}
-            secondaryActions={[
-              {
-                content: "Delete",
-                destructive: true,
-                icon: DeleteIcon,
-                onAction: () => {},
-              },
-              {
-                content: "Save as draft",
-                destructive: false,
-                icon: OrderDraftIcon,
-                onAction: submitForm,
-              },
-            ]}
-          >
-            <BlockStack gap={GapBetweenSections}>
-              <Layout>
-                <Layout.Section variant="oneThird">
-                  <Form
-                    onSubmit={submitForm}
-                    // data-save-bar
-                    // data-discard-confirmation
-                    // method="POST"
-                  >
-                    {/* <input
+        <Page
+          fullWidth
+          backAction={{ content: "Products", url: "/bundles" }}
+          title="Edit bundle"
+          primaryAction={<Button variant="primary">Publish</Button>}
+          secondaryActions={[
+            {
+              content: "Delete",
+              destructive: true,
+              icon: DeleteIcon,
+              onAction: () => {},
+            },
+            {
+              content: "Save as draft",
+              destructive: false,
+              icon: OrderDraftIcon,
+              onAction: submitForm,
+            },
+          ]}
+        >
+          <BlockStack gap={GapBetweenSections}>
+            <Layout>
+              <Layout.Section variant="oneThird">
+                <Form
+                  onSubmit={submitForm}
+                  // data-save-bar
+                  // data-discard-confirmation
+                  // method="POST"
+                >
+                  {/* <input
                       type="hidden"
                       name="bundle"
                       value={JSON.stringify(bundleState)}
                     /> */}
-                    <BlockStack gap={GapBetweenSections}>
-                      <Card>
-                        <BlockStack gap={GapBetweenTitleAndContent}>
-                          <Text as="h2" variant="headingSm">
-                            Bundle title
-                          </Text>
-                          <TextField
-                            label="Title"
-                            autoComplete="off"
-                            name="bundleTitle"
-                            helpText="Only store staff can see this."
-                            value={bundleState.title}
-                            onChange={(newTitile) => {
-                              setBundleState((prevBundle: BundlePayload) => {
-                                return { ...prevBundle, title: newTitile };
-                              });
-                            }}
-                            type="text"
-                          />
-                        </BlockStack>
-                      </Card>
-                      <Card>
-                        <InlineGrid columns={2} alignItems="center">
-                          <Text as="h2" variant="headingMd">
-                            {bundleState.steps.length} steps total
-                          </Text>
-                          <Button
-                            onClick={addStep}
-                            variant="primary"
-                            icon={PlusIcon}
-                            fullWidth
-                          >
-                            Add step
-                          </Button>
-                        </InlineGrid>
-                      </Card>
+                  <BlockStack gap={GapBetweenSections}>
+                    <Card>
+                      <BlockStack gap={GapBetweenTitleAndContent}>
+                        <Text as="h2" variant="headingSm">
+                          Bundle title
+                        </Text>
+                        <TextField
+                          label="Title"
+                          autoComplete="off"
+                          name="bundleTitle"
+                          helpText="Only store staff can see this."
+                          value={bundleState.title}
+                          onChange={(newTitile) => {
+                            setBundleState((prevBundle: BundlePayload) => {
+                              return { ...prevBundle, title: newTitile };
+                            });
+                          }}
+                          type="text"
+                        />
+                      </BlockStack>
+                    </Card>
+                    <Card>
+                      <InlineGrid columns={2} alignItems="center">
+                        <Text as="h2" variant="headingMd">
+                          {bundleState.steps.length} steps total
+                        </Text>
+                        <Button
+                          onClick={addStep}
+                          variant="primary"
+                          icon={PlusIcon}
+                          fullWidth
+                        >
+                          Add step
+                        </Button>
+                      </InlineGrid>
+                    </Card>
 
-                      {/* {bundleSteps.map((step) => (
+                    {/* {bundleSteps.map((step) => (
                         <BundleStepComponent
                           key={step.id}
                           stepData={step}
@@ -517,36 +500,35 @@ export default function Index() {
                         updateSettings={updateSettings}
                       />
                       <Divider borderColor="transparent" /> */}
-                    </BlockStack>
-                  </Form>
-                </Layout.Section>
-                <Layout.Section>
-                  <div
-                    ref={previewBoxRef}
-                    className={`${sticky.isSticky ? styles.sticky : ""}`}
-                  >
-                    <BundlePreview />
-                  </div>
-                </Layout.Section>
-              </Layout>
-            </BlockStack>
-            <PageActions
-              primaryAction={{
-                content: "Publish",
-              }}
-              secondaryActions={[
-                {
-                  content: "Delete",
-                  destructive: true,
-                },
-                {
-                  content: "Save as draft",
-                  onAction: submitForm,
-                },
-              ]}
-            />
-          </Page>
-        </>
+                  </BlockStack>
+                </Form>
+              </Layout.Section>
+              <Layout.Section>
+                <div
+                  ref={previewBoxRef}
+                  className={`${sticky.isSticky ? styles.sticky : ""}`}
+                >
+                  <BundlePreview />
+                </div>
+              </Layout.Section>
+            </Layout>
+          </BlockStack>
+          <PageActions
+            primaryAction={{
+              content: "Publish",
+            }}
+            secondaryActions={[
+              {
+                content: "Delete",
+                destructive: true,
+              },
+              {
+                content: "Save as draft",
+                onAction: submitForm,
+              },
+            ]}
+          />
+        </Page>
       )}
     </>
   );
