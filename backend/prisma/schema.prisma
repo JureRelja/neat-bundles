@@ -91,7 +91,8 @@ model BundleSettings {
   id                     Int           @id @default(autoincrement())
   bundle                 Bundle        @relation(fields: [bundleId], references: [id], onDelete: Cascade)
   bundleId               Int           @unique
-  skipTheCart            Boolean       @default(false)
+  displayDiscountBanner  Boolean       @default(true)
+  skipTheCart            Boolean       @default(true)
   allowBackNavigation    Boolean       @default(true)
   showOutOfStockProducts Boolean       @default(false)
   numOfProductColumns    Int           @default(3)
