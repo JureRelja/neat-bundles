@@ -1,41 +1,29 @@
 import {
-  ChoiceList,
   Card,
   Button,
   BlockStack,
   InlineStack,
-  Text,
-  ButtonGroup,
-  TextField,
   Divider,
-  InlineGrid,
   SkeletonPage,
   Page,
   Badge,
+  Text,
   Layout,
+  Icon,
 } from "@shopify/polaris";
-import {
-  ArrowUpIcon,
-  ArrowDownIcon,
-  DeleteIcon,
-  PageAddIcon,
-} from "@shopify/polaris-icons";
-import {
-  GapBetweenSections,
-  GapInsideSection,
-  HorizontalGap,
-  GapBetweenTitleAndContent,
-} from "../../constants";
-import { StepType, ProductResourceType } from "@prisma/client";
+import { ArrowLeftIcon, ArrowRightIcon } from "@shopify/polaris-icons";
+import { GapBetweenSections } from "../../constants";
+import { StepType } from "@prisma/client";
 import { json } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
-  Form,
   useNavigation,
   useSubmit,
   useLoaderData,
   useNavigate,
   Outlet,
+  useParams,
+  useRevalidator,
 } from "@remix-run/react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
@@ -50,7 +38,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 
   let bundleStep: BundleStepBasicResources | null;
 
-  if (!params.stepId) {
+  if (!params.stepnum) {
     bundleStep = await db.bundleStep.findFirst({
       where: {
         bundleId: Number(params.bundleid),
@@ -59,9 +47,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
       select: bundleStepBasic,
     });
   } else {
-    bundleStep = await db.bundleStep.findUnique({
+    bundleStep = await db.bundleStep.findFirst({
       where: {
-        id: Number(params.stepId),
+        bundleId: Number(params.bundleid),
+        stepNumber: Number(params.stepnum),
       },
       select: bundleStepBasic,
     });
@@ -138,6 +127,8 @@ export default function Index({}) {
   const nav = useNavigation();
   const shopify = useAppBridge();
   const isLoading = nav.state != "idle";
+  const params = useParams();
+  const revalidator = useRevalidator();
 
   const stepData: BundleStepBasicResources =
     useLoaderData<typeof loader>().data;
@@ -148,7 +139,7 @@ export default function Index({}) {
 
   // handle scroll event
   const handleScroll = (elTopOffset: number, elHeight: number) => {
-    if (window.scrollY > elTopOffset + elHeight) {
+    if (window.scrollY > elTopOffset + 30) {
       setSticky({ isSticky: true, offset: elHeight });
     } else {
       setSticky({ isSticky: false, offset: 0 });
@@ -188,25 +179,66 @@ export default function Index({}) {
             onAction: async () => {
               // Save or discard the changes before leaving the page
               await shopify.saveBar.leaveConfirmation();
-              navigate(-1);
+              navigate(`/app/bundles/${params.bundleid}`);
             },
           }}
           title={`Edit step - ${stepData.stepNumber}`}
         >
-          <Layout>
-            <Layout.Section variant="oneThird">
-              <Outlet />
-            </Layout.Section>
-            <Layout.Section>
-              <div
-                ref={previewBoxRef}
-                className={`${sticky.isSticky ? styles.sticky : ""}`}
-              >
-                <Card></Card>
-                {/* <BundlePreview /> */}
-              </div>
-            </Layout.Section>
-          </Layout>
+          <BlockStack gap={GapBetweenSections}>
+            <Layout>
+              <Layout.Section>
+                <div
+                  ref={previewBoxRef}
+                  className={`${sticky.isSticky ? styles.sticky : ""}`}
+                >
+                  <BlockStack gap={GapBetweenSections}>
+                    {/* <BundlePreview /> */}
+                    <Card></Card>
+
+                    {/* Navigation between steps */}
+                    <InlineStack align="space-between">
+                      <Button
+                        icon={ArrowLeftIcon}
+                        disabled={stepData.stepNumber === 1}
+                        onClick={() => {
+                          revalidator.revalidate();
+                          navigate(
+                            `/app/bundles/${params.bundleid}/steps/${stepData.stepNumber - 1}`,
+                          );
+                        }}
+                      >
+                        Step{" "}
+                        {stepData.stepNumber !== 1
+                          ? (stepData.stepNumber - 1).toString()
+                          : "1"}
+                      </Button>
+
+                      <Button
+                        icon={ArrowRightIcon}
+                        disabled={stepData.stepNumber === 3}
+                        onClick={() => {
+                          revalidator.revalidate();
+                          navigate(
+                            `/app/bundles/${params.bundleid}/steps/${stepData.stepNumber + 1}`,
+                          );
+                        }}
+                      >
+                        Step{" "}
+                        {stepData.stepNumber !== 3
+                          ? (stepData.stepNumber + 1).toString()
+                          : "3"}
+                      </Button>
+                    </InlineStack>
+                    <Divider borderColor="transparent" />
+                  </BlockStack>
+                </div>
+              </Layout.Section>
+              <Layout.Section variant="oneThird">
+                <Outlet />
+              </Layout.Section>
+            </Layout>
+            <Divider borderColor="transparent" />
+          </BlockStack>
         </Page>
       )}
     </>

@@ -45,13 +45,15 @@ import ResourcePicker from "./resource-picker";
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
 
-  const stepData: BundleStepAllResources | null =
-    await db.bundleStep.findUnique({
+  const stepData: BundleStepAllResources | null = await db.bundleStep.findFirst(
+    {
       where: {
-        id: Number(params.stepid),
+        bundleId: Number(params.bundleid),
+        stepNumber: Number(params.stepnum),
       },
       include: bundleStepFull,
-    });
+    },
+  );
 
   if (!stepData) {
     throw new Response(null, {
@@ -75,9 +77,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     //Deleting the step from the bundle
     case "deleteStep": {
       try {
-        const step: BundleStep = await db.bundleStep.delete({
+        const step = await db.bundleStep.deleteMany({
           where: {
-            id: Number(params.stepId),
+            bundleId: Number(params.bundleid),
+            stepNumber: Number(params.stepnum),
           },
         });
 
@@ -262,132 +265,134 @@ export default function Index() {
       {isLoading ? (
         <SkeletonPage primaryAction fullWidth></SkeletonPage>
       ) : (
-        <Card>
-          <BlockStack gap={GapBetweenSections}>
-            <BlockStack gap={GapInsideSection}>
-              <TextField
-                label="Step title"
-                value={stepData.title}
-                onChange={(newTitle) => {}}
-                autoComplete="off"
-                name={`stepTitle`}
+        <BlockStack gap={GapBetweenSections}>
+          <Card>
+            <BlockStack gap={GapBetweenSections}>
+              <BlockStack gap={GapInsideSection}>
+                <TextField
+                  label="Step title"
+                  value={stepData.title}
+                  onChange={(newTitle) => {}}
+                  autoComplete="off"
+                  name={`stepTitle`}
+                />
+                <TextField
+                  label="Step description"
+                  value={stepData.description}
+                  name={`stepDescription`}
+                  onChange={(newDesc) => {}}
+                  autoComplete="off"
+                />
+              </BlockStack>
+              <ChoiceList
+                title="Step type:"
+                name={`stepType`}
+                choices={[
+                  {
+                    label: "Product step",
+                    value: StepType.PRODUCT,
+                    helpText: `Customers can choose products on this step`,
+                  },
+                  {
+                    label: "Content step",
+                    value: StepType.CONTENT,
+                    helpText: `Customer can add text or images on this step`,
+                  },
+                ]}
+                selected={[stepData.stepType]}
+                onChange={(selected: string[]) => {}}
               />
-              <TextField
-                label="Step description"
-                value={stepData.description}
-                name={`stepDescription`}
-                onChange={(newDesc) => {}}
-                autoComplete="off"
-              />
-            </BlockStack>
-            <ChoiceList
-              title="Step type:"
-              name={`stepType`}
-              choices={[
-                {
-                  label: "Product step",
-                  value: StepType.PRODUCT,
-                  helpText: `Customers can choose products on this step`,
-                },
-                {
-                  label: "Content step",
-                  value: StepType.CONTENT,
-                  helpText: `Customer can add text or images on this step`,
-                },
-              ]}
-              selected={[stepData.stepType]}
-              onChange={(selected: string[]) => {}}
-            />
 
-            <Divider borderColor="border-inverse" />
-            {stepData.stepType === StepType.PRODUCT ? (
-              <>
-                <BlockStack gap={GapInsideSection}>
-                  <ChoiceList
-                    title="Display products:"
-                    name={`productResourceType`}
-                    choices={[
-                      {
-                        label: "Selected products",
-                        value: ProductResourceType.PRODUCT,
-                      },
-                      {
-                        label: "Selected collections",
-                        value: ProductResourceType.COLLECTION,
-                      },
-                    ]}
-                    selected={[stepData.productStep?.resourceType as string]}
-                    onChange={(selected: string[]) => {}}
-                  />
-
-                  <ResourcePicker
-                    resourceType={
-                      stepData.productStep?.resourceType as ProductResourceType
-                    }
-                    selectedResources={
-                      stepData.productStep?.productResources as string[]
-                    }
-                    updateSelectedResources={updateSelectedResources}
-                  />
-                </BlockStack>
-
-                <Divider />
-                <BlockStack gap={GapInsideSection}>
-                  <Text as="p">Rules</Text>
-
-                  <InlineGrid columns={2} gap={HorizontalGap}>
-                    <TextField
-                      label="Minimum products to select"
-                      type="number"
-                      autoComplete="off"
-                      inputMode="numeric"
-                      name={`minProductsToSelect`}
-                      min={1}
-                      value={stepData.productStep?.minProductsOnStep.toString()}
-                      onChange={(value) => {}}
+              <Divider borderColor="border-inverse" />
+              {stepData.stepType === StepType.PRODUCT ? (
+                <>
+                  <BlockStack gap={GapInsideSection}>
+                    <ChoiceList
+                      title="Display products:"
+                      name={`productResourceType`}
+                      choices={[
+                        {
+                          label: "Selected products",
+                          value: ProductResourceType.PRODUCT,
+                        },
+                        {
+                          label: "Selected collections",
+                          value: ProductResourceType.COLLECTION,
+                        },
+                      ]}
+                      selected={[stepData.productStep?.resourceType as string]}
+                      onChange={(selected: string[]) => {}}
                     />
 
-                    <TextField
-                      label="Maximum products to select"
-                      type="number"
-                      autoComplete="off"
-                      inputMode="numeric"
-                      name={`maxProductsToSelect`}
-                      min={1}
-                      value={stepData.productStep?.maxProductsOnStep.toString()}
-                      onChange={(value) => {}}
+                    <ResourcePicker
+                      resourceType={
+                        stepData.productStep
+                          ?.resourceType as ProductResourceType
+                      }
+                      selectedResources={
+                        stepData.productStep?.productResources as string[]
+                      }
+                      updateSelectedResources={updateSelectedResources}
                     />
-                  </InlineGrid>
-                  <ChoiceList
-                    title="Display products"
-                    allowMultiple
-                    name={`displayProducts`}
-                    choices={[
-                      {
-                        label:
-                          "Allow customers to select one product more than once",
-                        value: "allowProductDuplicates",
-                      },
-                      {
-                        label: "Show price under each product",
-                        value: "showProductPrice",
-                      },
-                    ]}
-                    selected={[
-                      stepData.productStep?.allowProductDuplicates
-                        ? "allowProductDuplicates"
-                        : "",
-                      stepData.productStep?.showProductPrice
-                        ? "showProductPrice"
-                        : "",
-                    ]}
-                    onChange={(selectedValues) => {}}
-                  />
-                </BlockStack>
-              </>
-            ) : (
-              <BlockStack gap={GapBetweenSections}>
-                {/* {stepData.map((contentInput, index) => (
+                  </BlockStack>
+
+                  <Divider />
+                  <BlockStack gap={GapInsideSection}>
+                    <Text as="p">Rules</Text>
+
+                    <InlineGrid columns={2} gap={HorizontalGap}>
+                      <TextField
+                        label="Minimum products to select"
+                        type="number"
+                        autoComplete="off"
+                        inputMode="numeric"
+                        name={`minProductsToSelect`}
+                        min={1}
+                        value={stepData.productStep?.minProductsOnStep.toString()}
+                        onChange={(value) => {}}
+                      />
+
+                      <TextField
+                        label="Maximum products to select"
+                        type="number"
+                        autoComplete="off"
+                        inputMode="numeric"
+                        name={`maxProductsToSelect`}
+                        min={1}
+                        value={stepData.productStep?.maxProductsOnStep.toString()}
+                        onChange={(value) => {}}
+                      />
+                    </InlineGrid>
+                    <ChoiceList
+                      title="Display products"
+                      allowMultiple
+                      name={`displayProducts`}
+                      choices={[
+                        {
+                          label:
+                            "Allow customers to select one product more than once",
+                          value: "allowProductDuplicates",
+                        },
+                        {
+                          label: "Show price under each product",
+                          value: "showProductPrice",
+                        },
+                      ]}
+                      selected={[
+                        stepData.productStep?.allowProductDuplicates
+                          ? "allowProductDuplicates"
+                          : "",
+                        stepData.productStep?.showProductPrice
+                          ? "showProductPrice"
+                          : "",
+                      ]}
+                      onChange={(selectedValues) => {}}
+                    />
+                  </BlockStack>
+                </>
+              ) : (
+                <BlockStack gap={GapBetweenSections}>
+                  {/* {stepData.map((contentInput, index) => (
                   <ContentStepInputs
                     key={contentInput.id}
                     contentInput={contentInput}
@@ -396,10 +401,25 @@ export default function Index() {
                     stepNumber={stepData.stepNumber}
                   />
                 ))} */}
-              </BlockStack>
-            )}
-          </BlockStack>
-        </Card>
+                </BlockStack>
+              )}
+            </BlockStack>
+          </Card>
+
+          {/* Save action */}
+          <Box width="full">
+            <BlockStack inlineAlign="end">
+              <ButtonGroup>
+                <Button variant="primary" tone="critical">
+                  Delete
+                </Button>
+                <Button variant="primary" submit>
+                  Save step
+                </Button>
+              </ButtonGroup>
+            </BlockStack>
+          </Box>
+        </BlockStack>
       )}
     </>
   );

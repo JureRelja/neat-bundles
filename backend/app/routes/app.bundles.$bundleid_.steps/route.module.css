@@ -1,7 +1,7 @@
 .sticky {
   position: fixed;
   top: 0;
-  left: 35%;
-  width: 64%;
+  left: 2%;
+  width: 63%;
   transition: all 0.5s ease;
 }

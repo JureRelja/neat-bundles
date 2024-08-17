@@ -430,7 +430,7 @@ export default function Index() {
                                   return [
                                     step.stepNumber,
                                     <Link
-                                      to={`/app/bundles/${params.bundleid}/steps/${step.id}`}
+                                      to={`/app/bundles/${params.bundleid}/steps/${step.stepNumber}`}
                                     >
                                       <Text as="p" tone="base">
                                         {step.title}
@@ -475,7 +475,7 @@ export default function Index() {
                                           submitAction(
                                             "deleteStep",
                                             true,
-                                            `/app/bundles/${params.bundleid}/steps/${step.id}`,
+                                            `/app/bundles/${params.bundleid}/steps/${step.stepNumber}`,
                                           );
                                         }}
                                       >
@@ -489,7 +489,7 @@ export default function Index() {
                                           submitAction(
                                             "duplicateStep",
                                             true,
-                                            `/app/bundles/${params.bundleid}/steps/${step.id}`,
+                                            `/app/bundles/${params.bundleid}/steps/${step.stepNumber}`,
                                           );
                                         }}
                                       >
@@ -499,7 +499,7 @@ export default function Index() {
                                       <Button
                                         icon={EditIcon}
                                         variant="primary"
-                                        url={`/app/bundles/${params.bundleid}/steps/${step.id}`}
+                                        url={`/app/bundles/${params.bundleid}/steps/${step.stepNumber}`}
                                       >
                                         Edit
                                       </Button>
