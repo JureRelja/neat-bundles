@@ -210,7 +210,7 @@ export default function Index() {
                         icon={SettingsIcon}
                         variant="secondary"
                         tone="success"
-                        url={`/app/bundles/${bundle.id}/settings/`}
+                        url={`/app/bundles/${bundle.id}/settings/?redirect=/app`}
                       >
                         Settings
                       </Button>,

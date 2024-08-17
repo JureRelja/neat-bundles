@@ -113,19 +113,21 @@ enum BundleDiscountType {
 }
 
 model BundleColors {
-  id                Int            @id @default(autoincrement())
-  bundleSettings    BundleSettings @relation(fields: [bundleSettingsId], references: [id], onDelete: Cascade)
-  bundleSettingsId  Int            @unique
-  stepsIcon         String         @default("#000000")
-  addToBundleBtn    String         @default("#000000")
-  addToBundleText   String         @default("#000000")
-  nextStepBtn       String         @default("#000000")
-  nextStepBtnText   String         @default("#000000")
-  titleAndDESC      String         @default("#000000")
-  viewProductBtn    String         @default("#000000")
-  removeProductsBtn String         @default("#000000")
-  prevStepBtn       String         @default("#000000")
-  prevStepBtnText   String         @default("#000000")
+  id                    Int            @id @default(autoincrement())
+  bundleSettings        BundleSettings @relation(fields: [bundleSettingsId], references: [id], onDelete: Cascade)
+  bundleSettingsId      Int            @unique
+  stepsIcon             String         @default("#000000")
+  addToBundleBtn        String         @default("#000000")
+  addToBundleText       String         @default("#000000")
+  nextStepBtn           String         @default("#000000")
+  nextStepBtnText       String         @default("#000000")
+  titleAndDESC          String         @default("#000000")
+  viewProductBtn        String         @default("#000000")
+  viewProductBtnText    String         @default("#000000")
+  removeProductsBtn     String         @default("#000000")
+  removeProductsBtnText String         @default("#000000")
+  prevStepBtn           String         @default("#000000")
+  prevStepBtnText       String         @default("#000000")
 }
 
 model BundleLabels {

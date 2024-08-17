@@ -1,20 +1,17 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import {
   useLoaderData,
-  useParams,
   useNavigation,
   useNavigate,
   Form,
 } from "@remix-run/react";
 import { useAppBridge } from "@shopify/app-bridge-react";
-import { useSubmitAction } from "~/hooks/useSubmitAction";
 import { authenticate } from "../../shopify.server";
 import db from "../../db.server";
 import {
   Card,
   BlockStack,
-  TextField,
   Text,
   RangeSlider,
   Divider,
@@ -28,6 +25,7 @@ import {
 } from "@shopify/polaris";
 import {
   GapBetweenSections,
+  GapBetweenTitleAndContent,
   GapInsideSection,
   HorizontalGap,
 } from "../../constants";
@@ -46,7 +44,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const bundleSettings: SettingsWithAllResources | null =
     await db.bundleSettings.findUnique({
       where: {
-        id: Number(params.bundleid),
+        bundleId: Number(params.bundleid),
       },
       include: settingsIncludeAll,
     });
@@ -75,7 +73,75 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   const formData = await request.formData();
 
-  return null;
+  const bundleSettings: SettingsWithAllResources = JSON.parse(
+    formData.get("bundleSettings") as string,
+  );
+
+  if (
+    !bundleSettings ||
+    !bundleSettings.bundleColors ||
+    !bundleSettings.bundleLabels
+  ) {
+    throw new Response(null, {
+      status: 400,
+      statusText: "Bad Request",
+    });
+  }
+
+  try {
+    await db.bundleSettings.update({
+      where: {
+        bundleId: Number(params.bundleid),
+      },
+      data: {
+        displayDiscountBanner: bundleSettings.displayDiscountBanner,
+        skipTheCart: bundleSettings.skipTheCart,
+        allowBackNavigation: bundleSettings.allowBackNavigation,
+        showOutOfStockProducts: bundleSettings.showOutOfStockProducts,
+        numOfProductColumns: bundleSettings.numOfProductColumns,
+        bundleColors: {
+          update: {
+            addToBundleBtn: bundleSettings.bundleColors.addToBundleBtn,
+            addToBundleText: bundleSettings.bundleColors.addToBundleText,
+            nextStepBtn: bundleSettings.bundleColors.nextStepBtn,
+            nextStepBtnText: bundleSettings.bundleColors.nextStepBtnText,
+            viewProductBtn: bundleSettings.bundleColors.viewProductBtn,
+            viewProductBtnText: bundleSettings.bundleColors.viewProductBtnText,
+            removeProductsBtn: bundleSettings.bundleColors.removeProductsBtn,
+            removeProductsBtnText:
+              bundleSettings.bundleColors.removeProductsBtnText,
+            prevStepBtn: bundleSettings.bundleColors.prevStepBtn,
+            prevStepBtnText: bundleSettings.bundleColors.prevStepBtnText,
+            stepsIcon: bundleSettings.bundleColors.stepsIcon,
+            titleAndDESC: bundleSettings.bundleColors.titleAndDESC,
+          },
+        },
+        bundleLabels: {
+          update: {
+            addToBundleBtn: bundleSettings.bundleLabels.addToBundleBtn,
+            nextStepBtn: bundleSettings.bundleLabels.nextStepBtn,
+            viewProductBtn: bundleSettings.bundleLabels.viewProductBtn,
+            prevStepBtn: bundleSettings.bundleLabels.prevStepBtn,
+          },
+        },
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    throw new Response(null, {
+      status: 404,
+      statusText: "Settings not found",
+    });
+  }
+
+  const url: URL = new URL(request.url);
+
+  // Redirect to a specific page if the query param is present
+  if (url.searchParams.has("redirect")) {
+    return redirect(url.searchParams.get("redirect") as string);
+  }
+
+  return redirect(`/app`);
 };
 
 export default function Index() {
@@ -83,8 +149,6 @@ export default function Index() {
   const nav = useNavigation();
   const shopify = useAppBridge();
   const isLoading: boolean = nav.state != "idle";
-  const params = useParams();
-  const submitAction = useSubmitAction(); //Function for doing the submit action where the only data is action and url
 
   const serverSettings: SettingsWithAllResources =
     useLoaderData<typeof loader>().data;
@@ -105,11 +169,64 @@ export default function Index() {
     });
   };
 
-  if (!serverSettings.bundleColors || !serverSettings.bundleLabels)
-    return <p>Settings don't exist for this bundle.</p>;
+  // Button collors
+  const buttonColors = useMemo(() => {
+    return [
+      {
+        hex: settingsState.bundleColors?.addToBundleBtn,
+        label: '"Add to bundle" button background',
+        id: "addToBundleBtn",
+      },
+      {
+        hex: settingsState.bundleColors?.addToBundleText,
+        label: '"Add to bundle" button text',
+        id: "addToBundleText",
+      },
+      {
+        hex: settingsState.bundleColors?.viewProductBtn,
+        label: '"View products" button background',
+        id: "viewProductsBtn",
+      },
+      {
+        hex: settingsState.bundleColors?.viewProductBtnText,
+        label: '"View products" button text',
+        id: "viewProductsBtnText",
+      },
+      {
+        hex: settingsState.bundleColors?.removeProductsBtn,
+        label: '"Remove" button background',
+        id: "removeProductBtn",
+      },
+      {
+        hex: settingsState.bundleColors?.removeProductsBtnText,
+        label: '"Remove" button text',
+        id: "removeProductBtn",
+      },
+      {
+        hex: settingsState.bundleColors?.prevStepBtn,
+        label: '"Previous step" button background',
+        id: "prevStepBtn",
+      },
+      {
+        hex: settingsState.bundleColors?.prevStepBtnText,
+        label: '"Previous step" button text',
+        id: "prevStepBtnText",
+      },
+      {
+        hex: settingsState.bundleColors?.nextStepBtn,
+        label: '"Next step" button background',
+        id: "nextStepBtn",
+      },
+      {
+        hex: settingsState.bundleColors?.nextStepBtnText,
+        label: '"Next step" button text',
+        id: "nextStepBtnText",
+      },
+    ];
+  }, [settingsState.bundleColors]);
 
-  // colors
-  const colors = useMemo(() => {
+  // Button collors
+  const bundleColos = useMemo(() => {
     return [
       {
         hex: settingsState.bundleColors?.stepsIcon,
@@ -117,49 +234,9 @@ export default function Index() {
         id: "stepsIcon",
       },
       {
-        hex: settingsState.bundleColors?.addToBundleBtn,
-        label: '"Add to bundle" btn',
-        id: "addToBundleBtn",
-      },
-      {
-        hex: settingsState.bundleColors?.addToBundleText,
-        label: '"Add to bundle" text',
-        id: "addToBundleText",
-      },
-      {
-        hex: settingsState.bundleColors?.nextStepBtn,
-        label: '"Next step" btn',
-        id: "nextStepBtn",
-      },
-      {
-        hex: settingsState.bundleColors?.nextStepBtnText,
-        label: '"Next step" btn text',
-        id: "nextStepBtnText",
-      },
-      {
         hex: settingsState.bundleColors?.titleAndDESC,
         label: '"Title & description"',
         id: "titleAndDESC",
-      },
-      {
-        hex: settingsState.bundleColors?.viewProductBtn,
-        label: '"View products" btn',
-        id: "viewProductsBtn",
-      },
-      {
-        hex: settingsState.bundleColors?.removeProductsBtn,
-        label: '"Remove" btn',
-        id: "removeProductBtn",
-      },
-      {
-        hex: settingsState.bundleColors?.prevStepBtn,
-        label: '"Previous" btn',
-        id: "prevStepBtn",
-      },
-      {
-        hex: settingsState.bundleColors?.prevStepBtnText,
-        label: '"Previous" btn text',
-        id: "prevStepBtnText",
       },
     ];
   }, [settingsState.bundleColors]);
@@ -179,18 +256,29 @@ export default function Index() {
               navigate(-1);
             },
           }}
-          title={`Bundle settings - ${serverSettings.id}`}
+          title={`Bundle settings`}
         >
           <Form method="POST" data-discard-confirmation data-save-bar>
             <input
               type="hidden"
               name="bundleSettings"
-              value={JSON.stringify(setSetttingsState)}
+              value={JSON.stringify(settingsState)}
             />
+
             <BlockStack gap={GapBetweenSections}>
-              <Card>
-                <BlockStack gap={GapBetweenSections}>
-                  <Divider />
+              {/* Checkbox settings */}
+              <InlineGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="400">
+                <Box as="section">
+                  <BlockStack gap="400">
+                    <Text as="h3" variant="headingMd">
+                      Bundle behavior
+                    </Text>
+                    <Text as="p" variant="bodyMd">
+                      Change the behavior of this bundle.
+                    </Text>
+                  </BlockStack>
+                </Box>
+                <Card>
                   <BlockStack gap={GapInsideSection}>
                     <ChoiceList
                       title="Discount banner"
@@ -216,55 +304,52 @@ export default function Index() {
                         );
                       }}
                     />
-                  </BlockStack>
-                  <Divider />
-                  <ChoiceList
-                    title="Cart"
-                    allowMultiple
-                    name={`skipTheCart`}
-                    choices={[
-                      {
-                        label: "Skip the cart and go to checkout directly",
-                        value: "true",
-                      },
-                    ]}
-                    selected={settingsState.skipTheCart ? ["true"] : []}
-                    onChange={(value) => {
-                      setSetttingsState(
-                        (prevSettings: SettingsWithAllResources) => {
-                          return {
-                            ...prevSettings,
-                            skipTheCart: value[0] === "true",
-                          };
+                    <ChoiceList
+                      title="Cart"
+                      allowMultiple
+                      name={`skipTheCart`}
+                      choices={[
+                        {
+                          label: "Skip the cart and go to checkout directly",
+                          value: "true",
                         },
-                      );
-                    }}
-                  />
-                  <Divider />
-                  <ChoiceList
-                    title="Navigation"
-                    name={`allowBackNavigation`}
-                    allowMultiple
-                    choices={[
-                      {
-                        label: "Allow customers to go back on steps",
-                        value: "true",
-                      },
-                    ]}
-                    selected={settingsState.allowBackNavigation ? ["true"] : []}
-                    onChange={(value) => {
-                      setSetttingsState(
-                        (prevSettings: SettingsWithAllResources) => {
-                          return {
-                            ...prevSettings,
-                            allowBackNavigation: value[0] === "true",
-                          };
+                      ]}
+                      selected={settingsState.skipTheCart ? ["true"] : []}
+                      onChange={(value) => {
+                        setSetttingsState(
+                          (prevSettings: SettingsWithAllResources) => {
+                            return {
+                              ...prevSettings,
+                              skipTheCart: value[0] === "true",
+                            };
+                          },
+                        );
+                      }}
+                    />
+                    <ChoiceList
+                      title="Navigation"
+                      name={`allowBackNavigation`}
+                      allowMultiple
+                      choices={[
+                        {
+                          label: "Allow customers to go back on steps",
+                          value: "true",
                         },
-                      );
-                    }}
-                  />
-                  <Divider />
-                  <BlockStack gap={GapInsideSection}>
+                      ]}
+                      selected={
+                        settingsState.allowBackNavigation ? ["true"] : []
+                      }
+                      onChange={(value) => {
+                        setSetttingsState(
+                          (prevSettings: SettingsWithAllResources) => {
+                            return {
+                              ...prevSettings,
+                              allowBackNavigation: value[0] === "true",
+                            };
+                          },
+                        );
+                      }}
+                    />
                     <ChoiceList
                       title="Navigation"
                       allowMultiple
@@ -289,7 +374,6 @@ export default function Index() {
                         );
                       }}
                     />
-
                     <RangeSlider
                       label={`Number of product columns`}
                       output
@@ -310,9 +394,25 @@ export default function Index() {
                       helpText="On smaller screens products will be shown in fewer columns."
                     />
                   </BlockStack>
-                  <Divider />
+                </Card>
+              </InlineGrid>
 
-                  <Divider />
+              <Divider />
+
+              {/* Labels settings, commented for now */}
+              {/* <InlineGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="400">
+                <Box as="section">
+                  <BlockStack gap="400">
+                    <Text as="h3" variant="headingMd">
+                      Dimensions
+                    </Text>
+                    <Text as="p" variant="bodyMd">
+                      Interjambs are the rounded protruding bits of your puzzlie
+                      piece
+                    </Text>
+                  </BlockStack>
+                </Box>
+                <Card>
                   <BlockStack gap={GapInsideSection}>
                     <Text as="p">Labels</Text>
                     <InlineGrid columns={2} gap={HorizontalGap}>
@@ -413,43 +513,80 @@ export default function Index() {
                       </BlockStack>
                     </InlineGrid>
                   </BlockStack>
-                </BlockStack>
+                </Card>
+              </InlineGrid> */}
+
+              <Divider />
+
+              {/* Colors settings */}
+              <InlineGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="400">
+                <Box as="section">
+                  <BlockStack gap="400">
+                    <Text as="h3" variant="headingMd">
+                      Bundle colors
+                    </Text>
+                    <Text as="p" variant="bodyMd">
+                      Change the colors of all the elements that appear in the
+                      bundle to match your store's theme.
+                    </Text>
+                  </BlockStack>
+                </Box>
                 <Card>
                   <BlockStack gap={GapInsideSection}>
-                    <Text as="p">Colors</Text>
-                    <InlineGrid columns={2} gap={HorizontalGap}>
-                      {colors.map(
-                        (color: {
-                          hex: string | undefined;
-                          label: string;
-                          id: string;
-                        }) => (
-                          <ColorPicker
-                            key={color.id}
-                            label={color.label}
-                            color={color.hex as string} //Hex color code
-                            colorId={color.id}
-                            updateColor={updateColor}
-                          />
-                        ),
-                      )}
-                    </InlineGrid>
+                    <BlockStack gap={GapBetweenTitleAndContent}>
+                      <Text as="p">Buttons</Text>
+                      <InlineGrid columns={2} gap={HorizontalGap}>
+                        {buttonColors.map(
+                          (color: {
+                            hex: string | undefined;
+                            label: string;
+                            id: string;
+                          }) => (
+                            <ColorPicker
+                              key={color.id}
+                              label={color.label}
+                              color={color.hex as string} //Hex color code
+                              colorId={color.id}
+                              updateColor={updateColor}
+                            />
+                          ),
+                        )}
+                      </InlineGrid>
+                    </BlockStack>
+                    <BlockStack gap={GapBetweenTitleAndContent}>
+                      <Text as="p">Bundle colors</Text>
+                      <InlineGrid columns={2} gap={HorizontalGap}>
+                        {bundleColos.map(
+                          (color: {
+                            hex: string | undefined;
+                            label: string;
+                            id: string;
+                          }) => (
+                            <ColorPicker
+                              key={color.id}
+                              label={color.label}
+                              color={color.hex as string} //Hex color code
+                              colorId={color.id}
+                              updateColor={updateColor}
+                            />
+                          ),
+                        )}
+                      </InlineGrid>
+                    </BlockStack>
                   </BlockStack>
                 </Card>
-              </Card>
+              </InlineGrid>
 
-              <Box width="full">
-                <BlockStack inlineAlign="end">
-                  <ButtonGroup>
-                    <Button variant="primary" tone="critical">
-                      Delete
-                    </Button>
-                    <Button variant="primary" submit>
-                      Save
-                    </Button>
-                  </ButtonGroup>
-                </BlockStack>
-              </Box>
+              <Divider borderColor="transparent" />
+
+              {/* Save action */}
+              <BlockStack inlineAlign="end">
+                <Button variant="primary" submit>
+                  Save settings
+                </Button>
+              </BlockStack>
+
+              <Divider borderColor="transparent" />
             </BlockStack>
           </Form>
         </Page>

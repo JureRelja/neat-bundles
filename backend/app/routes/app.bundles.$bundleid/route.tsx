@@ -4,7 +4,6 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
   Form,
   useNavigation,
-  useSubmit,
   useLoaderData,
   useParams,
 } from "@remix-run/react";
@@ -18,7 +17,6 @@ import {
   Text,
   Box,
   SkeletonPage,
-  PageActions,
   ChoiceList,
   SkeletonBodyText,
   SkeletonDisplayText,
@@ -265,7 +263,7 @@ export default function Index() {
             secondaryActions={[
               {
                 content: "Settings",
-                url: `/app/bundle/${serverBundle.id}/settings`,
+                url: `/app/bundles/${serverBundle.id}/settings/?redirect=/app/bundles/${serverBundle.id}`,
                 icon: SettingsIcon,
               },
               {
@@ -286,7 +284,7 @@ export default function Index() {
               onAction: async () => {
                 // Save or discard the changes before leaving the page
                 await shopify.saveBar.leaveConfirmation();
-                navigate(-1);
+                navigate("/app");
               },
             }}
             title={`Edit bundle - ` + serverBundle.title}
@@ -668,6 +666,7 @@ export default function Index() {
                     </BlockStack>
                   </Layout.Section>
                 </Layout>
+
                 <Box width="full">
                   <BlockStack inlineAlign="end">
                     <ButtonGroup>
