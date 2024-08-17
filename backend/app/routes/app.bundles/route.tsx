@@ -1,9 +1,14 @@
-import { redirect, json } from "@remix-run/react";
+import { redirect, json, Outlet } from "@remix-run/react";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { authenticate } from "../../shopify.server";
 import db from "../../db.server";
 import { Bundle } from "@prisma/client";
 import { JsonData } from "../../types/jsonData";
+
+export const loader = async ({ request }: ActionFunctionArgs) => {
+  await authenticate.admin(request);
+  return null;
+};
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { session } = await authenticate.admin(request);
@@ -85,3 +90,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
   }
 };
+
+export default function Index() {
+  return <Outlet />;
+}

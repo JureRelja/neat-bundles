@@ -44,7 +44,7 @@ model BundleStep {
   description String       @default("Description for this step")
   stepType    StepType
   productStep ProductStep? //Data if the step is of type PRODUCT
-  contentStep ContentStep? //Data if the step is of type CONTENT
+  contentStep ContentStep[] //Data if the step is of type CONTENT
 }
 
 model ProductStep {

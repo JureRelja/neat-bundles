@@ -12,6 +12,8 @@ export type BundleStepBasicResources = Prisma.BundleStepGetPayload<{
   select: typeof bundleStepBasic;
 }>;
 
+/////
+
 //Budnle step with all resources
 export const bundleStepFull = {
   productStep: true,

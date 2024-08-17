@@ -1,5 +1,5 @@
 import { json, redirect } from "@remix-run/node";
-import { Link, Outlet, useNavigate } from "@remix-run/react";
+import { Link, useNavigate } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
   Form,
@@ -58,7 +58,7 @@ import {
   inclBundleFullStepsBasic,
 } from "../../types/Bundle";
 import { JsonData } from "../../types/jsonData";
-import { useSubmitAction } from "~/hooks/useSubmitAction";
+import { useSubmitAction } from "../../hooks/useSubmitAction";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
@@ -78,7 +78,6 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   }
   return json(
     new JsonData(true, "success", "Bundle succesfuly retrieved", "", bundle),
-
     { status: 200 },
   );
 };
@@ -263,7 +262,7 @@ export default function Index() {
             secondaryActions={[
               {
                 content: "Settings",
-                url: `/app/bundles/${serverBundle.id}/settings/?redirect=/app/bundles/${serverBundle.id}`,
+                url: `settings/?redirect=/app/bundles/${serverBundle.id}`,
                 icon: SettingsIcon,
               },
               {
@@ -289,7 +288,6 @@ export default function Index() {
             }}
             title={`Edit bundle - ` + serverBundle.title}
           >
-            <Outlet />
             <Form method="POST" data-discard-confirmation data-save-bar>
               <input type="hidden" name="action" value="updateBundle" />
               <input
@@ -418,6 +416,7 @@ export default function Index() {
                                 "text",
                                 "text",
                                 "text",
+                                "text",
                               ]}
                               headings={[
                                 "Step number",
@@ -443,24 +442,29 @@ export default function Index() {
                                       <Badge>Content step</Badge>
                                     ),
                                     <ButtonGroup>
-                                      <Button
-                                        icon={ArrowDownIcon}
-                                        size="slim"
-                                        variant="plain"
-                                        onClick={() => {
-                                          {
-                                          }
-                                        }}
-                                      />
-                                      <Button
-                                        icon={ArrowUpIcon}
-                                        size="slim"
-                                        variant="plain"
-                                        onClick={() => {
-                                          {
-                                          }
-                                        }}
-                                      />
+                                      {step.stepNumber !==
+                                        bundleSteps.length && (
+                                        <Button
+                                          icon={ArrowDownIcon}
+                                          size="slim"
+                                          variant="plain"
+                                          onClick={() => {
+                                            {
+                                            }
+                                          }}
+                                        />
+                                      )}
+                                      {step.stepNumber !== 1 && (
+                                        <Button
+                                          icon={ArrowUpIcon}
+                                          size="slim"
+                                          variant="plain"
+                                          onClick={() => {
+                                            {
+                                            }
+                                          }}
+                                        />
+                                      )}
                                     </ButtonGroup>,
                                     <ButtonGroup>
                                       <Button
