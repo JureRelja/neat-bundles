@@ -93,6 +93,19 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         },
       });
 
+      if (numOfSteps._max.stepNumber === 5)
+        return json(
+          {
+            ...new JsonData(
+              false,
+              "error",
+              "There was an error with your request",
+              "You can't have more than 5 steps in a bundle",
+            ),
+          },
+          { status: 400 },
+        );
+
       try {
         const newStep: BundleStep = await db.bundleStep.create({
           data: {
@@ -118,6 +131,161 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
               "error",
               "There was an error with your request",
               "New step couldn't be created",
+            ),
+          },
+          { status: 400 },
+        );
+      }
+    }
+
+    //Moving the step up
+    case "moveStepDown": {
+      try {
+        const stepId: string = formData.get("id") as string;
+
+        let step: BundleStep | null = await db.bundleStep.findFirst({
+          where: {
+            id: Number(stepId),
+          },
+        });
+
+        if (!step)
+          return json(
+            {
+              ...new JsonData(
+                false,
+                "error",
+                "There was an error with your request",
+                "Step couldn't be moved down",
+              ),
+            },
+            { status: 400 },
+          );
+
+        await db.bundleStep.update({
+          where: {
+            id: Number(stepId),
+          },
+          data: {
+            stepNumber: {
+              increment: 1,
+            },
+          },
+        });
+
+        await db.bundleStep.updateMany({
+          where: {
+            AND: {
+              stepNumber: step.stepNumber,
+              NOT: {
+                id: step.id,
+              },
+            },
+          },
+          data: {
+            stepNumber: {
+              decrement: 1,
+            },
+          },
+        });
+        return redirect(`/app/bundles/${step.bundleId}/`);
+      } catch (error) {
+        console.log(error);
+        return json(
+          {
+            ...new JsonData(
+              false,
+              "error",
+              "There was an error with your request",
+              "Step couldn't be moved down",
+            ),
+          },
+          { status: 400 },
+        );
+      }
+    }
+    //Moving the step down
+    case "moveStepUp": {
+      try {
+        const stepId: string = formData.get("id") as string;
+
+        let step: BundleStep | null = await db.bundleStep.findFirst({
+          where: {
+            id: Number(stepId),
+          },
+        });
+
+        if (!step)
+          return json(
+            {
+              ...new JsonData(
+                false,
+                "error",
+                "There was an error with your request",
+                "Step couldn't be moved up",
+              ),
+            },
+            { status: 400 },
+          );
+
+        const numOfSteps = await db.bundleStep.aggregate({
+          _max: {
+            stepNumber: true,
+          },
+          where: {
+            bundleId: step.bundleId,
+          },
+        });
+
+        if (step.stepNumber === numOfSteps._max.stepNumber)
+          return json(
+            {
+              ...new JsonData(
+                false,
+                "error",
+                "There was an error with your request",
+                "Step couldn't be moved down",
+              ),
+            },
+            { status: 400 },
+          );
+
+        await db.bundleStep.update({
+          where: {
+            id: Number(stepId),
+          },
+          data: {
+            stepNumber: {
+              decrement: 1,
+            },
+          },
+        });
+
+        await db.bundleStep.updateMany({
+          where: {
+            AND: {
+              stepNumber: step.stepNumber,
+              NOT: {
+                id: step.id,
+              },
+            },
+          },
+          data: {
+            stepNumber: {
+              increment: 1,
+            },
+          },
+        });
+        return redirect(`/app/bundles/${step.bundleId}/`);
+      } catch (error) {
+        console.log(error);
+        return json(
+          {
+            ...new JsonData(
+              false,
+              "error",
+              "There was an error with your request",
+              "Step couldn't be moved up",
             ),
           },
           { status: 400 },

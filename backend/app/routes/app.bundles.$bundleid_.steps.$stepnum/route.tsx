@@ -165,7 +165,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             data: {
               bundleId: Number(params.bundleid),
               stepNumber: stepToDuplicate.stepNumber + 1,
-              title: stepToDuplicate.title,
+              title: `${stepToDuplicate.title} - Copy`,
               description: stepToDuplicate.description,
               stepType: stepToDuplicate.stepType,
               productsData: {
@@ -190,7 +190,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             data: {
               bundleId: Number(params.bundleid),
               stepNumber: stepToDuplicate.stepNumber + 1,
-              title: stepToDuplicate.title,
+              title: `${stepToDuplicate.title} - Copy`,
               description: stepToDuplicate.description,
               stepType: stepToDuplicate.stepType,
               contentInputs: {
@@ -224,10 +224,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             { status: 400 },
           );
         }
-
-        return redirect(
-          `/app/bundles/${params.bundleid}/steps/${newStep.stepNumber}`,
-        );
+        // return json({
+        //   ...new JsonData(true, "success", "Step was duplicated", ""),
+        // });
+        return redirect(`/app/bundles/${params.bundleid}/`);
       } catch (error) {
         console.log(error);
         return json(

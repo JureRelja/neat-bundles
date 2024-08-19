@@ -2,6 +2,7 @@ import { json, redirect } from "@remix-run/node";
 import {
   Link,
   useActionData,
+  useFetcher,
   useNavigate,
   useRevalidator,
 } from "@remix-run/react";
@@ -50,20 +51,29 @@ import { useAppBridge, Modal, TitleBar } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
 import { useState } from "react";
 import {
+  bundleTagIndentifier,
   GapBetweenSections,
   GapBetweenTitleAndContent,
   GapInsideSection,
 } from "../../constants";
 import db from "../../db.server";
-import { StepType, BundlePricing, BundleDiscountType } from "@prisma/client";
+import {
+  StepType,
+  BundlePricing,
+  BundleDiscountType,
+  Bundle,
+} from "@prisma/client";
 import { BundleStepBasicResources } from "../../types/BundleStep";
 import {
+  bundleAllResources,
+  BundleAllResources,
   BundleFullStepBasicClient,
   BundleFullStepBasicServer,
   inclBundleFullStepsBasic,
 } from "../../types/Bundle";
 import { JsonData } from "../../types/jsonData";
 import { useSubmitAction } from "../../hooks/useSubmitAction";
+import { Loading } from "@shopify/polaris/build/ts/src/components/Frame/components";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
@@ -88,7 +98,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-  await authenticate.admin(request);
+  const { admin, session } = await authenticate.admin(request);
 
   const formData = await request.formData();
   const action = formData.get("action");
@@ -96,7 +106,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   switch (action) {
     case "deleteBundle": {
       try {
-        //Delete the bundle along with its steps, contentInputs, bundleSettings, bundleColors, and bundleLabels
+        //Delete the bundle along with its steps, contentInputs, bundleSettings?, bundleColors, and bundleLabels
         await db.bundle.delete({
           where: {
             id: Number(params.bundleid),
@@ -120,30 +130,154 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
       return redirect("/app");
     }
-    case "duplicateBundle":
-      const bundleToDuplicate: BundleFullStepBasicServer | null =
-        await db.bundle.findUnique({
-          where: {
-            id: Number(params.bundleid),
-          },
-          include: inclBundleFullStepsBasic,
-        });
+    // case "duplicateBundle":
+    //   const bundleToDuplicate: BundleAllResources | null =
+    //     await db.bundle.findUnique({
+    //       where: {
+    //         id: Number(params.bundleid),
+    //       },
+    //       include: bundleAllResources,
+    //     });
 
-      if (!bundleToDuplicate) {
-        return json(
-          {
-            ...new JsonData(
-              false,
-              "error",
-              "There was an error with your request",
-              "The bundle you are trying to duplicate does not exist",
-            ),
-          },
-          { status: 400 },
-        );
-      }
+    //   if (!bundleToDuplicate) {
+    //     return json(
+    //       {
+    //         ...new JsonData(
+    //           false,
+    //           "error",
+    //           "There was an error with your request",
+    //           "The bundle you are trying to duplicate does not exist",
+    //         ),
+    //       },
+    //       { status: 400 },
+    //     );
+    //   }
 
-      return redirect(`/app/bundle/$`);
+    //   try {
+    //     //Create a new product that will be used as a bundle wrapper
+    //     const { _max }: { _max: { id: number | null } } =
+    //       await db.bundle.aggregate({
+    //         _max: {
+    //           id: true,
+    //         },
+    //         where: {
+    //           storeUrl: session.shop,
+    //         },
+    //       });
+
+    //     //Create a new product that will be used as a bundle wrapper
+    //     const response = await admin.graphql(
+    //       `#graphql
+    //     mutation productCreate($productInput: ProductInput!) {
+    //       productCreate(input: $productInput) {
+    //         product {
+    //           id
+    //         }
+    //       }
+    //     }`,
+    //       {
+    //         variables: {
+    //           productInput: {
+    //             title: `Neat Bundle ${_max.id ? _max.id : ""}`,
+    //             productType: "Neat Bundle",
+    //             vendor: "Neat Bundles",
+    //             published: true,
+    //             tags: [bundleTagIndentifier],
+    //           },
+    //         },
+    //       },
+    //     );
+
+    //     const data = await response.json();
+
+    //     await db.bundle.create({
+    //       data: {
+    //         storeUrl: bundleToDuplicate.storeUrl,
+    //         title: `${bundleToDuplicate.title} - Copy`,
+    //         shopifyId: data.data.productCreate.product.id,
+    //         pricing: bundleToDuplicate.pricing,
+    //         priceAmount: bundleToDuplicate.priceAmount,
+    //         discountType: bundleToDuplicate.discountType,
+    //         discountValue: bundleToDuplicate.discountValue,
+    //         bundleSettings: {
+    //           create: {
+    //             displayDiscountBanner:
+    //               bundleToDuplicate.bundleSettings?.displayDiscountBanner,
+    //             skipTheCart: bundleToDuplicate.bundleSettings?.skipTheCart,
+    //             showOutOfStockProducts:
+    //               bundleToDuplicate.bundleSettings?.showOutOfStockProducts,
+    //             numOfProductColumns:
+    //               bundleToDuplicate.bundleSettings?.numOfProductColumns,
+
+    //             bundleColors: {
+    //               create: {
+    //                 stepsIcon:
+    //                   bundleToDuplicate.bundleSettings?.bundleColors.stepsIcon,
+    //               },
+    //             },
+    //             bundleLabels: {
+    //               create: {},
+    //             },
+    //           },
+    //         },
+    //         steps: {
+    //           create: [
+    //             {
+    //               stepNumber: 1,
+    //               title: "Step 1",
+    //               stepType: "PRODUCT",
+    //               productsData: {
+    //                 create: {},
+    //               },
+    //               contentInputs: {
+    //                 create: [{}, {}],
+    //               },
+    //             },
+    //             {
+    //               stepNumber: 2,
+    //               title: "Step 2",
+    //               stepType: "PRODUCT",
+    //               productsData: {
+    //                 create: {},
+    //               },
+    //               contentInputs: {
+    //                 create: [{}, {}],
+    //               },
+    //             },
+    //             {
+    //               stepNumber: 3,
+    //               title: "Step 3",
+    //               stepType: "PRODUCT",
+    //               productsData: {
+    //                 create: {},
+    //               },
+    //               contentInputs: {
+    //                 create: [{}, {}],
+    //               },
+    //             },
+    //           ],
+    //         },
+    //       },
+    //     });
+    //   } catch (error) {
+    //     console.log(error);
+    //     return json(
+    //       {
+    //         ...new JsonData(
+    //           false,
+    //           "error",
+    //           "There was an error with your request",
+    //           "The bundle you are trying to duplicate does not exist",
+    //         ),
+    //       },
+    //       { status: 400 },
+    //     );
+    //   }
+
+    //   return json(
+    //     { ...new JsonData(true, "success", "Bundle duplicated") },
+    //     { status: 200 },
+    //   );
 
     //Updating the bundle
     case "updateBundle":
@@ -175,12 +309,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
       return redirect(`/app`);
 
-    //Moving the step up
-    case "moveStepDown": {
-    }
-    //Moving the step down
-    case "moveStepUp": {
-    }
     default: {
       return json(
         {
@@ -200,9 +328,11 @@ export default function Index() {
   const nav = useNavigation();
   const navigate = useNavigate();
   const shopify = useAppBridge();
-  const isLoading: boolean = nav.state != "idle";
+  const isLoading: boolean = nav.state !== "idle";
   const params = useParams();
   const submitAction = useSubmitAction(); //Function for doing the submit action where the only data is action and url
+  const fetcher = useFetcher();
+  const rearanging: boolean = fetcher.state !== "idle";
 
   const serverBundle: BundleFullStepBasicClient =
     useLoaderData<typeof loader>().data;
@@ -214,20 +344,12 @@ export default function Index() {
       a.stepNumber - b.stepNumber,
   );
 
-  //Function for checking if there are free steps and displaying a modal if there are not
-  const thereAreFreeSteps = (bundle: BundleFullStepBasicClient): boolean => {
-    if (serverBundle.steps.length >= 5) {
-      shopify.modal.show("no-more-steps-modal");
-      return false;
-    }
-    return true;
-  };
-
   //Function for adding the step if there are less than 5 steps total
   const addStep = async (): Promise<void> => {
     await shopify.saveBar.leaveConfirmation();
 
-    if (!thereAreFreeSteps(bundleState)) {
+    if (serverBundle.steps.length >= 5) {
+      shopify.modal.show("no-more-steps-modal");
       return;
     }
 
@@ -242,7 +364,7 @@ export default function Index() {
 
   return (
     <>
-      {isLoading ? (
+      {isLoading || rearanging ? (
         <SkeletonPage primaryAction fullWidth></SkeletonPage>
       ) : (
         <>
@@ -425,7 +547,7 @@ export default function Index() {
                                 "text",
                               ]}
                               headings={[
-                                "Step number",
+                                "Step",
                                 "Title",
                                 "Type",
                                 "Rearange",
@@ -454,9 +576,14 @@ export default function Index() {
                                           icon={ArrowDownIcon}
                                           size="slim"
                                           variant="plain"
+                                          disabled={isLoading}
                                           onClick={() => {
-                                            {
-                                            }
+                                            submitAction(
+                                              "moveStepDown",
+                                              true,
+                                              `/app/bundles/${params.bundleid}/steps/`,
+                                              Number(step.id),
+                                            );
                                           }}
                                         />
                                       )}
@@ -465,9 +592,14 @@ export default function Index() {
                                           icon={ArrowUpIcon}
                                           size="slim"
                                           variant="plain"
+                                          disabled={isLoading}
                                           onClick={() => {
-                                            {
-                                            }
+                                            submitAction(
+                                              "moveStepUp",
+                                              true,
+                                              `/app/bundles/${params.bundleid}/steps/`,
+                                              Number(step.id),
+                                            );
                                           }}
                                         />
                                       )}

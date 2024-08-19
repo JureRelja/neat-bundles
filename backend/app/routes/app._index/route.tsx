@@ -187,7 +187,7 @@ export default function Index() {
                           Delete
                         </Button>
 
-                        <Button
+                        {/* <Button
                           icon={PageAddIcon}
                           variant="secondary"
                           onClick={() => {
@@ -199,7 +199,7 @@ export default function Index() {
                           }}
                         >
                           Duplicate
-                        </Button>
+                        </Button> */}
 
                         <Button
                           icon={EditIcon}
