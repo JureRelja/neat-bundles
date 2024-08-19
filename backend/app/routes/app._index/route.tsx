@@ -53,6 +53,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           shop {
             name
             email
+            primaryDomain {
+              url
+            }
           }
         }`,
     );
@@ -65,6 +68,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         storeUrl: session.shop,
         email: data.data.shop.email,
         storeName: data.data.shop.name,
+        primaryDomain: data.data.shop.primaryDomain.url,
       },
     });
   }

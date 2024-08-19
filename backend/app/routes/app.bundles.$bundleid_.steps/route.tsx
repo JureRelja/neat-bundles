@@ -9,12 +9,10 @@ import {
   Badge,
   Text,
   Layout,
-  Icon,
 } from "@shopify/polaris";
-import { ArrowLeftIcon, ArrowRightIcon } from "@shopify/polaris-icons";
 import { GapBetweenSections } from "../../constants";
 import { StepType } from "@prisma/client";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
   useNavigation,
@@ -28,10 +26,12 @@ import {
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
 import db from "../../db.server";
+import { BundleStep } from "@prisma/client";
 import { JsonData } from "../../types/jsonData";
 import { bundleStepBasic, BundleStepBasicResources } from "~/types/BundleStep";
 import { useEffect, useRef, useState } from "react";
 import styles from "./route.module.css";
+import BundlePreview from "./bundlePreview";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
@@ -84,8 +84,31 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   switch (action) {
     //Adding a new step to the bundle
     case "addStep": {
+      const numOfSteps = await db.bundleStep.aggregate({
+        _max: {
+          stepNumber: true,
+        },
+        where: {
+          bundleId: Number(params.bundleid),
+        },
+      });
+
       try {
-        console.log("Adding a new step to the bundle");
+        const newStep: BundleStep = await db.bundleStep.create({
+          data: {
+            bundleId: Number(params.bundleid),
+            stepNumber: numOfSteps._max.stepNumber
+              ? numOfSteps._max.stepNumber + 1
+              : 1,
+            stepType: StepType.PRODUCT,
+            title:
+              "Step " +
+              (numOfSteps._max.stepNumber ? numOfSteps._max.stepNumber + 1 : 1),
+          },
+        });
+        return redirect(
+          `/app/bundles/${params.bundleid}/steps/${newStep.stepNumber}`,
+        );
       } catch (error) {
         console.log(error);
         return json(
@@ -100,11 +123,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           { status: 400 },
         );
       }
-
-      return json(
-        { ...new JsonData(true, "success", "New step was succesfully added.") },
-        { status: 200 },
-      );
     }
 
     default:
@@ -122,7 +140,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 };
 
 export default function Index({}) {
-  const submit = useSubmit();
   const navigate = useNavigate();
   const nav = useNavigation();
   const shopify = useAppBridge();
@@ -193,12 +210,11 @@ export default function Index({}) {
                 >
                   <BlockStack gap={GapBetweenSections}>
                     {/* <BundlePreview /> */}
-                    <Card></Card>
+                    <BundlePreview />
 
                     {/* Navigation between steps */}
                     <InlineStack align="space-between">
                       <Button
-                        icon={ArrowLeftIcon}
                         disabled={stepData.stepNumber === 1}
                         onClick={() => {
                           revalidator.revalidate();
@@ -207,14 +223,13 @@ export default function Index({}) {
                           );
                         }}
                       >
-                        Step{" "}
+                        ← Step{" "}
                         {stepData.stepNumber !== 1
                           ? (stepData.stepNumber - 1).toString()
                           : "1"}
                       </Button>
 
                       <Button
-                        icon={ArrowRightIcon}
                         disabled={stepData.stepNumber === 3}
                         onClick={() => {
                           revalidator.revalidate();
@@ -226,7 +241,8 @@ export default function Index({}) {
                         Step{" "}
                         {stepData.stepNumber !== 3
                           ? (stepData.stepNumber + 1).toString()
-                          : "3"}
+                          : "3"}{" "}
+                        →
                       </Button>
                     </InlineStack>
                     <Divider borderColor="transparent" />

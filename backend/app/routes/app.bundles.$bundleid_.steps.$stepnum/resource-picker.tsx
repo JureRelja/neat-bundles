@@ -60,15 +60,15 @@ export default function Index({
       <Button
         onClick={showModalPicker}
         fullWidth
-        variant={selectedResources.length > 0 ? "secondary" : "primary"}
+        variant={selectedResources?.length > 0 ? "secondary" : "primary"}
       >
         {resourceType === ProductResourceType.COLLECTION
-          ? selectedResources.length === 0
+          ? selectedResources?.length === 0
             ? "Select collections"
-            : `${selectedResources.length} collections selected`
-          : selectedResources.length === 0
+            : `${selectedResources?.length} collections selected`
+          : selectedResources?.length === 0
             ? "Select products"
-            : `${selectedResources.length} products selected`}
+            : `${selectedResources?.length} products selected`}
       </Button>
     </>
   );

@@ -2,14 +2,12 @@ import { json, redirect } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
   Form,
-  useActionData,
   useNavigation,
-  useSubmit,
   useLoaderData,
+  useParams,
 } from "@remix-run/react";
+import { useSubmitAction } from "~/hooks/useSubmitAction";
 import {
-  Page,
-  Layout,
   Card,
   Button,
   BlockStack,
@@ -21,12 +19,11 @@ import {
   SkeletonBodyText,
   SkeletonDisplayText,
   InlineGrid,
-  InlineStack,
   ButtonGroup,
   ChoiceList,
   Divider,
 } from "@shopify/polaris";
-import { useAppBridge, Modal, TitleBar } from "@shopify/app-bridge-react";
+
 import { authenticate } from "../../shopify.server";
 import { useState } from "react";
 import {
@@ -36,7 +33,12 @@ import {
   HorizontalGap,
 } from "../../constants";
 import db from "../../db.server";
-import { BundleStep, ProductResourceType, StepType } from "@prisma/client";
+import {
+  ProductResourceType,
+  StepType,
+  ContentInput,
+  BundleStep,
+} from "@prisma/client";
 import { BundleStepAllResources, bundleStepFull } from "~/types/BundleStep";
 import { JsonData } from "../../types/jsonData";
 import ContentStepInputs from "./content-step-inputs";
@@ -77,32 +79,18 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     //Deleting the step from the bundle
     case "deleteStep": {
       try {
-        const step = await db.bundleStep.deleteMany({
+        await db.bundleStep.deleteMany({
           where: {
             bundleId: Number(params.bundleid),
             stepNumber: Number(params.stepnum),
           },
         });
 
-        if (!step) {
-          return json(
-            {
-              ...new JsonData(
-                true,
-                "error",
-                "There was an error with your request.",
-                "Requested step couldn't be found",
-              ),
-            },
-            { status: 400 },
-          );
-        }
-
         await db.bundleStep.updateMany({
           where: {
-            bundleId: Number(params.id),
+            bundleId: Number(params.bundleid),
             stepNumber: {
-              gte: Number(formData.get("stepNumber")),
+              gt: Number(params.stepnum),
             },
           },
           data: {
@@ -124,100 +112,210 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           { status: 400 },
         );
       }
-
       return redirect(`/app/bundles/${params.bundleid}`);
     }
 
     //Duplicating the step
-    // case "duplicateStep": {
-    //   try {
-    //     let stepToDuplicate: BundleStepWithAllResources | null =
-    //       await db.bundleStep.findFirst({
-    //         where: {
-    //           bundleId: Number(params.id),
-    //           stepNumber: Number(formData.get("stepNumber")),
-    //         },
-    //         include: {
+    case "duplicateStep": {
+      try {
+        let stepToDuplicate: BundleStepAllResources | null =
+          await db.bundleStep.findFirst({
+            where: {
+              bundleId: Number(params.bundleid),
+              stepNumber: Number(params.stepnum),
+            },
+            include: bundleStepFull,
+          });
 
-    //         },
-    //       });
+        if (!stepToDuplicate) {
+          return json(
+            {
+              ...new JsonData(
+                false,
+                "error",
+                "Thre was an error with your request",
+                "Requested step for duplication doesn't exist.",
+              ),
+            },
+            { status: 400 },
+          );
+        }
 
-    //     if (!stepToDuplicate) {
-    //       return json(
-    //         {
-    //           ...new JsonData(
-    //             false,
-    //             "error",
-    //             "Thre was an error with your request",
-    //             "Requested step for duplication doesn't exist.",
-    //           ),
-    //         },
-    //         { status: 400 },
-    //       );
-    //     }
+        //Incrementing the step number for all steps with stepNumber greater than the duplicated step
+        await db.bundleStep.updateMany({
+          where: {
+            bundleId: Number(params.bundleid),
+            stepNumber: {
+              gt: Number(stepToDuplicate.stepNumber),
+            },
+          },
+          data: {
+            stepNumber: {
+              increment: 1,
+            },
+          },
+        });
 
-    //     //Creating a new step with the same data as the duplicated step
-    //     await db.bundleStep.create({
-    //       data: {
-    //         bundleId: Number(params.id),
-    //         stepNumber: Number(formData.get("stepNumber")) + 1,
-    //         title: stepToDuplicate.title,
-    //         stepType: stepToDuplicate.stepType,
-    //         description: stepToDuplicate.description,
-    //         productResources: stepToDuplicate.productResources,
-    //         resourceType: stepToDuplicate.resourceType,
-    //         minProductsOnStep: stepToDuplicate.minProductsOnStep,
-    //         maxProductsOnStep: stepToDuplicate.maxProductsOnStep,
-    //         allowProductDuplicates: stepToDuplicate.allowProductDuplicates,
-    //         showProductPrice: stepToDuplicate.showProductPrice,
-    //         contentInputs: {
-    //           create: stepToDuplicate.contentInputs.map(
-    //             (contentInput: ContentInput) => {
-    //               return {
-    //                 inputType: contentInput.inputType,
-    //                 inputLabel: contentInput.inputLabel,
-    //                 maxChars: contentInput.maxChars,
-    //                 required: contentInput.required,
-    //               };
-    //             },
-    //           ),
-    //         },
-    //       },
-    //     });
+        //Creating a new step with the same data as the duplicated step
+        let newStep: BundleStep | null = null;
 
-    //     //Incrementing the step number for all steps with stepNumber greater than the duplicated step
-    //     await db.bundleStep.updateMany({
-    //       where: {
-    //         bundleId: Number(params.id),
-    //         stepNumber: {
-    //           gte: Number(formData.get("stepNumber")),
-    //         },
-    //       },
-    //       data: {
-    //         stepNumber: {
-    //           increment: 1,
-    //         },
-    //       },
-    //     });
-    //   } catch (error) {
-    //     console.log(error);
-    //     return json(
-    //       {
-    //         ...new JsonData(
-    //           false,
-    //           "error",
-    //           "Error while duplicating a step",
-    //           "Make sure that your entered correct data.",
-    //         ),
-    //       },
-    //       { status: 400 },
-    //     );
-    //   }
-    //   return json(
-    //     { ...new JsonData(true, "success", "Step was succesfuly duplicated") },
-    //     { status: 200 },
-    //   );
-    // }
+        if (stepToDuplicate.stepType === StepType.PRODUCT) {
+          newStep = await db.bundleStep.create({
+            data: {
+              bundleId: Number(params.bundleid),
+              stepNumber: stepToDuplicate.stepNumber + 1,
+              title: stepToDuplicate.title,
+              description: stepToDuplicate.description,
+              stepType: stepToDuplicate.stepType,
+              productsData: {
+                create: {
+                  resourceType: stepToDuplicate.productsData?.resourceType,
+                  productResources:
+                    stepToDuplicate.productsData?.productResources,
+                  minProductsOnStep:
+                    stepToDuplicate.productsData?.minProductsOnStep,
+                  maxProductsOnStep:
+                    stepToDuplicate.productsData?.maxProductsOnStep,
+                  allowProductDuplicates:
+                    stepToDuplicate.productsData?.allowProductDuplicates,
+                  showProductPrice:
+                    stepToDuplicate.productsData?.showProductPrice,
+                },
+              },
+            },
+          });
+        } else if (stepToDuplicate.stepType === StepType.CONTENT) {
+          newStep = await db.bundleStep.create({
+            data: {
+              bundleId: Number(params.bundleid),
+              stepNumber: stepToDuplicate.stepNumber + 1,
+              title: stepToDuplicate.title,
+              description: stepToDuplicate.description,
+              stepType: stepToDuplicate.stepType,
+              contentInputs: {
+                create: [
+                  stepToDuplicate.contentInputs.map(
+                    (contentStep: ContentInput) => {
+                      return {
+                        inputType: contentStep.inputType,
+                        inputLabel: contentStep.inputLabel,
+                        maxChars: contentStep.maxChars,
+                        required: contentStep.required,
+                      };
+                    },
+                  ),
+                ],
+              },
+            },
+          });
+        }
+
+        if (!newStep) {
+          return json(
+            {
+              ...new JsonData(
+                false,
+                "error",
+                "There was an error with your request",
+                "Step couldn't be duplicated",
+              ),
+            },
+            { status: 400 },
+          );
+        }
+
+        return redirect(
+          `/app/bundles/${params.bundleid}/steps/${newStep.stepNumber}`,
+        );
+      } catch (error) {
+        console.log(error);
+        return json(
+          {
+            ...new JsonData(
+              false,
+              "error",
+              "Error while duplicating a step",
+              "Make sure that your entered correct data.",
+            ),
+          },
+          { status: 400 },
+        );
+      }
+    }
+
+    //Updating the step
+    case "updateStep": {
+      const stepData: BundleStepAllResources = JSON.parse(
+        formData.get("stepData") as string,
+      );
+
+      try {
+        if (stepData.stepType === StepType.PRODUCT) {
+          await db.bundleStep.updateMany({
+            where: {
+              bundleId: Number(params.bundleid),
+              stepNumber: Number(params.stepnum),
+            },
+            data: {
+              title: stepData.title,
+              description: stepData.description,
+              stepType: stepData.stepType,
+              productsData: {
+                update: {
+                  data: {
+                    resourceType: stepData.productsData?.resourceType,
+                    productResources: stepData.productsData?.productResources,
+                    minProductsOnStep: stepData.productsData?.minProductsOnStep,
+                    maxProductsOnStep: stepData.productsData?.maxProductsOnStep,
+                    allowProductDuplicates:
+                      stepData.productsData?.allowProductDuplicates,
+                    showProductPrice: stepData.productsData?.showProductPrice,
+                  },
+                },
+              },
+            },
+          });
+        } else if (stepData.stepType === StepType.CONTENT) {
+          await db.bundleStep.updateMany({
+            where: {
+              bundleId: Number(params.bundleid),
+              stepNumber: Number(params.stepnum),
+            },
+            data: {
+              title: stepData.title,
+              description: stepData.description,
+              stepType: stepData.stepType,
+              contentInputs: {
+                update: stepData.contentInputs.map(
+                  (contentStep: ContentInput) => {
+                    return {
+                      inputType: contentStep.inputType,
+                      inputLabel: contentStep.inputLabel,
+                      maxChars: contentStep.maxChars,
+                      required: contentStep.required,
+                    };
+                  },
+                ),
+              },
+            },
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        return json(
+          {
+            ...new JsonData(
+              false,
+              "error",
+              "There was an error with your request",
+              "Step couldn't be updated",
+            ),
+          },
+          { status: 400 },
+        );
+      }
+      return redirect(`/app/bundles/${params.bundleid}`);
+    }
 
     default:
       return json(
@@ -235,10 +333,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
 export default function Index() {
   const nav = useNavigation();
-  const actionData = useActionData<typeof action>();
-  const submit = useSubmit();
-  const shopify = useAppBridge();
   const isLoading = nav.state != "idle";
+  const submitAction = useSubmitAction();
+  const params = useParams();
 
   const serverStepData: BundleStepAllResources =
     useLoaderData<typeof loader>().data;
@@ -248,12 +345,12 @@ export default function Index() {
 
   const updateSelectedResources = (selectedResources: string[]) => {
     setStepData((stepData: BundleStepAllResources) => {
-      if (!stepData.productStep) return stepData;
+      if (!stepData.productsData) return stepData;
 
       return {
         ...stepData,
-        productStep: {
-          ...stepData.productStep,
+        productsData: {
+          ...stepData.productsData,
           productResources: selectedResources,
         },
       };
@@ -265,134 +362,147 @@ export default function Index() {
       {isLoading ? (
         <SkeletonPage primaryAction fullWidth></SkeletonPage>
       ) : (
-        <BlockStack gap={GapBetweenSections}>
-          <Card>
-            <BlockStack gap={GapBetweenSections}>
-              <BlockStack gap={GapInsideSection}>
-                <TextField
-                  label="Step title"
-                  value={stepData.title}
-                  onChange={(newTitle) => {}}
-                  autoComplete="off"
-                  name={`stepTitle`}
-                />
-                <TextField
-                  label="Step description"
-                  value={stepData.description}
-                  name={`stepDescription`}
-                  onChange={(newDesc) => {}}
-                  autoComplete="off"
-                />
-              </BlockStack>
-              <ChoiceList
-                title="Step type:"
-                name={`stepType`}
-                choices={[
-                  {
-                    label: "Product step",
-                    value: StepType.PRODUCT,
-                    helpText: `Customers can choose products on this step`,
-                  },
-                  {
-                    label: "Content step",
-                    value: StepType.CONTENT,
-                    helpText: `Customer can add text or images on this step`,
-                  },
-                ]}
-                selected={[stepData.stepType]}
-                onChange={(selected: string[]) => {}}
-              />
-
-              <Divider borderColor="border-inverse" />
-              {stepData.stepType === StepType.PRODUCT ? (
-                <>
-                  <BlockStack gap={GapInsideSection}>
-                    <ChoiceList
-                      title="Display products:"
-                      name={`productResourceType`}
-                      choices={[
-                        {
-                          label: "Selected products",
-                          value: ProductResourceType.PRODUCT,
-                        },
-                        {
-                          label: "Selected collections",
-                          value: ProductResourceType.COLLECTION,
-                        },
-                      ]}
-                      selected={[stepData.productStep?.resourceType as string]}
-                      onChange={(selected: string[]) => {}}
-                    />
-
-                    <ResourcePicker
-                      resourceType={
-                        stepData.productStep
-                          ?.resourceType as ProductResourceType
-                      }
-                      selectedResources={
-                        stepData.productStep?.productResources as string[]
-                      }
-                      updateSelectedResources={updateSelectedResources}
-                    />
-                  </BlockStack>
-
-                  <Divider />
-                  <BlockStack gap={GapInsideSection}>
-                    <Text as="p">Rules</Text>
-
-                    <InlineGrid columns={2} gap={HorizontalGap}>
-                      <TextField
-                        label="Minimum products to select"
-                        type="number"
-                        autoComplete="off"
-                        inputMode="numeric"
-                        name={`minProductsToSelect`}
-                        min={1}
-                        value={stepData.productStep?.minProductsOnStep.toString()}
-                        onChange={(value) => {}}
-                      />
-
-                      <TextField
-                        label="Maximum products to select"
-                        type="number"
-                        autoComplete="off"
-                        inputMode="numeric"
-                        name={`maxProductsToSelect`}
-                        min={1}
-                        value={stepData.productStep?.maxProductsOnStep.toString()}
-                        onChange={(value) => {}}
-                      />
-                    </InlineGrid>
-                    <ChoiceList
-                      title="Display products"
-                      allowMultiple
-                      name={`displayProducts`}
-                      choices={[
-                        {
-                          label:
-                            "Allow customers to select one product more than once",
-                          value: "allowProductDuplicates",
-                        },
-                        {
-                          label: "Show price under each product",
-                          value: "showProductPrice",
-                        },
-                      ]}
-                      selected={[
-                        stepData.productStep?.allowProductDuplicates
-                          ? "allowProductDuplicates"
-                          : "",
-                        stepData.productStep?.showProductPrice
-                          ? "showProductPrice"
-                          : "",
-                      ]}
-                      onChange={(selectedValues) => {}}
-                    />
-                  </BlockStack>
-                </>
-              ) : (
+        <Form method="POST" data-discard-confirmation data-save-bar>
+          <input type="hidden" name="action" value="updateStep" />
+          <input
+            type="hidden"
+            name="stepData"
+            value={JSON.stringify(stepData)}
+          />
+          <BlockStack gap={GapBetweenSections}>
+            <Card>
+              <BlockStack gap={GapBetweenTitleAndContent}>
+                <Text as="h2" variant="headingMd">
+                  Step settings
+                </Text>
                 <BlockStack gap={GapBetweenSections}>
-                  {/* {stepData.map((contentInput, index) => (
+                  <BlockStack gap={GapInsideSection}>
+                    <TextField
+                      label="Step title"
+                      value={stepData.title}
+                      onChange={(newTitle) => {}}
+                      autoComplete="off"
+                      name={`stepTitle`}
+                    />
+                    <TextField
+                      label="Step description"
+                      value={stepData.description}
+                      name={`stepDescription`}
+                      onChange={(newDesc) => {}}
+                      autoComplete="off"
+                    />
+                  </BlockStack>
+                  <ChoiceList
+                    title="Step type:"
+                    name={`stepType`}
+                    choices={[
+                      {
+                        label: "Product step",
+                        value: StepType.PRODUCT,
+                        helpText: `Customers can choose products on this step`,
+                      },
+                      {
+                        label: "Content step",
+                        value: StepType.CONTENT,
+                        helpText: `Customer can add text or images on this step`,
+                      },
+                    ]}
+                    selected={[stepData.stepType]}
+                    onChange={(selected: string[]) => {}}
+                  />
+
+                  <Divider borderColor="border-inverse" />
+                  {stepData.stepType === StepType.PRODUCT ? (
+                    <>
+                      <BlockStack gap={GapInsideSection}>
+                        <ChoiceList
+                          title="Display products:"
+                          name={`productResourceType`}
+                          choices={[
+                            {
+                              label: "Selected products",
+                              value: ProductResourceType.PRODUCT,
+                            },
+                            {
+                              label: "Selected collections",
+                              value: ProductResourceType.COLLECTION,
+                            },
+                          ]}
+                          selected={[
+                            stepData.productsData?.resourceType as string,
+                          ]}
+                          onChange={(selected: string[]) => {}}
+                        />
+
+                        <ResourcePicker
+                          resourceType={
+                            stepData.productsData
+                              ?.resourceType as ProductResourceType
+                          }
+                          selectedResources={
+                            stepData.productsData?.productResources as string[]
+                          }
+                          updateSelectedResources={updateSelectedResources}
+                        />
+                      </BlockStack>
+
+                      <Divider />
+                      <BlockStack gap={GapInsideSection}>
+                        <Text as="p">Rules</Text>
+
+                        <InlineGrid columns={2} gap={HorizontalGap}>
+                          <TextField
+                            label="Minimum products to select"
+                            type="number"
+                            autoComplete="off"
+                            inputMode="numeric"
+                            name={`minProductsToSelect`}
+                            min={1}
+                            value={stepData.productsData?.minProductsOnStep.toString()}
+                            onChange={(value) => {}}
+                          />
+
+                          <TextField
+                            label="Maximum products to select"
+                            type="number"
+                            autoComplete="off"
+                            inputMode="numeric"
+                            name={`maxProductsToSelect`}
+                            min={1}
+                            value={stepData.productsData?.maxProductsOnStep.toString()}
+                            onChange={(value) => {}}
+                          />
+                        </InlineGrid>
+                        <ChoiceList
+                          title="Display products"
+                          allowMultiple
+                          name={`displayProducts`}
+                          choices={[
+                            {
+                              label:
+                                "Allow customers to select one product more than once",
+                              value: "allowProductDuplicates",
+                            },
+                            {
+                              label: "Show price under each product",
+                              value: "showProductPrice",
+                            },
+                          ]}
+                          selected={[
+                            stepData.productsData?.allowProductDuplicates
+                              ? "allowProductDuplicates"
+                              : "",
+                            stepData.productsData?.showProductPrice
+                              ? "showProductPrice"
+                              : "",
+                          ]}
+                          onChange={(selectedValues) => {}}
+                        />
+                      </BlockStack>
+                    </>
+                  ) : (
+                    <BlockStack gap={GapBetweenSections}>
+                      {/* {stepData.map((contentInput, index) => (
                   <ContentStepInputs
                     key={contentInput.id}
                     contentInput={contentInput}
@@ -401,25 +511,37 @@ export default function Index() {
                     stepNumber={stepData.stepNumber}
                   />
                 ))} */}
+                    </BlockStack>
+                  )}
                 </BlockStack>
-              )}
-            </BlockStack>
-          </Card>
+              </BlockStack>
+            </Card>
 
-          {/* Save action */}
-          <Box width="full">
-            <BlockStack inlineAlign="end">
-              <ButtonGroup>
-                <Button variant="primary" tone="critical">
-                  Delete
-                </Button>
-                <Button variant="primary" submit>
-                  Save step
-                </Button>
-              </ButtonGroup>
-            </BlockStack>
-          </Box>
-        </BlockStack>
+            {/* Save action */}
+            <Box width="full">
+              <BlockStack inlineAlign="end">
+                <ButtonGroup>
+                  <Button
+                    variant="primary"
+                    tone="critical"
+                    onClick={() => {
+                      submitAction(
+                        "deleteStep",
+                        true,
+                        `/app/bundles/${params.bundleid}/steps/${params.stepnum}`,
+                      );
+                    }}
+                  >
+                    Delete
+                  </Button>
+                  <Button variant="primary" submit>
+                    Save step
+                  </Button>
+                </ButtonGroup>
+              </BlockStack>
+            </Box>
+          </BlockStack>
+        </Form>
       )}
     </>
   );

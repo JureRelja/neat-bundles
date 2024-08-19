@@ -1,5 +1,10 @@
 import { json, redirect } from "@remix-run/node";
-import { Link, useNavigate } from "@remix-run/react";
+import {
+  Link,
+  useActionData,
+  useNavigate,
+  useRevalidator,
+} from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
   Form,
@@ -194,7 +199,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 export default function Index() {
   const nav = useNavigation();
   const navigate = useNavigate();
-
   const shopify = useAppBridge();
   const isLoading: boolean = nav.state != "idle";
   const params = useParams();
@@ -205,14 +209,14 @@ export default function Index() {
 
   const [bundleState, setBundleState] =
     useState<BundleFullStepBasicClient>(serverBundle);
-  const bundleSteps: BundleStepBasicResources[] = bundleState.steps.sort(
+  const bundleSteps: BundleStepBasicResources[] = serverBundle.steps.sort(
     (a: BundleStepBasicResources, b: BundleStepBasicResources): number =>
       a.stepNumber - b.stepNumber,
   );
 
   //Function for checking if there are free steps and displaying a modal if there are not
   const thereAreFreeSteps = (bundle: BundleFullStepBasicClient): boolean => {
-    if (bundle.steps.length >= 5) {
+    if (serverBundle.steps.length >= 5) {
       shopify.modal.show("no-more-steps-modal");
       return false;
     }
@@ -220,12 +224,14 @@ export default function Index() {
   };
 
   //Function for adding the step if there are less than 5 steps total
-  const addStep = (): void => {
+  const addStep = async (): Promise<void> => {
+    await shopify.saveBar.leaveConfirmation();
+
     if (!thereAreFreeSteps(bundleState)) {
       return;
     }
 
-    submitAction("addStep", true, `/app/bundles/${params.bundleid}`);
+    submitAction("addStep", true, `/app/bundles/${params.bundleid}/steps`);
   };
 
   //Deleting the bundle

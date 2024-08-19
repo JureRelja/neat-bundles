@@ -11,16 +11,18 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  ownerName String   @default("")
-  storeName String
-  storeUrl  String   @unique
-  email     String
-  bundles   Bundle[]
+  id            Int      @id @default(autoincrement())
+  ownerName     String   @default("")
+  storeName     String
+  storeUrl      String   @unique
+  primaryDomain String
+  email         String
+  bundles       Bundle[]
 }
 
 model Bundle {
   id             Int                @id @default(autoincrement())
+  shopifyId      String             @unique
   title          String
   published      Boolean            @default(false)
   createdAt      DateTime           @default(now())
@@ -36,18 +38,18 @@ model Bundle {
 
 //Step models
 model BundleStep {
-  id          Int          @id @default(autoincrement())
-  bundleId    Int
-  bundle      Bundle       @relation(fields: [bundleId], references: [id], onDelete: Cascade)
-  stepNumber  Int
-  title       String
-  description String       @default("Description for this step")
-  stepType    StepType
-  productStep ProductStep? //Data if the step is of type PRODUCT
-  contentStep ContentStep[] //Data if the step is of type CONTENT
+  id            Int             @id @default(autoincrement())
+  bundleId      Int
+  bundle        Bundle          @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  stepNumber    Int
+  title         String
+  description   String          @default("Description for this step")
+  stepType      StepType
+  productsData  ProductsData? //Data if the step is of type PRODUCT
+  contentInputs ContentInput[] //Data if the step is of type CONTENT
 }
 
-model ProductStep {
+model ProductsData {
   id                     Int                 @id @default(autoincrement())
   bundleStepId           Int                 @unique
   bundleStep             BundleStep          @relation(fields: [bundleStepId], references: [id], onDelete: Cascade)
@@ -59,7 +61,7 @@ model ProductStep {
   showProductPrice       Boolean             @default(true)
 }
 
-model ContentStep {
+model ContentInput {
   id           Int        @id @default(autoincrement())
   bundleStepId Int        @unique
   bundleStep   BundleStep @relation(fields: [bundleStepId], references: [id], onDelete: Cascade)
