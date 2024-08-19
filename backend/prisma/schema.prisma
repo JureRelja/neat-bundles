@@ -63,7 +63,7 @@ model ProductsData {
 
 model ContentInput {
   id           Int        @id @default(autoincrement())
-  bundleStepId Int        @unique
+  bundleStepId Int        
   bundleStep   BundleStep @relation(fields: [bundleStepId], references: [id], onDelete: Cascade)
   inputType    InputType  @default(TEXT)
   inputLabel   String     @default("Input label")

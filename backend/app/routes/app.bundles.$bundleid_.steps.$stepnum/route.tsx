@@ -43,6 +43,7 @@ import { BundleStepAllResources, bundleStepFull } from "~/types/BundleStep";
 import { JsonData } from "../../types/jsonData";
 import ContentStepInputs from "./content-step-inputs";
 import ResourcePicker from "./resource-picker";
+import { i } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
@@ -146,7 +147,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           where: {
             bundleId: Number(params.bundleid),
             stepNumber: {
-              gt: Number(stepToDuplicate.stepNumber),
+              gt: Number(params.stepnum),
             },
           },
           data: {
@@ -250,19 +251,28 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       );
 
       try {
+        //Adding the products data to the step
         if (stepData.stepType === StepType.PRODUCT) {
-          await db.bundleStep.updateMany({
+          await db.bundleStep.update({
             where: {
-              bundleId: Number(params.bundleid),
-              stepNumber: Number(params.stepnum),
+              id: stepData.id,
             },
             data: {
               title: stepData.title,
               description: stepData.description,
               stepType: stepData.stepType,
               productsData: {
-                update: {
-                  data: {
+                upsert: {
+                  update: {
+                    resourceType: stepData.productsData?.resourceType,
+                    productResources: stepData.productsData?.productResources,
+                    minProductsOnStep: stepData.productsData?.minProductsOnStep,
+                    maxProductsOnStep: stepData.productsData?.maxProductsOnStep,
+                    allowProductDuplicates:
+                      stepData.productsData?.allowProductDuplicates,
+                    showProductPrice: stepData.productsData?.showProductPrice,
+                  },
+                  create: {
                     resourceType: stepData.productsData?.resourceType,
                     productResources: stepData.productsData?.productResources,
                     minProductsOnStep: stepData.productsData?.minProductsOnStep,
@@ -273,26 +283,36 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                   },
                 },
               },
+              contentInputs: {
+                createMany: {
+                  data: [{}, {}],
+                },
+              },
             },
           });
+          //Adding the content inputs to the step
         } else if (stepData.stepType === StepType.CONTENT) {
-          await db.bundleStep.updateMany({
+          await db.bundleStep.update({
             where: {
-              bundleId: Number(params.bundleid),
-              stepNumber: Number(params.stepnum),
+              id: stepData.id,
             },
             data: {
               title: stepData.title,
               description: stepData.description,
               stepType: stepData.stepType,
               contentInputs: {
-                update: stepData.contentInputs.map(
-                  (contentStep: ContentInput) => {
+                updateMany: stepData.contentInputs.map(
+                  (input: ContentInput) => {
                     return {
-                      inputType: contentStep.inputType,
-                      inputLabel: contentStep.inputLabel,
-                      maxChars: contentStep.maxChars,
-                      required: contentStep.required,
+                      where: {
+                        id: input.id,
+                      },
+                      data: {
+                        inputType: input.inputType,
+                        inputLabel: input.inputLabel,
+                        maxChars: input.maxChars,
+                        required: input.required,
+                      },
                     };
                   },
                 ),
@@ -357,6 +377,20 @@ export default function Index() {
     });
   };
 
+  const updateContentInput = (contentInput: ContentInput) => {
+    setStepData((stepData: BundleStepAllResources) => {
+      return {
+        ...stepData,
+        contentInputs: stepData.contentInputs.map((input: ContentInput) => {
+          if (input.id === contentInput.id) {
+            return contentInput;
+          }
+          return input;
+        }),
+      };
+    });
+  };
+
   return (
     <>
       {isLoading ? (
@@ -380,7 +414,14 @@ export default function Index() {
                     <TextField
                       label="Step title"
                       value={stepData.title}
-                      onChange={(newTitle) => {}}
+                      onChange={(newTitle: string) => {
+                        setStepData((stepData: BundleStepAllResources) => {
+                          return {
+                            ...stepData,
+                            title: newTitle,
+                          };
+                        });
+                      }}
                       autoComplete="off"
                       name={`stepTitle`}
                     />
@@ -388,7 +429,14 @@ export default function Index() {
                       label="Step description"
                       value={stepData.description}
                       name={`stepDescription`}
-                      onChange={(newDesc) => {}}
+                      onChange={(newDesc: string) => {
+                        setStepData((stepData: BundleStepAllResources) => {
+                          return {
+                            ...stepData,
+                            description: newDesc,
+                          };
+                        });
+                      }}
                       autoComplete="off"
                     />
                   </BlockStack>
@@ -408,7 +456,14 @@ export default function Index() {
                       },
                     ]}
                     selected={[stepData.stepType]}
-                    onChange={(selected: string[]) => {}}
+                    onChange={(selected: string[]) => {
+                      setStepData((stepData: BundleStepAllResources) => {
+                        return {
+                          ...stepData,
+                          stepType: selected[0] as StepType,
+                        };
+                      });
+                    }}
                   />
 
                   <Divider borderColor="border-inverse" />
@@ -431,7 +486,19 @@ export default function Index() {
                           selected={[
                             stepData.productsData?.resourceType as string,
                           ]}
-                          onChange={(selected: string[]) => {}}
+                          onChange={(selected: string[]) => {
+                            setStepData((stepData: BundleStepAllResources) => {
+                              if (!stepData.productsData) return stepData;
+                              return {
+                                ...stepData,
+                                productsData: {
+                                  ...stepData.productsData,
+                                  resourceType:
+                                    selected[0] as ProductResourceType,
+                                },
+                              };
+                            });
+                          }}
                         />
 
                         <ResourcePicker
@@ -459,7 +526,20 @@ export default function Index() {
                             name={`minProductsToSelect`}
                             min={1}
                             value={stepData.productsData?.minProductsOnStep.toString()}
-                            onChange={(value) => {}}
+                            onChange={(value) => {
+                              setStepData(
+                                (stepData: BundleStepAllResources) => {
+                                  if (!stepData.productsData) return stepData;
+                                  return {
+                                    ...stepData,
+                                    productsData: {
+                                      ...stepData.productsData,
+                                      minProductsOnStep: Number(value),
+                                    },
+                                  };
+                                },
+                              );
+                            }}
                           />
 
                           <TextField
@@ -470,7 +550,20 @@ export default function Index() {
                             name={`maxProductsToSelect`}
                             min={1}
                             value={stepData.productsData?.maxProductsOnStep.toString()}
-                            onChange={(value) => {}}
+                            onChange={(value) => {
+                              setStepData(
+                                (stepData: BundleStepAllResources) => {
+                                  if (!stepData.productsData) return stepData;
+                                  return {
+                                    ...stepData,
+                                    productsData: {
+                                      ...stepData.productsData,
+                                      maxProductsOnStep: Number(value),
+                                    },
+                                  };
+                                },
+                              );
+                            }}
                           />
                         </InlineGrid>
                         <ChoiceList
@@ -496,21 +589,37 @@ export default function Index() {
                               ? "showProductPrice"
                               : "",
                           ]}
-                          onChange={(selectedValues) => {}}
+                          onChange={(selectedValues: string[]) => {
+                            setStepData((stepData: BundleStepAllResources) => {
+                              if (!stepData.productsData) return stepData;
+                              return {
+                                ...stepData,
+                                productsData: {
+                                  ...stepData.productsData,
+                                  allowProductDuplicates:
+                                    selectedValues.includes(
+                                      "allowProductDuplicates",
+                                    ),
+                                  showProductPrice:
+                                    selectedValues.includes("showProductPrice"),
+                                },
+                              };
+                            });
+                          }}
                         />
                       </BlockStack>
                     </>
                   ) : (
                     <BlockStack gap={GapBetweenSections}>
-                      {/* {stepData.map((contentInput, index) => (
-                  <ContentStepInputs
-                    key={contentInput.id}
-                    contentInput={contentInput}
-                    inputId={index + 1}
-                    updateContentInput={updateContentInput}
-                    stepNumber={stepData.stepNumber}
-                  />
-                ))} */}
+                      {stepData.contentInputs.map((contentInput, index) => (
+                        <ContentStepInputs
+                          key={contentInput.id}
+                          contentInput={contentInput}
+                          inputId={index + 1}
+                          updateContentInput={updateContentInput}
+                          stepNumber={stepData.stepNumber}
+                        />
+                      ))}
                     </BlockStack>
                   )}
                 </BlockStack>
