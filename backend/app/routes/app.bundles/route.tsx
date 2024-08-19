@@ -74,10 +74,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             create: [
               {
                 stepNumber: 1,
-                title: "Step 2",
+                title: "Step 1",
                 stepType: "PRODUCT",
                 productsData: {
                   create: {},
+                },
+                contentInputs: {
+                  create: [{}, {}],
                 },
               },
               {
@@ -87,6 +90,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 productsData: {
                   create: {},
                 },
+                contentInputs: {
+                  create: [{}, {}],
+                },
               },
               {
                 stepNumber: 3,
@@ -94,6 +100,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 stepType: "PRODUCT",
                 productsData: {
                   create: {},
+                },
+                contentInputs: {
+                  create: [{}, {}],
                 },
               },
             ],

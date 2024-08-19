@@ -41,12 +41,12 @@ export default function Index({
             });
           }}
           value={contentInput.inputType}
-          name={`inputType-${stepNumber}-${inputId}`}
+          name={`inputType`}
         />
 
         <TextField
           label="Label"
-          name={`inputLabel-${stepNumber}-${inputId}`}
+          name={`inputLabel`}
           value={contentInput.inputLabel}
           disabled={contentInput.inputType === "NONE"}
           onChange={(newLabel) => {
@@ -62,7 +62,7 @@ export default function Index({
         <TextField
           label="Max length (in characters)"
           type="number"
-          name={`maxChars-${stepNumber}-${inputId}`}
+          name={`maxChars`}
           inputMode="numeric"
           min={1}
           disabled={contentInput.inputType === "NONE"}
@@ -78,7 +78,7 @@ export default function Index({
         <ChoiceList
           allowMultiple
           title="Input required"
-          name={`required-${stepNumber}-${inputId}`}
+          name={`required`}
           titleHidden
           choices={[
             {
