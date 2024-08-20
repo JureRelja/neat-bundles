@@ -6,7 +6,8 @@ import {
   useLoaderData,
   useParams,
 } from "@remix-run/react";
-import { useSubmitAction } from "~/hooks/useSubmitAction";
+import { useAsyncSubmit } from "~/hooks/useAsyncSubmit";
+import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
 import {
   Card,
   Button,
@@ -43,7 +44,6 @@ import { BundleStepAllResources, bundleStepFull } from "~/types/BundleStep";
 import { JsonData } from "../../types/jsonData";
 import ContentStepInputs from "./content-step-inputs";
 import ResourcePicker from "./resource-picker";
-import { i } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
@@ -113,11 +113,45 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           { status: 400 },
         );
       }
-      return redirect(`/app/bundles/${params.bundleid}`);
+
+      const url = new URL(request.url);
+
+      if (
+        url.searchParams.has("redirect") &&
+        url.searchParams.get("redirect") === "true"
+      ) {
+        return redirect(`/app/bundles/${params.bundleid}`);
+      }
+
+      return json({
+        ...new JsonData(true, "success", "Step was deleted", ""),
+      });
     }
 
     //Duplicating the step
     case "duplicateStep": {
+      const numOfSteps = await db.bundleStep.aggregate({
+        _max: {
+          stepNumber: true,
+        },
+        where: {
+          bundleId: Number(params.bundleid),
+        },
+      });
+
+      if (numOfSteps._max.stepNumber === 5)
+        return json(
+          {
+            ...new JsonData(
+              false,
+              "error",
+              "There was an error with your request",
+              "You can't have more than 5 steps in a bundle",
+            ),
+          },
+          { status: 400 },
+        );
+
       try {
         let stepToDuplicate: BundleStepAllResources | null =
           await db.bundleStep.findFirst({
@@ -142,88 +176,99 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           );
         }
 
-        //Incrementing the step number for all steps with stepNumber greater than the duplicated step
-        await db.bundleStep.updateMany({
-          where: {
-            bundleId: Number(params.bundleid),
-            stepNumber: {
-              gt: Number(params.stepnum),
-            },
-          },
-          data: {
-            stepNumber: {
-              increment: 1,
-            },
-          },
-        });
-
         //Creating a new step with the same data as the duplicated step
-        let newStep: BundleStep | null = null;
-
         if (stepToDuplicate.stepType === StepType.PRODUCT) {
-          newStep = await db.bundleStep.create({
-            data: {
-              bundleId: Number(params.bundleid),
-              stepNumber: stepToDuplicate.stepNumber + 1,
-              title: `${stepToDuplicate.title} - Copy`,
-              description: stepToDuplicate.description,
-              stepType: stepToDuplicate.stepType,
-              productsData: {
-                create: {
-                  resourceType: stepToDuplicate.productsData?.resourceType,
-                  productResources:
-                    stepToDuplicate.productsData?.productResources,
-                  minProductsOnStep:
-                    stepToDuplicate.productsData?.minProductsOnStep,
-                  maxProductsOnStep:
-                    stepToDuplicate.productsData?.maxProductsOnStep,
-                  allowProductDuplicates:
-                    stepToDuplicate.productsData?.allowProductDuplicates,
-                  showProductPrice:
-                    stepToDuplicate.productsData?.showProductPrice,
+          //Incrementing the step number for all steps with stepNumber greater than the duplicated step and then creating a new step with the same data as the duplicated step
+          await db.$transaction([
+            //Incrementing the step number for all steps with stepNumber greater than the duplicated step
+            db.bundleStep.updateMany({
+              where: {
+                bundleId: Number(params.bundleid),
+                stepNumber: {
+                  gt: Number(params.stepnum),
                 },
               },
-            },
-          });
-        } else if (stepToDuplicate.stepType === StepType.CONTENT) {
-          newStep = await db.bundleStep.create({
-            data: {
-              bundleId: Number(params.bundleid),
-              stepNumber: stepToDuplicate.stepNumber + 1,
-              title: `${stepToDuplicate.title} - Copy`,
-              description: stepToDuplicate.description,
-              stepType: stepToDuplicate.stepType,
-              contentInputs: {
-                create: [
-                  stepToDuplicate.contentInputs.map(
-                    (contentStep: ContentInput) => {
-                      return {
-                        inputType: contentStep.inputType,
-                        inputLabel: contentStep.inputLabel,
-                        maxChars: contentStep.maxChars,
-                        required: contentStep.required,
-                      };
-                    },
-                  ),
-                ],
+              data: {
+                stepNumber: {
+                  increment: 1,
+                },
               },
-            },
-          });
+            }),
+            db.bundleStep.create({
+              data: {
+                bundleId: Number(params.bundleid),
+                stepNumber: stepToDuplicate.stepNumber + 1,
+                title: `${stepToDuplicate.title} - Copy`,
+                description: stepToDuplicate.description,
+                stepType: stepToDuplicate.stepType,
+                contentInputs: {
+                  createMany: {
+                    data: [{}, {}],
+                  },
+                },
+                productsData: {
+                  create: {
+                    resourceType: stepToDuplicate.productsData?.resourceType,
+                    productResources:
+                      stepToDuplicate.productsData?.productResources,
+                    minProductsOnStep:
+                      stepToDuplicate.productsData?.minProductsOnStep,
+                    maxProductsOnStep:
+                      stepToDuplicate.productsData?.maxProductsOnStep,
+                    allowProductDuplicates:
+                      stepToDuplicate.productsData?.allowProductDuplicates,
+                    showProductPrice:
+                      stepToDuplicate.productsData?.showProductPrice,
+                  },
+                },
+              },
+            }),
+          ]);
+        } else if (stepToDuplicate.stepType === StepType.CONTENT) {
+          //Incrementing the step number for all steps with stepNumber greater than the duplicated step and then creating a new step with the same data as the duplicated step
+          await db.$transaction([
+            db.bundleStep.updateMany({
+              where: {
+                bundleId: Number(params.bundleid),
+                stepNumber: {
+                  gt: Number(params.stepnum),
+                },
+              },
+              data: {
+                stepNumber: {
+                  increment: 1,
+                },
+              },
+            }),
+            db.bundleStep.create({
+              data: {
+                bundleId: Number(params.bundleid),
+                stepNumber: stepToDuplicate.stepNumber + 1,
+                title: `${stepToDuplicate.title} - Copy`,
+                description: stepToDuplicate.description,
+                stepType: stepToDuplicate.stepType,
+                productsData: {
+                  create: {},
+                },
+                contentInputs: {
+                  createMany: {
+                    data: stepToDuplicate.contentInputs.map(
+                      (contentStep: ContentInput) => {
+                        return {
+                          inputType: contentStep.inputType,
+                          inputLabel: contentStep.inputLabel,
+                          maxChars: contentStep.maxChars,
+                          required: contentStep.required,
+                        };
+                      },
+                    ),
+                  },
+                },
+              },
+            }),
+          ]);
         }
 
-        if (!newStep) {
-          return json(
-            {
-              ...new JsonData(
-                false,
-                "error",
-                "There was an error with your request",
-                "Step couldn't be duplicated",
-              ),
-            },
-            { status: 400 },
-          );
-        }
         // return json({
         //   ...new JsonData(true, "success", "Step was duplicated", ""),
         // });
@@ -262,30 +307,14 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
               description: stepData.description,
               stepType: stepData.stepType,
               productsData: {
-                upsert: {
-                  update: {
-                    resourceType: stepData.productsData?.resourceType,
-                    productResources: stepData.productsData?.productResources,
-                    minProductsOnStep: stepData.productsData?.minProductsOnStep,
-                    maxProductsOnStep: stepData.productsData?.maxProductsOnStep,
-                    allowProductDuplicates:
-                      stepData.productsData?.allowProductDuplicates,
-                    showProductPrice: stepData.productsData?.showProductPrice,
-                  },
-                  create: {
-                    resourceType: stepData.productsData?.resourceType,
-                    productResources: stepData.productsData?.productResources,
-                    minProductsOnStep: stepData.productsData?.minProductsOnStep,
-                    maxProductsOnStep: stepData.productsData?.maxProductsOnStep,
-                    allowProductDuplicates:
-                      stepData.productsData?.allowProductDuplicates,
-                    showProductPrice: stepData.productsData?.showProductPrice,
-                  },
-                },
-              },
-              contentInputs: {
-                createMany: {
-                  data: [{}, {}],
+                update: {
+                  resourceType: stepData.productsData?.resourceType,
+                  productResources: stepData.productsData?.productResources,
+                  minProductsOnStep: stepData.productsData?.minProductsOnStep,
+                  maxProductsOnStep: stepData.productsData?.maxProductsOnStep,
+                  allowProductDuplicates:
+                    stepData.productsData?.allowProductDuplicates,
+                  showProductPrice: stepData.productsData?.showProductPrice,
                 },
               },
             },
@@ -354,7 +383,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 export default function Index() {
   const nav = useNavigation();
   const isLoading = nav.state != "idle";
-  const submitAction = useSubmitAction();
+  const asyncSubmit = useAsyncSubmit();
+  const navigateSubmit = useNavigateSubmit();
   const params = useParams();
 
   const serverStepData: BundleStepAllResources =
@@ -633,11 +663,11 @@ export default function Index() {
                   <Button
                     variant="primary"
                     tone="critical"
-                    onClick={() => {
-                      submitAction(
+                    onClick={async (): Promise<void> => {
+                      await shopify.saveBar.leaveConfirmation();
+                      navigateSubmit(
                         "deleteStep",
-                        true,
-                        `/app/bundles/${params.bundleid}/steps/${params.stepnum}`,
+                        `/app/bundles/${params.bundleid}/steps/${params.stepnum}?redirect=true`,
                       );
                     }}
                   >

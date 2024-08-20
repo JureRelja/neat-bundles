@@ -17,13 +17,13 @@ import {
   DataTable,
   ButtonGroup,
   Badge,
+  Spinner,
 } from "@shopify/polaris";
 import {
   PlusIcon,
   ExternalIcon,
   EditIcon,
   DeleteIcon,
-  PageAddIcon,
   SettingsIcon,
 } from "@shopify/polaris-icons";
 import { authenticate } from "../../shopify.server";
@@ -35,7 +35,9 @@ import {
   bundleAndSteps,
 } from "../../types/Bundle";
 import { JsonData } from "../../types/jsonData";
-import { useSubmitAction } from "../../hooks/useSubmitAction";
+import { useAsyncSubmit } from "../../hooks/useAsyncSubmit";
+import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
+import styles from "../app.bundles.$bundleid/route.module.css";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session, admin } = await authenticate.admin(request);
@@ -102,12 +104,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function Index() {
   const nav = useNavigation();
   const isLoading = nav.state !== "idle";
-  const submitAction = useSubmitAction(); //Function for doing the submit action where the only data is action and url
+  const asyncSubmit = useAsyncSubmit(); //Function for doing the submit action where the only data is action and url
+  const navigateSubmit = useNavigateSubmit(); //Function for doing the submit action as if form was submitted
+  const tableLoading = asyncSubmit.state !== "idle";
 
   const loaderResponse: JsonData<BundleAndStepsBasicClient[]> =
     useLoaderData<typeof loader>();
 
   const bundles: BundleAndStepsBasicClient[] = loaderResponse.data;
+
+  const createBundle = () => {
+    navigateSubmit("createBundle", "/app/bundles");
+  };
 
   return (
     <>
@@ -129,65 +137,68 @@ export default function Index() {
         <Page
           title="Bundles"
           primaryAction={
-            <Button
-              icon={PlusIcon}
-              variant="primary"
-              onClick={() => {
-                submitAction("createBundle", true, "/app/bundles");
-              }}
-            >
+            <Button icon={PlusIcon} variant="primary" onClick={createBundle}>
               Create bundle
             </Button>
           }
         >
           <BlockStack gap="500">
-            <Card>
-              {bundles.length > 0 ? (
-                <DataTable
-                  columnContentTypes={["text", "text", "text", "text", "text"]}
-                  headings={[
-                    "Name",
-                    "Steps",
-                    "Status",
-                    "Actions",
-                    "Settings",
-                    "Preview",
-                  ]}
-                  rows={bundles.map((bundle: BundleAndStepsBasicClient) => {
-                    return [
-                      <Link to={`/app/bundles/${bundle.id}`}>
-                        <Text as="p" tone="base">
-                          {bundle.title}
-                        </Text>
-                      </Link>,
-                      //
-                      bundle.steps.length,
-                      //
-                      <Link to={`/app/bundles/${bundle.id}`}>
-                        {bundle.published ? (
-                          <Badge tone="success">Active</Badge>
-                        ) : (
-                          <Badge tone="info">Draft</Badge>
-                        )}
-                      </Link>,
-                      //
-                      <ButtonGroup>
-                        <Button
-                          icon={DeleteIcon}
-                          variant="secondary"
-                          tone="critical"
-                          onClick={() => {
-                            submitAction(
-                              "deleteBundle",
-                              true,
-                              `/app/bundles/${bundle.id}`,
-                            );
-                          }}
-                        >
-                          Delete
-                        </Button>
+            <div id={styles.tableWrapper}>
+              <div className={tableLoading ? styles.loadingTable : styles.hide}>
+                <Spinner accessibilityLabel="Spinner example" size="large" />
+              </div>
+              <Card>
+                {bundles.length > 0 ? (
+                  <DataTable
+                    columnContentTypes={[
+                      "text",
+                      "text",
+                      "text",
+                      "text",
+                      "text",
+                    ]}
+                    headings={[
+                      "Name",
+                      "Steps",
+                      "Status",
+                      "Actions",
+                      "Settings",
+                      "Preview",
+                    ]}
+                    rows={bundles.map((bundle: BundleAndStepsBasicClient) => {
+                      return [
+                        <Link to={`/app/bundles/${bundle.id}`}>
+                          <Text as="p" tone="base">
+                            {bundle.title}
+                          </Text>
+                        </Link>,
+                        //
+                        bundle.steps.length,
+                        //
+                        <Link to={`/app/bundles/${bundle.id}`}>
+                          {bundle.published ? (
+                            <Badge tone="success">Active</Badge>
+                          ) : (
+                            <Badge tone="info">Draft</Badge>
+                          )}
+                        </Link>,
+                        //
+                        <ButtonGroup>
+                          <Button
+                            icon={DeleteIcon}
+                            variant="secondary"
+                            tone="critical"
+                            onClick={() => {
+                              asyncSubmit.submit(
+                                "deleteBundle",
+                                `/app/bundles/${bundle.id}`,
+                              );
+                            }}
+                          >
+                            Delete
+                          </Button>
 
-                        {/* <Button
+                          {/* <Button
                           icon={PageAddIcon}
                           variant="secondary"
                           onClick={() => {
@@ -201,53 +212,53 @@ export default function Index() {
                           Duplicate
                         </Button> */}
 
+                          <Button
+                            icon={EditIcon}
+                            variant="primary"
+                            url={`/app/bundles/${bundle.id}`}
+                          >
+                            Edit
+                          </Button>
+                        </ButtonGroup>,
+                        //
                         <Button
-                          icon={EditIcon}
-                          variant="primary"
-                          url={`/app/bundles/${bundle.id}`}
+                          icon={SettingsIcon}
+                          variant="secondary"
+                          tone="success"
+                          url={`/app/bundles/${bundle.id}/settings/?redirect=/app`}
                         >
-                          Edit
-                        </Button>
-                      </ButtonGroup>,
-                      //
-                      <Button
-                        icon={SettingsIcon}
-                        variant="secondary"
-                        tone="success"
-                        url={`/app/bundles/${bundle.id}/settings/?redirect=/app`}
-                      >
-                        Settings
-                      </Button>,
-                      <Button
-                        icon={ExternalIcon}
-                        variant="secondary"
-                        tone="success"
-                        onClick={() => {}}
-                      >
-                        Preview
-                      </Button>,
-                    ];
-                  })}
-                ></DataTable>
-              ) : (
-                <EmptyState
-                  heading="Let’s create the first custom bundle for your customers!"
-                  action={{
-                    content: "Create bundle",
-                    icon: PlusIcon,
-                    onAction: () =>
-                      submitAction("createBundle", true, "/app/bundles"),
-                  }}
-                  fullWidth
-                  image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
-                >
-                  <p>
-                    Your customers will be able to use the custom bundles you
-                    create to create and buy their own custom bundles.
-                  </p>
-                </EmptyState>
-              )}
-            </Card>
+                          Settings
+                        </Button>,
+                        <Button
+                          icon={ExternalIcon}
+                          variant="secondary"
+                          tone="success"
+                          onClick={() => {}}
+                        >
+                          Preview
+                        </Button>,
+                      ];
+                    })}
+                  ></DataTable>
+                ) : (
+                  <EmptyState
+                    heading="Let’s create the first custom bundle for your customers!"
+                    action={{
+                      content: "Create bundle",
+                      icon: PlusIcon,
+                      onAction: createBundle,
+                    }}
+                    fullWidth
+                    image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+                  >
+                    <p>
+                      Your customers will be able to use the custom bundles you
+                      create to create and buy their own custom bundles.
+                    </p>
+                  </EmptyState>
+                )}
+              </Card>
+            </div>
 
             {/* Video tutorial on how to use the app */}
             <MediaCard

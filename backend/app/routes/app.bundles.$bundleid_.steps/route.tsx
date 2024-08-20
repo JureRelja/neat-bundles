@@ -1,5 +1,4 @@
 import {
-  Card,
   Button,
   BlockStack,
   InlineStack,
@@ -7,7 +6,6 @@ import {
   SkeletonPage,
   Page,
   Badge,
-  Text,
   Layout,
 } from "@shopify/polaris";
 import { GapBetweenSections } from "../../constants";
@@ -16,7 +14,6 @@ import { json, redirect } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
   useNavigation,
-  useSubmit,
   useLoaderData,
   useNavigate,
   Outlet,
@@ -80,6 +77,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   const formData = await request.formData();
   const action = formData.get("action") as string;
+  console.log(formData);
 
   switch (action) {
     //Adding a new step to the bundle
@@ -117,6 +115,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             title:
               "Step " +
               (numOfSteps._max.stepNumber ? numOfSteps._max.stepNumber + 1 : 1),
+            productsData: {
+              create: {},
+            },
+            contentInputs: {
+              create: [{}, {}],
+            },
           },
         });
         return redirect(
@@ -143,7 +147,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       try {
         const stepId: string = formData.get("id") as string;
 
-        let step: BundleStep | null = await db.bundleStep.findFirst({
+        let step: BundleStep | null = await db.bundleStep.findUnique({
           where: {
             id: Number(stepId),
           },
@@ -162,33 +166,66 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             { status: 400 },
           );
 
-        await db.bundleStep.update({
-          where: {
-            id: Number(stepId),
-          },
-          data: {
-            stepNumber: {
-              increment: 1,
+        const maxStep: { _max: { stepNumber: number | null } } =
+          await db.bundleStep.aggregate({
+            _max: {
+              stepNumber: true,
             },
-          },
-        });
+            where: {
+              bundleId: step.bundleId,
+            },
+          });
 
-        await db.bundleStep.updateMany({
-          where: {
-            AND: {
-              stepNumber: step.stepNumber,
-              NOT: {
-                id: step.id,
+        if (
+          maxStep._max.stepNumber === null ||
+          step.stepNumber >= maxStep._max.stepNumber
+        ) {
+          console.log("Step couldn't be moved down");
+          return json(
+            {
+              ...new JsonData(
+                false,
+                "error",
+                "There was an error with your request",
+                "Step couldn't be moved down",
+              ),
+            },
+            { status: 400 },
+          );
+        }
+
+        await db.$transaction([
+          db.bundleStep.update({
+            where: {
+              id: Number(stepId),
+            },
+            data: {
+              stepNumber: {
+                increment: 1,
               },
             },
-          },
-          data: {
-            stepNumber: {
-              decrement: 1,
+          }),
+
+          db.bundleStep.updateMany({
+            where: {
+              AND: [
+                {
+                  stepNumber: step.stepNumber + 1,
+                },
+                {
+                  NOT: {
+                    id: Number(stepId),
+                  },
+                },
+              ],
             },
-          },
-        });
-        return redirect(`/app/bundles/${step.bundleId}/`);
+            data: {
+              stepNumber: {
+                decrement: 1,
+              },
+            },
+          }),
+        ]);
       } catch (error) {
         console.log(error);
         return json(
@@ -209,7 +246,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       try {
         const stepId: string = formData.get("id") as string;
 
-        let step: BundleStep | null = await db.bundleStep.findFirst({
+        let step: BundleStep | null = await db.bundleStep.findUnique({
           where: {
             id: Number(stepId),
           },
@@ -222,22 +259,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 false,
                 "error",
                 "There was an error with your request",
-                "Step couldn't be moved up",
+                "Step couldn't be moved down",
               ),
             },
             { status: 400 },
           );
 
-        const numOfSteps = await db.bundleStep.aggregate({
-          _max: {
-            stepNumber: true,
-          },
-          where: {
-            bundleId: step.bundleId,
-          },
-        });
-
-        if (step.stepNumber === numOfSteps._max.stepNumber)
+        if (step.stepNumber <= 1) {
           return json(
             {
               ...new JsonData(
@@ -249,34 +277,40 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             },
             { status: 400 },
           );
+        }
 
-        await db.bundleStep.update({
-          where: {
-            id: Number(stepId),
-          },
-          data: {
-            stepNumber: {
-              decrement: 1,
+        await db.$transaction([
+          db.bundleStep.update({
+            where: {
+              id: Number(stepId),
             },
-          },
-        });
-
-        await db.bundleStep.updateMany({
-          where: {
-            AND: {
-              stepNumber: step.stepNumber,
-              NOT: {
-                id: step.id,
+            data: {
+              stepNumber: {
+                decrement: 1,
               },
             },
-          },
-          data: {
-            stepNumber: {
-              increment: 1,
+          }),
+
+          db.bundleStep.updateMany({
+            where: {
+              AND: [
+                {
+                  stepNumber: step.stepNumber - 1,
+                },
+                {
+                  NOT: {
+                    id: Number(stepId),
+                  },
+                },
+              ],
             },
-          },
-        });
-        return redirect(`/app/bundles/${step.bundleId}/`);
+            data: {
+              stepNumber: {
+                increment: 1,
+              },
+            },
+          }),
+        ]);
       } catch (error) {
         console.log(error);
         return json(

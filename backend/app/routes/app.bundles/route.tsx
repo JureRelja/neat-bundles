@@ -5,6 +5,7 @@ import db from "../../db.server";
 import { Bundle } from "@prisma/client";
 import { JsonData } from "../../types/jsonData";
 import { bundleTagIndentifier } from "~/constants";
+import { randomUUID } from "crypto";
 
 export const loader = async ({ request }: ActionFunctionArgs) => {
   await authenticate.admin(request);
@@ -23,6 +24,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         await db.bundle.aggregate({
           _max: {
             id: true,
+          },
+          where: {
+            storeUrl: session.shop,
           },
         });
 
