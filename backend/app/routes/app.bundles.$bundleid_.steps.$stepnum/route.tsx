@@ -66,7 +66,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   }
 
   return json({
-    ...new JsonData(true, "success", "Step data was loaded", "", stepData),
+    ...new JsonData(true, "success", "Step data was loaded", [], stepData),
   });
 };
 
@@ -80,34 +80,34 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     //Deleting the step from the bundle
     case "deleteStep": {
       try {
-        await db.bundleStep.deleteMany({
-          where: {
-            bundleId: Number(params.bundleid),
-            stepNumber: Number(params.stepnum),
-          },
-        });
-
-        await db.bundleStep.updateMany({
-          where: {
-            bundleId: Number(params.bundleid),
-            stepNumber: {
-              gt: Number(params.stepnum),
+        await db.$transaction([
+          db.bundleStep.deleteMany({
+            where: {
+              bundleId: Number(params.bundleid),
+              stepNumber: Number(params.stepnum),
             },
-          },
-          data: {
-            stepNumber: {
-              decrement: 1,
+          }),
+          db.bundleStep.updateMany({
+            where: {
+              bundleId: Number(params.bundleid),
+              stepNumber: {
+                gt: Number(params.stepnum),
+              },
             },
-          },
-        });
+            data: {
+              stepNumber: {
+                decrement: 1,
+              },
+            },
+          }),
+        ]);
       } catch (error) {
         return json(
           {
             ...new JsonData(
               false,
               "error",
-              "There was an error with your request.",
-              "Step couldn't be deleted",
+              "There was an error with trying to delete the step",
             ),
           },
           { status: 400 },
@@ -124,7 +124,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       }
 
       return json({
-        ...new JsonData(true, "success", "Step was deleted", ""),
+        ...new JsonData(true, "success", "Step was deleted"),
       });
     }
 
@@ -146,7 +146,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
               false,
               "error",
               "There was an error with your request",
-              "You can't have more than 5 steps in a bundle",
+              [
+                {
+                  fieldId: "stepsLength",
+                  field: "Steps Length",
+                  message: "You can't have more than 5 steps in a bundle.",
+                },
+              ],
             ),
           },
           { status: 400 },
@@ -169,7 +175,14 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 false,
                 "error",
                 "Thre was an error with your request",
-                "Requested step for duplication doesn't exist.",
+                [
+                  {
+                    fieldId: "stepId",
+                    field: "Step Id",
+                    message:
+                      "Bundle step with the entered 'stepId' doesn't exist.",
+                  },
+                ],
               ),
             },
             { status: 400 },
@@ -269,20 +282,15 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           ]);
         }
 
-        // return json({
-        //   ...new JsonData(true, "success", "Step was duplicated", ""),
-        // });
-        return redirect(`/app/bundles/${params.bundleid}/`);
+        return json({
+          ...new JsonData(true, "success", "Step was duplicated"),
+        });
+        // return redirect(`/app/bundles/${params.bundleid}/`);
       } catch (error) {
         console.log(error);
         return json(
           {
-            ...new JsonData(
-              false,
-              "error",
-              "Error while duplicating a step",
-              "Make sure that your entered correct data.",
-            ),
+            ...new JsonData(false, "error", "Error while duplicating a step"),
           },
           { status: 400 },
         );
@@ -357,7 +365,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
               false,
               "error",
               "There was an error with your request",
-              "Step couldn't be updated",
             ),
           },
           { status: 400 },

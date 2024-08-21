@@ -34,7 +34,6 @@ export default function Index({
             { label: "Image", value: InputType.IMAGE },
           ]}
           onChange={(newContentType: string) => {
-            console.log(newContentType);
             updateContentInput({
               ...contentInput,
               inputType: newContentType as InputType,

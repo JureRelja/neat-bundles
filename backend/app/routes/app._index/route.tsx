@@ -18,6 +18,7 @@ import {
   ButtonGroup,
   Badge,
   Spinner,
+  Divider,
 } from "@shopify/polaris";
 import {
   PlusIcon,
@@ -93,7 +94,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         true,
         "success",
         "Bundles were succesfully returned",
-        "",
+        [],
         bundles,
       ),
     },
@@ -106,7 +107,7 @@ export default function Index() {
   const isLoading = nav.state !== "idle";
   const asyncSubmit = useAsyncSubmit(); //Function for doing the submit action where the only data is action and url
   const navigateSubmit = useNavigateSubmit(); //Function for doing the submit action as if form was submitted
-  const tableLoading = asyncSubmit.state !== "idle";
+  const tableLoading: boolean = asyncSubmit.state !== "idle"; //Table loading state
 
   const loaderResponse: JsonData<BundleAndStepsBasicClient[]> =
     useLoaderData<typeof loader>();
@@ -293,6 +294,7 @@ export default function Index() {
                 </Box>
               </BlockStack>
             </Banner>
+            <Divider borderColor="transparent" />
           </BlockStack>
         </Page>
       )}

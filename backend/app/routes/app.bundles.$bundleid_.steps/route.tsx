@@ -65,7 +65,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
       true,
       "success",
       "Bundle step succesfuly retrieved",
-      "",
+      [],
       bundleStep,
     ),
     { status: 200 },
@@ -98,7 +98,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
               false,
               "error",
               "There was an error with your request",
-              "You can't have more than 5 steps in a bundle",
+              [
+                {
+                  fieldId: "stepsLength",
+                  field: "Number of total stepss",
+                  message: "You can't have more than 5 steps",
+                },
+              ],
             ),
           },
           { status: 400 },
@@ -134,7 +140,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
               false,
               "error",
               "There was an error with your request",
-              "New step couldn't be created",
+              [
+                {
+                  fieldId: "bundleStep",
+                  field: "Bundle step",
+                  message: "New step could't be created.",
+                },
+              ],
             ),
           },
           { status: 400 },
@@ -160,7 +172,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 false,
                 "error",
                 "There was an error with your request",
-                "Step couldn't be moved down",
+                [
+                  {
+                    fieldId: "stepId",
+                    field: "Step Id",
+                    message: "Step with the entered Id was not found.",
+                  },
+                ],
               ),
             },
             { status: 400 },
@@ -187,7 +205,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 false,
                 "error",
                 "There was an error with your request",
-                "Step couldn't be moved down",
+                [
+                  {
+                    fieldId: "stepNumber",
+                    field: "Step number",
+                    message: "This step is allready the last step in a bundle.",
+                  },
+                ],
               ),
             },
             { status: 400 },
@@ -226,6 +250,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             },
           }),
         ]);
+        return json({
+          ...new JsonData(true, "success", "Step moved down"),
+        });
       } catch (error) {
         console.log(error);
         return json(
@@ -234,7 +261,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
               false,
               "error",
               "There was an error with your request",
-              "Step couldn't be moved down",
             ),
           },
           { status: 400 },
@@ -259,7 +285,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 false,
                 "error",
                 "There was an error with your request",
-                "Step couldn't be moved down",
+                [
+                  {
+                    fieldId: "stepId",
+                    field: "Step Id",
+                    message: "Step with the entered Id was not found.",
+                  },
+                ],
               ),
             },
             { status: 400 },
@@ -272,7 +304,14 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 false,
                 "error",
                 "There was an error with your request",
-                "Step couldn't be moved down",
+                [
+                  {
+                    fieldId: "stepNumber",
+                    field: "Step number",
+                    message:
+                      "This step is allready the first step in a bundle.",
+                  },
+                ],
               ),
             },
             { status: 400 },
@@ -311,6 +350,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             },
           }),
         ]);
+        return json({
+          ...new JsonData(true, "success", "Step moved up"),
+        });
       } catch (error) {
         console.log(error);
         return json(
@@ -319,7 +361,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
               false,
               "error",
               "There was an error with your request",
-              "Step couldn't be moved up",
             ),
           },
           { status: 400 },

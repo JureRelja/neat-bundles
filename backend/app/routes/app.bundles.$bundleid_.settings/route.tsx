@@ -60,7 +60,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
       true,
       "success",
       "Bundle settings succesfuly retrieved",
-      "",
+      [],
       bundleSettings,
     ),
 
@@ -126,6 +126,15 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         },
       },
     });
+
+    const url: URL = new URL(request.url);
+
+    // Redirect to a specific page if the query param is present
+    if (url.searchParams.has("redirect")) {
+      return redirect(url.searchParams.get("redirect") as string);
+    }
+
+    return redirect(`/app`);
   } catch (error) {
     console.error(error);
     throw new Response(null, {
@@ -133,15 +142,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       statusText: "Settings not found",
     });
   }
-
-  const url: URL = new URL(request.url);
-
-  // Redirect to a specific page if the query param is present
-  if (url.searchParams.has("redirect")) {
-    return redirect(url.searchParams.get("redirect") as string);
-  }
-
-  return redirect(`/app`);
 };
 
 export default function Index() {

@@ -1,12 +1,15 @@
 import { json, redirect } from "@remix-run/node";
-import { Link, useFetcher, useNavigate } from "@remix-run/react";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
+  Link,
+  useActionData,
+  useNavigate,
   Form,
   useNavigation,
   useLoaderData,
   useParams,
+  useFetcher,
 } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
   Page,
   Card,
@@ -43,7 +46,7 @@ import {
 } from "@shopify/polaris-icons";
 import { useAppBridge, Modal, TitleBar } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   GapBetweenSections,
   GapBetweenTitleAndContent,
@@ -57,7 +60,7 @@ import {
   BundleFullStepBasicServer,
   inclBundleFullStepsBasic,
 } from "../../types/Bundle";
-import { JsonData } from "../../types/jsonData";
+import { JsonData, error } from "../../types/jsonData";
 import { useAsyncSubmit } from "../../hooks/useAsyncSubmit";
 import { useNavigateSubmit } from "../../hooks/useNavigateSubmit";
 import styles from "./route.module.css";
@@ -79,7 +82,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     });
   }
   return json(
-    new JsonData(true, "success", "Bundle succesfuly retrieved", "", bundle),
+    new JsonData(true, "success", "Bundle succesfuly retrieved", [], bundle),
     { status: 200 },
   );
 };
@@ -107,8 +110,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
               false,
               "error",
               "There was an error with your request",
-              "There was an error deleting the bundle",
-              error,
+              [
+                {
+                  fieldId: "bundleId",
+                  field: "Bundle ID",
+                  message: "Bundle with the provided id doesn't exist.",
+                },
+              ],
             ),
           },
           { status: 400 },
@@ -281,6 +289,35 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         formData.get("bundle") as string,
       );
 
+      const errors: error[] = [];
+
+      if (!bundleData.title) {
+        errors.push({
+          fieldId: "bundleTitle",
+          field: "Bundle title",
+          message: "Bundle title needs to be entered.",
+        });
+      } else if (
+        bundleData.pricing === BundlePricing.FIXED &&
+        !bundleData.priceAmount
+      ) {
+        errors.push({
+          fieldId: "priceAmount",
+          field: "Price amount",
+          message: "Price needs to be entered for Fixed price bundles.",
+        });
+      }
+
+      if (errors.length > 0)
+        return json({
+          ...new JsonData(
+            false,
+            "error",
+            "There was an error while trying to update the bundle.",
+            errors,
+          ),
+        });
+
       try {
         await db.bundle.update({
           where: {
@@ -295,15 +332,24 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             discountValue: bundleData.discountValue,
           },
         });
+        return redirect(`/app`);
       } catch (error) {
         console.log(error);
-        return json(
-          { error: "Error while updating a bundle" },
-          { status: 400 },
-        );
+        return json({
+          ...new JsonData(
+            false,
+            "error",
+            "There was an error while trying to update the bundle.",
+            [
+              {
+                fieldId: "Bundle",
+                field: "Bundle",
+                message: "Error updating the bundle",
+              },
+            ],
+          ),
+        });
       }
-
-      return redirect(`/app`);
 
     default: {
       return json(
@@ -324,12 +370,15 @@ export default function Index() {
   const nav = useNavigation();
   const navigate = useNavigate();
   const shopify = useAppBridge();
-  const isLoading: boolean = nav.state !== "idle";
+  const isLoading: boolean = nav.state === "loading";
+  const isSubmitting: boolean = nav.state === "submitting";
   const params = useParams();
   const asyncSubmit = useAsyncSubmit(); //Function for doing the submit action where the only data is action and url
-  const navigateSubmit = useNavigateSubmit(); //Function for doing the submit with a navigation (the same if you were to use a From with a submit button)
-
   const tableLoading: boolean = asyncSubmit.state !== "idle"; //Table loading state
+  const navigateSubmit = useNavigateSubmit(); //Function for doing the submit with a navigation (the same if you were to use a From with a submit button)
+  const errors = useActionData<typeof action>()?.errors; //Data from the action
+
+  const priceAmountRef = useRef<HTMLInputElement>(null);
 
   const serverBundle: BundleFullStepBasicClient =
     useLoaderData<typeof loader>().data;
@@ -373,9 +422,19 @@ export default function Index() {
     navigateSubmit("deleteBundle", `/app/bundles/${params.bundleid}`);
   };
 
+  //Navigating to the first error
+  useEffect(() => {
+    errors?.forEach((err: error) => {
+      if (err.fieldId) {
+        document.getElementById(err.fieldId)?.scrollIntoView();
+        return;
+      }
+    });
+  }, [isLoading]);
+
   return (
     <>
-      {isLoading ? (
+      {isLoading || isSubmitting ? (
         <SkeletonPage primaryAction></SkeletonPage>
       ) : (
         <>
@@ -452,6 +511,7 @@ export default function Index() {
                     </InlineStack>
                     {bundleSteps.length > 0 ? (
                       <DataTable
+                        hoverable
                         columnContentTypes={[
                           "text",
                           "text",
@@ -483,34 +543,45 @@ export default function Index() {
                                 <Badge>Content step</Badge>
                               ),
                               <ButtonGroup>
-                                {step.stepNumber !== bundleSteps.length && (
-                                  <Button
-                                    icon={ArrowDownIcon}
-                                    size="slim"
-                                    variant="plain"
-                                    onClick={() => {
-                                      asyncSubmit.submit(
-                                        "moveStepDown",
-                                        `steps`,
-                                        Number(step.id),
-                                      );
-                                    }}
-                                  />
-                                )}
-                                {step.stepNumber !== 1 && (
-                                  <Button
-                                    icon={ArrowUpIcon}
-                                    size="slim"
-                                    variant="plain"
-                                    onClick={() => {
-                                      asyncSubmit.submit(
-                                        "moveStepDown",
-                                        `steps/`,
-                                        Number(step.id),
-                                      );
-                                    }}
-                                  />
-                                )}
+                                <InlineStack
+                                  align="space-between"
+                                  blockAlign="stretch"
+                                >
+                                  {step.stepNumber !== bundleSteps.length ? (
+                                    <Button
+                                      icon={ArrowDownIcon}
+                                      size="slim"
+                                      variant="plain"
+                                      onClick={() => {
+                                        asyncSubmit.submit(
+                                          "moveStepDown",
+                                          `steps`,
+                                          Number(step.id),
+                                        );
+                                      }}
+                                    />
+                                  ) : (
+                                    <div
+                                      className={styles.dummyIconPlaceholder}
+                                    >
+                                      {" "}
+                                    </div>
+                                  )}
+                                  {step.stepNumber !== 1 && (
+                                    <Button
+                                      icon={ArrowUpIcon}
+                                      size="slim"
+                                      variant="plain"
+                                      onClick={() => {
+                                        asyncSubmit.submit(
+                                          "moveStepUp",
+                                          `steps/`,
+                                          Number(step.id),
+                                        );
+                                      }}
+                                    />
+                                  )}
+                                </InlineStack>
                               </ButtonGroup>,
                               <ButtonGroup>
                                 <Button
@@ -520,7 +591,7 @@ export default function Index() {
                                   onClick={() => {
                                     asyncSubmit.submit(
                                       "deleteStep",
-                                      `/app/bundles/${params.bundleid}/steps/${step.stepNumber}?redirect=true`,
+                                      `/app/bundles/${params.bundleid}/steps/${step.stepNumber}`,
                                     );
                                   }}
                                 ></Button>
@@ -578,31 +649,39 @@ export default function Index() {
                 />
                 <BlockStack gap={GapBetweenSections}>
                   {/* Bundle title */}
-                  <Card>
-                    <BlockStack gap={GapBetweenTitleAndContent}>
-                      <Text as="p" variant="headingMd">
-                        Bundle title
-                      </Text>
-                      <BlockStack gap={GapInsideSection}>
-                        <TextField
-                          label="Title"
-                          labelHidden
-                          autoComplete="off"
-                          name="bundleTitle"
-                          helpText="Only store staff can see this."
-                          value={bundleState.title}
-                          onChange={(newTitile) => {
-                            setBundleState(
-                              (prevBundle: BundleFullStepBasicClient) => {
-                                return { ...prevBundle, title: newTitile };
-                              },
-                            );
-                          }}
-                          type="text"
-                        />
+                  <Box id="bundleTitle">
+                    <Card>
+                      <BlockStack gap={GapBetweenTitleAndContent}>
+                        <Text as="p" variant="headingMd">
+                          Bundle title
+                        </Text>
+
+                        <BlockStack gap={GapInsideSection}>
+                          <TextField
+                            label="Title"
+                            labelHidden
+                            autoComplete="off"
+                            name="bundleTitle"
+                            helpText="Only store staff can see this."
+                            error={
+                              errors?.find(
+                                (err: error) => err.fieldId === "bundleTitle",
+                              )?.message
+                            }
+                            value={bundleState.title}
+                            onChange={(newTitile) => {
+                              setBundleState(
+                                (prevBundle: BundleFullStepBasicClient) => {
+                                  return { ...prevBundle, title: newTitile };
+                                },
+                              );
+                            }}
+                            type="text"
+                          />
+                        </BlockStack>
                       </BlockStack>
-                    </BlockStack>
-                  </Card>
+                    </Card>
+                  </Box>
 
                   {/* Bundle status */}
                   <Card>
@@ -688,12 +767,23 @@ export default function Index() {
                           ),
                           renderChildren: (isSelected: boolean) => {
                             return isSelected ? (
-                              <Box maxWidth="50">
+                              <Box
+                                maxWidth="50"
+                                id="priceAmount"
+                                ref={priceAmountRef}
+                              >
                                 <TextField
                                   label="Price"
                                   type="number"
-                                  name="price"
+                                  name="priceAmount"
                                   autoComplete="off"
+                                  min={0}
+                                  error={
+                                    errors?.find(
+                                      (err: error) =>
+                                        err.fieldId === "priceAmount",
+                                    )?.message
+                                  }
                                   value={bundleState.priceAmount?.toString()}
                                   prefix="$"
                                   onChange={(newPrice: string) => {
