@@ -5,10 +5,15 @@ import db from "../../db.server";
 import { Bundle } from "@prisma/client";
 import { JsonData } from "../../types/jsonData";
 import { bundleTagIndentifier } from "~/constants";
-import { randomUUID } from "crypto";
 
 export const loader = async ({ request }: ActionFunctionArgs) => {
   await authenticate.admin(request);
+
+  // const formData = await request.formData();
+  // if (!formData) {
+  //   return redirect("/app");
+  // }
+
   return null;
 };
 
@@ -53,8 +58,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         },
       );
 
-      const data = await response.json();
+      const productData = await response.json();
 
+      //Create a new page for displaying the new bundle
+      const bundlePage = new admin.rest.resources.Page({
+        session: session,
+      });
+
+      (bundlePage.title = `Neat Bundle ${_max.id ? _max.id : ""}`),
+        (bundlePage.body = "This is a new bundle page");
+
+      await bundlePage.save({
+        update: true,
+      });
+
+      //Create a new bundle in the database
       const bundle: Bundle = await db.bundle.create({
         data: {
           user: {
@@ -63,7 +81,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             },
           },
           title: `New bundle ${_max.id ? _max.id : ""}`,
-          shopifyId: data.data.productCreate.product.id,
+          shopifyProductId: productData.data.productCreate.product.id,
+          shopifyPageId: bundlePage.id?.toString() || "",
           bundleSettings: {
             create: {
               bundleColors: {
@@ -113,6 +132,28 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           },
         },
       });
+
+      //Adding the bundle id to the page metafields for easier identification
+      const createdBundlePage = await admin.rest.resources.Page.find({
+        session: session,
+        id: Number(bundle.shopifyPageId),
+      });
+
+      if (createdBundlePage) {
+        createdBundlePage.metafields = [
+          {
+            key: "bundle_id_page",
+            value: bundle.id,
+            type: "number_integer",
+            namespace: "neat_bundles_app",
+          },
+        ];
+
+        await createdBundlePage.save({
+          update: true,
+        });
+      }
+
       return redirect(`/app/bundles/${bundle.id}`);
     }
 

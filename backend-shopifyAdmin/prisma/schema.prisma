@@ -21,29 +21,30 @@ model User {
 }
 
 model Bundle {
-  id             Int                @id @default(autoincrement())
-  shopifyId      String             @unique
-  title          String
-  published      Boolean            @default(false)
-  createdAt      DateTime           @default(now())
-  steps          BundleStep[]
-  pricing        BundlePricing      @default(CALCULATED)
-  priceAmount    Float?
-  discountType   BundleDiscountType @default(NO_DISCOUNT)
-  discountValue  Float              @default(0)
-  bundleSettings BundleSettings?
-  storeUrl       String
-  user           User               @relation(fields: [storeUrl], references: [storeUrl], onDelete: Cascade)
+  id               Int                @id @default(autoincrement())
+  shopifyProductId String             @unique //GraphQL GID format
+  shopifyPageId    String                @unique //Normal BigInt number, but stored as a string for easier manipulation
+  title            String
+  published        Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  steps            BundleStep[]
+  pricing          BundlePricing      @default(CALCULATED)
+  priceAmount      Float?
+  discountType     BundleDiscountType @default(NO_DISCOUNT)
+  discountValue    Float              @default(0)
+  bundleSettings   BundleSettings?
+  storeUrl         String
+  user             User               @relation(fields: [storeUrl], references: [storeUrl], onDelete: Cascade)
 }
 
 //Step models
 model BundleStep {
-  id            Int             @id @default(autoincrement())
+  id            Int            @id @default(autoincrement())
   bundleId      Int
-  bundle        Bundle          @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  bundle        Bundle         @relation(fields: [bundleId], references: [id], onDelete: Cascade)
   stepNumber    Int
   title         String
-  description   String          @default("Description for this step")
+  description   String         @default("Description for this step")
   stepType      StepType
   productsData  ProductsData? //Data if the step is of type PRODUCT
   contentInputs ContentInput[] //Data if the step is of type CONTENT
@@ -63,7 +64,7 @@ model ProductsData {
 
 model ContentInput {
   id           Int        @id @default(autoincrement())
-  bundleStepId Int        
+  bundleStepId Int
   bundleStep   BundleStep @relation(fields: [bundleStepId], references: [id], onDelete: Cascade)
   inputType    InputType  @default(TEXT)
   inputLabel   String     @default("Input label")

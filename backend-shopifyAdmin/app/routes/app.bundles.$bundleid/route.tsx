@@ -52,7 +52,12 @@ import {
   GapInsideSection,
 } from "../../constants";
 import db from "../../db.server";
-import { StepType, BundlePricing, BundleDiscountType } from "@prisma/client";
+import {
+  StepType,
+  BundlePricing,
+  BundleDiscountType,
+  Bundle,
+} from "@prisma/client";
 import { BundleStepBasicResources } from "../../types/BundleStep";
 import {
   BundleFullStepBasicClient,
@@ -96,11 +101,41 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     case "deleteBundle": {
       try {
         //Delete the bundle along with its steps, contentInputs, bundleSettings?, bundleColors, and bundleLabels
-        await db.bundle.delete({
+        const bundleToDelete = await db.bundle.delete({
           where: {
             id: Number(params.bundleid),
           },
+          select: {
+            shopifyProductId: true,
+            shopifyPageId: true,
+          },
         });
+
+        if (!bundleToDelete) return;
+
+        await Promise.all([
+          //Deleting a associated bundle page
+          await admin.rest.resources.Page.delete({
+            session: session,
+            id: Number(bundleToDelete.shopifyPageId),
+          }),
+          //Deleting a associated bundle product
+          await admin.graphql(
+            `#graphql
+            mutation deleteProduct($productDeleteInput: ProductDeleteInput!) {
+              productDelete(input: $productDeleteInput) {
+                deletedProductId
+              }
+            }`,
+            {
+              variables: {
+                productDeleteInput: {
+                  id: bundleToDelete.shopifyProductId,
+                },
+              },
+            },
+          ),
+        ]);
       } catch (error) {
         console.log(error);
         return json(
@@ -266,7 +301,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     //       data: {
     //         storeUrl: bundleToDuplicate.storeUrl,
     //         title: `${bundleToDuplicate.title} - Copy`,
-    //         shopifyId: data.data.productCreate.product.id,
+    //         shopifyProductId: data.data.productCreate.product.id,
     //         pricing: bundleToDuplicate.pricing,
     //         priceAmount: bundleToDuplicate.priceAmount,
     //         discountType: bundleToDuplicate.discountType,
@@ -427,7 +462,10 @@ export default function Index() {
   //Deleting the bundle
   const deleteBundleHandler = async (): Promise<void> => {
     await shopify.saveBar.leaveConfirmation();
-    navigateSubmit("deleteBundle", `/app/bundles/${params.bundleid}`);
+    navigateSubmit(
+      "deleteBundle",
+      `/app/bundles/${params.bundleid}?redirect=true`,
+    );
   };
 
   //Navigating to the first error
