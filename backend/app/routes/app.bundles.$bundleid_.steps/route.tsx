@@ -77,7 +77,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   const formData = await request.formData();
   const action = formData.get("action") as string;
-  console.log(formData);
 
   switch (action) {
     //Adding a new step to the bundle
@@ -408,6 +407,7 @@ export default function Index({}) {
 
   // add/remove scroll event listener
   useEffect(() => {
+    if (window.innerWidth < 1040) return;
     let previewBox = previewBoxRef.current?.getBoundingClientRect();
     const handleScrollEvent = () => {
       handleScroll(previewBox?.top || 0, previewBox?.height || 0);

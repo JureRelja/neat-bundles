@@ -7,7 +7,6 @@ import {
   useNavigation,
   useLoaderData,
   useParams,
-  useFetcher,
 } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
@@ -46,7 +45,7 @@ import {
 } from "@shopify/polaris-icons";
 import { useAppBridge, Modal, TitleBar } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   GapBetweenSections,
   GapBetweenTitleAndContent,
@@ -134,6 +133,75 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         { status: 200 },
       );
     }
+
+    //Update the bundle
+    case "updateBundle":
+      const bundleData: BundleFullStepBasicClient = JSON.parse(
+        formData.get("bundle") as string,
+      );
+
+      const errors: error[] = [];
+
+      if (!bundleData.title) {
+        errors.push({
+          fieldId: "bundleTitle",
+          field: "Bundle title",
+          message: "Bundle title needs to be entered.",
+        });
+      } else if (
+        bundleData.pricing === BundlePricing.FIXED &&
+        !bundleData.priceAmount
+      ) {
+        errors.push({
+          fieldId: "priceAmount",
+          field: "Price amount",
+          message: "Price needs to be entered for Fixed price bundles.",
+        });
+      }
+
+      if (errors.length > 0)
+        return json({
+          ...new JsonData(
+            false,
+            "error",
+            "There was an error while trying to update the bundle.",
+            errors,
+            bundleData,
+          ),
+        });
+
+      try {
+        await db.bundle.update({
+          where: {
+            id: Number(bundleData.id),
+          },
+          data: {
+            title: bundleData.title,
+            published: bundleData.published,
+            priceAmount: bundleData.priceAmount,
+            pricing: bundleData.pricing,
+            discountType: bundleData.discountType,
+            discountValue: bundleData.discountValue,
+          },
+        });
+        return redirect(`/app`);
+      } catch (error) {
+        console.log(error);
+        return json({
+          ...new JsonData(
+            false,
+            "error",
+            "There was an error while trying to update the bundle.",
+            [
+              {
+                fieldId: "Bundle",
+                field: "Bundle",
+                message: "Error updating the bundle",
+              },
+            ],
+          ),
+        });
+      }
     // case "duplicateBundle":
     //   const bundleToDuplicate: BundleAllResources | null =
     //     await db.bundle.findUnique({
@@ -283,74 +351,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     //     { status: 200 },
     //   );
 
-    //Updating the bundle
-    case "updateBundle":
-      const bundleData: BundleFullStepBasicClient = JSON.parse(
-        formData.get("bundle") as string,
-      );
-
-      const errors: error[] = [];
-
-      if (!bundleData.title) {
-        errors.push({
-          fieldId: "bundleTitle",
-          field: "Bundle title",
-          message: "Bundle title needs to be entered.",
-        });
-      } else if (
-        bundleData.pricing === BundlePricing.FIXED &&
-        !bundleData.priceAmount
-      ) {
-        errors.push({
-          fieldId: "priceAmount",
-          field: "Price amount",
-          message: "Price needs to be entered for Fixed price bundles.",
-        });
-      }
-
-      if (errors.length > 0)
-        return json({
-          ...new JsonData(
-            false,
-            "error",
-            "There was an error while trying to update the bundle.",
-            errors,
-          ),
-        });
-
-      try {
-        await db.bundle.update({
-          where: {
-            id: Number(bundleData.id),
-          },
-          data: {
-            title: bundleData.title,
-            published: bundleData.published,
-            priceAmount: bundleData.priceAmount,
-            pricing: bundleData.pricing,
-            discountType: bundleData.discountType,
-            discountValue: bundleData.discountValue,
-          },
-        });
-        return redirect(`/app`);
-      } catch (error) {
-        console.log(error);
-        return json({
-          ...new JsonData(
-            false,
-            "error",
-            "There was an error while trying to update the bundle.",
-            [
-              {
-                fieldId: "Bundle",
-                field: "Bundle",
-                message: "Error updating the bundle",
-              },
-            ],
-          ),
-        });
-      }
-
     default: {
       return json(
         {
@@ -373,18 +373,26 @@ export default function Index() {
   const isLoading: boolean = nav.state === "loading";
   const isSubmitting: boolean = nav.state === "submitting";
   const params = useParams();
+  const navigateSubmit = useNavigateSubmit(); //Function for doing the submit with a navigation (the same if you were to use a From with a submit button)
+  const actionData = useActionData<typeof action>();
+
   const asyncSubmit = useAsyncSubmit(); //Function for doing the submit action where the only data is action and url
   const tableLoading: boolean = asyncSubmit.state !== "idle"; //Table loading state
-  const navigateSubmit = useNavigateSubmit(); //Function for doing the submit with a navigation (the same if you were to use a From with a submit button)
-  const errors = useActionData<typeof action>()?.errors; //Data from the action
 
-  const priceAmountRef = useRef<HTMLInputElement>(null);
+  //Errors from action
+  const errors = actionData?.errors;
+  //Data from the action if the form submission returned errors
+  const submittedBundle: BundleFullStepBasicClient =
+    actionData?.data as BundleFullStepBasicClient;
 
+  //Data from the loader
   const serverBundle: BundleFullStepBasicClient =
     useLoaderData<typeof loader>().data;
 
-  const [bundleState, setBundleState] =
-    useState<BundleFullStepBasicClient>(serverBundle);
+  //Using 'old' bundle data if there were errors when submitting the form. Otherwise, use the data from the loader.
+  const [bundleState, setBundleState] = useState<BundleFullStepBasicClient>(
+    errors?.length === 0 || !errors ? serverBundle : submittedBundle,
+  );
   const bundleSteps: BundleStepBasicResources[] = serverBundle.steps.sort(
     (a: BundleStepBasicResources, b: BundleStepBasicResources): number =>
       a.stepNumber - b.stepNumber,
@@ -767,11 +775,7 @@ export default function Index() {
                           ),
                           renderChildren: (isSelected: boolean) => {
                             return isSelected ? (
-                              <Box
-                                maxWidth="50"
-                                id="priceAmount"
-                                ref={priceAmountRef}
-                              >
+                              <Box maxWidth="50" id="priceAmount">
                                 <TextField
                                   label="Price"
                                   type="number"

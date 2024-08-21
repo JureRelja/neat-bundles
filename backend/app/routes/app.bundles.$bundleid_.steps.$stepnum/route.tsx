@@ -5,8 +5,8 @@ import {
   useNavigation,
   useLoaderData,
   useParams,
+  useActionData,
 } from "@remix-run/react";
-import { useAsyncSubmit } from "~/hooks/useAsyncSubmit";
 import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
 import {
   Card,
@@ -26,7 +26,7 @@ import {
 } from "@shopify/polaris";
 
 import { authenticate } from "../../shopify.server";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   GapBetweenSections,
   GapBetweenTitleAndContent,
@@ -34,14 +34,9 @@ import {
   HorizontalGap,
 } from "../../constants";
 import db from "../../db.server";
-import {
-  ProductResourceType,
-  StepType,
-  ContentInput,
-  BundleStep,
-} from "@prisma/client";
+import { ProductResourceType, StepType, ContentInput } from "@prisma/client";
 import { BundleStepAllResources, bundleStepFull } from "~/types/BundleStep";
-import { JsonData } from "../../types/jsonData";
+import { error, JsonData } from "../../types/jsonData";
 import ContentStepInputs from "./content-step-inputs";
 import ResourcePicker from "./resource-picker";
 
@@ -303,6 +298,47 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         formData.get("stepData") as string,
       );
 
+      const errors: error[] = [];
+
+      if (!stepData.title) {
+        errors.push({
+          fieldId: "stepTitle",
+          field: "Step title",
+          message: "Step title needs to be entered.",
+        });
+      } else if (!stepData.description) {
+        errors.push({
+          fieldId: "stepDESC",
+          field: "Step description",
+          message: "Step description needs to be entered.",
+        });
+      } else if (!stepData.productsData?.minProductsOnStep) {
+        errors.push({
+          fieldId: "minProducts",
+          field: "Minimum products on step",
+          message:
+            "Please enter the minimum number of products (1 or more) that the customer can select on this step.",
+        });
+      } else if (!stepData.productsData?.maxProductsOnStep) {
+        errors.push({
+          fieldId: "maxProducts",
+          field: "Maximum products on step",
+          message:
+            "Please enter the maximum number of products (1 or more) that the customer can select on this step.",
+        });
+      }
+
+      if (errors.length > 0)
+        return json({
+          ...new JsonData<BundleStepAllResources>(
+            false,
+            "error",
+            "There was an error while trying to update the bundle.",
+            errors,
+            stepData,
+          ),
+        });
+
       try {
         //Adding the products data to the step
         if (stepData.stepType === StepType.PRODUCT) {
@@ -389,16 +425,25 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
 export default function Index() {
   const nav = useNavigation();
-  const isLoading = nav.state != "idle";
-  const asyncSubmit = useAsyncSubmit();
+  const isLoading = nav.state === "loading";
+  const isSubmitting = nav.state === "submitting";
   const navigateSubmit = useNavigateSubmit();
   const params = useParams();
+  const actionData = useActionData<typeof action>();
 
-  const serverStepData: BundleStepAllResources =
+  //Data that was previously submitted in the from
+  const submittedStepData: BundleStepAllResources =
+    actionData?.data as BundleStepAllResources;
+
+  const errors = actionData?.errors; //Errors from the form submission
+
+  const serverStepData: BundleStepAllResources = //Data that was loaded from the server
     useLoaderData<typeof loader>().data;
 
-  const [stepData, setStepData] =
-    useState<BundleStepAllResources>(serverStepData);
+  //Diplaying previously submitted data if there were errors, otherwise displaying the data that was loaded from the server.
+  const [stepData, setStepData] = useState<BundleStepAllResources>(
+    errors?.length === 0 || !errors ? serverStepData : submittedStepData,
+  );
 
   const updateSelectedResources = (selectedResources: string[]) => {
     setStepData((stepData: BundleStepAllResources) => {
@@ -428,9 +473,19 @@ export default function Index() {
     });
   };
 
+  //Navigating to the first error
+  useEffect(() => {
+    errors?.forEach((err: error) => {
+      if (err.fieldId) {
+        document.getElementById(err.fieldId)?.scrollIntoView();
+        return;
+      }
+    });
+  }, [isLoading]);
+
   return (
     <>
-      {isLoading ? (
+      {isLoading || isSubmitting ? (
         <SkeletonPage primaryAction fullWidth></SkeletonPage>
       ) : (
         <Form method="POST" data-discard-confirmation data-save-bar>
@@ -448,34 +503,50 @@ export default function Index() {
                 </Text>
                 <BlockStack gap={GapBetweenSections}>
                   <BlockStack gap={GapInsideSection}>
-                    <TextField
-                      label="Step title"
-                      value={stepData.title}
-                      onChange={(newTitle: string) => {
-                        setStepData((stepData: BundleStepAllResources) => {
-                          return {
-                            ...stepData,
-                            title: newTitle,
-                          };
-                        });
-                      }}
-                      autoComplete="off"
-                      name={`stepTitle`}
-                    />
-                    <TextField
-                      label="Step description"
-                      value={stepData.description}
-                      name={`stepDescription`}
-                      onChange={(newDesc: string) => {
-                        setStepData((stepData: BundleStepAllResources) => {
-                          return {
-                            ...stepData,
-                            description: newDesc,
-                          };
-                        });
-                      }}
-                      autoComplete="off"
-                    />
+                    <Box id="stepTitle">
+                      <TextField
+                        label="Step title"
+                        error={
+                          errors?.find(
+                            (err: error) => err.fieldId === "stepTitle",
+                          )?.message
+                        }
+                        type="text"
+                        name={`stepTitle`}
+                        value={stepData.title}
+                        onChange={(newTitle: string) => {
+                          setStepData((stepData: BundleStepAllResources) => {
+                            return {
+                              ...stepData,
+                              title: newTitle,
+                            };
+                          });
+                        }}
+                        autoComplete="off"
+                      />
+                    </Box>
+                    <Box id="stepDESC">
+                      <TextField
+                        label="Step description"
+                        value={stepData.description}
+                        type="text"
+                        name={`stepDescription`}
+                        onChange={(newDesc: string) => {
+                          setStepData((stepData: BundleStepAllResources) => {
+                            return {
+                              ...stepData,
+                              description: newDesc,
+                            };
+                          });
+                        }}
+                        error={
+                          errors?.find(
+                            (err: error) => err.fieldId === "stepDESC",
+                          )?.message
+                        }
+                        autoComplete="off"
+                      />
+                    </Box>
                   </BlockStack>
                   <ChoiceList
                     title="Step type:"
@@ -555,53 +626,67 @@ export default function Index() {
                         <Text as="p">Rules</Text>
 
                         <InlineGrid columns={2} gap={HorizontalGap}>
-                          <TextField
-                            label="Minimum products to select"
-                            type="number"
-                            autoComplete="off"
-                            inputMode="numeric"
-                            name={`minProductsToSelect`}
-                            min={1}
-                            value={stepData.productsData?.minProductsOnStep.toString()}
-                            onChange={(value) => {
-                              setStepData(
-                                (stepData: BundleStepAllResources) => {
-                                  if (!stepData.productsData) return stepData;
-                                  return {
-                                    ...stepData,
-                                    productsData: {
-                                      ...stepData.productsData,
-                                      minProductsOnStep: Number(value),
-                                    },
-                                  };
-                                },
-                              );
-                            }}
-                          />
+                          <Box id="minProducts">
+                            <TextField
+                              label="Minimum products to select"
+                              type="number"
+                              autoComplete="off"
+                              inputMode="numeric"
+                              name={`minProductsToSelect`}
+                              min={1}
+                              value={stepData.productsData?.minProductsOnStep.toString()}
+                              onChange={(value) => {
+                                setStepData(
+                                  (stepData: BundleStepAllResources) => {
+                                    if (!stepData.productsData) return stepData;
+                                    return {
+                                      ...stepData,
+                                      productsData: {
+                                        ...stepData.productsData,
+                                        minProductsOnStep: Number(value),
+                                      },
+                                    };
+                                  },
+                                );
+                              }}
+                              error={
+                                errors?.find(
+                                  (err: error) => err.fieldId === "minProducts",
+                                )?.message
+                              }
+                            />
+                          </Box>
 
-                          <TextField
-                            label="Maximum products to select"
-                            type="number"
-                            autoComplete="off"
-                            inputMode="numeric"
-                            name={`maxProductsToSelect`}
-                            min={1}
-                            value={stepData.productsData?.maxProductsOnStep.toString()}
-                            onChange={(value) => {
-                              setStepData(
-                                (stepData: BundleStepAllResources) => {
-                                  if (!stepData.productsData) return stepData;
-                                  return {
-                                    ...stepData,
-                                    productsData: {
-                                      ...stepData.productsData,
-                                      maxProductsOnStep: Number(value),
-                                    },
-                                  };
-                                },
-                              );
-                            }}
-                          />
+                          <Box id="maxProducts">
+                            <TextField
+                              label="Maximum products to select"
+                              type="number"
+                              autoComplete="off"
+                              inputMode="numeric"
+                              name={`maxProductsToSelect`}
+                              min={1}
+                              value={stepData.productsData?.maxProductsOnStep.toString()}
+                              onChange={(value) => {
+                                setStepData(
+                                  (stepData: BundleStepAllResources) => {
+                                    if (!stepData.productsData) return stepData;
+                                    return {
+                                      ...stepData,
+                                      productsData: {
+                                        ...stepData.productsData,
+                                        maxProductsOnStep: Number(value),
+                                      },
+                                    };
+                                  },
+                                );
+                              }}
+                              error={
+                                errors?.find(
+                                  (err: error) => err.fieldId === "maxProducts",
+                                )?.message
+                              }
+                            />
+                          </Box>
                         </InlineGrid>
                         <ChoiceList
                           title="Display products"

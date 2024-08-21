@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://athletic-dialogue-sen-newman.trycloudflare.com"
+application_url = "https://obligation-cooper-orientation-ftp.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "unauthenticated_write_checkouts,write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://athletic-dialogue-sen-newman.trycloudflare.com/auth/callback",
-  "https://athletic-dialogue-sen-newman.trycloudflare.com/auth/shopify/callback",
-  "https://athletic-dialogue-sen-newman.trycloudflare.com/api/auth/callback"
+  "https://obligation-cooper-orientation-ftp.trycloudflare.com/auth/callback",
+  "https://obligation-cooper-orientation-ftp.trycloudflare.com/auth/shopify/callback",
+  "https://obligation-cooper-orientation-ftp.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-04"
 
 [app_proxy]
-url = "https://athletic-dialogue-sen-newman.trycloudflare.com"
+url = "https://obligation-cooper-orientation-ftp.trycloudflare.com"
 subpath = "bundle"
 prefix = "apps"
 
