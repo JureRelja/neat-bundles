@@ -4,7 +4,12 @@ import { authenticate } from "../../shopify.server";
 import db from "../../db.server";
 import { Bundle } from "@prisma/client";
 import { JsonData } from "../../types/jsonData";
-import { bundleTagIndentifier } from "~/constants";
+import {
+  bundleTagIndentifier,
+  bundlePageKey,
+  bundlePageNamespace,
+  bundlePageType,
+} from "~/constants";
 
 export const loader = async ({ request }: ActionFunctionArgs) => {
   await authenticate.admin(request);
@@ -143,10 +148,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       //Adding the bundleId metafield to the page for easier identification
       bundlePage.metafields = [
         {
-          key: "bundle_id_page",
+          key: bundlePageKey,
           value: bundle.id,
-          type: "number_integer",
-          namespace: "neat_bundles_app",
+          type: bundlePageType,
+          namespace: bundlePageNamespace,
         },
       ];
 

@@ -1,0 +1,23 @@
+{% render 'widget', msg: "Hello from block" %}
+
+
+{% schema %}
+  {
+    "name": "Neat bundles widget",
+    "target": "section",
+    "settings": [
+      {
+        "type": "product",
+        "id": "product",
+        "label": "product",
+        "autofill": true
+      },
+      {
+        "type": "color",
+        "id": "colour",
+        "label": "Star Colour",
+        "default": "#ff0000"
+      }
+    ]
+  }
+{% endschema %}

@@ -1,0 +1,16 @@
+{% comment %} CSS code for widget {% endcomment %}
+{{ 'widget.css' | asset_url | stylesheet_tag }}
+{% comment %} JS code for widget {% endcomment %}
+{{ 'widget.js' | asset_url | script_tag }}
+
+{% comment %} Widget body start {% endcomment %}
+
+
+<span>{{ msg }}</span>
+
+<h1>This is heading h2</h1>
+
+{% comment %} Widget body end {% endcomment %}
+
+{% comment %} Alpine.js import {% endcomment %}
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

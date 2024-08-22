@@ -1,4 +1,7 @@
 {
   "editor.fontSize": 12,
-  "editor.lineHeight": 1.25
+  "editor.lineHeight": 1.25,
+  "[liquid]": {
+    "editor.formatOnSave": true
+  }
 }

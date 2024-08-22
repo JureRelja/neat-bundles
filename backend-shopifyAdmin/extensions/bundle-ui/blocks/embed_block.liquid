@@ -1,0 +1,39 @@
+{% assign pageBundleNamespace = page.metafields.neat_bundles_app %}
+
+{% comment %} Checking if page is a bundle page to begin with {% endcomment %}
+{% if pageBundleNamespace %}
+  {% if pageBundleNamespace.bundle_id_page %}
+    <span>{{ pageBundleNamespace.bundle_id_page.value }}</span>
+
+    {% render 'widget'
+      , msg: "Hello from embed" %}
+
+  {% endif %}
+{% endif %}
+
+
+{% schema %}
+  {
+    "name": "Neat bundles",
+    "target": "body",
+    "javascript": "embed-block.js",
+    "settings": [
+      {
+        "type": "product",
+        "id": "product",
+        "label": "product",
+        "autofill": true
+      },
+      {
+        "type": "color",
+        "id": "colour",
+        "label": "Star Colour",
+        "default": "#ff0000"
+      }
+    ]
+  }
+{% endschema %}
+
+
+{% comment %} Alpine.js import {% endcomment %}
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

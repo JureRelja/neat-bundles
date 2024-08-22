@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://capabilities-urls-drawings-ton.trycloudflare.com"
+application_url = "https://quotes-achieving-apartments-valid.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "unauthenticated_write_checkouts,write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://capabilities-urls-drawings-ton.trycloudflare.com/auth/callback",
-  "https://capabilities-urls-drawings-ton.trycloudflare.com/auth/shopify/callback",
-  "https://capabilities-urls-drawings-ton.trycloudflare.com/api/auth/callback"
+  "https://quotes-achieving-apartments-valid.trycloudflare.com/auth/callback",
+  "https://quotes-achieving-apartments-valid.trycloudflare.com/auth/shopify/callback",
+  "https://quotes-achieving-apartments-valid.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-04"
 
 [app_proxy]
-url = "https://capabilities-urls-drawings-ton.trycloudflare.com"
+url = "https://quotes-achieving-apartments-valid.trycloudflare.com"
 subpath = "bundle"
 prefix = "apps"
 
