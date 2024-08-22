@@ -111,16 +111,33 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           },
         });
 
-        if (!bundleToDelete) return;
+        if (!bundleToDelete)
+          return json(
+            {
+              ...new JsonData(
+                false,
+                "error",
+                "There was an error with your request",
+                [
+                  {
+                    fieldId: "bundleId",
+                    field: "Bundle ID",
+                    message: "Bundle with the provided id doesn't exist.",
+                  },
+                ],
+              ),
+            },
+            { status: 400 },
+          );
 
         await Promise.all([
           //Deleting a associated bundle page
-          await admin.rest.resources.Page.delete({
+          admin.rest.resources.Page.delete({
             session: session,
             id: Number(bundleToDelete.shopifyPageId),
           }),
           //Deleting a associated bundle product
-          await admin.graphql(
+          admin.graphql(
             `#graphql
             mutation deleteProduct($productDeleteInput: ProductDeleteInput!) {
               productDelete(input: $productDeleteInput) {
@@ -137,36 +154,22 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           ),
         ]);
       } catch (error) {
-        console.log(error);
+        console.log(
+          error,
+          "Either the bundle product or the bundle page was alaready deleted.",
+        );
+      } finally {
+        const url: URL = new URL(request.url);
+
+        if (url.searchParams.get("redirect") === "true") {
+          return redirect("/app");
+        }
+
         return json(
-          {
-            ...new JsonData(
-              false,
-              "error",
-              "There was an error with your request",
-              [
-                {
-                  fieldId: "bundleId",
-                  field: "Bundle ID",
-                  message: "Bundle with the provided id doesn't exist.",
-                },
-              ],
-            ),
-          },
-          { status: 400 },
+          { ...new JsonData(true, "success", "Bundle deleted") },
+          { status: 200 },
         );
       }
-
-      const url: URL = new URL(request.url);
-
-      if (url.searchParams.get("redirect") === "true") {
-        return redirect("/app");
-      }
-
-      return json(
-        { ...new JsonData(true, "success", "Bundle deleted") },
-        { status: 200 },
-      );
     }
 
     //Update the bundle

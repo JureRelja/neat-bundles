@@ -318,6 +318,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         }
 
         await db.$transaction([
+          //Update the step
           db.bundleStep.update({
             where: {
               id: Number(stepId),
@@ -328,7 +329,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
               },
             },
           }),
-
+          //Update all other steps
           db.bundleStep.updateMany({
             where: {
               AND: [
