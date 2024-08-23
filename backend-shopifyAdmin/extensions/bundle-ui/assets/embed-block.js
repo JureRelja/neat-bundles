@@ -1,31 +1,13 @@
-import Alpine from "alpinejs";
+//Embeding the widget in the page
 
-window.Alpine = Alpine;
+window.onload = function () {
+  const widgetContainer = document.getElementById(
+    "neat-bundles-widget-347204u230",
+  );
 
-Alpine.start();
+  const mainContentShopify = document.getElementById("MainContent");
 
-const apiURL = "https://gb-pick-pledge-iv.trycloudflare.com/app/bundles"; //Change this URL when redeploying the backend
+  let clone = widgetContainer.content.cloneNode(true);
 
-//Getting the list of all bundles created in the store
-async function getBundle(bundleId) {
-  let response = await fetch(`${apiURL}/${bundleId}`, {
-    method: "GET",
-    body: JSON.stringify(),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  return await response.json();
-}
-
-//Managing bundle state
-Alpine.data("bundleData", () => ({
-  init() {
-    this.getBundleData(this.$el.getAttribute("data-bundle-id"));
-  },
-  bundle: null,
-  async getBundleData(bundleId) {
-    this.bundle = await getBundle(bundleId);
-  },
-}));
+  mainContentShopify.insertBefore(clone, mainContentShopify.firstChild); //Inserting the widget at the top of the page
+};

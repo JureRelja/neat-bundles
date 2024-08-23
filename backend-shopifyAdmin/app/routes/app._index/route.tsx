@@ -157,8 +157,10 @@ export default function Index() {
                       "text",
                       "text",
                       "text",
+                      "text",
                     ]}
                     headings={[
+                      "Bundle ID",
                       "Name",
                       "Steps",
                       "Status",
@@ -168,6 +170,11 @@ export default function Index() {
                     ]}
                     rows={bundles.map((bundle: BundleAndStepsBasicClient) => {
                       return [
+                        <Text as="p" tone="base">
+                          {bundle.id}
+                        </Text>,
+
+                        //
                         <Link to={`/app/bundles/${bundle.id}`}>
                           <Text as="p" tone="base">
                             {bundle.title}

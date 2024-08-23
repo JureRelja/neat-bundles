@@ -4,13 +4,15 @@
 {{ 'widget.js' | asset_url | script_tag }}
 
 {% comment %} Widget body start {% endcomment %}
+{% if bundleId %}
+  <div class="neat-bundles-widget-container">
+    <span>{{ bundleId }}</span>
 
-
-<span>{{ msg }}</span>
-
-<h1>This is heading h2</h1>
-
+    <h1>This is heading h1</h1>
+  </div>
+{% endif %}
 {% comment %} Widget body end {% endcomment %}
+
 
 {% comment %} Alpine.js import {% endcomment %}
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

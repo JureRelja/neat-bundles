@@ -533,7 +533,9 @@ export default function Index() {
                 navigate("/app");
               },
             }}
-            title={`Edit bundle - ` + serverBundle.title}
+            title={`${serverBundle.title} | Bundle ID: ${serverBundle.id}`}
+            subtitle="Edit bundle details and steps"
+            compactTitle
           >
             <BlockStack gap={GapBetweenSections}>
               <div id={styles.tableWrapper}>

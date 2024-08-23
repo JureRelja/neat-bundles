@@ -1,4 +1,4 @@
-{% render 'widget', msg: "Hello from block" %}
+{% render 'widget', bundleId: settings.bundleId %}
 
 
 {% schema %}
@@ -7,16 +7,10 @@
     "target": "section",
     "settings": [
       {
-        "type": "product",
-        "id": "product",
-        "label": "product",
-        "autofill": true
-      },
-      {
-        "type": "color",
-        "id": "colour",
-        "label": "Star Colour",
-        "default": "#ff0000"
+        "type": "number",
+        "id": "bundleId",
+        "label": "Enter Bundle ID",
+        "info": "You can find the Bundle ID in the Neat Bundles app, next to the name of each bundle."
       }
     ]
   }
