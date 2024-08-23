@@ -1,10 +1,12 @@
 {% comment %} CSS code for widget {% endcomment %}
 {{ 'widget.css' | asset_url | stylesheet_tag }}
 {% comment %} JS code for widget {% endcomment %}
-{{ 'widget.js' | asset_url | script_tag }}
+<script src="{{ 'widget.js' | asset_url }}" defer></script>
+{% comment %} Alpine.js import {% endcomment %}
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
 {% comment %} Widget body start {% endcomment %}
-{% if bundleId %}
+{% if bundleId != blank %}
   <div class="neat-bundles-widget-container">
     <span>{{ bundleId }}</span>
 
@@ -12,7 +14,3 @@
   </div>
 {% endif %}
 {% comment %} Widget body end {% endcomment %}
-
-
-{% comment %} Alpine.js import {% endcomment %}
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
