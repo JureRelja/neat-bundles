@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://purely-decent-pup.ngrok-free.app"
+application_url = "https://www-forum-technological-raw.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "unauthenticated_write_checkouts,write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://purely-decent-pup.ngrok-free.app/auth/callback",
-  "https://purely-decent-pup.ngrok-free.app/auth/shopify/callback",
-  "https://purely-decent-pup.ngrok-free.app/api/auth/callback"
+  "https://www-forum-technological-raw.trycloudflare.com/auth/callback",
+  "https://www-forum-technological-raw.trycloudflare.com/auth/shopify/callback",
+  "https://www-forum-technological-raw.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-04"
 
 [app_proxy]
-url = "https://purely-decent-pup.ngrok-free.app"
+url = "https://www-forum-technological-raw.trycloudflare.com"
 subpath = "neat-bundle-api"
 prefix = "apps"
 
