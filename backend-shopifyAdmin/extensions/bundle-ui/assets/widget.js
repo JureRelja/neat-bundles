@@ -1,3 +1,5 @@
+const APP_URL = "https://operational-integer-milk-ict.trycloudflare.com";
+
 const bundleContainer = document.getElementById(
   "neat-bundles-widget-container",
 );
@@ -11,11 +13,15 @@ document.addEventListener("alpine:init", () => {
     },
 
     async getData() {
-      await fetch(`https://www-forum-technological-raw.trycloudflare.com/app`);
-      //quickstart-24926068.myshopify.com/apps/neat-bundle-api/app
-      https: await fetch(
-        `https://${this.shopDomain}/apps/neat-bundle-api/`,
-      ).then((response) => console.log(response));
+      await fetch(`${APP_URL}/api`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+        });
     },
   }));
 });

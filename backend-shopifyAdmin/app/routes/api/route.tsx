@@ -11,7 +11,7 @@ import { sessionHandler } from "../store.sessions";
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session, jsonResponse } = await sessionHandler(request);
 
-  return jsonResponse();
+  return jsonResponse({ msg: "Hello, World!" });
 };
 
 export const action = async ({ request }: LoaderFunctionArgs) => {

@@ -76,6 +76,7 @@ export const sessionHandler = async (
       data: unknown;
       headers: {
         "Set-Cookie": string;
+        "Access-Control-Allow-Origin": string;
       };
       status: number;
     }>
@@ -96,6 +97,7 @@ export const sessionHandler = async (
       data: additonalData,
       headers: {
         "Set-Cookie": await commitSession(session),
+        "Access-Control-Allow-Origin": "*",
       },
       status: 200,
     });
