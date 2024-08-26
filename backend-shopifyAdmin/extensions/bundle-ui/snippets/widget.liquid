@@ -5,10 +5,16 @@
 {% comment %} Widget body start {% endcomment %}
 {% if bundleId != blank %}
   <div id="neat-bundles-widget-container" x-data="bundle">
-    <h1 x-text="bundleData.title"></h1>
-    <template x-for="step in bundleData.steps">
-      <span x-text="step.stepNumber"></span>
-    </template>
+
+    <div class="step-icons-container">
+      <template x-for="step in bundleData.steps">
+        <div class="step-icon">
+          <span x-text="step.stepNumber"></span>
+          <span x-text="step.title"></span>
+          <span x-text="step.description"></span>
+        </div>
+      </template>
+    </div>
 
   </div>
 {% endif %}
@@ -36,7 +42,7 @@
       shopDomain: "{{ shop.permanent_domain }}",
       bundleId: "{{ bundleId }}",
       bundleData: {},
-        
+      bundleInputs: [{stepId: 1, productsSelected: [], contentInputs: []}],
     }));
   });
 </script>

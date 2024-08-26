@@ -66,7 +66,7 @@ export type BundleBasic = BundleBasic_temp & {
 
 //Bundle payload with all resources (used for duplicating bundles)
 export const bundleAllResources = {
-  bundlSettings: {
+  bundleSettings: {
     include: {
       bundleColors: true,
       bundleLabels: true,

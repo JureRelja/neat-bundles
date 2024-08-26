@@ -1,6 +1,7 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
+  bundleAllResources,
   BundleAllResources,
   BundleAndStepsBasicServer,
   BundleBasicAndSettings,
@@ -108,8 +109,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         where: {
           id: Number(bundleId),
         },
-        select: bundleBasicAndSettings,
-      })) as BundleBasicAndSettings;
+        include: bundleAllResources,
+      })) as BundleAllResources;
     } catch (error) {
       console.log(error);
     }
