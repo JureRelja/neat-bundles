@@ -1,9 +1,6 @@
 {% comment %} CSS code for widget {% endcomment %}
 {{ 'widget.css' | asset_url | stylesheet_tag }}
-{% comment %} JS code for widget {% endcomment %}
-<script src="{{ 'widget.js' | asset_url }}" defer></script>
-{% comment %} Alpine.js import {% endcomment %}
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
 
 {% comment %} Widget body start {% endcomment %}
 {% if bundleId != blank %}
@@ -11,14 +8,44 @@
     id="neat-bundles-widget-container"
     data-bundle-id="{{bundleId}}"
     data-shop-domain="{{shop.permanent_domain}}">
+    <span>{{ shop.permanent_domain }}</span>
+    <span>{{ bundleId }}</span>
 
-    <h1>This is heading h1</h1>
+    <h1>This is heading h10</h1>
 
-    <div x-data="bundle">
-      <span x-text="bundleId"></span>
-    </div>
+    <div x-data="bundle({{bundleId}}, '{{shop.permanent_domain}}')"></div>
 
 
   </div>
 {% endif %}
 {% comment %} Widget body end {% endcomment %}
+
+
+{% comment %} Alpine.js import {% endcomment %}
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+{% comment %} JS code for widget {% endcomment %}
+<script src={{ 'widget.js' | asset_url }}></script>
+{% comment %} JS code for widget {% endcomment %}
+<script>
+  const APP_URL = "https://sodium-snake-tommy-contributors.trycloudflare.com";
+
+  document.addEventListener("alpine:init", () => {
+    Alpine.data("bundle", (bundleId, shopDomain) => ({
+      shopDomain: shopDomain,
+      bundleId: bundleId,
+      async getBundleData() {
+        const response = await fetch(
+          `${APP_URL}/api/bundleData?bundleId=${this.bundleId}&storeUrl=${this.shopDomain}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+        const data = await response.json();
+        console.log(data);
+      return data;
+      }
+    }));
+  });
+</script>

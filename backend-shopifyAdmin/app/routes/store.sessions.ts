@@ -12,6 +12,7 @@ import { BundleAllResources, bundleAllResources } from "~/types/Bundle";
 
 type SessionId = {
   customerId: string;
+  activeBundles: string[];
 };
 
 type SessionFlashData = {
@@ -19,40 +20,15 @@ type SessionFlashData = {
 };
 
 // Session data availabe to the customer browsing the shopify store
-class SessionData {
-  private customerId: string;
-  private bundlesActive: BundleAllResources[] = [];
 
-  constructor(customerId: string) {
-    this.customerId = customerId;
-  }
-
-  public async addActiveBundle(bundleId: number) {
-    if (!bundleId) return;
-
-    const bundle = await db.bundle.findUnique({
-      where: { id: bundleId },
-      include: bundleAllResources,
-    });
-
-    if (bundle) {
-      this.bundlesActive.push(bundle);
-    }
-  }
-
-  public getActiveBundle(bundleId: number): BundleAllResources | undefined {
-    return this.bundlesActive.find((bundle) => bundle.id === bundleId);
-  }
-
-  public deleteActiveBundle(bundleId: number) {
-    this.bundlesActive = this.bundlesActive.filter(
-      (bundle) => bundle.id !== bundleId,
-    );
-  }
-}
+type SessionData = {
+  customerId: string;
+  bundlesActive: BundleAllResources[];
+  newActiveBundles?: string[];
+};
 
 //Generating a session cookie
-const { getSession, commitSession, destroySession } =
+export const { getSession, commitSession, destroySession } =
   createCookieSessionStorage<SessionId, SessionFlashData>({
     // a Cookie from `createCookie` or the CookieOptions to create one
     cookie: {
@@ -60,7 +36,8 @@ const { getSession, commitSession, destroySession } =
       httpOnly: true,
       maxAge: 60 * 60 * 24, // 1 day
       path: "/",
-      sameSite: "lax",
+      sameSite: "none",
+      partitioned: true,
       secrets: [process.env.STORE_COOKIE_SECRET || ""],
       secure: true,
     },
@@ -69,42 +46,30 @@ const { getSession, commitSession, destroySession } =
 //Session handler for loader and action
 export const sessionHandler = async (
   request: Request,
-): Promise<{
-  session: Session<SessionId, SessionFlashData>;
-  jsonResponse: (additonalData?: unknown) => Promise<
-    TypedResponse<{
-      data: unknown;
-      headers: {
-        "Set-Cookie": string;
-        "Access-Control-Allow-Origin": string;
-      };
-      status: number;
-    }>
-  >;
-}> => {
-  const session = await getSession(request.headers.get("store_session"));
+): Promise<Session<SessionId, SessionFlashData>> => {
+  const session = await getSession(request.headers.get("Cookie"));
 
-  if (!session.has("customerId")) {
+  if (!session.has("customerId") || !session.get("customerId")) {
     const customerId = randomUUID();
-
     session.set("customerId", customerId);
-    redisClient.hSet(customerId, { ...new SessionData(customerId) });
-    redisClient.expire(customerId, 60 * 60 * 24); // Delete data after 1 day
   }
 
-  const jsonReponse = async (additonalData?: unknown) => {
-    return json({
-      data: additonalData,
-      headers: {
-        "Set-Cookie": await commitSession(session),
-        "Access-Control-Allow-Origin": "*",
-      },
-      status: 200,
-    });
-  };
+  const redisSession = await redisClient.hGet(
+    session.get("customerId") as string,
+    "activeBundles",
+  );
 
-  return {
-    session: session,
-    jsonResponse: jsonReponse,
-  };
+  const customerId = session.get("customerId") as string;
+
+  if (!redisSession) {
+    await redisClient.hSet(customerId, [
+      "customerId",
+      customerId,
+      "activeBundles",
+      JSON.stringify(new Map<number, BundleAllResources>()),
+    ]);
+    await redisClient.expire(customerId, 60 * 60 * 24); // Delete data after 1 day
+  }
+
+  return session;
 };

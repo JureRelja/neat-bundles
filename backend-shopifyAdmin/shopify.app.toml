@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://navigate-output-discussing-configurations.trycloudflare.com"
+application_url = "https://sodium-snake-tommy-contributors.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "unauthenticated_write_checkouts,write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://navigate-output-discussing-configurations.trycloudflare.com/auth/callback",
-  "https://navigate-output-discussing-configurations.trycloudflare.com/auth/shopify/callback",
-  "https://navigate-output-discussing-configurations.trycloudflare.com/api/auth/callback"
+  "https://sodium-snake-tommy-contributors.trycloudflare.com/auth/callback",
+  "https://sodium-snake-tommy-contributors.trycloudflare.com/auth/shopify/callback",
+  "https://sodium-snake-tommy-contributors.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-04"
 
 [app_proxy]
-url = "https://navigate-output-discussing-configurations.trycloudflare.com"
+url = "https://sodium-snake-tommy-contributors.trycloudflare.com"
 subpath = "neat-bundle-api"
 prefix = "apps"
 
