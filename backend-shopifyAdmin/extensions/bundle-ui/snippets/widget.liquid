@@ -4,11 +4,11 @@
 
 {% comment %} Widget body start {% endcomment %}
 {% if bundleId != blank %}
-  <div id="neat-bundles-widget-container">
-
-    <h1>This is heading h10</h1>
-
-    <div x-data="bundle"></div>
+  <div id="neat-bundles-widget-container" x-data="bundle">
+    <h1 x-text="bundleData.title"></h1>
+    <template x-for="step in bundleData.steps">
+      <span x-text="step.stepNumber"></span>
+    </template>
 
   </div>
 {% endif %}
@@ -25,7 +25,6 @@
   document.addEventListener("alpine:init", () => {
     Alpine.data("bundle", () => ({
       init(){
-        console.log(`${APP_URL}/api/bundleData?bundleId={{bundleId}}&storeUrl={{shop.permanent_domain}}`);
         fetch(`${APP_URL}/api/bundleData?bundleId={{bundleId}}&storeUrl={{shop.permanent_domain}}`)
             .then(response => response.json())
             .then(data => {
@@ -34,9 +33,9 @@
             .catch(error => console.log('error', error));
       },
 
-      shopDomain: '{{ shop.permanent_domain }}',
-      bundleId: '{{ bundleId }}',
-      
+      shopDomain: "{{ shop.permanent_domain }}",
+      bundleId: "{{ bundleId }}",
+      bundleData: {},
         
     }));
   });

@@ -3,7 +3,8 @@ import { json } from "@remix-run/node";
 import {
   BundleAllResources,
   BundleAndStepsBasicServer,
-  bundleAndSteps,
+  BundleBasicAndSettings,
+  bundleBasicAndSettings,
 } from "~/types/Bundle";
 import db from "~/db.server";
 
@@ -65,7 +66,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     );
   }
 
-  let data: BundleAllResources | BundleAndStepsBasicServer | null = null;
+  let data: BundleAllResources | BundleBasicAndSettings | null = null;
   // Returning bundle alone or with selected step
   if (bundleId && stepNumber) {
     try {
@@ -107,8 +108,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         where: {
           id: Number(bundleId),
         },
-        select: bundleAndSteps,
-      })) as BundleAndStepsBasicServer;
+        select: bundleBasicAndSettings,
+      })) as BundleBasicAndSettings;
     } catch (error) {
       console.log(error);
     }

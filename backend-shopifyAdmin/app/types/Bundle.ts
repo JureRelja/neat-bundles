@@ -1,5 +1,6 @@
 import { Prisma, Bundle } from "@prisma/client";
 import { bundleStepBasic } from "./BundleStep";
+import { settingsIncludeAll, SettingsWithAllResources } from "./BundleSettings";
 
 //Defining basic bundle resources
 export const bundleAndSteps = {
@@ -76,4 +77,15 @@ export const bundleAllResources = {
 
 export type BundleAllResources = Prisma.BundleGetPayload<{
   include: typeof bundleAllResources;
+}>;
+
+export const bundleBasicAndSettings = {
+  ...bundleAndSteps,
+  bundleSettings: {
+    include: settingsIncludeAll,
+  },
+} satisfies Prisma.BundleSelect;
+
+export type BundleBasicAndSettings = Prisma.BundleGetPayload<{
+  select: typeof bundleBasicAndSettings;
 }>;

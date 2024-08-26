@@ -1,19 +1,22 @@
 const APP_URL = "https://sodium-snake-tommy-contributors.trycloudflare.com";
 
-const bundleContainer = document.getElementById(
-  "neat-bundles-widget-container",
-);
-
-async function getBundleData() {
-  const response = await fetch(
-    `${APP_URL}/api/bundleData?bundleId=${this.bundleId}&storeUrl=${this.shopDomain}`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
+document.addEventListener("alpine:init", () => {
+  Alpine.data("bundle", () => ({
+    init() {
+      console.log(
+        `${APP_URL}/api/bundleData?bundleId={{bundleId}}&storeUrl={{shop.permanent_domain}}`,
+      );
+      fetch(
+        `${APP_URL}/api/bundleData?bundleId={{bundleId}}&storeUrl={{shop.permanent_domain}}`,
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          this.bundleData = data;
+        })
+        .catch((error) => console.log("error", error));
     },
-  );
-  const data = await response.json();
-  console.log(data);
-  return data;
-}
+
+    shopDomain: "{{ shop.permanent_domain }}",
+    bundleId: "{{ bundleId }}",
+  }));
+});
