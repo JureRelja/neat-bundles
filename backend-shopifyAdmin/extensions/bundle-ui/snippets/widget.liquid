@@ -1,21 +1,38 @@
 {% comment %} CSS code for widget {% endcomment %}
 {{ 'widget.css' | asset_url | stylesheet_tag }}
 
-
 {% comment %} Widget body start {% endcomment %}
 {% if bundleId != blank %}
   <div id="neat-bundles-widget-container" x-data="bundle">
+    <div class="neat-bundles-inner-container">
 
-    <div class="step-icons-container">
-      <template x-for="step in bundleData.steps">
-        <div class="step-icon">
-          <span x-text="step.stepNumber"></span>
-          <span x-text="step.title"></span>
-          <span x-text="step.description"></span>
-        </div>
-      </template>
+      <div class="steps-heading-container">
+        <template x-for="step in bundleData.steps">
+          <div class="step-heading-container">
+            {% comment %} Icon {% endcomment %}
+
+            {% comment %} Active step {% endcomment %}
+            <template x-if="step.stepNumber < activeStep">
+              <div class="step-icon-container icon-color active-step ">
+                <span x-text="step.stepNumber" class="icon-number active-step"></span>
+              </div>
+            </template>
+            {% comment %} Inactive step {% endcomment %}
+            <template x-if="step.stepNumber >= activeStep">
+              <div class="step-icon-container icon-color ">
+                <span x-text="step.stepNumber" class="icon-number"></span>
+              </div>
+            </template>
+
+            {% comment %} Step title {% endcomment %}
+            <span x-text="step.title" class="step-title"></span>
+          </div>
+        </template>
+      </div>
+
+      <div></div>
+
     </div>
-
   </div>
 {% endif %}
 {% comment %} Widget body end {% endcomment %}
@@ -26,7 +43,7 @@
 
 {% comment %} JS code for widget {% endcomment %}
 <script>
-  const APP_URL = "https://sodium-snake-tommy-contributors.trycloudflare.com";
+  const APP_URL = "https://pathology-summer-admission-contract.trycloudflare.com";
 
   document.addEventListener("alpine:init", () => {
     Alpine.data("bundle", () => ({
@@ -35,6 +52,7 @@
             .then(response => response.json())
             .then(data => {
               this.bundleData = data;
+              this.loading = false;
             })
             .catch(error => console.log('error', error));
       },
@@ -43,6 +61,8 @@
       bundleId: "{{ bundleId }}",
       bundleData: {},
       bundleInputs: [{stepId: 1, productsSelected: [], contentInputs: []}],
+      activeStep: 1,
+      loading: true,
     }));
   });
 </script>
