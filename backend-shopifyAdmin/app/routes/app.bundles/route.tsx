@@ -73,9 +73,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       });
 
       (bundlePage.title = `Neat Bundle ${_max.id ? _max.id : ""}`),
-        (bundlePage.body_html = `<p>This is a page for displaying the bundle created by <b>Neat bundles</b> app</p>
-          <p>Neat bundles creates a page for every bundle you configure in the app. These pages are used to display the bundle to your customers.</p>
-          <p>You can customize this page by adding more content or changing the layout of the page.</p>
+        (bundlePage.body_html = `<p style="display: none;">This is a page for displaying the bundle created by <b>Neat bundles</b> app</p>
+          <p style="display: none;">Neat bundles creates a page for every bundle you configure in the app. These pages are used to display the bundle to your customers.</p>
+          <p style="display: none;">You can customize this page by adding more content or changing the layout of the page.</p>
           `);
 
       const [saveBundlePageRes, bundle]: [void, Bundle] = await Promise.all([

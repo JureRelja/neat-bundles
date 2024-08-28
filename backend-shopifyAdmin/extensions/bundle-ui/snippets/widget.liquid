@@ -5,32 +5,54 @@
 {% if bundleId != blank %}
   <div id="neat-bundles-widget-container" x-data="bundle">
     <div class="neat-bundles-inner-container">
-
+      {% comment %} Step heading {% endcomment %}
       <div class="steps-heading-container">
         <template x-for="step in bundleData.steps">
-          <div class="step-heading-container">
-            {% comment %} Icon {% endcomment %}
-
-            {% comment %} Active step {% endcomment %}
-            <template x-if="step.stepNumber < activeStep">
-              <div class="step-icon-container icon-color active-step ">
-                <span x-text="step.stepNumber" class="icon-number active-step"></span>
+          {% comment %} Previous steps icon {% endcomment %}
+          <div>
+            <template x-if="step.stepNumber < reachedStep" x-transition>
+              <div class="step-heading-container" @click="setActiveStep(step.stepNumber)">
+                <div class="step-icon-container icon-color passed-step">
+                  <span x-text="step.stepNumber" class="icon-number passed-step"></span>
+                </div>
+                <span x-text="step.title" class="step-title"></span>
               </div>
             </template>
-            {% comment %} Inactive step {% endcomment %}
-            <template x-if="step.stepNumber >= activeStep">
-              <div class="step-icon-container icon-color ">
-                <span x-text="step.stepNumber" class="icon-number"></span>
+            {% comment %} Current step icon {% endcomment %}
+            <template x-if="step.stepNumber == reachedStep" x-transition>
+              <div class="step-heading-container" @click="setActiveStep(step.stepNumber)">
+                <div class="step-icon-container icon-color">
+                  <span x-text="step.stepNumber" class="icon-number"></span>
+                </div>
+                <span x-text="step.title" class="step-title active-step"></span>
               </div>
             </template>
-
-            {% comment %} Step title {% endcomment %}
-            <span x-text="step.title" class="step-title"></span>
+            {% comment %} Inactive step icon {% endcomment %}
+            <template x-if="step.stepNumber > reachedStep" x-transition>
+              <div class="step-heading-container inactive-step" @click="setActiveStep(step.stepNumber)">
+                <div class="step-icon-container icon-color ">
+                  <span x-text="step.stepNumber" class="icon-number"></span>
+                </div>
+                <span x-text="step.title" class="step-title"></span>
+              </div>
+            </template>
           </div>
         </template>
       </div>
+      {% comment %} Step description {% endcomment %}
+      <div class="step-description-container">
+        <p x-text="activeStepData.description"></p>
+      </div>
+      {% comment %} Step body {% endcomment %}
+      <div class="step-body">
+        <span>asdf</span>
+      </div>
+      {% comment %} Step navigation {% endcomment %}
+      <div class="nav-buttons">
+        <button @click="decrementStep">Previous step</button>
+        <button @click="incrementStep">Next step</button>
+      </div>
 
-      <div></div>
 
     </div>
   </div>
@@ -43,26 +65,62 @@
 
 {% comment %} JS code for widget {% endcomment %}
 <script>
-  const APP_URL = "https://pathology-summer-admission-contract.trycloudflare.com";
+  const APP_URL = "https://replied-delight-cutting-serving.trycloudflare.com";
 
   document.addEventListener("alpine:init", () => {
     Alpine.data("bundle", () => ({
+      // Fetch bundle settings data
       init(){
         fetch(`${APP_URL}/api/bundleData?bundleId={{bundleId}}&storeUrl={{shop.permanent_domain}}`)
             .then(response => response.json())
             .then(data => {
               this.bundleData = data;
+              this.activeStepData = data.steps[0];
               this.loading = false;
             })
             .catch(error => console.log('error', error));
       },
+    
+      shopDomain: "{{ shop.permanent_domain }}", // Shopify store domain
+      bundleId: "{{ bundleId }}", // Bundle ID
+      loading: true, // Loading state
+      bundleData: {}, // Bundle settings data
 
-      shopDomain: "{{ shop.permanent_domain }}",
-      bundleId: "{{ bundleId }}",
-      bundleData: {},
+      //Current bundle selects and inputs
       bundleInputs: [{stepId: 1, productsSelected: [], contentInputs: []}],
-      activeStep: 1,
-      loading: true,
+      reachedStep: 2, // Farthes step reached by the user
+      activeStep: 1, // Current active step
+      activeStepData: {}, // Current active step data
+
+      // Set active step
+      setActiveStep(stepNumber){
+       if (stepNumber <= this.reachedStep){
+          this.activeStep = stepNumber;
+          this.activeStepData = this.bundleData.steps[parseInt(stepNumber-1)];
+       }
+      },
+
+      // Increment step
+      incrementStep(){
+        if (this.reachedStep == this.bundleData.steps.length) return;
+
+        if (this.activeStep < this.reachedStep){
+          setActiveStep(this.activeStep + 1);
+        }
+        else if (this.activeStep == this.reachedStep){
+          this.reachedStep++;
+          setActiveStep(this.activeStep + 1);
+        }
+      },
+
+      // Decrement step
+      decrementStep(){
+        if (this.activeStep > 1){
+          setActiveStep(this.activeStep - 1);
+        }
+      }
+      
+
     }));
   });
 </script>

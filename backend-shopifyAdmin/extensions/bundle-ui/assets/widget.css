@@ -1,22 +1,29 @@
+/* Global start */
 #neat-bundles-widget-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin: 20px 0;
 }
 
 .neat-bundles-inner-container {
-  width: 80%;
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  row-gap: 20px;
 }
+/* Global end */
 
+/* Heading with icons and title start */
 .steps-heading-container {
   display: flex;
   width: 100%;
   align-items: center;
-  justify-content: space-evenly;
+  justify-content: center;
 }
 
 .step-heading-container {
@@ -25,6 +32,12 @@
   align-items: center;
   justify-content: center;
   width: 100px;
+}
+
+.step-heading-container:hover {
+  cursor: pointer;
+  opacity: 0.9;
+  scale: 1.1;
 }
 
 .step-icon-container {
@@ -40,16 +53,61 @@
 
 .icon-number {
   font-size: 25px;
-  font-weight: 600;
+  font-weight: bold;
   color: #f3df76;
-}
-
-.active-step {
-  color: #fff;
-  background-color: #f3df76;
 }
 
 .step-title {
   font-weight: bold;
   font-size: 20px;
+}
+
+.passed-step {
+  color: #fff;
+  background-color: #f3df76;
+}
+
+.active-step {
+  text-decoration: underline;
+}
+
+.inactive-step {
+  opacity: 0.5;
+}
+/* Heading end */
+
+/* Step description start */
+.step-description-container {
+  display: inline-block;
+  height: fit-content;
+  font-size: 18px;
+  font-weight: 600;
+  background-color: #f3df76;
+  text-align: center;
+  border-radius: 10px;
+  width: 100%;
+}
+
+.step-description-container p {
+  margin: 0px;
+  padding: 10px 0;
+}
+/* Step description end */
+
+/* Step body start */
+.step-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Product step start */
+
+/* Step navigation avigation start */
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
 }
