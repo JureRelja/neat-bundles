@@ -46,15 +46,15 @@ model BundleStep {
   title         String
   description   String         @default("Description for this step")
   stepType      StepType
-  productsData  ProductsData? //Data if the step is of type PRODUCT
+  productInput  ProductInput? //Data if the step is of type PRODUCT
   contentInputs ContentInput[] //Data if the step is of type CONTENT
 }
 
-model ProductsData {
+model ProductInput {
   id                     Int        @id @default(autoincrement())
   bundleStepId           Int        @unique
   bundleStep             BundleStep @relation(fields: [bundleStepId], references: [id], onDelete: Cascade)
-  productHandles         String[] //Array of shopify product ids or collection ids
+  products               Json? //Array of shopify product ids or collection ids
   minProductsOnStep      Int        @default(1) //Minimum number of products that must be selected on this step
   maxProductsOnStep      Int        @default(3) //Maximum number of products that can be selected on this step
   allowProductDuplicates Boolean    @default(false)

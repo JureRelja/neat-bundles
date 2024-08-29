@@ -16,7 +16,6 @@ import {
   Text,
   Box,
   SkeletonPage,
-  PageActions,
   SkeletonBodyText,
   SkeletonDisplayText,
   InlineGrid,
@@ -39,6 +38,7 @@ import { BundleStepAllResources, bundleStepFull } from "~/types/BundleStep";
 import { error, JsonData } from "../../types/jsonData";
 import ContentStepInputs from "./content-step-inputs";
 import ResourcePicker from "./resource-picker";
+import { ProductResource } from "~/types/Product";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
@@ -214,18 +214,19 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     data: [{}, {}],
                   },
                 },
-                productsData: {
+                productInput: {
                   create: {
-                    productHandles:
-                      stepToDuplicate.productsData?.productHandles,
                     minProductsOnStep:
-                      stepToDuplicate.productsData?.minProductsOnStep,
+                      stepToDuplicate.productInput?.minProductsOnStep,
                     maxProductsOnStep:
-                      stepToDuplicate.productsData?.maxProductsOnStep,
+                      stepToDuplicate.productInput?.maxProductsOnStep,
                     allowProductDuplicates:
-                      stepToDuplicate.productsData?.allowProductDuplicates,
+                      stepToDuplicate.productInput?.allowProductDuplicates,
                     showProductPrice:
-                      stepToDuplicate.productsData?.showProductPrice,
+                      stepToDuplicate.productInput?.showProductPrice,
+                    products: JSON.stringify(
+                      stepToDuplicate.productInput?.products,
+                    ),
                   },
                 },
               },
@@ -254,7 +255,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 title: `${stepToDuplicate.title} - Copy`,
                 description: stepToDuplicate.description,
                 stepType: stepToDuplicate.stepType,
-                productsData: {
+                productInput: {
                   create: {},
                 },
                 contentInputs: {
@@ -311,14 +312,14 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           field: "Step description",
           message: "Step description needs to be entered.",
         });
-      } else if (!stepData.productsData?.minProductsOnStep) {
+      } else if (!stepData.productInput?.minProductsOnStep) {
         errors.push({
           fieldId: "minProducts",
           field: "Minimum products on step",
           message:
             "Please enter the minimum number of products (1 or more) that the customer can select on this step.",
         });
-      } else if (!stepData.productsData?.maxProductsOnStep) {
+      } else if (!stepData.productInput?.maxProductsOnStep) {
         errors.push({
           fieldId: "maxProducts",
           field: "Maximum products on step",
@@ -349,14 +350,14 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
               title: stepData.title,
               description: stepData.description,
               stepType: stepData.stepType,
-              productsData: {
+              productInput: {
                 update: {
-                  productHandles: stepData.productsData?.productHandles,
-                  minProductsOnStep: stepData.productsData?.minProductsOnStep,
-                  maxProductsOnStep: stepData.productsData?.maxProductsOnStep,
+                  minProductsOnStep: stepData.productInput?.minProductsOnStep,
+                  maxProductsOnStep: stepData.productInput?.maxProductsOnStep,
                   allowProductDuplicates:
-                    stepData.productsData?.allowProductDuplicates,
-                  showProductPrice: stepData.productsData?.showProductPrice,
+                    stepData.productInput?.allowProductDuplicates,
+                  showProductPrice: stepData.productInput?.showProductPrice,
+                  products: JSON.stringify(stepData.productInput?.products),
                 },
               },
             },
@@ -442,16 +443,16 @@ export default function Index() {
   const [stepData, setStepData] = useState<BundleStepAllResources>(
     errors?.length === 0 || !errors ? serverStepData : submittedStepData,
   );
-
-  const updateSelectedProductHandles = (productHandles: string[]) => {
+  console.log(stepData);
+  const updateSelectedProducts = (products: ProductResource[]) => {
     setStepData((stepData: BundleStepAllResources) => {
-      if (!stepData.productsData) return stepData;
+      if (!stepData.productInput) return stepData;
 
       return {
         ...stepData,
-        productsData: {
-          ...stepData.productsData,
-          productHandles: productHandles,
+        productInput: {
+          ...stepData.productInput,
+          products: products,
         },
       };
     });
@@ -591,16 +592,16 @@ export default function Index() {
                             },
                           ]}
                           selected={[
-                            stepData.productsData?.resourceType as string,
+                            stepData.productInput?.resourceType as string,
                           ]}
                           onChange={(selected: string[]) => {
                             setStepData((stepData: BundleStepAllResources) => {
-                              if (!stepData.productsData) return stepData;
+                              if (!stepData.productInput) return stepData;
 
                               return {
                                 ...stepData,
-                                productsData: {
-                                  ...stepData.productsData,
+                                productInput: {
+                                  ...stepData.productInput,
                                   resourceType:
                                     selected[0] as ProductResourceType,
                                   productResources: [],
@@ -612,22 +613,20 @@ export default function Index() {
 
                         <ResourcePicker
                           resourceType={
-                            stepData.productsData
+                            stepData.productInput
                               ?.resourceType as ProductResourceType
                           }
                           selectedResources={
-                            stepData.productsData?.productResources as string[]
+                            stepData.productInput?.productResources as string[]
                           }
                           updateSelectedResources={updateSelectedResources}
                         />*/}
 
                         <ResourcePicker
-                          productHandles={
-                            stepData.productsData?.productHandles as string[]
+                          selectedProducts={
+                            stepData.productInput?.products as ProductResource[]
                           }
-                          updateSelectedProductHandles={
-                            updateSelectedProductHandles
-                          }
+                          updateSelectedProducts={updateSelectedProducts}
                         />
                       </BlockStack>
 
@@ -644,15 +643,15 @@ export default function Index() {
                               inputMode="numeric"
                               name={`minProductsToSelect`}
                               min={1}
-                              value={stepData.productsData?.minProductsOnStep.toString()}
+                              value={stepData.productInput?.minProductsOnStep.toString()}
                               onChange={(value) => {
                                 setStepData(
                                   (stepData: BundleStepAllResources) => {
-                                    if (!stepData.productsData) return stepData;
+                                    if (!stepData.productInput) return stepData;
                                     return {
                                       ...stepData,
-                                      productsData: {
-                                        ...stepData.productsData,
+                                      productInput: {
+                                        ...stepData.productInput,
                                         minProductsOnStep: Number(value),
                                       },
                                     };
@@ -675,15 +674,15 @@ export default function Index() {
                               inputMode="numeric"
                               name={`maxProductsToSelect`}
                               min={1}
-                              value={stepData.productsData?.maxProductsOnStep.toString()}
+                              value={stepData.productInput?.maxProductsOnStep.toString()}
                               onChange={(value) => {
                                 setStepData(
                                   (stepData: BundleStepAllResources) => {
-                                    if (!stepData.productsData) return stepData;
+                                    if (!stepData.productInput) return stepData;
                                     return {
                                       ...stepData,
-                                      productsData: {
-                                        ...stepData.productsData,
+                                      productInput: {
+                                        ...stepData.productInput,
                                         maxProductsOnStep: Number(value),
                                       },
                                     };
@@ -714,20 +713,20 @@ export default function Index() {
                             },
                           ]}
                           selected={[
-                            stepData.productsData?.allowProductDuplicates
+                            stepData.productInput?.allowProductDuplicates
                               ? "allowProductDuplicates"
                               : "",
-                            stepData.productsData?.showProductPrice
+                            stepData.productInput?.showProductPrice
                               ? "showProductPrice"
                               : "",
                           ]}
                           onChange={(selectedValues: string[]) => {
                             setStepData((stepData: BundleStepAllResources) => {
-                              if (!stepData.productsData) return stepData;
+                              if (!stepData.productInput) return stepData;
                               return {
                                 ...stepData,
-                                productsData: {
-                                  ...stepData.productsData,
+                                productInput: {
+                                  ...stepData.productInput,
                                   allowProductDuplicates:
                                     selectedValues.includes(
                                       "allowProductDuplicates",

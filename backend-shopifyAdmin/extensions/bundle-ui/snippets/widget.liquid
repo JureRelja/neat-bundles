@@ -5,13 +5,13 @@
 {% if bundleId != blank %}
   <div id="neat-bundles-widget-container" x-data="bundle">
     {% comment %} Loading {% endcomment %}
-    <template x-if="loading">
+    <template x-if="initialLoading">
       <div class="loading-container">
         <p>Loading...</p>
       </div>
     </template>
     {% comment %} Not loading {% endcomment %}
-    <template x-if="!loading">
+    <template x-if="!initialLoading">
       <div class="neat-bundles-inner-container">
         {% comment %} Step heading {% endcomment %}
         <div class="steps-heading-container">
@@ -92,7 +92,7 @@
 
 {% comment %} JS code for widget {% endcomment %}
 <script>
-  const APP_URL = "https://replied-delight-cutting-serving.trycloudflare.com";
+  const APP_URL = "https://civic-fragrance-reaches-presidential.trycloudflare.com";
 
   document.addEventListener("alpine:init", () => {
     Alpine.data("bundle", () => ({
@@ -101,17 +101,21 @@
         fetch(`${APP_URL}/api/bundleData?bundleId={{bundleId}}&storeUrl={{shop.permanent_domain}}`)
             .then(response => response.json())
             .then(data => {
-              this.bundleData = data;
-              this.activeStepData = data.steps[0];
+              if (data.ok) {
+                this.bundleData = data.data;
+                this.activeStepData = data.data.steps[0];
+              }
+              else {
+                console.log(data.message);
+              }
             }).then(() => {
-              this.loading = false;
-            })
-            .catch(error => console.log('error', error));
+              this.initialLoading = false;
+            }).catch(error => console.log('error', error))
       },
       shopDomain: "{{ shop.permanent_domain }}", // Shopify store domain
       bundleId: "{{ bundleId }}", // Bundle ID
 
-      loading: true, // Loading state
+      initialLoading: true, // Loading state
       stepLoading: true, // Step loading state
       bundleData: {}, // Bundle settings data
 
@@ -122,22 +126,17 @@
       activeStepData: {}, // Current active step data
       productsData: [], // Products data
 
-      getProductsData() {
-        this.loading = true;
-        const data = {
-          productResources: this.activeStepData.productsData.productResources,
-          resourceType: this.activeStepData.productsData.resourceType,
-        },
-        fetch(`${APP_URL}/api/productsData?storeUrl={{shop.permanent_domain}}&productStepId=${this.activeStepData.productsData.id}&bundleId=${this.bundleId}`)
+      // Fetch products data
+      async fetchProductsData(){
+        
+        this.stepLoading = true;
+        fetch(window.Shopify.routes.root + 'products/the-3p-fulfilled-snowboard.js')
         .then(response => response.json())
-          .then(data => {
-            this.productsData = data;
-          }).then (() => {
-            this.loading = false;
-          })
-          .catch(error => console.log('error', error));
+        .then(product => console.log(product));
+
       },
 
+      
       // Set active step
       setActiveStep(stepNumber){
        if (stepNumber <= this.reachedStep){

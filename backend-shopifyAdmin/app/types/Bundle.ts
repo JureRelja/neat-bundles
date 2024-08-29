@@ -74,7 +74,7 @@ export const bundleAllResources = {
   },
   steps: {
     include: {
-      productsData: true,
+      productInput: true,
       contentInputs: true,
     },
   },

@@ -33,3 +33,8 @@ export type Product = {
     };
   };
 };
+
+export type ProductResource = {
+  shopifyId: string;
+  handle: string;
+};

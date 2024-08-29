@@ -1,4 +1,5 @@
 export class JsonData<T> {
+  fromCache?: boolean;
   ok: boolean;
   status: "success" | "error";
   message: string;
@@ -11,6 +12,7 @@ export class JsonData<T> {
     message: string,
     errors?: error[],
     data?: T,
+    fromCache?: boolean,
   ) {
     this.ok = status === "success";
     this.status = status;
@@ -18,6 +20,9 @@ export class JsonData<T> {
     this.errors = errors;
     if (data) this.data = data;
     else this.data = {} as T;
+
+    if (fromCache) this.fromCache = fromCache;
+    else this.fromCache = false;
   }
 }
 

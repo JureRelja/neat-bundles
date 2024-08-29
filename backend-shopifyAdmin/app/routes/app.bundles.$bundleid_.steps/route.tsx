@@ -120,7 +120,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             title:
               "Step " +
               (numOfSteps._max.stepNumber ? numOfSteps._max.stepNumber + 1 : 1),
-            productsData: {
+            productInput: {
               create: {},
             },
             contentInputs: {

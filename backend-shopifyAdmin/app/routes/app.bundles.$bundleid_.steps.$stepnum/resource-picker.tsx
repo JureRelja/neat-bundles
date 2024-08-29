@@ -6,22 +6,23 @@ import {
   SelectPayload,
   Resource,
 } from "@shopify/app-bridge-types";
+import { ProductResource } from "~/types/Product";
 
 export default function Index({
-  updateSelectedProductHandles,
-  productHandles,
+  updateSelectedProducts,
+  selectedProducts,
 }: {
-  updateSelectedProductHandles: (selectedResource: string[]) => void;
-  productHandles: string[];
+  updateSelectedProducts: (productResource: ProductResource[]) => void;
+  selectedProducts: ProductResource[];
 }) {
   const shopify = useAppBridge();
 
   const showModalPicker = async () => {
-    const selectedResourcesIds: { id: string }[] = productHandles.map(
-      (resource: Resource) => {
-        return { id: resource.id };
-      },
-    );
+    // Convert the selected resources to the base resource type
+    const selectedResourcesIds: { id: string }[] =
+      selectedProducts?.map((product) => {
+        return { id: product.shopifyId };
+      }) || [];
 
     // const type =
     //   resourceType === ProductResourceType.COLLECTION
@@ -36,6 +37,7 @@ export default function Index({
         variants: false,
         draft: false,
         archived: false,
+        multiple: 2,
         query: `-tag:${bundleTagIndentifier}`,
       },
       selectionIds: selectedResourcesIds,
@@ -44,12 +46,15 @@ export default function Index({
     if (!newSelectedResources) return;
 
     // Convert the selected resources to the base resource type
-    const baseSelectedResources: string[] = newSelectedResources.map(
+    const newSelectedProducts: ProductResource[] = newSelectedResources.map(
       (selectedResource: Resource) => {
-        return selectedResource.handle;
+        return {
+          shopifyId: selectedResource.id as string,
+          handle: selectedResource.handle as string,
+        };
       },
     );
-    updateSelectedProductHandles(baseSelectedResources);
+    updateSelectedProducts(newSelectedProducts);
   };
 
   return (
@@ -57,7 +62,7 @@ export default function Index({
       <Button
         onClick={showModalPicker}
         fullWidth
-        variant={productHandles?.length > 0 ? "secondary" : "primary"}
+        variant={selectedProducts?.length > 0 ? "secondary" : "primary"}
       >
         {/* {resourceType === ProductResourceType.COLLECTION
           ? selectedResources?.length === 0
@@ -67,9 +72,9 @@ export default function Index({
             ? "Select products"
             : `${selectedResources?.length} products selected`} */}
 
-        {productHandles?.length === 0
+        {!selectedProducts || selectedProducts.length === 0
           ? "Select products"
-          : `${productHandles?.length} products selected`}
+          : `${selectedProducts?.length} products selected`}
       </Button>
     </>
   );
