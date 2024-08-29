@@ -15,14 +15,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   //Get query params
   const bundleId = url.searchParams.get("bundleId");
-  const stepId = url.searchParams.get("stepId");
   const stepNumber = url.searchParams.get("stepNum");
   const storeUrl = url.searchParams.get("storeUrl");
 
   await checkPublicAuth(storeUrl, bundleId); //Public auth check
 
   //Cache aside
-  const key = `api/bundleData/${storeUrl}/${bundleId}`;
+  const key = `api/bundleData/${storeUrl}/${bundleId}/${stepNumber}`;
   const cacheData = await ReadCache(key);
 
   if (cacheData) {
@@ -51,21 +50,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           where: {
             id: Number(bundleId),
           },
-          include: bundleAllResources,
-        })) as BundleAllResources;
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (bundleId && stepId) {
-      try {
-        data = (await db.bundle.findUnique({
-          where: {
-            id: Number(bundleId),
-          },
           include: {
+            ...bundleAllResources,
             steps: {
+              include: {
+                productsData: true,
+                contentInputs: true,
+              },
               where: {
-                id: Number(stepId),
+                stepNumber: Number(stepNumber),
               },
               orderBy: {
                 stepNumber: "asc",
@@ -82,7 +75,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           where: {
             id: Number(bundleId),
           },
-          include: bundleAllResources,
+          include: {
+            ...bundleAllResources,
+            steps: {
+              include: {
+                productsData: true,
+                contentInputs: true,
+              },
+              orderBy: {
+                stepNumber: "asc",
+              },
+            },
+          },
         })) as BundleAllResources;
       } catch (error) {
         console.log(error);
