@@ -597,12 +597,14 @@ export default function Index() {
                           onChange={(selected: string[]) => {
                             setStepData((stepData: BundleStepAllResources) => {
                               if (!stepData.productsData) return stepData;
+
                               return {
                                 ...stepData,
                                 productsData: {
                                   ...stepData.productsData,
                                   resourceType:
                                     selected[0] as ProductResourceType,
+                                  productResources: [],
                                 },
                               };
                             });

@@ -3,11 +3,11 @@ import { json } from "@remix-run/node";
 import {
   bundleAllResources,
   BundleAllResources,
-  BundleAndStepsBasicServer,
   BundleBasicAndSettings,
-  bundleBasicAndSettings,
 } from "~/types/Bundle";
 import db from "~/db.server";
+import { JsonData } from "~/types/jsonData";
+import { checkPublicAuth } from "~/utils/publicApi.auth";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
@@ -18,54 +18,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const stepNumber = url.searchParams.get("stepNum");
   const storeUrl = url.searchParams.get("storeUrl");
 
-  // Check if storeUrl is provided
-  if (!storeUrl) {
-    return json(
-      { msg: "No 'storeUrl' specified." },
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-        status: 200,
-      },
-    );
-  }
-
-  // Check if bundleId is provided
-  if (!bundleId) {
-    return json(
-      { msg: "No 'bundleId' specified." },
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-        status: 200,
-      },
-    );
-  }
-
-  //Checking if the the bundle is published and belongs to the store
-  const bundle = await db.bundle.findUnique({
-    where: {
-      id: Number(bundleId),
-    },
-    select: {
-      published: true,
-      storeUrl: true,
-    },
-  });
-
-  if (!bundle || !bundle.published || bundle.storeUrl !== storeUrl) {
-    return json(
-      { msg: "Bundle not found or not published." },
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-        status: 200,
-      },
-    );
-  }
+  await checkPublicAuth(storeUrl, bundleId); //Public auth check
 
   let data: BundleAllResources | BundleBasicAndSettings | null = null;
   // Returning bundle alone or with selected step
@@ -75,13 +28,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         where: {
           id: Number(bundleId),
         },
-        include: {
-          steps: {
-            where: {
-              stepNumber: Number(stepNumber),
-            },
-          },
-        },
+        include: bundleAllResources,
       })) as BundleAllResources;
     } catch (error) {
       console.log(error);
@@ -118,7 +65,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   if (!data) {
     return json(
-      { msg: "Specified 'stepNum' or 'stepId' doesn't belong to this bundle." },
+      new JsonData(
+        false,
+        "error",
+        "There was an error with your request. 'stepNum' or 'stepId' doesn't belong to this bundle.",
+      ),
       {
         headers: {
           "Access-Control-Allow-Origin": "*",
@@ -128,10 +79,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     );
   }
 
-  return json(data, {
-    headers: {
-      "Access-Control-Allow-Origin": "*",
+  return json(
+    new JsonData(false, "success", "Bundle succesfuly retirieved.", [], data),
+    {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
+      status: 200,
     },
-    status: 200,
-  });
+  );
 };
