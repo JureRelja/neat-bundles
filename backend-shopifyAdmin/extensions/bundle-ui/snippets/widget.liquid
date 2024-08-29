@@ -4,64 +4,91 @@
 {% comment %} Widget body start {% endcomment %}
 {% if bundleId != blank %}
   <div id="neat-bundles-widget-container" x-data="bundle">
-    <div class="neat-bundles-inner-container">
-      {% comment %} Step heading {% endcomment %}
-      <div class="steps-heading-container">
-        <template x-for="step in bundleData.steps">
-          {% comment %} Previous steps icon {% endcomment %}
-          <div>
-            <template x-if="step.stepNumber < reachedStep" x-transition>
-              <div class="step-heading-container" @click="setActiveStep(step.stepNumber)">
-                <div class="step-icon-container icon-color passed-step">
-                  <span x-text="step.stepNumber" class="icon-number passed-step"></span>
+    {% comment %} Loading {% endcomment %}
+    <template x-if="loading">
+      <div class="loading-container">
+        <p>Loading...</p>
+      </div>
+    </template>
+    {% comment %} Not loading {% endcomment %}
+    <template x-if="!loading">
+      <div class="neat-bundles-inner-container">
+        {% comment %} Step heading {% endcomment %}
+        <div class="steps-heading-container">
+          <template x-for="step in bundleData.steps">
+            {% comment %} Previous steps icon {% endcomment %}
+            <div>
+              <template x-if="step.stepNumber < reachedStep">
+                <div class="step-heading-container" @click="setActiveStep(step.stepNumber)">
+                  <div class="step-icon-container icon-color passed-step">
+                    <span x-text="step.stepNumber" class="icon-number passed-step"></span>
+                  </div>
+                  <span x-text="step.title" class="step-title"></span>
                 </div>
-                <span x-text="step.title" class="step-title"></span>
+              </template>
+              {% comment %} Current step icon {% endcomment %}
+              <template x-if="step.stepNumber == reachedStep">
+                <div class="step-heading-container" @click="setActiveStep(step.stepNumber)">
+                  <div class="step-icon-container icon-color">
+                    <span x-text="step.stepNumber" class="icon-number"></span>
+                  </div>
+                  <span x-text="step.title" class="step-title active-step"></span>
+                </div>
+              </template>
+              {% comment %} Inactive step icon {% endcomment %}
+              <template x-if="step.stepNumber > reachedStep">
+                <div class="step-heading-container inactive-step" @click="setActiveStep(step.stepNumber)">
+                  <div class="step-icon-container icon-color ">
+                    <span x-text="step.stepNumber" class="icon-number"></span>
+                  </div>
+                  <span x-text="step.title" class="step-title"></span>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+
+        {% comment %} Step description {% endcomment %}
+        <div class="step-description-container">
+          <p x-text="activeStepData.description"></p>
+        </div>
+
+        {% comment %} Step body {% endcomment %}
+        {% comment %} Step loading {% endcomment %}
+        <template x-if="stepLoading">
+          <div class="loading-container">
+            <p>Loading...</p>
+          </div>
+        </template>
+        {% comment %} Step loaded {% endcomment %}
+        <template x-if="!stepLoading">
+          <div class="step-body">
+            <template x-if="activeStepData.stepType == 'PRODUCT'">
+              <div class="products-container">
+                <template x-for="product in productsData."></template>
               </div>
             </template>
-            {% comment %} Current step icon {% endcomment %}
-            <template x-if="step.stepNumber == reachedStep" x-transition>
-              <div class="step-heading-container" @click="setActiveStep(step.stepNumber)">
-                <div class="step-icon-container icon-color">
-                  <span x-text="step.stepNumber" class="icon-number"></span>
-                </div>
-                <span x-text="step.title" class="step-title active-step"></span>
-              </div>
-            </template>
-            {% comment %} Inactive step icon {% endcomment %}
-            <template x-if="step.stepNumber > reachedStep" x-transition>
-              <div class="step-heading-container inactive-step" @click="setActiveStep(step.stepNumber)">
-                <div class="step-icon-container icon-color ">
-                  <span x-text="step.stepNumber" class="icon-number"></span>
-                </div>
-                <span x-text="step.title" class="step-title"></span>
+            <template x-if="activeStepData.stepType == 'CONTENT'">
+              <div>
+                <p>Content step</p>
               </div>
             </template>
           </div>
         </template>
-      </div>
-      {% comment %} Step description {% endcomment %}
-      <div class="step-description-container">
-        <p x-text="activeStepData.description"></p>
-      </div>
-      {% comment %} Step body {% endcomment %}
-      <div class="step-body">
-        <span>asdf</span>
-      </div>
-      {% comment %} Step navigation {% endcomment %}
-      <div class="nav-buttons">
-        <button @click="decrementStep">Previous step</button>
-        <button @click="incrementStep">Next step</button>
-      </div>
+
+        {% comment %} Step navigation {% endcomment %}
+        <div class="nav-buttons">
+          <button @click="decrementStep">Previous step</button>
+          <button @click="incrementStep">Next step</button>
+        </div>
 
 
-    </div>
+      </div>
+    </template>
   </div>
 {% endif %}
 {% comment %} Widget body end {% endcomment %}
 
-
-{% comment %} Alpine.js import {% endcomment %}
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
 {% comment %} JS code for widget {% endcomment %}
 <script>
@@ -76,21 +103,40 @@
             .then(data => {
               this.bundleData = data;
               this.activeStepData = data.steps[0];
+            }).then(() => {
               this.loading = false;
             })
             .catch(error => console.log('error', error));
       },
-    
       shopDomain: "{{ shop.permanent_domain }}", // Shopify store domain
       bundleId: "{{ bundleId }}", // Bundle ID
+
       loading: true, // Loading state
+      stepLoading: true, // Step loading state
       bundleData: {}, // Bundle settings data
 
       //Current bundle selects and inputs
       bundleInputs: [{stepId: 1, productsSelected: [], contentInputs: []}],
-      reachedStep: 2, // Farthes step reached by the user
+      reachedStep: 1, // Farthes step reached by the user
       activeStep: 1, // Current active step
       activeStepData: {}, // Current active step data
+      productsData: [], // Products data
+
+      getProductsData() {
+        this.loading = true;
+        const data = {
+          productResources: this.activeStepData.productsData.productResources,
+          resourceType: this.activeStepData.productsData.resourceType,
+        },
+        fetch(`${APP_URL}/api/productsData?storeUrl={{shop.permanent_domain}}&productStepId=${this.activeStepData.productsData.id}&bundleId=${this.bundleId}`)
+        .then(response => response.json())
+          .then(data => {
+            this.productsData = data;
+          }).then (() => {
+            this.loading = false;
+          })
+          .catch(error => console.log('error', error));
+      },
 
       // Set active step
       setActiveStep(stepNumber){
@@ -102,21 +148,23 @@
 
       // Increment step
       incrementStep(){
-        if (this.reachedStep == this.bundleData.steps.length) return;
-
         if (this.activeStep < this.reachedStep){
-          setActiveStep(this.activeStep + 1);
+          this.activeStepData = this.bundleData.steps[parseInt(this.activeStep)];
+          this.activeStep++;
         }
         else if (this.activeStep == this.reachedStep){
+          if (this.reachedStep == this.bundleData.steps.length) return;
           this.reachedStep++;
-          setActiveStep(this.activeStep + 1);
+          this.activeStepData = this.bundleData.steps[parseInt(this.activeStep)];
+          this.activeStep++;
         }
       },
 
       // Decrement step
       decrementStep(){
         if (this.activeStep > 1){
-          setActiveStep(this.activeStep - 1);
+          this.activeStepData = this.bundleData.steps[parseInt(this.activeStep - 2)];
+          this.activeStep--;       
         }
       }
       
@@ -124,3 +172,7 @@
     }));
   });
 </script>
+
+
+{% comment %} Alpine.js import {% endcomment %}
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>

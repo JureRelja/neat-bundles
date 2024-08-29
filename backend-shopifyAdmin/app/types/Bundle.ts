@@ -72,7 +72,12 @@ export const bundleAllResources = {
       bundleLabels: true,
     },
   },
-  steps: true,
+  steps: {
+    include: {
+      productsData: true,
+      contentInputs: true,
+    },
+  },
 };
 
 export type BundleAllResources = Prisma.BundleGetPayload<{

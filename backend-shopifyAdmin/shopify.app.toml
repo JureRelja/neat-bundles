@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://educated-modelling-fashion-phillips.trycloudflare.com"
+application_url = "https://deadline-cal-working-decided.trycloudflare.com"
 embedded = true
 
 [build]
@@ -13,20 +13,20 @@ include_config_on_deploy = true
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "unauthenticated_write_checkouts,write_content,write_products,unauthenticated_read_product_listings"
+scopes = "unauthenticated_read_product_listings,unauthenticated_write_checkouts,write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://educated-modelling-fashion-phillips.trycloudflare.com/auth/callback",
-  "https://educated-modelling-fashion-phillips.trycloudflare.com/auth/shopify/callback",
-  "https://educated-modelling-fashion-phillips.trycloudflare.com/api/auth/callback"
+  "https://deadline-cal-working-decided.trycloudflare.com/auth/callback",
+  "https://deadline-cal-working-decided.trycloudflare.com/auth/shopify/callback",
+  "https://deadline-cal-working-decided.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-04"
 
 [app_proxy]
-url = "https://educated-modelling-fashion-phillips.trycloudflare.com"
+url = "https://deadline-cal-working-decided.trycloudflare.com"
 subpath = "neat-bundle-api"
 prefix = "apps"
 

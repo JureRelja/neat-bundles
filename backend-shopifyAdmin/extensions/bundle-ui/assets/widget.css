@@ -104,6 +104,13 @@
 }
 
 /* Product step start */
+.products-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  columns: 4;
+}
 
 /* Step navigation avigation start */
 .nav-buttons {

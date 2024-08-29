@@ -1,14 +1,8 @@
 // app/sessions.ts
-import {
-  createCookieSessionStorage,
-  json,
-  TypedResponse,
-  Session,
-} from "@remix-run/node";
+import { createCookieSessionStorage, Session } from "@remix-run/node";
 import { randomUUID } from "crypto";
 import { redisClient } from "../shopify.server";
-import db from "../db.server";
-import { BundleAllResources, bundleAllResources } from "~/types/Bundle";
+import { BundleAllResources } from "~/types/Bundle";
 
 type SessionId = {
   customerId: string;
