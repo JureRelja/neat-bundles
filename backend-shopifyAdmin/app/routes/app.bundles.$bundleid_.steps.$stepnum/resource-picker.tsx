@@ -6,33 +6,30 @@ import {
   SelectPayload,
   Resource,
 } from "@shopify/app-bridge-types";
-import { ProductResourceType } from "@prisma/client";
 
 export default function Index({
-  resourceType,
-  updateSelectedResources,
-  selectedResources,
+  updateSelectedProductHandles,
+  productHandles,
 }: {
-  resourceType: ProductResourceType;
-  updateSelectedResources: (selectedResource: string[]) => void;
-  selectedResources: string[];
+  updateSelectedProductHandles: (selectedResource: string[]) => void;
+  productHandles: string[];
 }) {
   const shopify = useAppBridge();
 
   const showModalPicker = async () => {
-    const selectedResourcesIds: { id: string }[] = selectedResources.map(
+    const selectedResourcesIds: { id: string }[] = productHandles.map(
       (resource: Resource) => {
         return { id: resource.id };
       },
     );
 
-    const type =
-      resourceType === ProductResourceType.COLLECTION
-        ? "collection"
-        : "product";
+    // const type =
+    //   resourceType === ProductResourceType.COLLECTION
+    //     ? "collection"
+    //     : "product";
 
     const newSelectedResources = await shopify.resourcePicker({
-      type: type,
+      type: "product",
       multiple: true,
       action: "select",
       filter: {
@@ -49,10 +46,10 @@ export default function Index({
     // Convert the selected resources to the base resource type
     const baseSelectedResources: string[] = newSelectedResources.map(
       (selectedResource: Resource) => {
-        return selectedResource.id;
+        return selectedResource.handle;
       },
     );
-    updateSelectedResources(baseSelectedResources);
+    updateSelectedProductHandles(baseSelectedResources);
   };
 
   return (
@@ -60,15 +57,19 @@ export default function Index({
       <Button
         onClick={showModalPicker}
         fullWidth
-        variant={selectedResources?.length > 0 ? "secondary" : "primary"}
+        variant={productHandles?.length > 0 ? "secondary" : "primary"}
       >
-        {resourceType === ProductResourceType.COLLECTION
+        {/* {resourceType === ProductResourceType.COLLECTION
           ? selectedResources?.length === 0
             ? "Select collections"
             : `${selectedResources?.length} collections selected`
           : selectedResources?.length === 0
             ? "Select products"
-            : `${selectedResources?.length} products selected`}
+            : `${selectedResources?.length} products selected`} */}
+
+        {productHandles?.length === 0
+          ? "Select products"
+          : `${productHandles?.length} products selected`}
       </Button>
     </>
   );

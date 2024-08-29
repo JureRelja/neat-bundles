@@ -23,7 +23,7 @@ model User {
 model Bundle {
   id               Int                @id @default(autoincrement())
   shopifyProductId String             @unique //GraphQL GID format
-  shopifyPageId    String                @unique //Normal BigInt number, but stored as a string for easier manipulation
+  shopifyPageId    String             @unique //Normal BigInt number, but stored as a string for easier manipulation
   title            String
   published        Boolean            @default(false)
   createdAt        DateTime           @default(now())
@@ -51,15 +51,14 @@ model BundleStep {
 }
 
 model ProductsData {
-  id                     Int                 @id @default(autoincrement())
-  bundleStepId           Int                 @unique
-  bundleStep             BundleStep          @relation(fields: [bundleStepId], references: [id], onDelete: Cascade)
-  productResources       String[] //Array of shopify product ids or collection ids
-  resourceType           ProductResourceType @default(PRODUCT) //product or collection
-  minProductsOnStep      Int                 @default(1) //Minimum number of products that must be selected on this step
-  maxProductsOnStep      Int                 @default(3) //Maximum number of products that can be selected on this step
-  allowProductDuplicates Boolean             @default(false)
-  showProductPrice       Boolean             @default(true)
+  id                     Int        @id @default(autoincrement())
+  bundleStepId           Int        @unique
+  bundleStep             BundleStep @relation(fields: [bundleStepId], references: [id], onDelete: Cascade)
+  productHandles         String[] //Array of shopify product ids or collection ids
+  minProductsOnStep      Int        @default(1) //Minimum number of products that must be selected on this step
+  maxProductsOnStep      Int        @default(3) //Maximum number of products that can be selected on this step
+  allowProductDuplicates Boolean    @default(false)
+  showProductPrice       Boolean    @default(true)
 }
 
 model ContentInput {
@@ -75,12 +74,6 @@ model ContentInput {
 enum StepType {
   PRODUCT
   CONTENT
-}
-
-//Resource can either be products selected or colletions selected
-enum ProductResourceType {
-  PRODUCT
-  COLLECTION
 }
 
 enum InputType {

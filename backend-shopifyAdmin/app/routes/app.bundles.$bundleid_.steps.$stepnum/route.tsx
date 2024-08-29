@@ -34,7 +34,7 @@ import {
   HorizontalGap,
 } from "../../constants";
 import db from "../../db.server";
-import { ProductResourceType, StepType, ContentInput } from "@prisma/client";
+import { StepType, ContentInput } from "@prisma/client";
 import { BundleStepAllResources, bundleStepFull } from "~/types/BundleStep";
 import { error, JsonData } from "../../types/jsonData";
 import ContentStepInputs from "./content-step-inputs";
@@ -216,9 +216,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 },
                 productsData: {
                   create: {
-                    resourceType: stepToDuplicate.productsData?.resourceType,
-                    productResources:
-                      stepToDuplicate.productsData?.productResources,
+                    productHandles:
+                      stepToDuplicate.productsData?.productHandles,
                     minProductsOnStep:
                       stepToDuplicate.productsData?.minProductsOnStep,
                     maxProductsOnStep:
@@ -352,8 +351,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
               stepType: stepData.stepType,
               productsData: {
                 update: {
-                  resourceType: stepData.productsData?.resourceType,
-                  productResources: stepData.productsData?.productResources,
+                  productHandles: stepData.productsData?.productHandles,
                   minProductsOnStep: stepData.productsData?.minProductsOnStep,
                   maxProductsOnStep: stepData.productsData?.maxProductsOnStep,
                   allowProductDuplicates:
@@ -445,7 +443,7 @@ export default function Index() {
     errors?.length === 0 || !errors ? serverStepData : submittedStepData,
   );
 
-  const updateSelectedResources = (selectedResources: string[]) => {
+  const updateSelectedProductHandles = (productHandles: string[]) => {
     setStepData((stepData: BundleStepAllResources) => {
       if (!stepData.productsData) return stepData;
 
@@ -453,7 +451,7 @@ export default function Index() {
         ...stepData,
         productsData: {
           ...stepData.productsData,
-          productResources: selectedResources,
+          productHandles: productHandles,
         },
       };
     });
@@ -578,7 +576,8 @@ export default function Index() {
                   {stepData.stepType === StepType.PRODUCT ? (
                     <>
                       <BlockStack gap={GapInsideSection}>
-                        <ChoiceList
+                        {/* Commented for now. Users will only be able to select individual products. */}
+                        {/* <ChoiceList
                           title="Display products:"
                           name={`productResourceType`}
                           choices={[
@@ -609,7 +608,7 @@ export default function Index() {
                               };
                             });
                           }}
-                        />
+                        /> 
 
                         <ResourcePicker
                           resourceType={
@@ -620,6 +619,15 @@ export default function Index() {
                             stepData.productsData?.productResources as string[]
                           }
                           updateSelectedResources={updateSelectedResources}
+                        />*/}
+
+                        <ResourcePicker
+                          productHandles={
+                            stepData.productsData?.productHandles as string[]
+                          }
+                          updateSelectedProductHandles={
+                            updateSelectedProductHandles
+                          }
                         />
                       </BlockStack>
 
