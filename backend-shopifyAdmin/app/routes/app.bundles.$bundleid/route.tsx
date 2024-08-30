@@ -156,7 +156,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       } catch (error) {
         console.log(
           error,
-          "Either the bundle product or the bundle page was alaready deleted.",
+          "Either the bundle product or the bundle page was already deleted.",
         );
       } finally {
         const url: URL = new URL(request.url);

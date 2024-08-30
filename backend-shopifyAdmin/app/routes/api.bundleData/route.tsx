@@ -18,7 +18,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const stepNumber = url.searchParams.get("stepNum");
   const storeUrl = url.searchParams.get("storeUrl");
 
-  await checkPublicAuth(storeUrl, bundleId); //Public auth check
+  const res = await checkPublicAuth(storeUrl, bundleId); //Public auth check
+  if (!res.ok)
+    return json(res, {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
+      status: 200,
+    });
 
   //Cache aside
   const key = `api/bundleData/${storeUrl}/${bundleId}/${stepNumber}`;
@@ -106,7 +113,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         new JsonData(
           false,
           "error",
-          "There was an error with your request. 'stepNum' or 'stepId' doesn't belong to this bundle.",
+          "There was an error with your request. 'stepNum' doesn't exist for this bundle.",
         ),
         {
           headers: {

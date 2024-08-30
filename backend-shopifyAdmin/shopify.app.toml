@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://redeem-let-gentleman-declare.trycloudflare.com"
+application_url = "https://sister-christine-shoe-attitude.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "unauthenticated_read_product_listings,unauthenticated_write_checkouts,
 
 [auth]
 redirect_urls = [
-  "https://redeem-let-gentleman-declare.trycloudflare.com/auth/callback",
-  "https://redeem-let-gentleman-declare.trycloudflare.com/auth/shopify/callback",
-  "https://redeem-let-gentleman-declare.trycloudflare.com/api/auth/callback"
+  "https://sister-christine-shoe-attitude.trycloudflare.com/auth/callback",
+  "https://sister-christine-shoe-attitude.trycloudflare.com/auth/shopify/callback",
+  "https://sister-christine-shoe-attitude.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]

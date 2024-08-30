@@ -19,7 +19,8 @@
 //   const bundleId = url.searchParams.get("bundleId");
 //   const productStepId = url.searchParams.get("productStepId");
 
-//   await checkPublicAuth(storeUrl, bundleId); //Public auth check
+// const res = await checkPublicAuth(storeUrl, bundleId); //Public auth check
+// if (!res.ok) return res;
 
 //   // Check if productStepId is provided
 //   if (!productStepId) {
