@@ -6,10 +6,10 @@
     {% comment %} Rendering a widget  {% endcomment %}
     <template id="neat-bundles-widget-347204u230">
       <div class="neat-bundles-widget-container">
-
-        {% render 'widget'
-          , bundleId: pageBundleNamespace.bundle_id_page.value %}
-
+        <div class="neat-bundles-widget-container-inner">
+          {% render 'widget'
+            , bundleId: pageBundleNamespace.bundle_id_page.value %}
+        </div>
       </div>
     </template>
 
@@ -21,6 +21,7 @@
   {
     "name": "Neat bundles",
     "target": "body",
-    "javascript": "embed-block.js"
+    "javascript": "embed-block.js",
+    "stylesheet": "embed-block.css"
   }
 {% endschema %}

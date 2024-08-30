@@ -10,9 +10,11 @@
         <p>Loading...</p>
       </div>
     </template>
+
     {% comment %} Not loading {% endcomment %}
     <template x-if="!initialLoading">
       <div class="neat-bundles-inner-container">
+
         {% comment %} Step heading {% endcomment %}
         <div class="steps-heading-container">
           <template x-for="step in bundleData.steps">
@@ -54,20 +56,32 @@
         </div>
 
         {% comment %} Step body {% endcomment %}
-        {% comment %} Step loading {% endcomment %}
         <template x-if="stepLoading">
           <div class="loading-container">
             <p>Loading...</p>
           </div>
         </template>
-        {% comment %} Step loaded {% endcomment %}
+        {% comment %} Products loaded {% endcomment %}
         <template x-if="!stepLoading">
           <div class="step-body">
+            {% comment %} Product step {% endcomment %}
             <template x-if="activeStepData.stepType == 'PRODUCT'">
               <div class="products-container">
-                <template x-for="product in productsData."></template>
+                {% comment %} Individualproducts {% endcomment %}
+                <template x-for="product in activeStepProducts">
+                  <div class="product">
+                    <img x-bind:src="product.featured_image" alt="product image">
+                    <p x-text="product.title" class="product-title"></p>
+                    <span x-text="product.price" class="product-price"></span>
+                    <div class="product-action-btns-container">
+                      <button class="small-btn view-product-btn">View product</button>
+                      <button class="small-btn add-to-bundle-btn">Add to bundle</button>
+                    </div>
+                  </div>
+                </template>
               </div>
             </template>
+            {% comment %} Content step {% endcomment %}
             <template x-if="activeStepData.stepType == 'CONTENT'">
               <div>
                 <p>Content step</p>
@@ -92,13 +106,13 @@
 
 {% comment %} JS code for widget {% endcomment %}
 <script>
-  const APP_URL = "https://sister-christine-shoe-attitude.trycloudflare.com";
+  const APP_URL = "https://hardly-fw-objects-ir.trycloudflare.com";
 
   document.addEventListener("alpine:init", () => {
     Alpine.data("bundle", () => ({
       // Fetch bundle settings data
       init(){
-        fetch(`${APP_URL}/api/bundleData?bundleId={{bundleId}}&storeUrl={{shop.permanent_domain}}`)
+        fetch(`${APP_URL}/api/bundleData?bundleId={{bundleId}}&storeUrl={{shop.permanent_domain}}`, {mode: 'cors'})
             .then(response => response.json())
             .then(data => {
               if (data.ok) {
@@ -109,9 +123,17 @@
                 console.log(data.message);
               }
             }).then(() => {
+              //Finished loading of the step icons and titles
               this.initialLoading = false;
-            }).catch(error => console.log('error', error))
+            }).then(() => {
+              //Fetching products for the first step
+              this.fetchProductsData();
+            }).catch(error => {
+              console.log('error', error);
+              alert("There was an error with fetching your bundle. Please try again. If the problem persists, contact support.");
+            })
       },
+
       shopDomain: "{{ shop.permanent_domain }}", // Shopify store domain
       bundleId: "{{ bundleId }}", // Bundle ID
 
@@ -124,24 +146,43 @@
       reachedStep: 1, // Farthes step reached by the user
       activeStep: 1, // Current active step
       activeStepData: {}, // Current active step data
-      productsData: [], // Products data
+      activeStepProducts: [], // Products data
 
       // Fetch products data
       async fetchProductsData(){
-        
-        this.stepLoading = true;
-        fetch(window.Shopify.routes.root + 'products/the-3p-fulfilled-snowboard.js')
-        .then(response => response.json())
-        .then(product => console.log(product));
-
+        if (this.activeStepData.stepType == "PRODUCT") {
+          this.stepLoading = true;
+          //Getting product handles for all products
+          const productHandlesToFetch = this.activeStepData.productInput.products.map(product => product.shopifyProductHandle);
+          //Fetching products data
+          await Promise.all(productHandlesToFetch.map(async productHandle => {
+            const products = await fetch(window.Shopify.routes.root + `products/${productHandle}.js`)
+              .then(response => response.json())
+              .then(data => {
+                if (data.id) {
+                  //Pushing product data to activeStepProducts
+                  console.log(theme.moneyFormat);
+                  this.activeStepProducts.push({...data, price: Shopify.formatMoney(data.price, window.Shopify.moneyFormat)});
+                }
+                else {
+                  console.log(data.message);
+                }
+              }).catch(error => {
+                console.log('error', error);
+              })
+          })).then(() => {
+            this.stepLoading = false;
+            //Finished with fetching products data for active step
+          });
+        }
       },
-
       
       // Set active step
       setActiveStep(stepNumber){
        if (stepNumber <= this.reachedStep){
           this.activeStep = stepNumber;
-          this.activeStepData = this.bundleData.steps[parseInt(stepNumber-1)];
+          this.activeStepData = this.bundleData.steps[parseInt(stepNumber-1)]
+          this.fetchProductsData();
        }
       },
 
@@ -150,12 +191,16 @@
         if (this.activeStep < this.reachedStep){
           this.activeStepData = this.bundleData.steps[parseInt(this.activeStep)];
           this.activeStep++;
+          this.fetchProductsData();
+
         }
         else if (this.activeStep == this.reachedStep){
           if (this.reachedStep == this.bundleData.steps.length) return;
           this.reachedStep++;
           this.activeStepData = this.bundleData.steps[parseInt(this.activeStep)];
           this.activeStep++;
+          this.fetchProductsData();
+
         }
       },
 
