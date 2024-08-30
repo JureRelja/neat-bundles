@@ -54,11 +54,17 @@ model ProductInput {
   id                     Int        @id @default(autoincrement())
   bundleStepId           Int        @unique
   bundleStep             BundleStep @relation(fields: [bundleStepId], references: [id], onDelete: Cascade)
-  products               Json? //Array of shopify product ids or collection ids
+  products               Product[]
   minProductsOnStep      Int        @default(1) //Minimum number of products that must be selected on this step
   maxProductsOnStep      Int        @default(3) //Maximum number of products that can be selected on this step
   allowProductDuplicates Boolean    @default(false)
   showProductPrice       Boolean    @default(true)
+}
+
+model Product {
+  shopifyProductId     String       @id //GraphQL GID format
+  productInput         ProductInput[]
+  shopifyProductHandle String
 }
 
 model ContentInput {

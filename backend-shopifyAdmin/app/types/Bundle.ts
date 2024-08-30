@@ -74,11 +74,15 @@ export const bundleAllResources = {
   },
   steps: {
     include: {
-      productInput: true,
+      productInput: {
+        include: {
+          products: true,
+        },
+      },
       contentInputs: true,
     },
   },
-};
+} satisfies Prisma.BundleSelect;
 
 export type BundleAllResources = Prisma.BundleGetPayload<{
   include: typeof bundleAllResources;

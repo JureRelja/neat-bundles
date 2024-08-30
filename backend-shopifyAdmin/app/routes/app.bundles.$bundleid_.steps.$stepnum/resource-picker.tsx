@@ -1,19 +1,15 @@
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { Button } from "@shopify/polaris";
 import { bundleTagIndentifier } from "../../constants";
-import {
-  BaseResource,
-  SelectPayload,
-  Resource,
-} from "@shopify/app-bridge-types";
-import { ProductResource } from "~/types/Product";
+import { Resource } from "@shopify/app-bridge-types";
+import { Product } from "@prisma/client";
 
 export default function Index({
   updateSelectedProducts,
   selectedProducts,
 }: {
-  updateSelectedProducts: (productResource: ProductResource[]) => void;
-  selectedProducts: ProductResource[];
+  updateSelectedProducts: (productResource: Product[]) => void;
+  selectedProducts: Product[];
 }) {
   const shopify = useAppBridge();
 
@@ -21,7 +17,7 @@ export default function Index({
     // Convert the selected resources to the base resource type
     const selectedResourcesIds: { id: string }[] =
       selectedProducts?.map((product) => {
-        return { id: product.shopifyId };
+        return { id: product.shopifyProductId };
       }) || [];
 
     // const type =
@@ -46,11 +42,11 @@ export default function Index({
     if (!newSelectedResources) return;
 
     // Convert the selected resources to the base resource type
-    const newSelectedProducts: ProductResource[] = newSelectedResources.map(
+    const newSelectedProducts: Product[] = newSelectedResources.map(
       (selectedResource: Resource) => {
         return {
-          shopifyId: selectedResource.id as string,
-          handle: selectedResource.handle as string,
+          shopifyProductId: selectedResource.id as string,
+          shopifyProductHandle: selectedResource.handle as string,
         };
       },
     );
@@ -72,7 +68,7 @@ export default function Index({
             ? "Select products"
             : `${selectedResources?.length} products selected`} */}
 
-        {!selectedProducts || selectedProducts.length === 0
+        {selectedProducts.length === 0
           ? "Select products"
           : `${selectedProducts?.length} products selected`}
       </Button>

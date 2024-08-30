@@ -33,12 +33,11 @@ import {
   HorizontalGap,
 } from "../../constants";
 import db from "../../db.server";
-import { StepType, ContentInput } from "@prisma/client";
+import { StepType, ContentInput, Product } from "@prisma/client";
 import { BundleStepAllResources, bundleStepFull } from "~/types/BundleStep";
 import { error, JsonData } from "../../types/jsonData";
 import ContentStepInputs from "./content-step-inputs";
 import ResourcePicker from "./resource-picker";
-import { ProductResource } from "~/types/Product";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
@@ -224,9 +223,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                       stepToDuplicate.productInput?.allowProductDuplicates,
                     showProductPrice:
                       stepToDuplicate.productInput?.showProductPrice,
-                    products: JSON.stringify(
-                      stepToDuplicate.productInput?.products,
-                    ),
+                    products: {
+                      connect: stepToDuplicate.productInput?.products.map(
+                        (product: Product) => {
+                          return { shopifyProductId: product.shopifyProductId };
+                        },
+                      ),
+                    },
                   },
                 },
               },
@@ -357,7 +360,21 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                   allowProductDuplicates:
                     stepData.productInput?.allowProductDuplicates,
                   showProductPrice: stepData.productInput?.showProductPrice,
-                  products: JSON.stringify(stepData.productInput?.products),
+                  products: {
+                    connectOrCreate: stepData.productInput?.products.map(
+                      (product: Product) => {
+                        return {
+                          where: {
+                            shopifyProductId: product.shopifyProductId,
+                          },
+                          create: {
+                            shopifyProductId: product.shopifyProductId,
+                            shopifyProductHandle: product.shopifyProductHandle,
+                          },
+                        };
+                      },
+                    ),
+                  },
                 },
               },
             },
@@ -444,7 +461,7 @@ export default function Index() {
     errors?.length === 0 || !errors ? serverStepData : submittedStepData,
   );
   console.log(stepData);
-  const updateSelectedProducts = (products: ProductResource[]) => {
+  const updateSelectedProducts = (products: Product[]) => {
     setStepData((stepData: BundleStepAllResources) => {
       if (!stepData.productInput) return stepData;
 
@@ -624,7 +641,7 @@ export default function Index() {
 
                         <ResourcePicker
                           selectedProducts={
-                            stepData.productInput?.products as ProductResource[]
+                            stepData.productInput?.products as Product[]
                           }
                           updateSelectedProducts={updateSelectedProducts}
                         />

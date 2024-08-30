@@ -54,7 +54,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             ...bundleAllResources,
             steps: {
               include: {
-                productsData: true,
+                productInput: {
+                  include: {
+                    products: true,
+                  },
+                },
                 contentInputs: true,
               },
               where: {
@@ -79,7 +83,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             ...bundleAllResources,
             steps: {
               include: {
-                productsData: true,
+                productInput: {
+                  include: {
+                    products: true,
+                  },
+                },
                 contentInputs: true,
               },
               orderBy: {
