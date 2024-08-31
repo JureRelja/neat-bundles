@@ -145,6 +145,29 @@ p {
   font-weight: 400;
 }
 
+.product-variants-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.product-option-picker-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+.option-title {
+  font-size: 14px;
+  font-weight: lighter;
+}
+
+.option-value {
+  font-size: 14px;
+  font-weight: normal;
+}
+
 .product-action-btns-container {
   display: flex;
   justify-content: space-between;
@@ -160,7 +183,8 @@ p {
 
 .small-btn:hover {
   cursor: pointer;
-  opacity: 0.8;
+  opacity: 0.9;
+  scale: 1.1;
 }
 
 .view-product-btn {

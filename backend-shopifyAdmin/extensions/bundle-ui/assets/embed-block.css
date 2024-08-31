@@ -10,3 +10,9 @@
 .neat-bundles-widget-container-inner {
   width: 80%;
 }
+
+@media screen and (max-width: 768px) {
+  .neat-bundles-widget-container-inner {
+    width: 95%;
+  }
+}

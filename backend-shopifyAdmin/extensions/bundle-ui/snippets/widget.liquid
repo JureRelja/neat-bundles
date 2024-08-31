@@ -69,10 +69,24 @@
               <div class="products-container">
                 {% comment %} Individualproducts {% endcomment %}
                 <template x-for="product in activeStepProducts">
-                  <div class="product">
-                    <img x-bind:src="product.featured_image" alt="product image">
+                  <div class="product" x-data="{selectedVariant: product.variants[0]}">
+                    <img x-bind:src="selectedVariant.featured_image?.src || product.featured_image" alt="product image">
                     <p x-text="product.title" class="product-title"></p>
-                    <span x-text="product.price" class="product-price"></span>
+                    <span x-text="selectedVariant.price" class="product-price"></span>
+                    {% comment %} Product variant selector {% endcomment %}
+                    <div class="product-variants-container">
+                      <template x-for="option in product.options">
+                        <div class="product-option-picker-container">
+                          <label x-text="option.name" class="option-title"></label>
+                          <select class="variant-selector">
+                            <template x-for="value in option.values">
+                              <option x-text="value + selectedVariant.available ? '- unavailable' : '' " class="option-value"></option>
+                            </template>
+                          </select>
+                        </div>
+                      </template>
+                    </div>
+
                     <div class="product-action-btns-container">
                       <button class="small-btn view-product-btn">View product</button>
                       <button class="small-btn add-to-bundle-btn">Add to bundle</button>
@@ -106,7 +120,10 @@
 
 {% comment %} JS code for widget {% endcomment %}
 <script>
-  const APP_URL = "https://hardly-fw-objects-ir.trycloudflare.com";
+  const APP_URL = "https://lesser-others-frog-changelog.trycloudflare.com";
+
+  //Money format from shopify used to format prices
+  Shopify.money_format = "{{ shop.money_format }}";
 
   document.addEventListener("alpine:init", () => {
     Alpine.data("bundle", () => ({
@@ -158,11 +175,38 @@
           await Promise.all(productHandlesToFetch.map(async productHandle => {
             const products = await fetch(window.Shopify.routes.root + `products/${productHandle}.js`)
               .then(response => response.json())
-              .then(data => {
-                if (data.id) {
-                  //Pushing product data to activeStepProducts
-                  console.log(theme.moneyFormat);
-                  this.activeStepProducts.push({...data, price: Shopify.formatMoney(data.price, window.Shopify.moneyFormat)});
+              .then(product => {
+                if (product.id) {
+                  //Formating prices of products
+                  product = {...product, price: Shopify.formatMoney(product.price), variants: product.variants.map((variant) => {
+                    return {...variant, price: Shopify.formatMoney(variant.price)}
+                  })};  
+                  product.outOfStock = product.variants.every(variant => !variant.available);
+
+                  this.activeStepProducts.push(product);
+
+                  // //leaving only available variants
+                  // product.variants = product.variants.filter((variant) => variant.available);
+
+                  // if (product.variants.length > 0) {
+                  //   // Removing options values that don't have any available variants
+                  //   product.options = product.options.map((option) => {
+                  //     return {...option, values: option.values.filter((value) => {
+                  //       return product.variants.some((variant) => variant.options[product.options.indexOf(option)] === value)
+                  //     })}
+                  //   });
+
+                  //   //Removing title option and options that don't have any available values
+                  //   product.options = product.options.filter((option) => { 
+                  //     //Option with name "Title" is a default option that is present on products that don't have any variants specified
+                  //     if (option.name == "Title" && option.values.length == 1) return false;
+
+                  //     // Removing options that don't have any available values
+                  //     return option.values.length > 0;
+                  //     });
+
+                  //   this.activeStepProducts.push(product);
+                  // }
                 }
                 else {
                   console.log(data.message);
@@ -217,6 +261,8 @@
   });
 </script>
 
+{% comment %} widget.js import {% endcomment %}
+<script src="{{ 'widget.js' | asset_url }}"></script>
 
 {% comment %} Alpine.js import {% endcomment %}
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>

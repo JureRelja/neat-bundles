@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://hardly-fw-objects-ir.trycloudflare.com"
+application_url = "https://lesser-others-frog-changelog.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "unauthenticated_read_product_listings,unauthenticated_write_checkouts,
 
 [auth]
 redirect_urls = [
-  "https://hardly-fw-objects-ir.trycloudflare.com/auth/callback",
-  "https://hardly-fw-objects-ir.trycloudflare.com/auth/shopify/callback",
-  "https://hardly-fw-objects-ir.trycloudflare.com/api/auth/callback"
+  "https://lesser-others-frog-changelog.trycloudflare.com/auth/callback",
+  "https://lesser-others-frog-changelog.trycloudflare.com/auth/shopify/callback",
+  "https://lesser-others-frog-changelog.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
