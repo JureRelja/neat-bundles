@@ -130,7 +130,8 @@ p {
   gap: 5px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border-radius: 0px 0px 5px 5px;
-  padding-bottom: 5px;
+  padding-bottom: 10px;
+  height: fit-content;
 }
 
 .product img {
@@ -183,7 +184,6 @@ p {
 .product-variant-unavailable-text {
   font-size: 14px;
   font-weight: 400;
-  color: #f24e1e;
 }
 
 .product-action-btns-container {
@@ -197,6 +197,16 @@ p {
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
+}
+
+.small-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.small-btn:disabled:hover {
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 
 .small-btn:hover {

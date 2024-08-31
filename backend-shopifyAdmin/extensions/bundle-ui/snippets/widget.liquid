@@ -92,13 +92,12 @@
                             </select>
                           </div>
                         </template>
-                        <p class="product-variant-unavailable-text" x-text="!product.variants[product.selectedVariantIndex].available ? 'This product option is currenty unavailable.' : '' "></p>
-
+                        <p class="product-variant-unavailable-text" x-text="!product.variants[product.selectedVariantIndex].available ? 'This product option is currenty unavailable.' : ''"></p>
                       </div>
-
+                      {% comment %} Product action buttons {% endcomment %}
                       <div class="product-action-btns-container">
                         <button class="small-btn view-product-btn">View product</button>
-                        <button class="small-btn add-to-bundle-btn" x-bind:disabled="!product.variants[product.selectedVariantIndex].available">Add to bundle</button>
+                        <button class="small-btn add-to-bundle-btn" :disabled="!product.variants[product.selectedVariantIndex].available">Add product</button>
                       </div>
                     </div>
                   </div>
