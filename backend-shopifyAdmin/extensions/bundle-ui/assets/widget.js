@@ -5,9 +5,9 @@ Shopify.formatMoney = function (cents, format) {
   if (typeof cents == "string") {
     cents = cents.replace(".", "");
   }
-  var value = "";
-  var placeholderRegex = /{{\s*(\w+)\s*}}/;
-  var formatString = format || this.money_format;
+  let value = "";
+  let placeholderRegex = /{{\s*(\w+)\s*}}/;
+  let formatString = format || this.money_format;
   function defaultOption(opt, def) {
     return typeof opt == "undefined" ? def : opt;
   }
@@ -39,4 +39,40 @@ Shopify.formatMoney = function (cents, format) {
       break;
   }
   return formatString.replace(placeholderRegex, value);
+};
+
+//Function to find a product variant for a given set of selected options
+const findVariantIndex = (selectedOptions, productVariants) => {
+  const index = productVariants.findIndex((variant) => {
+    return variant.options.every((option, index) => {
+      const res = option === selectedOptions[index];
+      return res;
+    });
+  });
+
+  return index;
+};
+
+//Function for filtering only product options that are available and used in the product
+const filterAvailableOptionsAndValues = (productOptions, productVariants) => {
+  productOptions = productOptions.map((option) => {
+    return {
+      ...option,
+      values: option.values.filter((value) => {
+        return productVariants.some(
+          (variant) =>
+            variant.options[productOptions.indexOf(option)] === value,
+        );
+      }),
+    };
+  });
+
+  //Removing title option and options that don't have any available values
+  productOptions = productOptions.filter((option) => {
+    //Option with name "Title" is a default option that is present on products that don't have any variants specified
+    if (option.name == "Title" && option.values.length == 1) return false;
+
+    // Removing options that don't have any available values
+    return option.values.length > 0;
+  });
 };
