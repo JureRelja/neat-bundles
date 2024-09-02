@@ -129,7 +129,7 @@
 
 {% comment %} JS code for widget {% endcomment %}
 <script>
-  const APP_URL = "https://keeping-tm-bodies-illinois.trycloudflare.com";
+  const APP_URL = "https://workplace-tackle-threatening-laptop.trycloudflare.com";
 
   //Money format from shopify used to format prices
   Shopify.money_format = "{{ shop.money_format }}";
@@ -167,8 +167,8 @@
       stepLoading: true, // Step loading state
       bundleData: {}, // Bundle settings data
 
-      //Current bundle selects and inputs
-      bundleInputs: [{stepId: 1, productsSelected: [], contentInputs: []}],
+      //Current bundle selects and inputs 
+      this.: [], //Inputs on steps in format [{stepNumber: 1, products: [{id: id, quantity: quantity}]}, {stepNumber: 2, content: [{type: text, value: value}]}]
       reachedStep: 1, // Farthes step reached by the user
       activeStep: 1, // Current active step
       activeStepData: {}, // Current active step data
@@ -182,7 +182,7 @@
           const productHandlesToFetch = this.activeStepData.productInput.products.map(product => product.shopifyProductHandle);
           //Fetching products data
           await Promise.all(productHandlesToFetch.map(async productHandle => {
-            const products = await fetch(window.Shopify.routes.root + `products/${productHandle}.js`)
+            fetch(window.Shopify.routes.root + `products/${productHandle}.js`)
               .then(response => response.json())
               .then(product => {
                 if (product.id) {
@@ -219,6 +219,39 @@
           })).then(() => {
             this.stepLoading = false;
             //Finished with fetching products data for active step
+          });
+        }
+      },
+
+      //Add product to the bundle
+      addProduct(productId) {
+        const inputsStartedOnThisStep = this.stepInputs.find(
+          (stepInput) => stepInput.stepNumber == this.activeStep,
+        );
+
+        //If there are already inputs started on this step
+        if (inputsStartedOnThisStep) {
+          //Checking if the product is already added on this step
+          const productAlreadyAdded = inputsStartedOnThisStep.productInputs.find(
+            (product) => product.id == productId,
+          );
+
+          //If the product is not already added on this step
+          if (!productAlreadyAdded) {
+            inputsStartedOnThisStep.productInputs.push({
+              id: productId,
+              quantity: 1,
+            });
+            //If the product is already added on this step
+          } else {
+            productAlreadyAdded.quantity++;
+          }
+
+          //If there are no inputs started on this step
+        } else {
+          this.stepInputs.push({
+            stepNumber: this.activeStep,
+            productInputs: [{ id: productId, quantity: 1 }],
           });
         }
       },
