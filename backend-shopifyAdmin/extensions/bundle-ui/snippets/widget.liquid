@@ -97,7 +97,10 @@
                       {% comment %} Product action buttons {% endcomment %}
                       <div class="product-action-btns-container">
                         <button class="small-btn view-product-btn">View product</button>
-                        <button class="small-btn add-to-bundle-btn" :disabled="!product.variants[product.selectedVariantIndex].available">Add product</button>
+                        <button
+                          class="small-btn add-to-bundle-btn"
+                          :disabled="!product.variants[product.selectedVariantIndex].available"
+                          @click="addProduct(product.variants[product.selectedVariantIndex].id)">Add product</button>
                       </div>
                     </div>
                   </div>
@@ -138,7 +141,7 @@
     Alpine.data("bundle", () => ({
       // Fetch bundle settings data
       init(){
-        fetch(`${APP_URL}/api/bundleData?bundleId={{bundleId}}&storeUrl={{shop.permanent_domain}}`, {mode: 'cors'})
+        fetch(`${APP_URL}/api/bundleData?bundleId={{ bundleId }}&storeUrl={{ shop.permanent_domain }}`, {mode: 'cors'})
             .then(response => response.json())
             .then(data => {
               if (data.ok) {
@@ -168,7 +171,7 @@
       bundleData: {}, // Bundle settings data
 
       //Current bundle selects and inputs 
-      this.: [], //Inputs on steps in format [{stepNumber: 1, products: [{id: id, quantity: quantity}]}, {stepNumber: 2, content: [{type: text, value: value}]}]
+      stepInputs: [], //Inputs on steps in format [{stepNumber: 1, products: [{id: id, quantity: quantity}]}, {stepNumber: 2, content: [{type: text, value: value}]}]
       reachedStep: 1, // Farthes step reached by the user
       activeStep: 1, // Current active step
       activeStepData: {}, // Current active step data
@@ -176,84 +179,15 @@
 
       // Fetch products data
       async fetchProductsData(){
-        if (this.activeStepData.stepType == "PRODUCT") {
-          this.stepLoading = true;
-          //Getting product handles for all products
-          const productHandlesToFetch = this.activeStepData.productInput.products.map(product => product.shopifyProductHandle);
-          //Fetching products data
-          await Promise.all(productHandlesToFetch.map(async productHandle => {
-            fetch(window.Shopify.routes.root + `products/${productHandle}.js`)
-              .then(response => response.json())
-              .then(product => {
-                if (product.id) {
-                  //Formating prices of products
-                  product = {...product, price: Shopify.formatMoney(product.price), variants: product.variants.map((variant) => {
-                    return {...variant, price: Shopify.formatMoney(variant.price)}
-                  })};  
-
-                  product.selectedVariantIndex = 0; //By default first variant is selected
-                  product.outOfStock = product.variants.every(variant => !variant.available);
-
-                  product.options = product.options.filter(option => (option.name !== "Title" && option.values.length !== 1))
-
-                  this.activeStepProducts.push(product);
-                  
-                  // //leaving only available variants
-                  // product.variants = product.variants.filter((variant) => variant.available);
-
-                  // if (product.variants.length > 0) {
-                  //   // Removing options values that don't have any available variants
-                  //   filterAvailableOptionsAndValues(product.options, product.variants);
-                  //   product.selectedVariantIndex = 0; //By default first variant is selected
-                  //   product.outOfStock = false
-
-                  //   this.activeStepProducts.push(product);
-                  // }
-                }
-                else {
-                  console.log(data.message);
-                }
-              }).catch(error => {
-                console.log('error', error);
-              })
-          })).then(() => {
-            this.stepLoading = false;
-            //Finished with fetching products data for active step
-          });
-        }
+        this.stepLoading = true;
+        await fetchProducts(this.activeStepData, this.activeStepProducts, window.Shopify, Shopify).then(() =>
+          this.stepLoading = false
+        );
       },
 
       //Add product to the bundle
       addProduct(productId) {
-        const inputsStartedOnThisStep = this.stepInputs.find(
-          (stepInput) => stepInput.stepNumber == this.activeStep,
-        );
-
-        //If there are already inputs started on this step
-        if (inputsStartedOnThisStep) {
-          //Checking if the product is already added on this step
-          const productAlreadyAdded = inputsStartedOnThisStep.productInputs.find(
-            (product) => product.id == productId,
-          );
-
-          //If the product is not already added on this step
-          if (!productAlreadyAdded) {
-            inputsStartedOnThisStep.productInputs.push({
-              id: productId,
-              quantity: 1,
-            });
-            //If the product is already added on this step
-          } else {
-            productAlreadyAdded.quantity++;
-          }
-
-          //If there are no inputs started on this step
-        } else {
-          this.stepInputs.push({
-            stepNumber: this.activeStep,
-            productInputs: [{ id: productId, quantity: 1 }],
-          });
-        }
+        addProductToBundle(productId, this.activeStep, this.stepInputs);
       },
       
       // Set active step
@@ -271,7 +205,6 @@
           this.activeStepData = this.bundleData.steps[parseInt(this.activeStep)];
           this.activeStep++;
           this.fetchProductsData();
-
         }
         else if (this.activeStep == this.reachedStep){
           if (this.reachedStep == this.bundleData.steps.length) return;
@@ -279,7 +212,6 @@
           this.activeStepData = this.bundleData.steps[parseInt(this.activeStep)];
           this.activeStep++;
           this.fetchProductsData();
-
         }
       },
 
@@ -297,6 +229,8 @@
 
 {% comment %} widget.js import {% endcomment %}
 <script src="{{ 'widget.js' | asset_url }}"></script>
+<script src="{{ 'widget-fetching.js' | asset_url }}"></script>
+
 
 {% comment %} Alpine.js import {% endcomment %}
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>

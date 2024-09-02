@@ -1,45 +1,44 @@
-const fetchBundleData = async (
-  bundleId,
-  permanentDomain,
-  bundleData,
-  activeStepData,
-  initialLoading,
-  fetchProductsData,
-) => {
-  console.log("fetching bundle data");
-  await fetch(
-    `${APP_URL}/api/bundleData?bundleId=${bundleId}&storeUrl=${permanentDomain}`,
-    { mode: "cors" },
-  )
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.ok) {
-        bundleData = data.data;
-        activeStepData = data.data.steps[0];
-      } else {
-        console.log(data.message);
-      }
-    })
-    .then(() => {
-      //Finished loading of the step icons and titles
-      initialLoading = false;
-    })
-    .then(() => {
-      //Fetching products for the first step
-      fetchProductsData();
-    })
-    .catch((error) => {
-      console.log("error", error);
-      alert(
-        "There was an error with fetching your bundle. Please try again. If the problem persists, contact support.",
-      );
-    });
-};
+// const fetchBundleData = async (
+//   bundleId,
+//   permanentDomain,
+//   bundleData,
+//   activeStepData,
+//   initialLoading,
+//   fetchProductsData,
+// ) => {
+//   console.log("fetching bundle data");
+//   await fetch(
+//     `${APP_URL}/api/bundleData?bundleId=${bundleId}&storeUrl=${permanentDomain}`,
+//     { mode: "cors" },
+//   )
+//     .then((response) => response.json())
+//     .then((data) => {
+//       if (data.ok) {
+//         bundleData = data.data;
+//         activeStepData = data.data.steps[0];
+//       } else {
+//         console.log(data.message);
+//       }
+//     })
+//     .then(() => {
+//       //Finished loading of the step icons and titles
+//       initialLoading = false;
+//     })
+//     .then(() => {
+//       //Fetching products for the first step
+//       fetchProductsData();
+//     })
+//     .catch((error) => {
+//       console.log("error", error);
+//       alert(
+//         "There was an error with fetching your bundle. Please try again. If the problem persists, contact support.",
+//       );
+//     });
+// };
 
 const fetchProducts = async (
   activeStepData,
   activeStepProducts,
-  stepLoading,
   windowShopify,
   Shopify,
 ) => {
@@ -100,9 +99,6 @@ const fetchProducts = async (
             console.log("error", error);
           });
       }),
-    ).then(() => {
-      stepLoading = false;
-      //Finished with fetching products data for active step
-    });
+    );
   }
 };

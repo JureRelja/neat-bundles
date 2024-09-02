@@ -77,35 +77,35 @@ const filterAvailableOptionsAndValues = (productOptions, productVariants) => {
   });
 };
 
-// //Function to add products to bundle storage
-// const addProductToBundle = (productId, activeStepNumber, stepInputs) => {
-//   const inputsStartedOnThisStep = stepInputs.find(
-//     (stepInput) => stepInput.stepNumber == activeStepNumber,
-//   );
+//Function to add products to bundle storage
+const addProductToBundle = (productId, activeStepNumber, stepInputs) => {
+  const inputsStartedOnThisStep = stepInputs.find(
+    (stepInput) => stepInput.stepNumber == activeStepNumber,
+  );
 
-//   //If there are already inputs started on this step
-//   if (inputsStartedOnThisStep) {
-//     //Checking if the product is already added on this step
-//     const productAlreadyAdded = inputsStartedOnThisStep.productInputs.find(
-//       (product) => product.id == productId,
-//     );
+  //If there are already inputs started on this step
+  if (inputsStartedOnThisStep) {
+    //Checking if the product is already added on this step
+    const productAlreadyAdded = inputsStartedOnThisStep.productInputs.find(
+      (product) => product.id == productId,
+    );
 
-//     //If the product is not already added on this step
-//     if (!productAlreadyAdded) {
-//       inputsStartedOnThisStep.productInputs.push({
-//         id: productId,
-//         quantity: 1,
-//       });
-//       //If the product is already added on this step
-//     } else {
-//       productAlreadyAdded.quantity++;
-//     }
+    //If the product is not already added on this step
+    if (!productAlreadyAdded) {
+      inputsStartedOnThisStep.productInputs.push({
+        id: productId,
+        quantity: 1,
+      });
+      //If the product is already added on this step
+    } else {
+      productAlreadyAdded.quantity++;
+    }
 
-//     //If there are no inputs started on this step
-//   } else {
-//     stepInputs.push({
-//       stepNumber: activeStepNumber,
-//       productInputs: [{ id: productId, quantity: 1 }],
-//     });
-//   }
-// };
+    //If there are no inputs started on this step
+  } else {
+    stepInputs.push({
+      stepNumber: activeStepNumber,
+      productInputs: [{ id: productId, quantity: 1 }],
+    });
+  }
+};
