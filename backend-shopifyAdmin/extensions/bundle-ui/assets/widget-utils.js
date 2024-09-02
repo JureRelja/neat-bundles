@@ -79,20 +79,23 @@ const filterAvailableOptionsAndValues = (productOptions, productVariants) => {
 
 //Function to add products to bundle storage
 const addProductToBundle = (productId, activeStepNumber, stepInputs) => {
-  const inputsStartedOnThisStep = stepInputs.find(
-    (stepInput) => stepInput.stepNumber == activeStepNumber,
-  );
+  debugger;
+  const thisStepIndex = stepInputs.findIndex((step) => {
+    return step.stepNumber == activeStepNumber;
+  });
+  debugger;
 
   //If there are already inputs started on this step
-  if (inputsStartedOnThisStep) {
+  if (thisStepIndex != -1) {
+    debugger;
     //Checking if the product is already added on this step
-    const productAlreadyAdded = inputsStartedOnThisStep.productInputs.find(
+    const productAlreadyAdded = stepInputs[thisStepIndex].products.find(
       (product) => product.id == productId,
     );
 
     //If the product is not already added on this step
     if (!productAlreadyAdded) {
-      inputsStartedOnThisStep.productInputs.push({
+      stepInputs[thisStepIndex].products.push({
         id: productId,
         quantity: 1,
       });
@@ -105,7 +108,17 @@ const addProductToBundle = (productId, activeStepNumber, stepInputs) => {
   } else {
     stepInputs.push({
       stepNumber: activeStepNumber,
-      productInputs: [{ id: productId, quantity: 1 }],
+      products: [{ id: productId, quantity: 1 }],
     });
   }
+};
+
+//Check if product is already in bundle storage
+const isProductInBundle = (productId, stepInputs, activeStep) => {
+  return (
+    stepInputs[activeStep - 1] &&
+    stepInputs[activeStep - 1].products.some(
+      (p) => p.id == productId && p.quantity > 0,
+    )
+  );
 };

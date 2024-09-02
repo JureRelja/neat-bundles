@@ -73,7 +73,9 @@
                     <img x-bind:src="product.variants[product.selectedVariantIndex].featured_image?.src || product.featured_image" alt="product image">
                     <div class="product-details">
                       <p x-text="product.title" class="product-title"></p>
-                      <span x-text="product.variants[product.selectedVariantIndex].price" class="product-price"></span>
+                      <template x-if="activeStepData.productInput.showProductPrice">
+                        <span x-text="product.variants[product.selectedVariantIndex].price" class="product-price"></span>
+                      </template>
                       {% comment %} Product variant selector {% endcomment %}
                       <div
                         x-data="{selectedOptions: product.variants[product.selectedVariantIndex].options.map(option => option)}"
@@ -95,12 +97,39 @@
                         <p class="product-variant-unavailable-text" x-text="!product.variants[product.selectedVariantIndex].available ? 'This product option is currenty unavailable.' : ''"></p>
                       </div>
                       {% comment %} Product action buttons {% endcomment %}
-                      <div class="product-action-btns-container">
-                        <button class="small-btn view-product-btn">View product</button>
-                        <button
-                          class="small-btn add-to-bundle-btn"
-                          :disabled="!product.variants[product.selectedVariantIndex].available"
-                          @click="addProduct(product.variants[product.selectedVariantIndex].id)">Add product</button>
+                        {% comment %} This product is not added to bundle storage {% endcomment %}
+                        <template x-if="!isProductInBundle(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep)">
+                          <div class="product-action-btns-container">
+                            <button class="small-btn view-product-btn">View product</button>
+                            <button
+                              class="small-btn add-to-bundle-btn"
+                              :disabled="!product.variants[product.selectedVariantIndex].available"
+                              @click="addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs)">Add product</button>
+                          </div>
+                        </template>
+                        {% comment %} This product is added to bundle storage {% endcomment %}
+                        <template x-if="isProductInBundle(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep)">
+                          {% comment %} This step doesn't allow duplicates {% endcomment %}
+                          <template x-if="activeStepData.productInput.allowProductDuplicates">
+                            <div class="product-action-btns-container">
+                              <button class="small-btn add-to-bundle-btn" disabled>Added
+                                <svg
+                                  width="13"
+                                  height="9"
+                                  viewBox="0 0 13 9"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M4.69632 8.92638L0.5 4.73006L1.54908 3.68098L4.69632 6.82822L11.4509 0.0736198L12.5 1.1227L4.69632 8.92638Z" fill="#282828" />
+                                </svg>
+                              </button>
+                            </div>  
+                          </template>
+                          {% comment %} The step allows duplicates {% endcomment %}
+                          <template x-if="!activeStepData.productInput.allowProductDuplicates">
+                            <button>-</button>
+                            <button>+</button>
+                          </template>
+                        </template>
                       </div>
                     </div>
                   </div>
@@ -130,6 +159,10 @@
 {% comment %} Widget body end {% endcomment %}
 
 
+{% comment %} widget.js import {% endcomment %}
+<script src="{{ 'widget-utils.js' | asset_url }}"></script>
+<script src="{{ 'widget-fetching.js' | asset_url }}"></script>
+
 {% comment %} JS code for widget {% endcomment %}
 <script>
   const APP_URL = "https://workplace-tackle-threatening-laptop.trycloudflare.com";
@@ -142,25 +175,25 @@
       // Fetch bundle settings data
       init(){
         fetch(`${APP_URL}/api/bundleData?bundleId={{ bundleId }}&storeUrl={{ shop.permanent_domain }}`, {mode: 'cors'})
-            .then(response => response.json())
-            .then(data => {
-              if (data.ok) {
-                this.bundleData = data.data;
-                this.activeStepData = data.data.steps[0];
-              }
-              else {
-                console.log(data.message);
-              }
-            }).then(() => {
-              //Finished loading of the step icons and titles
-              this.initialLoading = false;
-            }).then(() => {
-              //Fetching products for the first step
-              this.fetchProductsData();
-            }).catch(error => {
-              console.log('error', error);
-              alert("There was an error with fetching your bundle. Please try again. If the problem persists, contact support.");
-            })
+          .then(response => response.json())
+          .then(data => {
+            if (data.ok) {
+              this.bundleData = data.data;
+              this.activeStepData = data.data.steps[0];
+            }
+            else {
+              console.log(data.message);
+            }
+          }).then(() => {
+            //Finished loading of the step icons and titles
+            this.initialLoading = false;
+          }).then(() => {
+            //Fetching products for the first step
+            this.fetchProductsData();
+          }).catch(error => {
+            console.log('error', error);
+            alert("There was an error with fetching your bundle. Please try again. If the problem persists, contact support.");
+          })
       },
 
       shopDomain: "{{ shop.permanent_domain }}", // Shopify store domain
@@ -186,8 +219,8 @@
       },
 
       //Add product to the bundle
-      addProduct(productId) {
-        addProductToBundle(productId, this.activeStep, this.stepInputs);
+      addProduct(productId, activeStep, stepInputs){
+        addProductToBundle(productId, activeStep, stepInputs);
       },
       
       // Set active step
@@ -226,11 +259,6 @@
     }));
   });
 </script>
-
-{% comment %} widget.js import {% endcomment %}
-<script src="{{ 'widget.js' | asset_url }}"></script>
-<script src="{{ 'widget-fetching.js' | asset_url }}"></script>
-
 
 {% comment %} Alpine.js import {% endcomment %}
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
