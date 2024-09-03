@@ -22,6 +22,10 @@ p {
   letter-spacing: normal;
   line-height: normal;
 }
+
+.width-full {
+  width: 100%;
+}
 /* Global end */
 
 /* Heading with icons and title start */
@@ -197,6 +201,10 @@ p {
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
 }
 
 .small-btn:disabled {
@@ -225,6 +233,25 @@ p {
   background-color: #f3df76;
   color: #000000;
   border: none;
+}
+
+.remove-from-bundle-btn {
+  color: #f24e1e;
+  background-color: transparent;
+  border: 1px solid #f24e1e;
+}
+
+.increment-decrement-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  font-size: 18px;
+}
+
+.increment-decrement-container button {
+  font-size: 22px;
+  padding: 5px 30px;
 }
 
 /* Step navigation avigation start */

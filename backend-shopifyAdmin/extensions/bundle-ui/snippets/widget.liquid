@@ -103,32 +103,43 @@
                             <button class="small-btn view-product-btn">View product</button>
                             <button
                               class="small-btn add-to-bundle-btn"
-                              :disabled="!product.variants[product.selectedVariantIndex].available"
+                              :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
                               @click="addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs)">Add product</button>
                           </div>
                         </template>
                         {% comment %} This product is added to bundle storage {% endcomment %}
                         <template x-if="isProductInBundle(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep)">
                           {% comment %} This step doesn't allow duplicates {% endcomment %}
-                          <template x-if="activeStepData.productInput.allowProductDuplicates">
-                            <div class="product-action-btns-container">
-                              <button class="small-btn add-to-bundle-btn" disabled>Added
-                                <svg
-                                  width="13"
-                                  height="9"
-                                  viewBox="0 0 13 9"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M4.69632 8.92638L0.5 4.73006L1.54908 3.68098L4.69632 6.82822L11.4509 0.0736198L12.5 1.1227L4.69632 8.92638Z" fill="#282828" />
-                                </svg>
-                              </button>
-                            </div>  
-                          </template>
-                          {% comment %} The step allows duplicates {% endcomment %}
-                          <template x-if="!activeStepData.productInput.allowProductDuplicates">
-                            <button>-</button>
-                            <button>+</button>
-                          </template>
+                           <div class="width-full">
+                            <template x-if="!activeStepData.productInput.allowProductDuplicates">
+                              <div class="product-action-btns-container">
+                                <button class="small-btn remove-from-bundle-btn" @click="removeProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs)">Remove 
+                                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12.6667 3.83333L3.33334 13.1667" stroke="#F24E1E" stroke-width="1.33333" stroke-linecap="round"/>
+                                    <path d="M3.33334 3.83333L12.6667 13.1667" stroke="#F24E1E" stroke-width="1.33333" stroke-linecap="round"/>
+                                  </svg>
+                                </button>
+                                <button class="small-btn add-to-bundle-btn" disabled>Added
+                                  <svg
+                                    width="13"
+                                    height="9"
+                                    viewBox="0 0 13 9"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4.69632 8.92638L0.5 4.73006L1.54908 3.68098L4.69632 6.82822L11.4509 0.0736198L12.5 1.1227L4.69632 8.92638Z" fill="#282828" />
+                                  </svg>
+                                </button>
+                              </div>  
+                            </template>
+                            {% comment %} The step allows duplicates {% endcomment %}
+                            <template x-if="activeStepData.productInput.allowProductDuplicates">
+                              <div class="increment-decrement-container">
+                                <button class="small-btn add-to-bundle-btn" @click="removeProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs)">-</button>
+                                <p x-text="getProductQuantity(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep)"></p>
+                                <button class="small-btn add-to-bundle-btn" @click="addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs)" disabled="!canAddMoreProducts()">+</button>
+                              </div>  
+                            </template>
+                          </div>
                         </template>
                       </div>
                     </div>
@@ -148,9 +159,11 @@
         {% comment %} Step navigation {% endcomment %}
         <div class="nav-buttons">
           <button @click="decrementStep">Previous step</button>
-          <button @click="incrementStep">Next step</button>
+          <template x-if="!stepInputsFulfiled()">
+            <p>Please select the required amount of products.</p>
+          </template>
+          <button @click="incrementStep" disabled="!stepInputsFulfiled()">Next step</button>
         </div>
-
 
       </div>
     </template>
@@ -159,13 +172,13 @@
 {% comment %} Widget body end {% endcomment %}
 
 
-{% comment %} widget.js import {% endcomment %}
+{% comment %} JS import {% endcomment %}
 <script src="{{ 'widget-utils.js' | asset_url }}"></script>
 <script src="{{ 'widget-fetching.js' | asset_url }}"></script>
 
 {% comment %} JS code for widget {% endcomment %}
 <script>
-  const APP_URL = "https://workplace-tackle-threatening-laptop.trycloudflare.com";
+  const APP_URL = "https://guard-shares-team-newspapers.trycloudflare.com";
 
   //Money format from shopify used to format prices
   Shopify.money_format = "{{ shop.money_format }}";
@@ -220,8 +233,28 @@
 
       //Add product to the bundle
       addProduct(productId, activeStep, stepInputs){
-        addProductToBundle(productId, activeStep, stepInputs);
+        addProductToBundle(productId, activeStep, stepInputs, this.activeStepData.productInput.maxProductsOnStep);
       },
+
+      //Remove product from the bundle
+      removeProduct(productId, activeStep, stepInputs){
+        removeProductFromBundle(productId, activeStep, stepInputs);
+      },
+
+      //get product quantity in the bundle
+      getProductQuantity(productId, stepInputs, activeStep){
+        return getProductQuantityInBundle(productId, stepInputs, activeStep);
+      },
+
+      canAddMoreProducts() {
+        return getTotalProductsInBundle(this.stepInputs) < this.activeStepData.productInput.maxProductsOnStep;
+      },
+
+      stepInputsFulfiled(){
+        const productsQuantity = getTotalProductsInBundle(this.stepInputs); //Util function for getting total products in bundle
+        return productsQuantity >= this.activeStepData.productInput.minProductsOnStep && productsQuantity <= this.activeStepData.productInput.maxProductsOnStep;
+      },
+
       
       // Set active step
       setActiveStep(stepNumber){

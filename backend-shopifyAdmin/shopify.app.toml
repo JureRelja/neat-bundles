@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://workplace-tackle-threatening-laptop.trycloudflare.com"
+application_url = "https://guard-shares-team-newspapers.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://workplace-tackle-threatening-laptop.trycloudflare.com/auth/callback",
-  "https://workplace-tackle-threatening-laptop.trycloudflare.com/auth/shopify/callback",
-  "https://workplace-tackle-threatening-laptop.trycloudflare.com/api/auth/callback"
+  "https://guard-shares-team-newspapers.trycloudflare.com/auth/callback",
+  "https://guard-shares-team-newspapers.trycloudflare.com/auth/shopify/callback",
+  "https://guard-shares-team-newspapers.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]

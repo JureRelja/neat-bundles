@@ -78,16 +78,21 @@ const filterAvailableOptionsAndValues = (productOptions, productVariants) => {
 };
 
 //Function to add products to bundle storage
-const addProductToBundle = (productId, activeStepNumber, stepInputs) => {
-  debugger;
+const addProductToBundle = (
+  productId,
+  activeStepNumber,
+  stepInputs,
+  maxProductsOnStep,
+) => {
+  if (getTotalProductsInBundle(stepInputs) >= maxProductsOnStep) return;
+
+  //Finding the index of the step in the stepInputs array
   const thisStepIndex = stepInputs.findIndex((step) => {
     return step.stepNumber == activeStepNumber;
   });
-  debugger;
 
   //If there are already inputs started on this step
   if (thisStepIndex != -1) {
-    debugger;
     //Checking if the product is already added on this step
     const productAlreadyAdded = stepInputs[thisStepIndex].products.find(
       (product) => product.id == productId,
@@ -111,6 +116,70 @@ const addProductToBundle = (productId, activeStepNumber, stepInputs) => {
       products: [{ id: productId, quantity: 1 }],
     });
   }
+};
+
+const removeProductFromBundle = (productId, activeStepNumber, stepInputs) => {
+  //Finding the index of the step in the stepInputs array
+  const thisStepIndex = stepInputs.findIndex((step) => {
+    return step.stepNumber == activeStepNumber;
+  });
+
+  if (thisStepIndex == -1) return;
+
+  //Checking if the product is already added on this step
+  const productInBundle = stepInputs[thisStepIndex].products.find(
+    (product) => product.id == productId,
+  );
+
+  if (!productInBundle) return;
+
+  //If the product quantity is more than 1
+  if (productInBundle.quantity > 1) {
+    productInBundle.quantity--;
+    //If the product quantity is 1
+  } else {
+    stepInputs[thisStepIndex].products = stepInputs[
+      thisStepIndex
+    ].products.filter((product) => product.id != productId);
+  }
+};
+
+//Function to get the total quantity of one product in the bundle
+const getProductQuantityInBundle = (
+  productId,
+  stepInputs,
+  activeStepNumber,
+) => {
+  const thisStepIndex = stepInputs.findIndex((step) => {
+    return step.stepNumber == activeStepNumber;
+  });
+
+  if (thisStepIndex == -1) return 0;
+
+  const productInBundle = stepInputs[thisStepIndex].products.find(
+    (product) => product.id == productId,
+  );
+
+  if (!productInBundle) return 0;
+
+  return productInBundle.quantity;
+};
+
+//Function to get the total quantity of all products in the bundle
+const getTotalProductsInBundle = (stepInputs) => {
+  if (stepInputs.length == 0) return 0;
+
+  return stepInputs.reduce((stepAcc, step) => {
+    if (!step.products) return stepAcc;
+    debugger;
+    return (
+      stepAcc +
+      step.products.reduce(
+        (productAcc, product) => productAcc + product.quantity,
+        0,
+      )
+    );
+  }, 0);
 };
 
 //Check if product is already in bundle storage
