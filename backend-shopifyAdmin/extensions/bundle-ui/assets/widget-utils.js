@@ -41,41 +41,41 @@ Shopify.formatMoney = function (cents, format) {
   return formatString.replace(placeholderRegex, value);
 };
 
-//Function to find a product variant for a given set of selected options
-const findVariantIndex = (selectedOptions, productVariants) => {
-  const index = productVariants.findIndex((variant) => {
-    return variant.options.every((option, index) => {
-      const res = option === selectedOptions[index];
-      return res;
-    });
-  });
+// //Function to find a product variant for a given set of selected options
+// const findVariantIndex = (selectedOptions, productVariants) => {
+//   const index = productVariants.findIndex((variant) => {
+//     return variant.options.every((option, index) => {
+//       const res = option === selectedOptions[index];
+//       return res;
+//     });
+//   });
 
-  return index;
-};
+//   return index;
+// };
 
-//Function for filtering only product options that are available and used in the product
-const filterAvailableOptionsAndValues = (productOptions, productVariants) => {
-  productOptions = productOptions.map((option) => {
-    return {
-      ...option,
-      values: option.values.filter((value) => {
-        return productVariants.some(
-          (variant) =>
-            variant.options[productOptions.indexOf(option)] === value,
-        );
-      }),
-    };
-  });
+// //Function for filtering only product options that are available and used in the product
+// const filterAvailableOptionsAndValues = (productOptions, productVariants) => {
+//   productOptions = productOptions.map((option) => {
+//     return {
+//       ...option,
+//       values: option.values.filter((value) => {
+//         return productVariants.some(
+//           (variant) =>
+//             variant.options[productOptions.indexOf(option)] === value,
+//         );
+//       }),
+//     };
+//   });
 
-  //Removing title option and options that don't have any available values
-  productOptions = productOptions.filter((option) => {
-    //Option with name "Title" is a default option that is present on products that don't have any variants specified
-    if (option.name == "Title" && option.values.length == 1) return false;
+//   //Removing title option and options that don't have any available values
+//   productOptions = productOptions.filter((option) => {
+//     //Option with name "Title" is a default option that is present on products that don't have any variants specified
+//     if (option.name == "Title" && option.values.length == 1) return false;
 
-    // Removing options that don't have any available values
-    return option.values.length > 0;
-  });
-};
+//     // Removing options that don't have any available values
+//     return option.values.length > 0;
+//   });
+// };
 
 //Function to add products to bundle storage
 const addProductToBundle = (
@@ -167,17 +167,14 @@ const getProductQuantityInBundle = (
 
 //Function to get the total quantity of all products in the bundle
 const getTotalProductsInBundle = (stepInputs) => {
-  if (stepInputs.length == 0) return 0;
-
   return stepInputs.reduce((stepAcc, step) => {
     if (!step.products) return stepAcc;
-    debugger;
+
     return (
       stepAcc +
-      step.products.reduce(
-        (productAcc, product) => productAcc + product.quantity,
-        0,
-      )
+      step.products.reduce((productAcc, product) => {
+        return productAcc + product.quantity;
+      }, 0)
     );
   }, 0);
 };
