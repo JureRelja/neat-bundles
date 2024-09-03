@@ -41,17 +41,17 @@ Shopify.formatMoney = function (cents, format) {
   return formatString.replace(placeholderRegex, value);
 };
 
-// //Function to find a product variant for a given set of selected options
-// const findVariantIndex = (selectedOptions, productVariants) => {
-//   const index = productVariants.findIndex((variant) => {
-//     return variant.options.every((option, index) => {
-//       const res = option === selectedOptions[index];
-//       return res;
-//     });
-//   });
+//Function to find a product variant for a given set of selected options
+const findVariantIndex = (selectedOptions, productVariants) => {
+  const index = productVariants.findIndex((variant) => {
+    return variant.options.every((option, index) => {
+      const res = option === selectedOptions[index];
+      return res;
+    });
+  });
 
-//   return index;
-// };
+  return index;
+};
 
 // //Function for filtering only product options that are available and used in the product
 // const filterAvailableOptionsAndValues = (productOptions, productVariants) => {

@@ -127,47 +127,50 @@
                     <div
                       class="view-product-modal"
                       x-show="showModal"
-                      @click.away="showModal = false"
                       x-transition>
+                      <div class="view-product-modal-inner" @click.away="showModal = false">
 
-                      <div class="modal-product-img">
-                        <img x-bind:src="product.variants[product.selectedVariantIndex].featured_image?.src || product.featured_image" alt="product image">
-                      </div>
-                      <div class="modal-product-details">
-                        <div class="close-modal-container">
-                          <span class="close" @click="showModal = false">&times;</span>
+                        <div class="modal-product-img">
+                          <img x-bind:src="product.variants[product.selectedVariantIndex].featured_image?.src || product.featured_image" alt="product image">
                         </div>
-                        <h2 x-text="product.title"></h2>
-                        <p x-text="product.description"></p>
+                        <div class="modal-product-details">
+                          <div class="close-modal-container">
+                            <span class="close" @click="showModal = false">&times;</span>
+                          </div>
+                          <h2 x-text="product.title"></h2>
+                          <p x-text="product.description"></p>
 
-                        {% comment %} Product variant selector {% endcomment %}
-                        <div
-                          x-data="{selectedOptions: product.variants[product.selectedVariantIndex].options.map(option => option)}"
-                          x-init="$watch('selectedOptions', value => {
+                          {% comment %} Product variant selector {% endcomment %}
+                          <div
+                            x-data="{selectedOptions: product.variants[product.selectedVariantIndex].options.map(option => option)}"
+                            x-init="$watch('selectedOptions', value => {
                             product.selectedVariantIndex = findVariantIndex(value, product.variants)
                           })"
-                          class="product-variants-container">
+                            class="product-variants-container">
 
-                          {% comment %} Option values {% endcomment %}
-                          <template x-for="option in product.options">
-                            <div class="product-option-picker-container">
-                              <label x-text="option.name" class="option-title"></label>
-                              <select class="variant-selector" x-model="selectedOptions[product.options.indexOf(option)]">
-                                <template x-for="value in option.values">
-                                  <option x-text="value" class="option-value"></option>
-                                </template>
-                              </select>
-                            </div>
-                          </template>
-                          <p class="product-variant-unavailable-text" x-text="!product.variants[product.selectedVariantIndex].available ? 'This product option is currenty unavailable.' : ''"></p>
-                        
-                        </div>
+                            {% comment %} Option values {% endcomment %}
+                            <template x-for="option in product.options">
+                              <div class="product-option-picker-container">
+                                <label x-text="option.name" class="option-title"></label>
+                                <select class="variant-selector" x-model="selectedOptions[product.options.indexOf(option)]">
+                                  <template x-for="value in option.values">
+                                    <option x-text="value" class="option-value"></option>
+                                  </template>
+                                </select>
+                              </div>
+                            </template>
+                            <p class="product-variant-unavailable-text" x-text="!product.variants[product.selectedVariantIndex].available ? 'This product option is currenty unavailable.' : ''"></p>
+
+                          </div>
                           <button
                             class="small-btn add-to-bundle-btn"
                             :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
-                            @click="addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs)">Add product</button>
+                            @click="() => { addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs);
+                              showModal = false;}
+                            ">
+                            Add product</button>
                         </div>
-                      </div>  
+                      </div>
                     </div>
                   </div>
 
@@ -244,7 +247,7 @@
 
 {% comment %} JS import {% endcomment %}
 <script src="{{ 'widget-utils.js' | asset_url }}"></script>
-<script src="{{ 'widget-fetching.js' | asset_url }}"></script>
+<script src="{{ 'widget-fetching.js' | asset_url }}" rel="preload"></script>
 
 {% comment %} JS code for widget {% endcomment %}
 <script>
