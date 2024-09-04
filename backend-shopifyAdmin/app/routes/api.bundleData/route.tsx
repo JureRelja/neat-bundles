@@ -5,6 +5,8 @@ import db from "~/db.server";
 import { JsonData } from "~/types/jsonData";
 import { checkPublicAuth } from "~/utils/publicApi.auth";
 import { ApiEndpoint, Cache } from "../../utils/cache";
+import { s } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
+import { create } from "domain";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   console.log(request);
@@ -52,7 +54,25 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           where: {
             id: Number(bundleId),
           },
-          select: bundleAndSteps,
+          select: {
+            ...bundleAndSteps,
+            id: true,
+            title: true,
+            published: true,
+            createdAt: true,
+            priceAmount: true,
+            pricing: true,
+            steps: {
+              select: {
+                title: true,
+                stepNumber: true,
+                stepType: true,
+              },
+              orderBy: {
+                stepNumber: "asc",
+              },
+            },
+          },
         });
 
       //Write to cache

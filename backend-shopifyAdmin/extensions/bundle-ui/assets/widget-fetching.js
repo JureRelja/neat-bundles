@@ -1,3 +1,28 @@
+const fetchActiveStepData = async (bundleId, activeStepNumber) => {
+  const data = await fetch(
+    `${APP_URL}/bundleData/step?bundleId=${bundleId}&stepNum=${activeStepNumber}`,
+    { mode: "cors" },
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.ok) {
+        return data.data[0];
+      } else {
+        console.log(data.message);
+        alert(
+          "There was an error with fetching content for this step. Try refreshing the page.",
+        );
+      }
+    })
+    .catch((error) => {
+      console.log("error", error);
+      alert(
+        "There was an error with fetching content for this step. Try refreshing the page.",
+      );
+    });
+  return data;
+};
+
 const fetchProducts = async (
   activeStepData,
   activeStepProducts,
@@ -5,13 +30,11 @@ const fetchProducts = async (
   Shopify,
 ) => {
   if (activeStepData.stepType == "PRODUCT") {
-    stepLoading = true;
     //Getting product handles for all products
     const productHandlesToFetch = activeStepData.productInput.products.map(
       (product) => product.shopifyProductHandle,
     );
-
-    activeStepProducts.length = 0; //Clearing products array
+    activeStepProducts.length = 0; //Clearing the array
 
     //Fetching products data
     await Promise.all(

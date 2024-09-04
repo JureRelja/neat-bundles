@@ -315,7 +315,7 @@
 
 {% comment %} JS code for widget {% endcomment %}
 <script>
-  const APP_URL = `https://{{ shop.domain }}/apps/nb`;
+  const APP_URL = `https://{{ shop.domain }}/apps/nb/api`;
 
   //Money format from shopify used to format prices
   Shopify.money_format = "{{ shop.money_format }}";
@@ -324,7 +324,7 @@
     Alpine.data("bundle", () => ({
       // Fetch bundle settings data
       init(){
-        fetch(`${APP_URL}/api/bundleData?bundleId={{ bundleId }}`, {mode: 'cors'})
+        fetch(`${APP_URL}/bundleData?bundleId={{ bundleId }}`, {mode: 'cors'})
           .then(response => response.json())
           .then(data => {
             if (data.ok) {
@@ -333,13 +333,14 @@
             }
             else {
               console.log(data.message);
+              alert("There was an error with fetching your bundle. Please try again. If the problem persists, contact support.");
             }
           }).then(() => {
             //Finished loading of the step icons and titles
             this.initialLoading = false;
           }).then(() => {
             //Fetching products for the first step
-            this.fetchProductsData();
+            this.fetchDataForStep();
           }).catch(error => {
             console.log('error', error);
             alert("There was an error with fetching your bundle. Please try again. If the problem persists, contact support.");
@@ -360,12 +361,25 @@
       activeStepData: {}, // Current active step data
       activeStepProducts: [], // Products data
 
-      // Fetch products data
-      async fetchProductsData(){
+      //Fetch data for the current step (either products or content)
+      async fetchDataForStep(){
         this.stepLoading = true;
-        await fetchProducts(this.activeStepData, this.activeStepProducts, window.Shopify, Shopify).then(() =>
-          this.stepLoading = false
-        );
+
+        //Get data for current step
+        this.activeStepData = await fetchActiveStepData(this.bundleData.id, this.activeStep);
+
+        if (this.bundleData.steps[this.activeStep - 1].stepType == "PRODUCT") {
+          this.fetchProductForStep();
+        } else if (this.bundleData.steps[this.activeStep - 1].stepType == "CONTENT") {
+          //Fetch content data
+        }
+
+        this.stepLoading = false;
+      },
+
+      // Fetch products data
+      async fetchProductForStep(){        
+        await fetchProducts(this.activeStepData, this.activeStepProducts, window.Shopify, Shopify)
       },
 
       //Add product to the bundle
@@ -404,33 +418,29 @@
       setActiveStep(stepNumber){
        if (stepNumber <= this.reachedStep){
           this.activeStep = stepNumber;
-          this.activeStepData = this.bundleData.steps[parseInt(stepNumber-1)]
-          this.fetchProductsData();
+          this.fetchDataForStep();
        }
       },
 
       // Increment step
       incrementStep(){
         if (this.activeStep < this.reachedStep){
-          this.activeStepData = this.bundleData.steps[parseInt(this.activeStep)];
           this.activeStep++;
-          this.fetchProductsData();
+          this.fetchDataForStep();
         }
         else if (this.activeStep == this.reachedStep){
           if (this.reachedStep == this.bundleData.steps.length) return;
           this.reachedStep++;
-          this.activeStepData = this.bundleData.steps[parseInt(this.activeStep)];
           this.activeStep++;
-          this.fetchProductsData();
+          this.fetchDataForStep();
         }
       },
 
       // Decrement step
       decrementStep(){
         if (this.activeStep > 1){
-          this.activeStepData = this.bundleData.steps[parseInt(this.activeStep - 2)];
           this.activeStep--;      
-          this.fetchProductsData(); 
+          this.fetchDataForStep(); 
         }
       }
 

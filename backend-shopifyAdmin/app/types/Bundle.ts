@@ -12,6 +12,7 @@ export const bundleAndSteps = {
   priceAmount: true,
   steps: {
     select: {
+      title: true,
       stepNumber: true,
       stepType: true,
     },
