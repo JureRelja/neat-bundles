@@ -11,6 +11,7 @@ import { checkPublicAuth } from "~/utils/publicApi.auth";
 import { ReadCache, WriteCache } from "../cache";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  console.log(request);
   const url = new URL(request.url);
 
   //Get query params

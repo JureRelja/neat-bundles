@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://aerospace-kernel-rural-conditional.trycloudflare.com"
+application_url = "https://none-refugees-sql-enclosure.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,13 +17,18 @@ scopes = "write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://aerospace-kernel-rural-conditional.trycloudflare.com/auth/callback",
-  "https://aerospace-kernel-rural-conditional.trycloudflare.com/auth/shopify/callback",
-  "https://aerospace-kernel-rural-conditional.trycloudflare.com/api/auth/callback"
+  "https://none-refugees-sql-enclosure.trycloudflare.com/auth/callback",
+  "https://none-refugees-sql-enclosure.trycloudflare.com/auth/shopify/callback",
+  "https://none-refugees-sql-enclosure.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-07"
+
+[app_proxy]
+url = "https://none-refugees-sql-enclosure.trycloudflare.com"
+subpath = "nb"
+prefix = "apps"
 
 [pos]
 embedded = false

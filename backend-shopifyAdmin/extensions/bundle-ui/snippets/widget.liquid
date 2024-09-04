@@ -1,6 +1,10 @@
 {% comment %} CSS code for widget {% endcomment %}
 {{ 'widget.css' | asset_url | stylesheet_tag }}
 
+{% comment %} JS import {% endcomment %}
+<script src="{{ 'widget-utils.js' | asset_url }}"></script>
+<script src="{{ 'widget-fetching.js' | asset_url }}" rel="preload"></script>
+
 <style>
   [x-cloak] {
     display: none !important;
@@ -92,7 +96,23 @@
             {% comment %} Individualproducts {% endcomment %}
             <template x-for="product in activeStepProducts">
               <div class="product">
-                <img x-bind:src="product.variants[product.selectedVariantIndex].featured_image?.src || product.featured_image" alt="product image">
+                <div class="product-img">
+                  <img
+                    x-bind:src="product.variants[product.selectedVariantIndex].featured_image?.src || product.featured_image"
+                    alt="product image"
+                    width="200"
+                    height="200">
+                  <div class="product-added-overlay" x-show="getProductQuantity(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep) > 0">
+                    <svg
+                      width="55"
+                      height="55"
+                      viewBox="0 0 13 9"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg">
+                      <path d="M4.69632 8.92638L0.5 4.73006L1.54908 3.68098L4.69632 6.82822L11.4509 0.0736198L12.5 1.1227L4.69632 8.92638Z" fill="#282828" />
+                    </svg>
+                  </div>
+                </div>
                 <div class="product-details">
                   <p x-text="product.title" class="product-title"></p>
                   <span
@@ -129,16 +149,26 @@
                       x-show="showModal"
                       x-transition>
                       <div class="view-product-modal-inner" @click.away="showModal = false">
+                        <div class="mobile-close-btn close-modal-container">
+                          <span class="close" @click="showModal = false">&times;</span>
+                        </div>
 
                         <div class="modal-product-img">
-                          <img x-bind:src="product.variants[product.selectedVariantIndex].featured_image?.src || product.featured_image" alt="product image">
+                          <img
+                            x-bind:src="product.variants[product.selectedVariantIndex].featured_image?.src || product.featured_image"
+                            alt="product image"
+                            width="400"
+                            height="400">
                         </div>
                         <div class="modal-product-details">
-                          <div class="close-modal-container">
+                          <div class="desktop-close-btn close-modal-container ">
                             <span class="close" @click="showModal = false">&times;</span>
                           </div>
-                          <h2 x-text="product.title"></h2>
-                          <p x-text="product.description"></p>
+
+                          <div class="product-title-and-description">
+                            <h2 x-text="product.title"></h2>
+                            <p x-html="product.description"></p>
+                          </div>
 
                           {% comment %} Product variant selector {% endcomment %}
                           <div
@@ -244,14 +274,9 @@
 {% endif %}
 {% comment %} Widget body end {% endcomment %}
 
-
-{% comment %} JS import {% endcomment %}
-<script src="{{ 'widget-utils.js' | asset_url }}"></script>
-<script src="{{ 'widget-fetching.js' | asset_url }}" rel="preload"></script>
-
 {% comment %} JS code for widget {% endcomment %}
 <script>
-  const APP_URL = "https://aerospace-kernel-rural-conditional.trycloudflare.com";
+  const APP_URL = `https://{{ shop.domain }}/apps/nb`;
 
   //Money format from shopify used to format prices
   Shopify.money_format = "{{ shop.money_format }}";
@@ -344,6 +369,7 @@
         if (this.activeStep < this.reachedStep){
           this.activeStepData = this.bundleData.steps[parseInt(this.activeStep)];
           this.activeStep++;
+          window.
           this.fetchProductsData();
         }
         else if (this.activeStep == this.reachedStep){
