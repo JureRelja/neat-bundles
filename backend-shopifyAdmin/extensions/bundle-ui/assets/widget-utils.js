@@ -84,7 +84,8 @@ const addProductToBundle = (
   stepInputs,
   maxProductsOnStep,
 ) => {
-  if (getTotalProductsInBundle(stepInputs) >= maxProductsOnStep) return;
+  if (getProductsOnStep(activeStepNumber, stepInputs) >= maxProductsOnStep)
+    return;
 
   //Finding the index of the step in the stepInputs array
   const thisStepIndex = stepInputs.findIndex((step) => {
@@ -163,6 +164,16 @@ const getProductQuantityInBundle = (
   if (!productInBundle) return 0;
 
   return productInBundle.quantity;
+};
+
+const getProductsOnStep = (activeStep, stepInputs) => {
+  if (!stepInputs[activeStep - 1] || !stepInputs[activeStep - 1].products)
+    return 0;
+
+  return stepInputs[activeStep - 1].products.reduce((acc, product) => {
+    return acc + product.quantity;
+  }, 0);
+  debugger;
 };
 
 //Function to get the total quantity of all products in the bundle

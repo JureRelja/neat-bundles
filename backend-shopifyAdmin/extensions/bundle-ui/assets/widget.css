@@ -111,8 +111,23 @@ p {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  row-gap: 20px;
   width: 100%;
+  position: relative;
+  animation: animateright 0.4s;
 }
+
+@keyframes animateright {
+  from {
+    right: -300px;
+    opacity: 0;
+  }
+  to {
+    right: 0;
+    opacity: 1;
+  }
+}
+
 /* Step body global end */
 
 /* Product step start */
@@ -380,9 +395,55 @@ p {
   }
 }
 
-/* Step navigation avigation start */
+/* Step navigation start */
 .nav-buttons {
   display: flex;
   justify-content: space-between;
   width: 100%;
+}
+
+.nav-button {
+  font-weight: 500;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+
+.nav-button:hover {
+  cursor: pointer;
+  opacity: 0.9;
+  scale: 1.1;
+}
+
+.nav-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.nav-button:disabled:hover {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.next-step-btn {
+  background-color: #282828;
+  color: #fff;
+  border: none;
+}
+
+.prev-step-btn {
+  background-color: #fff;
+  color: #282828;
+  border: 1px solid #282828;
+  border: none;
+}
+
+.add-to-cart-btn {
+  background-color: #f3df76;
+  color: #000000;
+  border: none;
+  font-weight: 500;
 }

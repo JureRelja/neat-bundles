@@ -10,6 +10,9 @@ const fetchProducts = async (
     const productHandlesToFetch = activeStepData.productInput.products.map(
       (product) => product.shopifyProductHandle,
     );
+
+    activeStepProducts.length = 0; //Clearing products array
+
     //Fetching products data
     await Promise.all(
       productHandlesToFetch.map(async (productHandle) => {
@@ -63,3 +66,10 @@ const fetchProducts = async (
     );
   }
 };
+
+const finishAndAddBundleToCart = async (
+  stepInputs,
+  bundleId,
+  shopDomain,
+  Shopify,
+) => {};

@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://none-refugees-sql-enclosure.trycloudflare.com"
+application_url = "https://eight-pix-detailed-layout.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://none-refugees-sql-enclosure.trycloudflare.com/auth/callback",
-  "https://none-refugees-sql-enclosure.trycloudflare.com/auth/shopify/callback",
-  "https://none-refugees-sql-enclosure.trycloudflare.com/api/auth/callback"
+  "https://eight-pix-detailed-layout.trycloudflare.com/auth/callback",
+  "https://eight-pix-detailed-layout.trycloudflare.com/auth/shopify/callback",
+  "https://eight-pix-detailed-layout.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-07"
 
 [app_proxy]
-url = "https://none-refugees-sql-enclosure.trycloudflare.com"
+url = "https://eight-pix-detailed-layout.trycloudflare.com"
 subpath = "nb"
 prefix = "apps"
 

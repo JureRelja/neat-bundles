@@ -12,11 +12,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   switch (topic) {
-    case "CARTS_CREATE":
-      console.log();
-
-      break;
-
     case "APP_UNINSTALLED":
       if (session) {
         const offlineStoreId = `shopify_sessions_${session.id}`;

@@ -8,6 +8,8 @@ export const bundleAndSteps = {
   title: true,
   published: true,
   createdAt: true,
+  pricing: true,
+  priceAmount: true,
   steps: {
     select: {
       stepNumber: true,

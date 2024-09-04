@@ -1,10 +1,10 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { bundleAndSteps, BundleAndStepsBasicServer } from "~/types/Bundle";
 import db from "~/db.server";
 import { JsonData } from "~/types/jsonData";
 import { checkPublicAuth } from "~/utils/publicApi.auth";
 import { ApiEndpoint, Cache } from "../../utils/cache";
+import { BundleStepAllResources, bundleStepFull } from "~/types/BundleStep";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   console.log(request);
@@ -19,12 +19,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     });
 
   //Cache aside
-  const cache = new Cache(request, ApiEndpoint.BundleData);
+  const cache = new Cache(request, ApiEndpoint.BundleStep);
   const cacheData = await cache.readCache();
 
   const url = new URL(request.url);
 
   //Get query params
+  const stepNumber = url.searchParams.get("stepNum");
   const bundleId = url.searchParams.get("bundleId");
 
   if (cacheData) {
@@ -47,16 +48,33 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   } else {
     // Returning bundle alone or with selected step
     try {
-      const bundleData: BundleAndStepsBasicServer | null =
-        await db.bundle.findUnique({
+      const bundleStep: BundleStepAllResources[] | null =
+        await db.bundleStep.findMany({
           where: {
-            id: Number(bundleId),
+            bundleId: Number(bundleId),
+            stepNumber: Number(stepNumber),
           },
-          select: bundleAndSteps,
+          include: bundleStepFull,
         });
 
+      if (!bundleStep) {
+        return json(
+          new JsonData(
+            false,
+            "error",
+            "There was an error with your request. Requested step either doesn't exist or it's not active.",
+          ),
+          {
+            headers: {
+              "Access-Control-Allow-Origin": "*",
+            },
+            status: 200,
+          },
+        );
+      }
+
       //Write to cache
-      await cache.writeCache(bundleData);
+      await cache.writeCache(bundleStep);
 
       return json(
         new JsonData(
@@ -64,7 +82,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           "success",
           "Bundle succesfuly retirieved.",
           [],
-          bundleData,
+          bundleStep,
         ),
         {
           headers: {

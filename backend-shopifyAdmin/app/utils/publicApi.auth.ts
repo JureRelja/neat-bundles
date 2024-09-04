@@ -1,18 +1,24 @@
-import { json } from "@remix-run/node";
+import { json, LoaderFunction } from "@remix-run/node";
 import db from "~/db.server";
 import { JsonData } from "~/types/jsonData";
 
 // Function to check if the bundle is published and belongs to the store
 export async function checkPublicAuth(
-  storeUrl: string | null,
-  bundleId: string | null,
+  request: Request,
 ): Promise<JsonData<undefined>> {
-  // Check if storeUrl is provided
-  if (!storeUrl) {
+  // Get query params
+  const url = new URL(request.url);
+
+  const shop = url.searchParams.get("shop");
+  const bundleId = url.searchParams.get("bundleId");
+  const signature = url.searchParams.get("signature");
+
+  // Check if shop is provided
+  if (!shop) {
     return new JsonData(
       false,
       "error",
-      "There was an error with your request. 'storeUrl' wasn't specified.",
+      "There was an error with your request. 'shop' wasn't specified.",
     );
   }
 
@@ -36,7 +42,7 @@ export async function checkPublicAuth(
     },
   });
 
-  if (!bundle || !bundle.published || bundle.storeUrl !== storeUrl) {
+  if (!bundle || !bundle.published || bundle.storeUrl !== shop) {
     return new JsonData(
       false,
       "error",
