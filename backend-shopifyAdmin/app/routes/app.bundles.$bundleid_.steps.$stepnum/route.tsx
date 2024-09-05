@@ -528,7 +528,7 @@ export default function Index() {
   const [stepData, setStepData] = useState<BundleStepAllResources>(
     errors?.length === 0 || !errors ? serverStepData : submittedStepData,
   );
-  console.log(stepData);
+
   const updateSelectedProducts = (products: Product[]) => {
     setStepData((stepData: BundleStepAllResources) => {
       if (!stepData.productInput) return stepData;

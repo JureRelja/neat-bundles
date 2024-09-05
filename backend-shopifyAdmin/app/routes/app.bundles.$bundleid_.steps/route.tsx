@@ -80,35 +80,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const action = formData.get("action") as string;
 
-  const bundleId = params.bundleid;
-  const stepNum = params.stepnum;
-  const shop = session.shop;
-
-  if (!bundleId || !stepNum) {
-    return json(
-      {
-        ...new JsonData(
-          false,
-          "error",
-          "There was an error with your request",
-          [
-            {
-              fieldId: "bundleId",
-              field: "Bundle Id",
-              message: "Bundle Id is missing.",
-            },
-            {
-              fieldId: "stepNum",
-              field: "Step Number",
-              message: "Step Number is missing.",
-            },
-          ],
-        ),
-      },
-      { status: 400 },
-    );
-  }
-
   switch (action) {
     //Adding a new step to the bundle
     case "addStep": {
@@ -194,6 +165,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
     //Moving the step up
     case "moveStepDown": {
+      console.log("Moving step down");
+
       try {
         const stepId: string = formData.get("id") as string;
 
@@ -301,6 +274,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           ),
         ]);
 
+        console.log("Step moved down");
+
         return json({
           ...new JsonData(true, "success", "Step moved down"),
         });
@@ -320,6 +295,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     }
     //Moving the step down
     case "moveStepUp": {
+      console.log("Moving step up");
       try {
         const stepId: string = formData.get("id") as string;
 
