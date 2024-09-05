@@ -68,6 +68,8 @@ import { JsonData, error } from "../../types/jsonData";
 import { useAsyncSubmit } from "../../hooks/useAsyncSubmit";
 import { useNavigateSubmit } from "../../hooks/useNavigateSubmit";
 import styles from "./route.module.css";
+import { ApiCacheService } from "~/utils/ApiCacheService";
+import { ApiCacheKeyService } from "~/utils/ApiCacheKeyService";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
@@ -165,6 +167,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           return redirect("/app");
         }
 
+        // Clear the cache for the bundle
+        const cacheKeyService = new ApiCacheKeyService(session.shop);
+        ApiCacheKeyService;
+        await ApiCacheService.multiKeyDelete(
+          await cacheKeyService.getAllBundleKeys(params.bundleid as string),
+        );
+
         return json(
           { ...new JsonData(true, "success", "Bundle deleted") },
           { status: 200 },
@@ -222,6 +231,14 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             discountValue: bundleData.discountValue,
           },
         });
+
+        // Clear the cache for the bundle
+        const cacheKeyService = new ApiCacheKeyService(session.shop);
+
+        await ApiCacheService.singleKeyDelete(
+          cacheKeyService.getBundleDataKey(params.bundleid as string),
+        );
+
         return redirect(`/app`);
       } catch (error) {
         console.log(error);
@@ -240,6 +257,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           ),
         });
       }
+
     // case "duplicateBundle":
     //   const bundleToDuplicate: BundleAllResources | null =
     //     await db.bundle.findUnique({

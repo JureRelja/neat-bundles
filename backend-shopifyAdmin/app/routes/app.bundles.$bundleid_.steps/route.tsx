@@ -29,6 +29,8 @@ import { bundleStepBasic, BundleStepBasicResources } from "~/types/BundleStep";
 import { useEffect, useRef, useState } from "react";
 import styles from "./route.module.css";
 import BundlePreview from "./bundlePreview";
+import { ApiCacheService } from "~/utils/ApiCacheService";
+import { ApiCacheKeyService } from "~/utils/ApiCacheKeyService";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
@@ -73,10 +75,39 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-  await authenticate.admin(request);
+  const { session } = await authenticate.admin(request);
 
   const formData = await request.formData();
   const action = formData.get("action") as string;
+
+  const bundleId = params.bundleid;
+  const stepNum = params.stepnum;
+  const shop = session.shop;
+
+  if (!bundleId || !stepNum) {
+    return json(
+      {
+        ...new JsonData(
+          false,
+          "error",
+          "There was an error with your request",
+          [
+            {
+              fieldId: "bundleId",
+              field: "Bundle Id",
+              message: "Bundle Id is missing.",
+            },
+            {
+              fieldId: "stepNum",
+              field: "Step Number",
+              message: "Step Number is missing.",
+            },
+          ],
+        ),
+      },
+      { status: 400 },
+    );
+  }
 
   switch (action) {
     //Adding a new step to the bundle
@@ -128,6 +159,14 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             },
           },
         });
+
+        // Clear the cache for the bundle
+        const cacheKeyService = new ApiCacheKeyService(session.shop);
+
+        await ApiCacheService.singleKeyDelete(
+          cacheKeyService.getBundleDataKey(params.bundleid as string),
+        );
+
         return redirect(
           `/app/bundles/${params.bundleid}/steps/${newStep.stepNumber}`,
         );
@@ -249,6 +288,19 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             },
           }),
         ]);
+
+        // Clear the cache for the bundle
+        const cacheKeyService = new ApiCacheKeyService(session.shop);
+
+        await Promise.all([
+          ApiCacheService.multiKeyDelete(
+            await cacheKeyService.getAllStepsKeys(params.bundleid as string),
+          ),
+          ApiCacheService.singleKeyDelete(
+            cacheKeyService.getBundleDataKey(params.bundleid as string),
+          ),
+        ]);
+
         return json({
           ...new JsonData(true, "success", "Step moved down"),
         });
@@ -350,6 +402,19 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             },
           }),
         ]);
+
+        // Clear the cache for the bundle
+        const cacheKeyService = new ApiCacheKeyService(session.shop);
+
+        await Promise.all([
+          ApiCacheService.multiKeyDelete(
+            await cacheKeyService.getAllStepsKeys(params.bundleid as string),
+          ),
+          ApiCacheService.singleKeyDelete(
+            cacheKeyService.getBundleDataKey(params.bundleid as string),
+          ),
+        ]);
+
         return json({
           ...new JsonData(true, "success", "Step moved up"),
         });

@@ -3,8 +3,9 @@ import { json } from "@remix-run/node";
 import db from "~/db.server";
 import { JsonData } from "~/types/jsonData";
 import { checkPublicAuth } from "~/utils/publicApi.auth";
-import { ApiEndpoint, Cache } from "../../utils/cache";
+import { ApiCacheService } from "../../utils/ApiCacheService";
 import { BundleStepAllResources, bundleStepFull } from "~/types/BundleStep";
+import { ApiCacheKeyService } from "~/utils/ApiCacheKeyService";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   console.log(request);
@@ -18,15 +19,21 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       status: 200,
     });
 
-  //Cache aside
-  const cache = new Cache(request, ApiEndpoint.BundleStep);
-  const cacheData = await cache.readCache();
-
   const url = new URL(request.url);
 
   //Get query params
   const stepNumber = url.searchParams.get("stepNum");
   const bundleId = url.searchParams.get("bundleId");
+  const shop = url.searchParams.get("shop") as string;
+
+  //Cache aside
+  const cacheKey = new ApiCacheKeyService(shop);
+
+  const cache = new ApiCacheService(
+    cacheKey.getStepKey(url.searchParams.get("bundleId")),
+  );
+
+  const cacheData = await cache.readCache();
 
   if (cacheData) {
     return json(

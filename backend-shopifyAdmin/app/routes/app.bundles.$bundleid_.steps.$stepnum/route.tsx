@@ -38,6 +38,8 @@ import { BundleStepAllResources, bundleStepFull } from "~/types/BundleStep";
 import { error, JsonData } from "../../types/jsonData";
 import ContentStepInputs from "./content-step-inputs";
 import ResourcePicker from "./resource-picker";
+import { ApiCacheService } from "~/utils/ApiCacheService";
+import { ApiCacheKeyService } from "~/utils/ApiCacheKeyService";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
@@ -65,10 +67,39 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-  await authenticate.admin(request);
+  const { session } = await authenticate.admin(request);
 
   const formData = await request.formData();
   const action = formData.get("action") as string;
+
+  const bundleId = params.bundleid;
+  const stepNum = params.stepnum;
+  const shop = session.shop;
+
+  if (!bundleId || !stepNum) {
+    return json(
+      {
+        ...new JsonData(
+          false,
+          "error",
+          "There was an error with your request",
+          [
+            {
+              fieldId: "bundleId",
+              field: "Bundle Id",
+              message: "Bundle Id is missing.",
+            },
+            {
+              fieldId: "stepNum",
+              field: "Step Number",
+              message: "Step Number is missing.",
+            },
+          ],
+        ),
+      },
+      { status: 400 },
+    );
+  }
 
   switch (action) {
     //Deleting the step from the bundle
@@ -116,6 +147,18 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       ) {
         return redirect(`/app/bundles/${params.bundleid}`);
       }
+
+      // Clear the cache for the bundle
+      const cacheKeyService = new ApiCacheKeyService(session.shop);
+
+      await Promise.all([
+        ApiCacheService.multiKeyDelete(
+          await cacheKeyService.getAllStepsKeys(params.bundleid as string),
+        ),
+        ApiCacheService.singleKeyDelete(
+          cacheKeyService.getBundleDataKey(params.bundleid as string),
+        ),
+      ]);
 
       return json({
         ...new JsonData(true, "success", "Step was deleted"),
@@ -280,6 +323,18 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           ]);
         }
 
+        // Clear the cache for the bundle
+        const cacheKeyService = new ApiCacheKeyService(session.shop);
+
+        await Promise.all([
+          ApiCacheService.multiKeyDelete(
+            await cacheKeyService.getAllStepsKeys(params.bundleid as string),
+          ),
+          ApiCacheService.singleKeyDelete(
+            cacheKeyService.getBundleDataKey(params.bundleid as string),
+          ),
+        ]);
+
         return json({
           ...new JsonData(true, "success", "Step was duplicated"),
         });
@@ -422,6 +477,19 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           { status: 400 },
         );
       }
+
+      // Clear the cache for the bundle
+      const cacheKeyService = new ApiCacheKeyService(session.shop);
+
+      await Promise.all([
+        ApiCacheService.singleKeyDelete(
+          cacheKeyService.getStepKey(params.stepnum as string),
+        ),
+        ApiCacheService.singleKeyDelete(
+          cacheKeyService.getBundleDataKey(params.bundleid as string),
+        ),
+      ]);
+
       return redirect(`/app/bundles/${params.bundleid}`);
     }
 

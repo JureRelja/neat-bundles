@@ -13,6 +13,8 @@ export async function checkPublicAuth(
   const bundleId = url.searchParams.get("bundleId");
   const signature = url.searchParams.get("signature");
 
+  //Veryfing digital signature
+
   // Check if shop is provided
   if (!shop) {
     return new JsonData(

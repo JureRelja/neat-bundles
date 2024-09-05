@@ -37,6 +37,9 @@ import ColorPicker from "./color-picker";
 import { useMemo, useState } from "react";
 import { JsonData } from "~/types/jsonData";
 import { RangeSliderValue } from "@shopify/polaris/build/ts/src/components/RangeSlider/types";
+import { ApiCacheService } from "~/utils/ApiCacheService";
+import { ApiCacheKeyService } from "~/utils/ApiCacheKeyService";
+import { BundleSettings } from "@prisma/client";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
@@ -69,7 +72,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-  await authenticate.admin(request);
+  const { session } = await authenticate.admin(request);
 
   const formData = await request.formData();
 
@@ -89,7 +92,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   }
 
   try {
-    await db.bundleSettings.update({
+    const result: BundleSettings | null = await db.bundleSettings.update({
       where: {
         bundleId: Number(params.bundleid),
       },
@@ -126,6 +129,17 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         },
       },
     });
+
+    if (!result) {
+      throw new Error("Failed to update bundle settings");
+    }
+
+    // Clear the cache for the bundle
+    const cacheKeyService = new ApiCacheKeyService(session.shop);
+
+    await ApiCacheService.singleKeyDelete(
+      cacheKeyService.getBundleSettingsKey(params.bundleid as string),
+    );
 
     const url: URL = new URL(request.url);
 

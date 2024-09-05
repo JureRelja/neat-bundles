@@ -4,9 +4,9 @@ import { bundleAndSteps, BundleAndStepsBasicServer } from "~/types/Bundle";
 import db from "~/db.server";
 import { JsonData } from "~/types/jsonData";
 import { checkPublicAuth } from "~/utils/publicApi.auth";
-import { ApiEndpoint, Cache } from "../../utils/cache";
-import { s } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
-import { create } from "domain";
+import { ApiCacheService } from "../../utils/ApiCacheService";
+
+import { ApiCacheKeyService } from "~/utils/ApiCacheKeyService";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   console.log(request);
@@ -20,11 +20,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       status: 200,
     });
 
-  //Cache aside
-  const cache = new Cache(request, ApiEndpoint.BundleData);
-  const cacheData = await cache.readCache();
-
   const url = new URL(request.url);
+
+  const shop = url.searchParams.get("shop") as string;
+
+  //Cache aside
+  const cacheKey = new ApiCacheKeyService(shop as string);
+
+  const cache = new ApiCacheService(
+    cacheKey.getBundleDataKey(url.searchParams.get("bundleId")),
+  );
+
+  const cacheData = await cache.readCache();
 
   //Get query params
   const bundleId = url.searchParams.get("bundleId");
