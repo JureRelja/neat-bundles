@@ -473,7 +473,7 @@ export default function Index({}) {
             stepData.stepType === StepType.PRODUCT ? (
               <Badge tone="warning">Product step</Badge>
             ) : (
-              <Badge>Content step</Badge>
+              <Badge tone="magic">Content step</Badge>
             )
           }
           backAction={{

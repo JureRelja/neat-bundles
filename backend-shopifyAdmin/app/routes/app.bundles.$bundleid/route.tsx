@@ -609,7 +609,7 @@ export default function Index() {
                               step.stepType === StepType.PRODUCT ? (
                                 <Badge tone="warning">Product step</Badge>
                               ) : (
-                                <Badge>Content step</Badge>
+                                <Badge tone="magic">Content step</Badge>
                               ),
                               <ButtonGroup>
                                 <InlineStack

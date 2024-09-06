@@ -1,6 +1,6 @@
-import { json, LoaderFunction } from "@remix-run/node";
 import db from "~/db.server";
 import { JsonData } from "~/types/jsonData";
+import { SignatureValidator } from "./SignatureValidator";
 
 // Function to check if the bundle is published and belongs to the store
 export async function checkPublicAuth(
@@ -11,9 +11,17 @@ export async function checkPublicAuth(
 
   const shop = url.searchParams.get("shop");
   const bundleId = url.searchParams.get("bundleId");
-  const signature = url.searchParams.get("signature");
 
   //Veryfing digital signature
+  const signatureValidator = new SignatureValidator(url.searchParams);
+
+  if (!signatureValidator.verifySignature()) {
+    return new JsonData(
+      false,
+      "error",
+      "There was an error with your request. 'signature' is invalid.",
+    );
+  }
 
   // Check if shop is provided
   if (!shop) {

@@ -8,8 +8,6 @@ import { BundleStepAllResources, bundleStepFull } from "~/types/BundleStep";
 import { ApiCacheKeyService } from "~/utils/ApiCacheKeyService";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  console.log(request);
-
   const res = await checkPublicAuth(request); //Public auth check
   if (!res.ok)
     return json(res, {

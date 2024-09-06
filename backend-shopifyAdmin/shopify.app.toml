@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://guidance-earned-vanilla-es.trycloudflare.com"
+application_url = "https://moscow-digit-saints-recorded.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://guidance-earned-vanilla-es.trycloudflare.com/auth/callback",
-  "https://guidance-earned-vanilla-es.trycloudflare.com/auth/shopify/callback",
-  "https://guidance-earned-vanilla-es.trycloudflare.com/api/auth/callback"
+  "https://moscow-digit-saints-recorded.trycloudflare.com/auth/callback",
+  "https://moscow-digit-saints-recorded.trycloudflare.com/auth/shopify/callback",
+  "https://moscow-digit-saints-recorded.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-07"
 
 [app_proxy]
-url = "https://guidance-earned-vanilla-es.trycloudflare.com"
+url = "https://moscow-digit-saints-recorded.trycloudflare.com"
 subpath = "nb"
 prefix = "apps"
 
