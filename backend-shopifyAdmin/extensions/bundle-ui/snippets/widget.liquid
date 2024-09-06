@@ -6,6 +6,10 @@
 <script src="{{ 'widget-fetching.js' | asset_url }}" rel="preload"></script>
 
 <style>
+
+  body.modal-open {
+    overflow: hidden;
+  }
   [x-cloak] {
     display: none !important;
   }
@@ -17,7 +21,7 @@
 
     {% comment %} Loading {% endcomment %}
     <div
-      class="loading-container"
+      class="initial-loading-container"
       x-show="initialLoading"
       x-cloak>
       <p>Loading...</p>
@@ -71,7 +75,7 @@
 
         {% comment %} Step body {% endcomment %}
         <div
-          class="loading-container"
+          class="step-loading-container"
           x-show="stepLoading"
           x-cloak>
           <p>Loading...</p>
@@ -85,8 +89,6 @@
             <div class="step-description-container">
               <p x-text="activeStepData.description"></p>
             </div>
-
-            <p x-show="!stepInputsFulfiled()">Please select the required amount of products.</p>
 
             {% comment %} Product step {% endcomment %}
             <div class="products-container" x-show="activeStepData.stepType == 'PRODUCT'">
@@ -124,8 +126,9 @@
                     <div
                       x-data="{showModal: false}"
                       class="product-action-btns-container"
+                    
                       x-show="!isProductInBundle(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep)">
-                      <button class="small-btn view-product-btn" @click="showModal = true">View product</button>
+                      <button class="small-btn view-product-btn" @click="() => {document.body.classList.add('modal-open'); showModal = true}">View product</button>
 
                       {% comment %} Adding product that has no variants besides the default{% endcomment %}
                       <button
@@ -139,7 +142,7 @@
                         x-show="product.options.length > 0"
                         class="small-btn add-to-bundle-btn"
                         :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
-                        @click="showModal = true">Select option</button>
+                        @click="() => {document.body.classList.add('modal-open'); showModal = true}">Select option</button>
 
                       {% comment %} View product modal {% endcomment %}
                       <div
@@ -148,7 +151,7 @@
                         x-transition>
                         <div class="view-product-modal-inner" @click.away="showModal = false">
                           <div class="mobile-close-btn close-modal-container">
-                            <span class="close" @click="showModal = false">&times;</span>
+                            <span class="close" @click="() => {document.body.classList.remove('modal-open'); showModal = false}">&times;</span>
                           </div>
 
                           <div class="modal-product-img">
@@ -160,21 +163,18 @@
                           </div>
                           <div class="modal-product-details">
                             <div class="desktop-close-btn close-modal-container ">
-                              <span class="close" @click="showModal = false">&times;</span>
+                              <span class="close" @click="() => {document.body.classList.remove('modal-open'); showModal = false}">&times;</span>
                             </div>
 
-                            <div class="product-title-and-description">
-                              <h2 x-text="product.title"></h2>
-                              <p x-html="product.description"></p>
-                            </div>
-
+                            <h2 x-text="product.title"></h2>
+                              
                             {% comment %} Product variant selector {% endcomment %}
                             <div
                               x-data="{selectedOptions: product.variants[product.selectedVariantIndex].options.map(option => option)}"
                               x-init="$watch('selectedOptions', value => {
                             product.selectedVariantIndex = findVariantIndex(value, product.variants)
                           })"
-                              class="product-variants-container">
+                              class="product-options-container">
 
                               {% comment %} Option values {% endcomment %}
                               <template x-for="option in product.options">
@@ -188,15 +188,21 @@
                                 </div>
                               </template>
                               <p class="product-variant-unavailable-text" x-text="!product.variants[product.selectedVariantIndex].available ? 'This product option is currenty unavailable.' : ''"></p>
-
                             </div>
-                            <button
-                              class="small-btn add-to-bundle-btn"
-                              :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
-                              @click="() => { addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs);
-                              showModal = false;}
-                            ">
-                              Add product</button>
+
+                          <button
+                          class="small-btn add-to-bundle-btn"
+                          :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
+                          @click="() => { addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs);
+                          showModal = false;}
+                        ">
+                          Add product</button>
+
+                          <div class="product-description">
+                            <p x-html="product.description"></p>
+                          </div>
+
+                            
                           </div>
                         </div>
                       </div>
@@ -252,6 +258,12 @@
                 </div>
               </template>
             </div>
+
+             {% comment %} Content step {% endcomment %}
+            <div x-show="activeStepData.stepType == 'CONTENT'" x-cloak class="content-step-container">
+              <p>Content step</p>
+            </div>
+
           </div>
         </template>
 
@@ -280,32 +292,55 @@
                 stroke-linejoin="round" />
             </svg>
             Previous step</button>
-          <p x-show="!stepInputsFulfiled()">Please select the required amount of products.</p>
-          <button
-            class="nav-button next-step-btn"
-            @click="incrementStep"
-            x-bind:disabled="!stepInputsFulfiled()"
-            x-show="activeStep < bundleData.steps.length">Next step
-            <svg
-              width="11"
-              height="8"
-              viewBox="0 0 11 8"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M10.1667 4.00004H0.833374M10.1667 4.00004L7.50004 6.66671M10.1667 4.00004L7.50004 1.33337"
-                stroke="white"
-                stroke-width="1.33333"
-                stroke-linecap="round"
-                stroke-linejoin="round" />
-            </svg>
-          </button>
-          <button
-            class="nav-button add-to-cart-btn"
-            @click="addBundleToCart"
-            x-bind:disabled="!stepInputsFulfiled()"
-            x-show="activeStep == bundleData.steps.length">Finish</button>
-        </div>
+
+            <div class="next-step-btn-container">  
+              <button
+                class="nav-button next-step-btn"
+                @click="incrementStep"
+                x-bind:disabled="!stepInputsFulfiled()"
+                x-show="activeStep < bundleData.steps.length"
+                x-ref="nextStepBtn">Next step
+
+                <svg
+                  width="11"
+                  height="8"
+                  viewBox="0 0 11 8"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M10.1667 4.00004H0.833374M10.1667 4.00004L7.50004 6.66671M10.1667 4.00004L7.50004 1.33337"
+                    stroke="white"
+                    stroke-width="1.33333"
+                    stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+
+              </button>
+
+              {% comment %} Tooltip to indicate how many products a customer needs to select {% endcomment %}
+              <template x-if="activeStepData.stepType == 'PRODUCT'">
+                <div
+                  class="tooltip"
+                  x-show="!stepInputsFulfiled()"
+                  x-text="`Please select between ${activeStepData.productInput?.minProductsOnStep} and ${activeStepData.productInput?.maxProductsOnStep} products`"></div>
+              </template> 
+
+              <button
+                class="nav-button add-to-cart-btn"
+                @click="addBundleToCart"
+                x-bind:disabled="!stepInputsFulfiled()"
+                x-show="activeStep == bundleData.steps.length"
+                x-ref="finishBtn">Finish</button>
+
+              {% comment %} Tooltip to indicate how many products a customer needs to select {% endcomment %}
+              <template x-if="activeStepData.stepType == 'PRODUCT'">
+                <div
+                  class="tooltip"
+                  x-show="activeStep == bundleData.steps.length && !stepInputsFulfiled()"
+                  x-text="`Please select between ${activeStepData.productInput?.minProductsOnStep} and ${activeStepData.productInput?.maxProductsOnStep} products`"></div>
+                </div>
+              </template> 
+            </div>
 
       </div>
     </template>
@@ -405,7 +440,7 @@
       //Check if the user can proceed to the next step
       stepInputsFulfiled(){
         const productsQuantity = getProductsOnStep(this.activeStep, this.stepInputs);
-        return productsQuantity >= this.activeStepData.productInput?.minProductsOnStep && productsQuantity <= this.activeStepData.productInput.maxProductsOnStep;
+        return productsQuantity >= this.activeStepData.productInput?.minProductsOnStep && productsQuantity <= this.activeStepData?.productInput.maxProductsOnStep;
       },
       
       //Add bundle to cart
@@ -449,4 +484,4 @@
 </script>
 
 {% comment %} Alpine.js import {% endcomment %}
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script src="{{ 'Alpine-3.14.1.js' | asset_url }}"></script>

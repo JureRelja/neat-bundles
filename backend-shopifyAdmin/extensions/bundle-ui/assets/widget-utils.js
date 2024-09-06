@@ -173,7 +173,6 @@ const getProductsOnStep = (activeStep, stepInputs) => {
   return stepInputs[activeStep - 1].products.reduce((acc, product) => {
     return acc + product.quantity;
   }, 0);
-  debugger;
 };
 
 //Function to get the total quantity of all products in the bundle
