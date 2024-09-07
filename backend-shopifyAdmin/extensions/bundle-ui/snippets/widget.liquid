@@ -42,9 +42,9 @@
                 @click="setActiveStep(step.stepNumber)"
                 x-show="step.stepNumber < reachedStep">
                 <div class="step-icon-container icon-color passed-step">
-                  <span x-text="step.stepNumber" class="icon-number passed-step"></span>
+                  <span x-text="step.stepNumber" class="icon-number passed-step "></span>
                 </div>
-                <span x-text="step.title" class="step-title"></span>
+                <span x-text="step.title" class="step-title" x-bind:class="activeStep < reachedStep ? 'active-step' : ''"></span>
               </div>
 
               {% comment %} Current step icon {% endcomment %}
@@ -55,7 +55,7 @@
                 <div class="step-icon-container icon-color">
                   <span x-text="step.stepNumber" class="icon-number"></span>
                 </div>
-                <span x-text="step.title" class="step-title active-step"></span>
+                <span x-text="step.title" class="step-title" x-bind:class="activeStep == reachedStep ? 'active-step' : ''"></span>
               </div>
 
               {% comment %} Inactive step icon {% endcomment %}
@@ -194,6 +194,7 @@
                           class="small-btn add-to-bundle-btn"
                           :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
                           @click="() => { addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs);
+                          document.body.classList.remove('modal-open');
                           showModal = false;}
                         ">
                           Add product</button>
@@ -266,11 +267,6 @@
 
           </div>
         </template>
-
-        {% comment %} Content step {% endcomment %}
-        <div x-show="activeStepData.stepType == 'CONTENT'" x-cloak>
-          <p>Content step</p>
-        </div>
 
         {% comment %} Step navigation {% endcomment %}
         <div class="nav-buttons" x-show="!stepLoading">
@@ -401,14 +397,14 @@
         this.stepLoading = true;
 
         //Get data for current step
-        this.activeStepData = await fetchActiveStepData(this.bundleData.id, this.activeStep);
+        this.activeStepData = await fetchActiveStepData(this.bundleId, this.activeStep, this.activeStepData);
 
         if (this.bundleData.steps[this.activeStep - 1].stepType == "PRODUCT") {
           this.fetchProductForStep();
         } else if (this.bundleData.steps[this.activeStep - 1].stepType == "CONTENT") {
           //Fetch content data
+          this.activeStepData 
         }
-
         this.stepLoading = false;
       },
 

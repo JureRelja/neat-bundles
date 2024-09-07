@@ -1,4 +1,5 @@
 const fetchActiveStepData = async (bundleId, activeStepNumber) => {
+  console.log(activeStepNumber);
   const data = await fetch(
     `${APP_URL}/bundleData/step?bundleId=${bundleId}&stepNum=${activeStepNumber}`,
     { mode: "cors" },
@@ -6,6 +7,7 @@ const fetchActiveStepData = async (bundleId, activeStepNumber) => {
     .then((response) => response.json())
     .then((data) => {
       if (data.ok) {
+        console.log(data.data[0]);
         return data.data[0];
       } else {
         console.log(data.message);

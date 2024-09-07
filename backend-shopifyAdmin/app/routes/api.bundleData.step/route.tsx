@@ -27,11 +27,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   //Cache aside
   const cacheKey = new ApiCacheKeyService(shop);
 
-  const cache = new ApiCacheService(
-    cacheKey.getStepKey(url.searchParams.get("bundleId")),
-  );
+  const cacheService = new ApiCacheService(cacheKey.getStepKey(stepNumber));
+  console.log("cacheService", cacheService);
 
-  const cacheData = await cache.readCache();
+  const cacheData = await cacheService.readCache();
+  console.log("cacheData", cacheData);
 
   if (cacheData) {
     return json(
@@ -79,7 +79,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       }
 
       //Write to cache
-      await cache.writeCache(bundleStep);
+      await cacheService.writeCache(bundleStep);
 
       return json(
         new JsonData(
