@@ -97,4 +97,18 @@ const finishAndAddBundleToCart = async (
   Shopify,
 ) => {
   console.log(stepInputs);
+
+  let formData = new FormData();
+
+  formData.append("customerInputs", JSON.stringify(stepInputs));
+
+  console.log(formData);
+
+  await fetch(`${APP_URL}/bundleData/addToCart?bundleId=${bundleId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+    body: formData,
+  });
 };
