@@ -44,7 +44,10 @@
                 <div class="step-icon-container icon-color passed-step">
                   <span x-text="step.stepNumber" class="icon-number passed-step "></span>
                 </div>
-                <span x-text="step.title" class="step-title" x-bind:class="activeStep < reachedStep ? 'active-step' : ''"></span>
+                <span
+                  x-text="step.title"
+                  class="step-title"
+                  x-bind:class="activeStep < reachedStep ? 'active-step' : ''"></span>
               </div>
 
               {% comment %} Current step icon {% endcomment %}
@@ -55,7 +58,10 @@
                 <div class="step-icon-container icon-color">
                   <span x-text="step.stepNumber" class="icon-number"></span>
                 </div>
-                <span x-text="step.title" class="step-title" x-bind:class="activeStep == reachedStep ? 'active-step' : ''"></span>
+                <span
+                  x-text="step.title"
+                  class="step-title"
+                  x-bind:class="activeStep == reachedStep ? 'active-step' : ''"></span>
               </div>
 
               {% comment %} Inactive step icon {% endcomment %}
@@ -126,7 +132,6 @@
                     <div
                       x-data="{showModal: false}"
                       class="product-action-btns-container"
-                    
                       x-show="!isProductInBundle(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep)">
                       <button class="small-btn view-product-btn" @click="() => {document.body.classList.add('modal-open'); showModal = true}">View product</button>
 
@@ -167,7 +172,7 @@
                             </div>
 
                             <h2 x-text="product.title"></h2>
-                              
+
                             {% comment %} Product variant selector {% endcomment %}
                             <div
                               x-data="{selectedOptions: product.variants[product.selectedVariantIndex].options.map(option => option)}"
@@ -190,20 +195,20 @@
                               <p class="product-variant-unavailable-text" x-text="!product.variants[product.selectedVariantIndex].available ? 'This product option is currenty unavailable.' : ''"></p>
                             </div>
 
-                          <button
-                          class="small-btn add-to-bundle-btn"
-                          :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
-                          @click="() => { addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs);
+                            <button
+                              class="small-btn add-to-bundle-btn"
+                              :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
+                              @click="() => { addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs);
                           document.body.classList.remove('modal-open');
                           showModal = false;}
                         ">
-                          Add product</button>
+                              Add product</button>
 
-                          <div class="product-description">
-                            <p x-html="product.description"></p>
-                          </div>
+                            <div class="product-description">
+                              <p x-html="product.description"></p>
+                            </div>
 
-                            
+
                           </div>
                         </div>
                       </div>
@@ -260,9 +265,80 @@
               </template>
             </div>
 
-             {% comment %} Content step {% endcomment %}
-            <div x-show="activeStepData.stepType == 'CONTENT'" x-cloak class="content-step-container">
-              <p>Content step</p>
+            {% comment %} Content step {% endcomment %}
+            <div
+              x-show="activeStepData.stepType == 'CONTENT'"
+              x-cloak
+              class="content-step-container">
+              <template x-for="contentInput in activeStepData.contentInputs">
+                <div class="content-input-containers">
+
+                  {% comment %} Content input of tpye 'TEXT' {% endcomment %}
+                  <div x-show="contentInput.inputType == 'TEXT'" class="content-input">
+                    <label x-text="contentInput.inputLabel" :for="`text-input-${contentInput.id}`"></label>
+                    <input
+                      x-bind:id="`text-input-${contentInput.id}`"
+                      type="text"
+                      :minlength="contentInput.required ? 1 : 0"
+                      :maxlength="contentInput.maxChars"
+                      x-model="contentInput.value"
+                      x-on:change="contentInputHandler($event, stepInputs, activeStep, contentInput.id)">
+                  </div>
+                  {% comment %} Content input of tpye 'NUMBER' {% endcomment %}
+                  <div x-show="contentInput.inputType == 'NUMBER'" class="content-input">
+                    <label x-text="contentInput.inputLabel" :for="`number-input-${contentInput.id}`"></label>
+                    <input
+                      x-bind:id="`number-input-${contentInput.id}`"
+                      type="number"
+                      :minlength="contentInput.required ? 1 : 0"
+                      :maxlength="contentInput.maxChars"
+                      x-model="contentInput.value"
+                      x-on:change="contentInputHandler($event, stepInputs, activeStep, contentInput.id)">
+                  </div>
+                  {% comment %} Content input of tpye 'IMAGE' {% endcomment %}
+                  <template x-if="contentInput.inputType == 'IMAGE'">
+                    <div class="content-input image-input">
+                      <p x-text="contentInput.inputLabel"></p>
+                      <label :for="`image-input-${contentInput.id}`">
+                        <svg
+                          x-show="contentInput.value == '' || !contentInput.value"
+                          width="50"
+                          height="50"
+                          viewBox="0 0 39 39"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path
+                            d="M6.32205 35.9346H31.8767C33.8929 35.9346 35.5273 34.3002 35.5273 32.284V6.72934C35.5273 4.71313 33.8929 3.07867 31.8767 3.07867H6.32205C4.30584 3.07867 2.67139 4.71313 2.67139 6.72934V32.284C2.67139 34.3002 4.30584 35.9346 6.32205 35.9346ZM6.32205 35.9346L26.4007 15.856L35.5273 24.9826M15.4487 13.118C15.4487 14.6301 14.2229 15.856 12.7107 15.856C11.1986 15.856 9.97271 14.6301 9.97271 13.118C9.97271 11.6058 11.1986 10.38 12.7107 10.38C14.2229 10.38 15.4487 11.6058 15.4487 13.118Z"
+                            stroke="#1E1E1E"
+                            stroke-width="4.00662"
+                            stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        </svg>
+
+                        <p x-show="contentInput.value == '' || !contentInput.value">Click here to select your image</p>
+
+                        <div
+                          :id="`preview-image-input-${contentInput.id}`"
+                          class="image-preview-container"
+                          x-show="contentInput.value && contentInput.value != ''"></div>
+
+                      </label>
+                      <input
+                        class="image-input-field"
+                        x-bind:id="`image-input-${contentInput.id}`"
+                        type="file"
+                        max="1"
+                        x-on:change="() => {
+                          if ($event.target.files.length == 0) return;
+                          contentInput.value = $el.value; newImageSelected($event, contentInput.id, stepInputs, activeStep)
+                          }"
+                        accept="image/*"
+                        placeholder="Enter text">
+                    </div>
+                  </template>
+
+                </div>
+              </template>
             </div>
 
           </div>
@@ -289,54 +365,54 @@
             </svg>
             Previous step</button>
 
-            <div class="next-step-btn-container">  
-              <button
-                class="nav-button next-step-btn"
-                @click="incrementStep"
-                x-bind:disabled="!stepInputsFulfiled()"
-                x-show="activeStep < bundleData.steps.length"
-                x-ref="nextStepBtn">Next step
+          <div class="next-step-btn-container">
+            <button
+              class="nav-button next-step-btn"
+              @click="incrementStep"
+              x-bind:disabled="!stepInputsFulfiled()"
+              x-show="activeStep < bundleData.steps.length"
+              x-ref="nextStepBtn">Next step
 
-                <svg
-                  width="11"
-                  height="8"
-                  viewBox="0 0 11 8"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M10.1667 4.00004H0.833374M10.1667 4.00004L7.50004 6.66671M10.1667 4.00004L7.50004 1.33337"
-                    stroke="white"
-                    stroke-width="1.33333"
-                    stroke-linecap="round"
-                    stroke-linejoin="round" />
-                </svg>
+              <svg
+                width="11"
+                height="8"
+                viewBox="0 0 11 8"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M10.1667 4.00004H0.833374M10.1667 4.00004L7.50004 6.66671M10.1667 4.00004L7.50004 1.33337"
+                  stroke="white"
+                  stroke-width="1.33333"
+                  stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
 
-              </button>
+            </button>
 
-              {% comment %} Tooltip to indicate how many products a customer needs to select {% endcomment %}
-              <template x-if="activeStepData.stepType == 'PRODUCT'">
-                <div
-                  class="tooltip"
-                  x-show="!stepInputsFulfiled()"
-                  x-text="`Please select between ${activeStepData.productInput?.minProductsOnStep} and ${activeStepData.productInput?.maxProductsOnStep} products`"></div>
-              </template> 
+            {% comment %} Tooltip to indicate how many products a customer needs to select {% endcomment %}
+            <template x-if="activeStepData.stepType == 'PRODUCT'">
+              <div
+                class="tooltip"
+                x-show="!stepInputsFulfiled()"
+                x-text="`Please select between ${activeStepData.productInput?.minProductsOnStep} and ${activeStepData.productInput?.maxProductsOnStep} products`"></div>
+            </template>
 
-              <button
-                class="nav-button add-to-cart-btn"
-                @click="addBundleToCart"
-                x-bind:disabled="!stepInputsFulfiled()"
-                x-show="activeStep == bundleData.steps.length"
-                x-ref="finishBtn">Finish</button>
+            <button
+              class="nav-button add-to-cart-btn"
+              @click="addBundleToCart()"
+              x-bind:disabled="!stepInputsFulfiled()"
+              x-show="activeStep == bundleData.steps.length"
+              x-ref="finishBtn">Finish</button>
 
-              {% comment %} Tooltip to indicate how many products a customer needs to select {% endcomment %}
-              <template x-if="activeStepData.stepType == 'PRODUCT'">
-                <div
-                  class="tooltip"
-                  x-show="activeStep == bundleData.steps.length && !stepInputsFulfiled()"
-                  x-text="`Please select between ${activeStepData.productInput?.minProductsOnStep} and ${activeStepData.productInput?.maxProductsOnStep} products`"></div>
-                </div>
-              </template> 
-            </div>
+            {% comment %} Tooltip to indicate how many products a customer needs to select {% endcomment %}
+            <template x-if="activeStepData.stepType == 'PRODUCT'">
+              <div
+                class="tooltip"
+                x-show="activeStep == bundleData.steps.length && !stepInputsFulfiled()"
+                x-text="`Please select between ${activeStepData.productInput?.minProductsOnStep} and ${activeStepData.productInput?.maxProductsOnStep} products`"></div>
+            </template>
+          </div>
+        </div>
 
       </div>
     </template>
@@ -435,8 +511,22 @@
 
       //Check if the user can proceed to the next step
       stepInputsFulfiled(){
-        const productsQuantity = getProductsOnStep(this.activeStep, this.stepInputs);
-        return productsQuantity >= this.activeStepData.productInput?.minProductsOnStep && productsQuantity <= this.activeStepData?.productInput.maxProductsOnStep;
+        if (!this.activeStepData) return false;
+
+        //Check if the user has selected the required amount of products
+        if (this.activeStepData.stepType == 'PRODUCT') {
+          const productsQuantity = getProductsOnStep(this.activeStep, this.stepInputs);
+          return productsQuantity >= this.activeStepData.productInput?.minProductsOnStep && productsQuantity <= this.activeStepData?.productInput.maxProductsOnStep;
+        }
+        //Check if all content inputs are filled or not (depending if the fields are required)
+        else if (this.activeStepData.stepType == 'CONTENT') {
+          if (!this.activeStepData.contentInputs || this.activeStepData.contentInputs.length == 0) return false;
+
+          for (let i = 0; i < this.activeStepData.contentInputs.length; i++) {
+            if (this.activeStepData.contentInputs[i].required && (this.activeStepData.contentInputs[i].value == '' || !this.activeStepData.contentInputs[i].value)) return false;
+          }
+          return true;
+        }
       },
       
       //Add bundle to cart
@@ -444,6 +534,16 @@
         finishAndAddBundleToCart(this.stepInputs, this.bundleId, this.shopDomain, window.Shopify);
       },
 
+      //Handle content input change
+      newImageSelected(event, contentInputId, stepInputs, activeStep){
+        createImagePreview(event); 
+        this.contentInputHandler(event, stepInputs, activeStep, contentInputId);
+      },
+
+      //Handle content input change
+      contentInputHandler(event, stepInputs, activeStep, contentInputId){
+        handleContentInput(event, stepInputs, activeStep, contentInputId);
+      },
 
       // Set active step
       setActiveStep(stepNumber){

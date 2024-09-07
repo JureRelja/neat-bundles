@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://elsewhere-recognition-overview-byte.trycloudflare.com"
+application_url = "https://easter-enterprise-nil-lance.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://elsewhere-recognition-overview-byte.trycloudflare.com/auth/callback",
-  "https://elsewhere-recognition-overview-byte.trycloudflare.com/auth/shopify/callback",
-  "https://elsewhere-recognition-overview-byte.trycloudflare.com/api/auth/callback"
+  "https://easter-enterprise-nil-lance.trycloudflare.com/auth/callback",
+  "https://easter-enterprise-nil-lance.trycloudflare.com/auth/shopify/callback",
+  "https://easter-enterprise-nil-lance.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-07"
 
 [app_proxy]
-url = "https://elsewhere-recognition-overview-byte.trycloudflare.com"
+url = "https://easter-enterprise-nil-lance.trycloudflare.com"
 subpath = "nb"
 prefix = "apps"
 

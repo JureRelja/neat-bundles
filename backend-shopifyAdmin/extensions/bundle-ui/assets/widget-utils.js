@@ -198,3 +198,108 @@ const isProductInBundle = (productId, stepInputs, activeStep) => {
     )
   );
 };
+
+//Function to add imput value to bundle storage
+const handleContentInput = (
+  event,
+  stepInputs,
+  activeStepNumber,
+  contentInputId,
+) => {
+  console.log(event.target.files ? event.target.files[0] : event.target.value);
+  //If there are no inputs started yet
+  if (stepInputs.length == 0) {
+    stepInputs.push({
+      stepNumber: activeStepNumber,
+      content: [
+        {
+          id: contentInputId,
+          value: event.target.files
+            ? event.target.files[0]
+            : event.target.value,
+        },
+      ],
+    });
+  } else {
+    //Inputs already started
+    //Finding the step in the stepInputs array
+    const stepInput = stepInputs.find((step) => {
+      return step.stepNumber == activeStepNumber;
+    });
+
+    //If there is already an input started on this step
+    if (stepInput) {
+      const contentInputIndex = stepInput.content.findIndex((content) => {
+        return content.id == contentInputId;
+      });
+
+      //If there is already an input with the same id
+      if (contentInputIndex != -1) {
+        stepInput.content[contentInputIndex] = {
+          ...stepInput.content[contentInputIndex],
+          value: event.target.files
+            ? event.target.files[0]
+            : event.target.value,
+        };
+      }
+      //No input with the same id
+      else {
+        stepInput.content.push({
+          id: contentInputId,
+          value: event.target.files
+            ? event.target.files[0]
+            : event.target.value,
+        });
+      }
+    }
+    //Nothing added to the step yet
+    else {
+      stepInputs.push({
+        stepNumber: activeStepNumber,
+        content: [
+          {
+            id: contentInputId,
+            value: event.target.files
+              ? event.target.files[0]
+              : event.target.value,
+          },
+        ],
+      });
+    }
+  }
+};
+
+//Function for creating a preview of the selected images
+const createImagePreview = (event) => {
+  let files = event.target.files;
+  let preview = document.getElementById(`preview-${event.target.id}`);
+
+  // Clear any existing content
+  preview.innerHTML = "";
+
+  let file = files[0];
+
+  // Only process image files
+  if (!file.type.match("image.*")) {
+    return;
+  }
+
+  let imgContainer = document.createElement("div");
+
+  let img = document.createElement("img");
+  img.src = URL.createObjectURL(file);
+  img.style.width = "200px";
+  img.style.maxHeight = "180px";
+  img.style.display = "block"; // Ensure the image is displayed in a block to put it on a new line
+
+  var changeImageText = document.createElement("p");
+  changeImageText.textContent = `Click to change image`;
+  changeImageText.style.fontSize = "14px";
+  changeImageText.style.marginTop = "5";
+
+  imgContainer.appendChild(img);
+  imgContainer.appendChild(changeImageText);
+
+  // Append the image to the preview div
+  preview.appendChild(imgContainer);
+};

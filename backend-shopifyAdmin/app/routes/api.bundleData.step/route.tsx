@@ -28,10 +28,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const cacheKey = new ApiCacheKeyService(shop);
 
   const cacheService = new ApiCacheService(cacheKey.getStepKey(stepNumber));
-  console.log("cacheService", cacheService);
 
   const cacheData = await cacheService.readCache();
-  console.log("cacheData", cacheData);
 
   if (cacheData) {
     return json(
