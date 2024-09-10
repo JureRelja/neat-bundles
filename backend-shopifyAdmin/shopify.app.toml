@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://posters-antivirus-today-commissions.trycloudflare.com"
+application_url = "https://yo-amount-pending-earned.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://posters-antivirus-today-commissions.trycloudflare.com/auth/callback",
-  "https://posters-antivirus-today-commissions.trycloudflare.com/auth/shopify/callback",
-  "https://posters-antivirus-today-commissions.trycloudflare.com/api/auth/callback"
+  "https://yo-amount-pending-earned.trycloudflare.com/auth/callback",
+  "https://yo-amount-pending-earned.trycloudflare.com/auth/shopify/callback",
+  "https://yo-amount-pending-earned.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-07"
 
 [app_proxy]
-url = "https://posters-antivirus-today-commissions.trycloudflare.com"
+url = "https://yo-amount-pending-earned.trycloudflare.com"
 subpath = "nb"
 prefix = "apps"
 

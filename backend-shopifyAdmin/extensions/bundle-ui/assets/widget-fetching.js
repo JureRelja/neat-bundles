@@ -96,19 +96,32 @@ const finishAndAddBundleToCart = async (
   shopDomain,
   Shopify,
 ) => {
-  console.log(stepInputs);
-
   let formData = new FormData();
 
-  formData.append("customerInputs", JSON.stringify(stepInputs));
+  //Adding files to formData
+  stepInputs.forEach((stepInput) => {
+    if (stepInput.content && stepInput.content.length != 0) {
+      stepInput.content.forEach((content) => {
+        if (content.type == "file") {
+          const file = document.getElementById(`image-input-${content.id}`);
+
+          formData.append(content.id, content.value);
+          content.value = null;
+        }
+      });
+    }
+  });
+
+  //Adding products to formData
+  formData.append("stepInputs", JSON.stringify(stepInputs));
 
   console.log(formData);
 
-  await fetch(`${APP_URL}/bundleData/addToCart?bundleId=${bundleId}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "multipart/form-data",
+  await fetch(
+    `${APP_URL}/bundleData/addToCart?bundleId=${bundleId}&shop=${shopDomain}`,
+    {
+      method: "POST",
+      body: formData,
     },
-    body: formData,
-  });
+  );
 };

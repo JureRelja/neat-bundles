@@ -206,7 +206,6 @@ const handleContentInput = (
   activeStepNumber,
   contentInputId,
 ) => {
-  console.log(event.target.files ? event.target.files[0] : event.target.value);
   //If there are no inputs started yet
   if (stepInputs.length == 0) {
     stepInputs.push({
@@ -214,6 +213,7 @@ const handleContentInput = (
       content: [
         {
           id: contentInputId,
+          type: event.target.type,
           value: event.target.files
             ? event.target.files[0]
             : event.target.value,
@@ -246,6 +246,7 @@ const handleContentInput = (
       else {
         stepInput.content.push({
           id: contentInputId,
+          type: event.target.type,
           value: event.target.files
             ? event.target.files[0]
             : event.target.value,
@@ -259,6 +260,7 @@ const handleContentInput = (
         content: [
           {
             id: contentInputId,
+            type: event.target.type,
             value: event.target.files
               ? event.target.files[0]
               : event.target.value,
