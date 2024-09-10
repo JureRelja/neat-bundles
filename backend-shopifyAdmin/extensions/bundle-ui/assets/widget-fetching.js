@@ -103,17 +103,15 @@ const finishAndAddBundleToCart = async (
     if (stepInput.content && stepInput.content.length != 0) {
       stepInput.content.forEach((content) => {
         if (content.type == "file") {
-          const file = document.getElementById(`image-input-${content.id}`);
-
-          formData.append(content.id, content.value);
-          content.value = null;
+          formData.append("files", content.value);
+          content.value = content.value.name;
         }
       });
     }
   });
 
   //Adding products to formData
-  formData.append("stepInputs", JSON.stringify(stepInputs));
+  formData.append("customerInputs", JSON.stringify(stepInputs));
 
   console.log(formData);
 
