@@ -463,7 +463,7 @@
       bundleData: {}, // Bundle settings data
 
       //Current bundle selects and inputs 
-      stepInputs: [], //Inputs on steps in format [{stepNumber: 1, products: [{id: id, quantity: quantity}]}, {stepNumber: 2, content: [{type: text, value: value}]}]
+      stepInputs: [], //Inputs on steps in format [{stepNumber: 1, stepType: "PRODUCT", inputs: [{id: id, quantity: quantity}]}, {stepNumber: 2, stepType: "CONTENT" inputs: [{type: text, value: value}]}]
       reachedStep: 1, // Farthes step reached by the user
       activeStep: 1, // Current active step
       activeStepData: {}, // Current active step data

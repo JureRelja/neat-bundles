@@ -95,13 +95,13 @@ const addProductToBundle = (
   //If there are already inputs started on this step
   if (thisStepIndex != -1) {
     //Checking if the product is already added on this step
-    const productAlreadyAdded = stepInputs[thisStepIndex].products.find(
+    const productAlreadyAdded = stepInputs[thisStepIndex].inputs.find(
       (product) => product.id == productId,
     );
 
     //If the product is not already added on this step
     if (!productAlreadyAdded) {
-      stepInputs[thisStepIndex].products.push({
+      stepInputs[thisStepIndex].inputs.push({
         id: productId,
         quantity: 1,
       });
@@ -114,7 +114,8 @@ const addProductToBundle = (
   } else {
     stepInputs.push({
       stepNumber: activeStepNumber,
-      products: [{ id: productId, quantity: 1 }],
+      stepType: "PRODUCT",
+      inputs: [{ id: productId, quantity: 1 }],
     });
   }
 };
@@ -128,7 +129,7 @@ const removeProductFromBundle = (productId, activeStepNumber, stepInputs) => {
   if (thisStepIndex == -1) return;
 
   //Checking if the product is already added on this step
-  const productInBundle = stepInputs[thisStepIndex].products.find(
+  const productInBundle = stepInputs[thisStepIndex].inputs.find(
     (product) => product.id == productId,
   );
 
@@ -139,9 +140,9 @@ const removeProductFromBundle = (productId, activeStepNumber, stepInputs) => {
     productInBundle.quantity--;
     //If the product quantity is 1
   } else {
-    stepInputs[thisStepIndex].products = stepInputs[
-      thisStepIndex
-    ].products.filter((product) => product.id != productId);
+    stepInputs[thisStepIndex].inputs = stepInputs[thisStepIndex].inputs.filter(
+      (product) => product.id != productId,
+    );
   }
 };
 
@@ -157,7 +158,7 @@ const getProductQuantityInBundle = (
 
   if (thisStepIndex == -1) return 0;
 
-  const productInBundle = stepInputs[thisStepIndex].products.find(
+  const productInBundle = stepInputs[thisStepIndex].inputs.find(
     (product) => product.id == productId,
   );
 
@@ -167,10 +168,10 @@ const getProductQuantityInBundle = (
 };
 
 const getProductsOnStep = (activeStep, stepInputs) => {
-  if (!stepInputs[activeStep - 1] || !stepInputs[activeStep - 1].products)
+  if (!stepInputs[activeStep - 1] || !stepInputs[activeStep - 1].inputs)
     return 0;
 
-  return stepInputs[activeStep - 1].products.reduce((acc, product) => {
+  return stepInputs[activeStep - 1].inputs.reduce((acc, product) => {
     return acc + product.quantity;
   }, 0);
 };
@@ -178,11 +179,11 @@ const getProductsOnStep = (activeStep, stepInputs) => {
 //Function to get the total quantity of all products in the bundle
 const getTotalProductsInBundle = (stepInputs) => {
   return stepInputs.reduce((stepAcc, step) => {
-    if (!step.products) return stepAcc;
+    if (!step.inputs) return stepAcc;
 
     return (
       stepAcc +
-      step.products.reduce((productAcc, product) => {
+      step.inputs.reduce((productAcc, product) => {
         return productAcc + product.quantity;
       }, 0)
     );
@@ -193,7 +194,7 @@ const getTotalProductsInBundle = (stepInputs) => {
 const isProductInBundle = (productId, stepInputs, activeStep) => {
   return (
     stepInputs[activeStep - 1] &&
-    stepInputs[activeStep - 1].products.some(
+    stepInputs[activeStep - 1].inputs.some(
       (p) => p.id == productId && p.quantity > 0,
     )
   );
@@ -210,7 +211,8 @@ const handleContentInput = (
   if (stepInputs.length == 0) {
     stepInputs.push({
       stepNumber: activeStepNumber,
-      content: [
+      stepType: "CONTENT",
+      inputs: [
         {
           id: contentInputId,
           type: event.target.type,
@@ -229,14 +231,14 @@ const handleContentInput = (
 
     //If there is already an input started on this step
     if (stepInput) {
-      const contentInputIndex = stepInput.content.findIndex((content) => {
+      const contentInputIndex = stepInput.inputs.findIndex((content) => {
         return content.id == contentInputId;
       });
 
       //If there is already an input with the same id
       if (contentInputIndex != -1) {
-        stepInput.content[contentInputIndex] = {
-          ...stepInput.content[contentInputIndex],
+        stepInput.inputs[contentInputIndex] = {
+          ...stepInput.inputs[contentInputIndex],
           value: event.target.files
             ? event.target.files[0]
             : event.target.value,
@@ -244,7 +246,7 @@ const handleContentInput = (
       }
       //No input with the same id
       else {
-        stepInput.content.push({
+        stepInput.inputs.push({
           id: contentInputId,
           type: event.target.type,
           value: event.target.files
@@ -257,7 +259,8 @@ const handleContentInput = (
     else {
       stepInputs.push({
         stepNumber: activeStepNumber,
-        content: [
+        stepType: "CONTENT",
+        inputs: [
           {
             id: contentInputId,
             type: event.target.type,

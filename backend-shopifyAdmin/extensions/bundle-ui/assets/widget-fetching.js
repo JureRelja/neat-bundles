@@ -100,8 +100,13 @@ const finishAndAddBundleToCart = async (
 
   //Adding files to formData
   stepInputs.forEach((stepInput) => {
-    if (stepInput.content && stepInput.content.length != 0) {
-      stepInput.content.forEach((content) => {
+    if (
+      stepInput.inputs &&
+      stepInput.inputs.length != 0 &&
+      stepInput.stepType == "CONTENT"
+    ) {
+      //Adding files to formData
+      stepInput.inputs.forEach((content) => {
         if (content.type == "file") {
           formData.append("files", content.value);
           content.value = content.value.name;
@@ -111,15 +116,25 @@ const finishAndAddBundleToCart = async (
   });
 
   //Adding products to formData
+  console.log(stepInputs);
   formData.append("customerInputs", JSON.stringify(stepInputs));
 
-  console.log(formData);
-
-  await fetch(
+  const response = await fetch(
     `${APP_URL}/bundleData/addToCart?bundleId=${bundleId}&shop=${shopDomain}`,
     {
       method: "POST",
       body: formData,
     },
   );
+
+  const data = await response.json();
+
+  if (data.ok) {
+    window.location.href = Shopify.routes.cart_url;
+  } else {
+    console.log(data.message);
+    alert(
+      "There was an error with adding the bundle to the cart. Try refreshing the page.",
+    );
+  }
 };
