@@ -20,7 +20,7 @@ export class ShopifyProductVariantService {
             `#graphql
             query getProductVariantPrice($productId: ID!) {
                 productVariant(id: $productId) {
-                amount
+                    price
                 }
             }`,
             {
@@ -32,22 +32,22 @@ export class ShopifyProductVariantService {
 
         const data = await response.json();
 
-        return data.data.productVariant.amount;
+        return data.data.productVariant.price;
     }
 
     //Create a new product variant
     public async createProductVariant(createdBundleId: number, shopifyProductId: string, compareAtPrice: number, price: number): Promise<string> {
         const response = await this.admin.graphql(
             `#graphql
-            mutation createProductVariant($productId: ID!, $variants: [ProductVariantInput!]!) {
-            productVariantsBulkCreate(productId: $productId, variants: $variants) {
-                productVariants {
-                    id
-                }
-                userErrors {
-                    field
-                    message
-                }
+            mutation createProductVariant($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+                productVariantsBulkCreate(productId: $productId, variants: $variants) {
+                    productVariants {
+                        id
+                    }
+                    userErrors {
+                        field
+                        message
+                    }
             }
             }`,
             {
@@ -102,7 +102,9 @@ export class ShopifyProductVariantService {
                     input: [
                         {
                             parentProductVariantId: variantId,
-                            productVariantRelationshipsToCreate: addedProductVariants,
+                            productVariantRelationshipsToCreate: addedProductVariants.map((addedProductVariant) => {
+                                return { id: addedProductVariant.productVariant, quantity: addedProductVariant.quantity };
+                            }),
                         },
                     ],
                 },
@@ -111,7 +113,7 @@ export class ShopifyProductVariantService {
 
         const data = await response.json();
 
-        if (data.data.userErrors.length > 0) {
+        if (data.data.productVariantRelationshipBulkUpdate.userErrors.length && data.data.productVariantRelationshipBulkUpdate.userErrors.length > 0) {
             return false;
         }
 
