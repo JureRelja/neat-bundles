@@ -10,6 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+//Admin side storage
 model User {
   id            Int      @id @default(autoincrement())
   ownerName     String   @default("")
@@ -35,6 +36,7 @@ model Bundle {
   bundleSettings   BundleSettings?
   storeUrl         String
   user             User               @relation(fields: [storeUrl], references: [storeUrl], onDelete: Cascade)
+  createdBundles   createdBundle[]
 }
 
 //Step models
@@ -62,7 +64,7 @@ model ProductInput {
 }
 
 model Product {
-  shopifyProductId     String       @id //GraphQL GID format
+  shopifyProductId     String         @id //GraphQL GID format
   productInput         ProductInput[]
   shopifyProductHandle String
 }
@@ -140,4 +142,33 @@ model BundleLabels {
   nextStepBtn      String         @default("Next step")
   prevStepBtn      String         @default("Previous step")
   viewProductBtn   String         @default("View product")
+}
+
+//Customer side storage
+
+model createdBundle {
+  id                   Int                   @id @default(autoincrement())
+  bundle               Bundle                @relation(fields: [bundleId], references: [id])
+  bundleId             Int
+  addedProductVariants AddedProductVariant[] //List of variants in GraphQL GID format
+  addedContent         AddedContent[]
+  finalPrice           Float
+  discountAmount       Float //Discount amount is the same currency as final total price
+  createdAt            DateTime              @default(now())
+}
+
+model AddedProductVariant {
+  id              Int           @id @default(autoincrement())
+  productVariant  String //GraphQL GID format
+  quantity        Int
+  createdBundle   createdBundle @relation(fields: [createdBundleId], references: [id], onDelete: Cascade)
+  createdBundleId Int
+}
+
+model AddedContent {
+  id              Int           @id @default(autoincrement())
+  contentType     InputType
+  contentValue    String
+  createdBundle   createdBundle @relation(fields: [createdBundleId], references: [id], onDelete: Cascade)
+  createdBundleId Int
 }

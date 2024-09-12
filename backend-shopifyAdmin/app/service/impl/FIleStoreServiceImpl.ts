@@ -10,20 +10,25 @@ export class FileStoreServiceImpl implements FileStoreService {
     // Implementation
   }
 
-  public async uploadMultipleFiles(files: File[]): Promise<string[]> {
-    const fileUrls: string[] = [];
-    files.forEach(async (file) => {
-      const fileId = await this.uploadFile(file);
+  public async uploadFile(
+    fileName: string,
+    files: File | File[],
+  ): Promise<string> {
+    //File for upload
+    let fileToUpload: File;
 
-      fileUrls.push(`${process.env.BUCKET_URL}/${fileId}`);
-    });
-    return fileUrls;
-  }
+    //Check if the file is an array or a single file
+    if (!Array.isArray(files)) {
+      fileToUpload = files as File;
+    } else {
+      fileToUpload = files.find((file) => {
+        return file.name === fileName;
+      }) as File;
+    }
 
-  public async uploadFile(file: File): Promise<string> {
-    const fileId = file.name + Date.now();
+    const fileId = Date.now() + fileName;
 
-    const fileContent = await file.text();
+    const fileContent = await fileToUpload.text();
 
     try {
       await storage.bucket(bucket).file(fileId).save(fileContent);
@@ -33,6 +38,7 @@ export class FileStoreServiceImpl implements FileStoreService {
 
     return `${process.env.BUCKET_URL}/${fileId}`;
   }
+
   public async getFile(fileUrl: string): Promise<File | null> {
     // Implementation
 
