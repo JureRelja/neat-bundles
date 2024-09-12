@@ -1,4 +1,4 @@
 export interface ProductDto {
-  id: number;
+  id: number | string;
   quantity: number;
 }

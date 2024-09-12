@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://totals-pda-our-stopping.trycloudflare.com"
+application_url = "https://lottery-computing-sections-pack.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://totals-pda-our-stopping.trycloudflare.com/auth/callback",
-  "https://totals-pda-our-stopping.trycloudflare.com/auth/shopify/callback",
-  "https://totals-pda-our-stopping.trycloudflare.com/api/auth/callback"
+  "https://lottery-computing-sections-pack.trycloudflare.com/auth/callback",
+  "https://lottery-computing-sections-pack.trycloudflare.com/auth/shopify/callback",
+  "https://lottery-computing-sections-pack.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-07"
 
 [app_proxy]
-url = "https://totals-pda-our-stopping.trycloudflare.com"
+url = "https://lottery-computing-sections-pack.trycloudflare.com"
 subpath = "nb"
 prefix = "apps"
 

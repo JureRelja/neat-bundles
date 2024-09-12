@@ -109,6 +109,7 @@ const finishAndAddBundleToCart = async (
       stepInput.inputs.forEach((content) => {
         if (content.type == "file") {
           formData.append("files", content.value);
+          formData.append("files", content.value);
           content.value = content.value.name;
         }
       });
@@ -130,7 +131,6 @@ const finishAndAddBundleToCart = async (
   const data = await response.json();
 
   if (data.ok) {
-    window.location.href = Shopify.routes.cart_url;
   } else {
     console.log(data.message);
     alert(

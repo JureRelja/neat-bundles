@@ -1,16 +1,39 @@
-import multer from "multer";
 import { FileStoreService } from "../FileStoreService";
+import { Storage } from "@google-cloud/storage";
+
+const storage = new Storage();
+
+const bucket = process.env.BUCKET_NAME as string;
 
 export class FileStoreServiceImpl implements FileStoreService {
   constructor() {
     // Implementation
   }
 
-  public uploadFile(file: File): string {
-    // Implementation
-    return "";
+  public async uploadMultipleFiles(files: File[]): Promise<string[]> {
+    const fileUrls: string[] = [];
+    files.forEach(async (file) => {
+      const fileId = await this.uploadFile(file);
+
+      fileUrls.push(`${process.env.BUCKET_URL}/${fileId}`);
+    });
+    return fileUrls;
   }
-  public getFile(fileUrl: string): File | null {
+
+  public async uploadFile(file: File): Promise<string> {
+    const fileId = file.name + Date.now();
+
+    const fileContent = await file.text();
+
+    try {
+      await storage.bucket(bucket).file(fileId).save(fileContent);
+    } catch (error) {
+      console.log(error);
+    }
+
+    return `${process.env.BUCKET_URL}/${fileId}`;
+  }
+  public async getFile(fileUrl: string): Promise<File | null> {
     // Implementation
 
     return null;
