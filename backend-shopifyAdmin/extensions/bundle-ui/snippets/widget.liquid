@@ -460,6 +460,7 @@
 
       initialLoading: true, // Loading state
       stepLoading: true, // Step loading state
+      finalLoading: false, // Final loading state
       bundleData: {}, // Bundle settings data
 
       //Current bundle selects and inputs 
@@ -531,8 +532,12 @@
       },
       
       //Add bundle to cart
-      addBundleToCart(){
-        finishAndAddBundleToCart(this.stepInputs, this.bundleId, this.shopDomain, window.Shopify);
+      async addBundleToCart(){
+        this.finalLoading = true;
+
+        await finishAndAddBundleToCart(this.stepInputs, this.bundleId, this.shopDomain, window.Shopify);
+
+        this.finalLoading = false;
       },
 
       //Handle content input change

@@ -13,6 +13,7 @@ import { unauthenticated } from '~/shopify.server';
 import { CreatedBundleRepository } from '~/repository/CreatedBundleRepository';
 import { CustomerInputService } from '../../service/impl/CustomerInputService';
 import { BundlePriceCalculationService } from '~/service/impl/BundlePriceCalculationService';
+import { ShopifyProductVariantService } from '~/service/impl/ShopifyProductVariantService';
 
 export const action = async ({ request }: ActionFunctionArgs) => {
     const res = await checkPublicAuth(request); //Public auth check
@@ -159,52 +160,37 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             });
         }
 
-        //Get the admin client
-        const { admin } = await unauthenticated.admin(shop);
+        const productVariantService = await ShopifyProductVariantService.build(shop);
 
         //Extract the data from the customer inputs
-        const { addedProductVariants, totalProductPrice } = new CustomerInputService().extractDataFromCustomerInputs(customerInputs, bundle, admin);
+        const { addedProductVariants, totalProductPrice } = new CustomerInputService().extractDataFromCustomerInputs(customerInputs, bundle, productVariantService);
 
         //Get the final bundle prices
         const { bundlePrice, bundleCompareAtPrice } = new BundlePriceCalculationService().getFinalBundlePrices(bundle, totalProductPrice);
 
         //Store the created bundle in the database
-        const newCreatedBundleId = new CreatedBundleRepository().createCreatedBundle(bundle.id, bundlePrice, bundleCompareAtPrice - bundlePrice, addedProductVariants);
+        const newCreatedBundleId = await new CreatedBundleRepository().createCreatedBundle(bundle.id, bundlePrice, bundleCompareAtPrice - bundlePrice, addedProductVariants);
 
         //Create a new dummy product variant with the bundle data and return the variant id
-        const response = await admin.graphql(
-            `#graphql
-            mutation createProductVariant($productId: ID!, $variants: [ProductVariantInput!]!) {
-              productVariantsBulkCreate(productId: $productId, variants: $variants) {
-                productVariants {
-                  id
-                }
-                userErrors {
-                  field
-                  message
-                }
-              }
-            }`,
-            {
-                variables: {
-                    productId: bundle.shopifyProductId,
-                    variants: [
-                        {
-                            compareAtPrice: bundleCompareAtPrice,
-                            price: bundlePrice,
-                            optionValues: [
-                                {
-                                    optionName: 'Title',
-                                    name: newCreatedBundleId,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-        );
+        const newVariantId = await productVariantService.createProductVariant(newCreatedBundleId, bundle.shopifyProductId, bundleCompareAtPrice, bundlePrice);
 
-        // Implementation
+        const success = await productVariantService.updateProductVariantRelationship(newVariantId, addedProductVariants);
+
+        if (!success) {
+            return json(new JsonData(false, 'error', 'Error while adding the bundle to the cart.', []), {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                },
+                status: 200,
+            });
+        }
+
+        return json(new JsonData(true, 'success', 'Bundle succesfuly added to cart.', [], newVariantId), {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+            },
+            status: 200,
+        });
     } catch (error) {
         console.log(error);
 
@@ -217,11 +203,4 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             });
         }
     }
-
-    return json(new JsonData(true, 'success', 'Bundle succesfuly added to cart.', []), {
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-        },
-        status: 200,
-    });
 };
