@@ -576,7 +576,7 @@ export default function Index() {
                                                         labelHidden
                                                         autoComplete="off"
                                                         name="bundleTitle"
-                                                        helpText="Only store staff can see this."
+                                                        helpText="This title will be displayed to your customers on bundle page, in checkout and in cart."
                                                         error={errors?.find((err: error) => err.fieldId === 'bundleTitle')?.message}
                                                         value={bundleState.title}
                                                         onChange={(newTitile) => {

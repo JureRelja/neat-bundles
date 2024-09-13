@@ -60,7 +60,7 @@ export class ShopifyProductVariantService {
                             optionValues: [
                                 {
                                     optionName: 'Title',
-                                    name: `${bundleTitle} - #${createdBundleId}`,
+                                    name: `Bundle #${createdBundleId}`,
                                 },
                             ],
                         },

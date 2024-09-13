@@ -97,20 +97,24 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
         body: formData,
     });
 
-    const data = await response.json();
+    const result = await response.json();
 
-    if (data.ok) {
-        const bundleVariantId = data.data; //Sopify GraphQl ID of the bundle variant
+    if (result.ok) {
+        const bundleVariantForCart = result.data;
 
-        //Turn bundle variant ID into Shopify REST API ID
-        const bundleVariantIdArray = bundleVariantId.split('/');
-        const bundleVariantIdShopify = bundleVariantIdArray[bundleVariantIdArray.length - 1];
+        console.log(bundleVariantForCart);
+
+        localStorage.setItem('bundleVariantForCart', JSON.stringify(bundleVariantForCart.lineItemProperties));
+
+        const bundleProperties = bundleVariantForCart.lineItemProperties;
 
         let formData = {
             items: [
                 {
-                    id: bundleVariantIdShopify,
+                    id: bundleVariantForCart.bundleId,
                     quantity: 1,
+                    //prettier-ignore
+                    properties: bundleProperties,
                 },
             ],
         };
@@ -135,4 +139,44 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
         console.log(data.message);
         alert('There was an error with adding the bundle to the cart. Try refreshing the page.');
     }
+};
+
+const testLineFunc = async (Shopify) => {
+    let formData = {
+        items: [
+            {
+                id: 50395254653246,
+                quantity: 1,
+                //prettier-ignore
+                properties: {
+                    "- :-----Bundle Content-----": "-",
+
+                    "Step #1 - Image url": "https://cdn.shopify.com/s/files/1/0533/2089/5889/products/1_2000x.jpg?v=1629780000",
+                    "Step #1 - Text": "Text",
+                    "- :-----------------": '-',
+
+                    "Step #2 - Image url": "Url",
+                    "Step #2 - Text": "Text",
+                    "- :------------------": '-',
+                },
+            },
+        ],
+    };
+    await fetch(Shopify.routes.root + 'cart/add.js', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+    })
+        .then((response) => {
+            const data = response.json();
+
+            if (!data.message) {
+                console.log('success');
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
 };

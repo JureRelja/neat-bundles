@@ -14,6 +14,8 @@ import { CreatedBundleRepository } from '~/repository/CreatedBundleRepository';
 import { CustomerInputService } from '../../service/impl/CustomerInputService';
 import { BundlePriceCalculationService } from '~/service/impl/BundlePriceCalculationService';
 import { ShopifyProductVariantService } from '~/service/impl/ShopifyProductVariantService';
+import { BundleVariantForCartDto } from '~/dto/BundleVariantForCartDto';
+import { AddedContentItemDto } from '~/dto/AddedContentItemDto';
 
 export const action = async ({ request }: ActionFunctionArgs) => {
     const res = await checkPublicAuth(request); //Public auth check
@@ -169,12 +171,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
         //Store the created bundle in the database
         const discountAmount = bundleCompareAtPrice - bundlePrice;
+
         const newCreatedBundleId = await CreatedBundleRepository.createCreatedBundle(bundle.id, bundlePrice, discountAmount, addedProductVariants, addedContent);
 
         //Create a new dummy product variant with the bundle data and return the variant id
         const newVariantId = await productVariantService.createProductVariant(newCreatedBundleId, bundle.title, bundle.shopifyProductId, bundleCompareAtPrice, bundlePrice);
 
+        //Link the addedProductVariants to the new bundle variant
         const success = await productVariantService.updateProductVariantRelationship(newVariantId, addedProductVariants);
+
+        //Create the bundle variant for the cart
+        //This variant includes the variant id and the list of added content inputs
+        const bundleVariantForCart = new BundleVariantForCartDto(newVariantId, addedContent);
 
         if (!success) {
             return json(new JsonData(false, 'error', 'Error while adding the bundle to the cart.', []), {
@@ -185,7 +193,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             });
         }
 
-        return json(new JsonData(true, 'success', 'Bundle succesfuly added to cart.', [], newVariantId), {
+        return json(new JsonData(true, 'success', 'Bundle succesfuly added to cart.', [], bundleVariantForCart), {
             headers: {
                 'Access-Control-Allow-Origin': '*',
             },

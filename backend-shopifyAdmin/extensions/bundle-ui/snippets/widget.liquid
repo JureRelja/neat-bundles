@@ -415,6 +415,18 @@
           </div>
         </div>
 
+
+        <template x-if="finalLoading">
+          <div class="final-loading-container">
+            <div class="final-loading-inner">
+                {% comment %} Loader {% endcomment %}
+              <img src="{{ 'finalAnimation.svg' | asset_url }}" alt="loader">
+
+            </div>
+          </div>
+        </template>
+
+        <button x-on:click="testLine">Test line</button>
       </div>
     </template>
   </div>
@@ -469,6 +481,10 @@
       activeStep: 1, // Current active step
       activeStepData: {}, // Current active step data
       activeStepProducts: [], // Products data
+
+      async testLine() {
+         await testLineFunc(window.Shopify);
+      },
 
       //Fetch data for the current step (either products or content)
       async fetchDataForStep(){
@@ -584,6 +600,5 @@
     }));
   });
 </script>
-
 {% comment %} Alpine.js import {% endcomment %}
 <script src="{{ 'Alpine-3.14.1.js' | asset_url }}"></script>

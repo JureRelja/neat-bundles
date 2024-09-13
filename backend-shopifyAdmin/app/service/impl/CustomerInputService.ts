@@ -6,6 +6,7 @@ import { ProductDto } from '~/dto/ProductDto';
 import { ShopifyProductVariantService } from './ShopifyProductVariantService';
 import { AddedContentDto } from '~/dto/AddedContentDto';
 import { ContentDto } from '~/dto/ContentDto';
+import { AddedContentItemDto } from '~/dto/AddedContentItemDto';
 
 export class CustomerInputService {
     constructor() {}
@@ -45,12 +46,16 @@ export class CustomerInputService {
             } else if (input.stepType === 'CONTENT') {
                 const contentInputs: ContentDto[] = input.inputs as ContentDto[];
 
+                const addedContentOnThisStep = new AddedContentDto(input.stepNumber, []);
+
                 contentInputs.forEach((contentInput) => {
-                    addedContent.push({
+                    addedContentOnThisStep.addContentItem({
                         contentType: contentInput.type === 'file' ? 'IMAGE' : 'TEXT',
                         value: contentInput.value,
                     });
                 });
+
+                addedContent.push(addedContentOnThisStep);
             }
         });
 

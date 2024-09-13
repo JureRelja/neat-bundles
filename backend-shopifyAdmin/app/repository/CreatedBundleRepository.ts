@@ -10,7 +10,7 @@ export class CreatedBundleRepository {
         finalPrice: number,
         discountAmount: number,
         productVariants?: AddedProductVariantDto[],
-        addedContent?: AddedContentDto[],
+        addedContent?: AddedContentDto[], // Added content items for all steps
     ) {
         const createdBundle = await db.createdBundle.create({
             data: {
@@ -23,13 +23,19 @@ export class CreatedBundleRepository {
                         return variant;
                     }),
                 },
+
+                //Extract content items from all steps
                 addedContent: {
-                    create: addedContent?.map((content) => {
-                        return {
-                            contentType: content.contentType,
-                            contentValue: content.value,
-                        };
-                    }),
+                    create: addedContent
+                        ?.map((content) => {
+                            return content.getContentItems().map((item) => {
+                                return {
+                                    contentType: item.contentType,
+                                    contentValue: item.value,
+                                };
+                            });
+                        })
+                        .flat(),
                 },
             },
             select: {
