@@ -125,7 +125,7 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
                 const data = response.json();
 
                 if (!data.message) {
-                    window.location.href = `${shopDomain}/cart`;
+                    window.location.href = `https://${shopDomain}/cart`;
                 }
             })
             .catch((error) => {

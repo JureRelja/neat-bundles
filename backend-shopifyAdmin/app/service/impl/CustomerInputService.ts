@@ -4,16 +4,22 @@ import { BundleFullAndStepsFullDto } from '~/dto/BundleFullAndStepsFullDto';
 import { CustomerInputDto } from '~/dto/CustomerInputDto';
 import { ProductDto } from '~/dto/ProductDto';
 import { ShopifyProductVariantService } from './ShopifyProductVariantService';
+import { AddedContentDto } from '~/dto/AddedContentDto';
+import { ContentDto } from '~/dto/ContentDto';
 
 export class CustomerInputService {
     constructor() {}
 
     //Go through the customer inputs and extract the data
     //Extract the productVariant ids and quantities
+    //Extract the content types and values (if any)
     //Extract the total price of the products
 
-    public extractDataFromCustomerInputs(customerInputs: CustomerInputDto[], bundle: BundleFullAndStepsFullDto, productVariantService: ShopifyProductVariantService) {
+    public static extractDataFromCustomerInputs(customerInputs: CustomerInputDto[], bundle: BundleFullAndStepsFullDto, productVariantService: ShopifyProductVariantService) {
         let addedProductVariants: AddedProductVariantDto[] = [];
+
+        let addedContent: AddedContentDto[] = [];
+
         let totalProductPrice = 0;
 
         customerInputs.forEach((input) => {
@@ -36,9 +42,18 @@ export class CustomerInputService {
                         totalProductPrice += price;
                     }
                 });
+            } else if (input.stepType === 'CONTENT') {
+                const contentInputs: ContentDto[] = input.inputs as ContentDto[];
+
+                contentInputs.forEach((contentInput) => {
+                    addedContent.push({
+                        contentType: contentInput.type === 'file' ? 'IMAGE' : 'TEXT',
+                        value: contentInput.value,
+                    });
+                });
             }
         });
 
-        return { addedProductVariants, totalProductPrice };
+        return { addedProductVariants, addedContent, totalProductPrice };
     }
 }

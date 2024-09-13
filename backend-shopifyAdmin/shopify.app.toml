@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://dining-clicks-modes-hunger.trycloudflare.com"
+application_url = "https://brunswick-few-jack-stephen.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "write_content,write_products"
 
 [auth]
 redirect_urls = [
-  "https://dining-clicks-modes-hunger.trycloudflare.com/auth/callback",
-  "https://dining-clicks-modes-hunger.trycloudflare.com/auth/shopify/callback",
-  "https://dining-clicks-modes-hunger.trycloudflare.com/api/auth/callback"
+  "https://brunswick-few-jack-stephen.trycloudflare.com/auth/callback",
+  "https://brunswick-few-jack-stephen.trycloudflare.com/auth/shopify/callback",
+  "https://brunswick-few-jack-stephen.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-07"
 
 [app_proxy]
-url = "https://dining-clicks-modes-hunger.trycloudflare.com"
+url = "https://brunswick-few-jack-stephen.trycloudflare.com"
 subpath = "nb"
 prefix = "apps"
 

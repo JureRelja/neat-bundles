@@ -141,9 +141,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         }
 
         if (files) {
-            //Service for uplaoding files
-            const fileStoreService: FileStoreService = new FileStoreServiceImpl();
-
+            const fileStoreService = new FileStoreServiceImpl();
             customerInputs.forEach((input) => {
                 if (input.stepType === 'CONTENT') {
                     const contentInputs: ContentDto[] = input.inputs as ContentDto[];
@@ -160,19 +158,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             });
         }
 
+        //Service for creating the product variant
         const productVariantService = await ShopifyProductVariantService.build(shop);
 
         //Extract the data from the customer inputs
-        const { addedProductVariants, totalProductPrice } = new CustomerInputService().extractDataFromCustomerInputs(customerInputs, bundle, productVariantService);
+        const { addedProductVariants, addedContent, totalProductPrice } = CustomerInputService.extractDataFromCustomerInputs(customerInputs, bundle, productVariantService);
 
         //Get the final bundle prices
-        const { bundlePrice, bundleCompareAtPrice } = new BundlePriceCalculationService().getFinalBundlePrices(bundle, totalProductPrice);
+        const { bundlePrice, bundleCompareAtPrice } = BundlePriceCalculationService.getFinalBundlePrices(bundle, totalProductPrice);
 
         //Store the created bundle in the database
-        const newCreatedBundleId = await new CreatedBundleRepository().createCreatedBundle(bundle.id, bundlePrice, bundleCompareAtPrice - bundlePrice, addedProductVariants);
+        const discountAmount = bundleCompareAtPrice - bundlePrice;
+        const newCreatedBundleId = await CreatedBundleRepository.createCreatedBundle(bundle.id, bundlePrice, discountAmount, addedProductVariants, addedContent);
 
         //Create a new dummy product variant with the bundle data and return the variant id
-        const newVariantId = await productVariantService.createProductVariant(newCreatedBundleId, bundle.shopifyProductId, bundleCompareAtPrice, bundlePrice);
+        const newVariantId = await productVariantService.createProductVariant(newCreatedBundleId, bundle.title, bundle.shopifyProductId, bundleCompareAtPrice, bundlePrice);
 
         const success = await productVariantService.updateProductVariantRelationship(newVariantId, addedProductVariants);
 

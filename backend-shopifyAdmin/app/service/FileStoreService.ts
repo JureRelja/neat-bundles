@@ -1,7 +1,7 @@
 export interface FileStoreService {
-  uploadFile(fileName: string, files: File | File[]): Promise<string>;
+    uploadFile(fileName: string, files: File | File[]): Promise<string>;
 
-  getFile(fileUrl: string): Promise<File | null>;
+    getFile(fileUrl: string): Promise<File | null>;
 
-  deleteFile(fileUrl: string): boolean;
+    deleteFile(fileUrl: string): boolean;
 }
