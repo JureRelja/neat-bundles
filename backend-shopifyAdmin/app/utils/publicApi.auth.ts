@@ -13,7 +13,7 @@ export async function checkPublicAuth(request: Request): Promise<JsonData<undefi
     //Veryfing digital signature
     const signatureValidator = new SignatureValidator(url.searchParams);
 
-    if (!signatureValidator.verifySignature()) {
+    if (!(await signatureValidator.verifySignature())) {
         return new JsonData(false, 'error', "There was an error with your request. 'signature' is invalid.");
     }
 

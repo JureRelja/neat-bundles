@@ -16,7 +16,7 @@ export class CustomerInputService {
     //Extract the content types and values (if any)
     //Extract the total price of the products
 
-    public static extractDataFromCustomerInputs(customerInputs: CustomerInputDto[], bundle: BundleFullAndStepsFullDto, productVariantService: ShopifyProductVariantService) {
+    public static async extractDataFromCustomerInputs(customerInputs: CustomerInputDto[], bundle: BundleFullAndStepsFullDto, productVariantService: ShopifyProductVariantService) {
         let addedProductVariants: AddedProductVariantDto[] = [];
 
         let addedContent: AddedContentDto[] = [];
@@ -49,6 +49,7 @@ export class CustomerInputService {
                 const addedContentOnThisStep = new AddedContentDto(input.stepNumber, []);
 
                 contentInputs.forEach((contentInput) => {
+                    console.log(contentInput);
                     addedContentOnThisStep.addContentItem({
                         contentType: contentInput.type === 'file' ? 'IMAGE' : 'TEXT',
                         value: contentInput.value,
@@ -58,6 +59,8 @@ export class CustomerInputService {
                 addedContent.push(addedContentOnThisStep);
             }
         });
+
+        console.log(totalProductPrice);
 
         return { addedProductVariants, addedContent, totalProductPrice };
     }

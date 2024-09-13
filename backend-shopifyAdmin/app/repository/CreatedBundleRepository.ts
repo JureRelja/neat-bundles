@@ -12,6 +12,8 @@ export class CreatedBundleRepository {
         productVariants?: AddedProductVariantDto[],
         addedContent?: AddedContentDto[], // Added content items for all steps
     ) {
+        console.log(addedContent);
+
         const createdBundle = await db.createdBundle.create({
             data: {
                 bundleId: bundleId,

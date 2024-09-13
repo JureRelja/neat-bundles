@@ -7,9 +7,13 @@ import { checkPublicAuth } from '~/utils/publicApi.auth';
 import { ApiCacheService } from '../../service/impl/ApiCacheService';
 
 import { ApiCacheKeyService } from '~/service/impl/ApiCacheKeyService';
+import { debugHelp } from '~/utils/debug';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+    debugHelp();
+
     const res = await checkPublicAuth(request); //Public auth check
+
     if (!res.ok)
         return json(res, {
             headers: {

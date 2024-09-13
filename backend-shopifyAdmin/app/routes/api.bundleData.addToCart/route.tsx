@@ -3,13 +3,11 @@ import { json } from '@remix-run/node';
 import db from '~/db.server';
 import { JsonData } from '~/types/jsonData';
 import { checkPublicAuth } from '~/utils/publicApi.auth';
-import { FileStoreService } from '../../service/FileStoreService';
 import { FileStoreServiceImpl } from '~/service/impl/FIleStoreServiceImpl';
 import { BundleFullAndStepsFullDto, bundleFullStepsFull } from '~/dto/BundleFullAndStepsFullDto';
 import { CustomerInputDto } from '../../dto/CustomerInputDto';
 import { ProductDto } from '~/dto/ProductDto';
 import { ContentDto } from '~/dto/ContentDto';
-import { unauthenticated } from '~/shopify.server';
 import { CreatedBundleRepository } from '~/repository/CreatedBundleRepository';
 import { CustomerInputService } from '../../service/impl/CustomerInputService';
 import { BundlePriceCalculationService } from '~/service/impl/BundlePriceCalculationService';
@@ -153,7 +151,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                             //Upload the file to the storage
                             const fileId = await fileStoreService.uploadFile(contentInput.value, files);
 
-                            contentInput.value = fileId;
+                            contentInput = {
+                                ...contentInput,
+                                value: fileId,
+                            };
                         }
                     });
                 }
@@ -164,25 +165,29 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         const productVariantService = await ShopifyProductVariantService.build(shop);
 
         //Extract the data from the customer inputs
-        const { addedProductVariants, addedContent, totalProductPrice } = CustomerInputService.extractDataFromCustomerInputs(customerInputs, bundle, productVariantService);
+        const { addedProductVariants, addedContent, totalProductPrice } = await CustomerInputService.extractDataFromCustomerInputs(customerInputs, bundle, productVariantService);
+
+        console.log(totalProductPrice);
 
         //Get the final bundle prices
         const { bundlePrice, bundleCompareAtPrice } = BundlePriceCalculationService.getFinalBundlePrices(bundle, totalProductPrice);
 
-        //Store the created bundle in the database
+        //Total discount amount
         const discountAmount = bundleCompareAtPrice - bundlePrice;
 
+        //Store the created bundle in the database
+        //Get the id of the created bundle
         const newCreatedBundleId = await CreatedBundleRepository.createCreatedBundle(bundle.id, bundlePrice, discountAmount, addedProductVariants, addedContent);
 
         //Create a new dummy product variant with the bundle data and return the variant id
-        const newVariantId = await productVariantService.createProductVariant(newCreatedBundleId, bundle.title, bundle.shopifyProductId, bundleCompareAtPrice, bundlePrice);
+        const newVariantId = await productVariantService.createProductVariant(newCreatedBundleId, bundle.shopifyProductId, bundleCompareAtPrice, bundlePrice);
 
         //Link the addedProductVariants to the new bundle variant
         const success = await productVariantService.updateProductVariantRelationship(newVariantId, addedProductVariants);
 
         //Create the bundle variant for the cart
         //This variant includes the variant id and the list of added content inputs
-        const bundleVariantForCart = new BundleVariantForCartDto(newVariantId, addedContent);
+        const bundleVariantForCart = new BundleVariantForCartDto(newVariantId, bundle.title, addedContent);
 
         if (!success) {
             return json(new JsonData(false, 'error', 'Error while adding the bundle to the cart.', []), {

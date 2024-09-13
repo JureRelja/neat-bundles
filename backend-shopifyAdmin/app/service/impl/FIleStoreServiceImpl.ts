@@ -2,7 +2,6 @@ import { FileStoreService } from '../FileStoreService';
 import { Storage } from '@google-cloud/storage';
 
 const storage = new Storage();
-
 const bucket = process.env.BUCKET_NAME as string;
 
 export class FileStoreServiceImpl implements FileStoreService {
@@ -23,7 +22,7 @@ export class FileStoreServiceImpl implements FileStoreService {
             }) as File;
         }
 
-        const fileId = Date.now() + fileName;
+        const fileId = Date.now().toString() + '.' + fileToUpload.name.split('.').at(-1);
 
         //Getting the file content
         const fileContent = (await fileToUpload.stream().getReader().read()) as { done: boolean; value: Uint8Array };
@@ -33,8 +32,8 @@ export class FileStoreServiceImpl implements FileStoreService {
         } catch (error) {
             console.log(error);
         }
-
-        return `${process.env.BUCKET_URL}/${fileId}`;
+        const fileUrl = `${process.env.BUCKET_URL as string}/${fileId}`;
+        return fileUrl;
     }
 
     public async getFile(fileUrl: string): Promise<File | null> {
