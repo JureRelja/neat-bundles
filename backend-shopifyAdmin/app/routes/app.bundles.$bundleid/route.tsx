@@ -69,9 +69,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         case 'deleteBundle': {
             try {
                 //Delete the bundle along with its steps, contentInputs, bundleSettings?, bundleColors, and bundleLabels
-                const bundleToDelete = await db.bundle.delete({
+                const bundleToDelete = await db.bundle.update({
                     where: {
                         id: Number(params.bundleid),
+                    },
+                    data: {
+                        deleted: true,
                     },
                     select: {
                         shopifyProductId: true,

@@ -1,4 +1,4 @@
-import { UrlRedirectCreatePayload } from '@graphql/graphql';
+import { UrlRedirectCreatePayload } from '@shopifyGraphql/graphql';
 import { AdminApiContext } from '@shopify/shopify-app-remix/server';
 
 export class ShopifyRedirectService {

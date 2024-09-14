@@ -1,9 +1,13 @@
 {% assign pageBundleNamespace = page.metafields.neat_bundles_app %}
 
 
-{% if pageBundleNamespace == blank %}
-  {% render 'widget'
-    , bundleId: block.settings.bundleId %}
+{% comment %} Checking if page is a bundle page to begin with {% endcomment %}
+{% if pageBundleNamespace %}
+  {% if pageBundleNamespace.bundle_id_page %}
+    {% comment %} Rendering a widget  {% endcomment %}
+      {% render 'widget'
+        , bundleId: pageBundleNamespace.bundle_id_page.value %}
+  {% endif %}
 {% endif %}
 
 

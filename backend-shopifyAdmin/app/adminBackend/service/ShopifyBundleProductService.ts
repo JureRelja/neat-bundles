@@ -1,6 +1,6 @@
 import { AdminApiContext } from '@shopify/shopify-app-remix/server';
 import { bundleTagIndentifier } from '../../constants';
-import { Product, ProductCreatePayload } from 'src/gql/graphql';
+import { ProductCreatePayload } from '@shopifyGraphql/graphql';
 
 export class ShopifyBundleProductService {
     public static async createBundleProduct(admin: AdminApiContext, productTitle: string): Promise<string | null> {

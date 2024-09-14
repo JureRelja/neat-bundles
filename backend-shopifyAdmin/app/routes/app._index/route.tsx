@@ -71,6 +71,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             user: {
                 storeUrl: session.shop,
             },
+            deleted: false,
         },
         select: bundleAndSteps,
         orderBy: {

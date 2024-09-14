@@ -19,7 +19,7 @@
         "paths": {
             "~/*": ["./app/*"],
             "@adminBackend/*": ["./app/adminBackend/*"],
-            "@graphql/*": ["./src/gql/*"]
+            "@shopifyGraphql/*": ["shopifyGraphql/*"]
         },
         "types": ["node", "@shopify/app-bridge-types", "@remix-run/node"]
     }
