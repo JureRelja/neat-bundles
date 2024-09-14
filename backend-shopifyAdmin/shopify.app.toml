@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "neat-bundle-builder"
 handle = "neat-bundle-builder"
-application_url = "https://listing-downloading-kathy-differently.trycloudflare.com"
+application_url = "https://stopping-nancy-burlington-archive.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "write_content,write_online_store_navigation,write_products,write_theme
 
 [auth]
 redirect_urls = [
-  "https://listing-downloading-kathy-differently.trycloudflare.com/auth/callback",
-  "https://listing-downloading-kathy-differently.trycloudflare.com/auth/shopify/callback",
-  "https://listing-downloading-kathy-differently.trycloudflare.com/api/auth/callback"
+  "https://stopping-nancy-burlington-archive.trycloudflare.com/auth/callback",
+  "https://stopping-nancy-burlington-archive.trycloudflare.com/auth/shopify/callback",
+  "https://stopping-nancy-burlington-archive.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-07"
 
 [app_proxy]
-url = "https://listing-downloading-kathy-differently.trycloudflare.com"
+url = "https://stopping-nancy-burlington-archive.trycloudflare.com"
 subpath = "nb"
 prefix = "apps"
 

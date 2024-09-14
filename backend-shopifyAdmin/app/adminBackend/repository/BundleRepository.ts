@@ -11,6 +11,7 @@ export class BundleRepository {
                     },
                 },
                 title: bundleTitle,
+                published: true,
                 shopifyProductId: bundleProductId,
                 shopifyPageId: bundlePageId,
                 bundleSettings: {

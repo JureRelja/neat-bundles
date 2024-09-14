@@ -5,6 +5,7 @@ import { JsonData } from '../../types/jsonData';
 import { BundlePageService } from '@adminBackend/service/BundlePageService';
 import { BundleRepository } from '@adminBackend/repository/BundleRepository';
 import { ShopifyBundleProductService } from '~/adminBackend/service/ShopifyBundleProductService';
+import { ShopifyRedirectService } from '~/adminBackend/service/ShopifyRedirectService';
 
 export const loader = async ({ request }: ActionFunctionArgs) => {
     await authenticate.admin(request);
@@ -31,9 +32,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 const defaultBundleTitle = `New bundle ${maxBundleId ? maxBundleId : ''}`;
 
                 //Create a new product that will be used as a bundle wrapper
-                const bundleProduct = await ShopifyBundleProductService.createBundleProduct(admin, defaultBundleTitle);
+                const bundleProductId = await ShopifyBundleProductService.createBundleProduct(admin, defaultBundleTitle);
 
-                if (!bundleProduct || !bundleProduct) {
+                if (!bundleProductId) {
                     return;
                 }
 
@@ -41,44 +42,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 const bundlePageService = await BundlePageService.build(session, admin, defaultBundleTitle);
 
                 if (!bundlePageService.getPage() || !bundlePageService.getPage().id) {
+                    console.log('page error');
                     return;
                 }
 
                 const [urlRedirectRes, bundleId] = await Promise.all([
-                    admin.graphql(
-                        `#graphql
-                        mutation createProductToBundleRedirect($input: UrlRedirectInput!) {
-                          urlRedirectCreate(urlRedirect: $input) {
-                            urlRedirect {
-                              id
-                            }
-                            userErrors {
-                                field
-                                message
-                              }
-                          }
-                        }`,
-                        {
-                            variables: {
-                                input: {
-                                    path: `/pages/${bundlePageService.getPage().handle}`,
-                                    target: `/products/${bundleProduct.handle}`,
-                                },
-                            },
-                        },
-                    ),
+                    //Create redirect
+                    ShopifyRedirectService.createProductToBundleRedirect(admin, bundlePageService.getPage().handle as string, bundleProductId),
                     //Create new bundle
-                    BundleRepository.createNewBundle(session.shop, defaultBundleTitle, bundleProduct.id, bundlePageService.getPage().id?.toString() as string),
+                    BundleRepository.createNewBundle(session.shop, defaultBundleTitle, bundleProductId, bundlePageService.getPage().id?.toString() as string),
                 ]);
 
-                const urlRedirectData = await urlRedirectRes.json();
-
-                if (urlRedirectData.data.userErrors) {
-                    console.log(urlRedirectData.data.userErrors);
-                    return;
-                }
-
-                bundlePageService.setPageMetafields(bundleId);
+                await bundlePageService.setPageMetafields(bundleId);
 
                 return redirect(`/app/bundles/${bundleId}`);
             } catch (error) {

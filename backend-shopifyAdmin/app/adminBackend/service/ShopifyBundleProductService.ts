@@ -1,9 +1,9 @@
 import { AdminApiContext } from '@shopify/shopify-app-remix/server';
 import { bundleTagIndentifier } from '../../constants';
-import { Product } from 'src/gql/graphql';
+import { Product, ProductCreatePayload } from 'src/gql/graphql';
 
 export class ShopifyBundleProductService {
-    public static async createBundleProduct(admin: AdminApiContext, productTitle: string): Promise<Product | null> {
+    public static async createBundleProduct(admin: AdminApiContext, productTitle: string): Promise<string | null> {
         const response = await admin.graphql(
             `#graphql
               mutation productCreate($productInput: ProductInput!) {
@@ -35,10 +35,12 @@ export class ShopifyBundleProductService {
 
         const data = await response.json();
 
-        if (data.data.productCreate.userErrors) {
+        const product: ProductCreatePayload = data.data.productCreate;
+
+        if (product.userErrors && product.userErrors.length > 0) {
             return null;
         }
 
-        return data.data.productCreate.product;
+        return product.product?.id as string;
     }
 }
