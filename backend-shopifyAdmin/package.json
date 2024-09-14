@@ -4,6 +4,7 @@
     "scripts": {
         "build": "remix vite:build",
         "dev": "sudo shopify app dev --theme-app-extension-port=3000",
+        "debug": "NODE_OPTIONS='--inspect-brk' npm run dev",
         "config:link": "shopify app config link",
         "generate": "shopify app generate",
         "deploy": "shopify app deploy",

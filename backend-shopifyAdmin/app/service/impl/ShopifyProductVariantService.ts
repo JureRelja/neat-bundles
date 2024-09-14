@@ -32,7 +32,7 @@ export class ShopifyProductVariantService {
 
         const data = await response.json();
 
-        return data.data.productVariant.price;
+        return parseFloat(data.data.productVariant.price);
     }
 
     //Create a new product variant

@@ -21,44 +21,48 @@ export class CustomerInputService {
 
         let addedContent: AddedContentDto[] = [];
 
-        let totalProductPrice = 0;
+        let totalProductPrice: number = 0;
 
-        customerInputs.forEach((input) => {
-            if (input.stepType === 'PRODUCT') {
-                const products: ProductDto[] = input.inputs as ProductDto[];
+        await Promise.all(
+            customerInputs.map(async (input) => {
+                if (input.stepType === 'PRODUCT') {
+                    const products: ProductDto[] = input.inputs as ProductDto[];
 
-                products.forEach(async (product) => {
-                    product.id = `gid://shopify/ProductVariant/${product.id}`;
+                    await Promise.all(
+                        products.map(async (product) => {
+                            product.id = `gid://shopify/ProductVariant/${product.id}`;
 
-                    //Storing addedProduct variants
-                    addedProductVariants.push({
-                        productVariant: product.id,
-                        quantity: product.quantity,
+                            //Storing addedProduct variants
+                            addedProductVariants.push({
+                                productVariant: product.id,
+                                quantity: product.quantity,
+                            });
+
+                            if (bundle.pricing === 'CALCULATED') {
+                                const price = await productVariantService.getProductVariantPrice(product.id);
+
+                                //Add the price of the product to the bundle price
+                                totalProductPrice += price;
+                            }
+                        }),
+                    );
+                } else if (input.stepType === 'CONTENT') {
+                    const contentInputs: ContentDto[] = input.inputs as ContentDto[];
+
+                    const addedContentOnThisStep = new AddedContentDto(input.stepNumber, []);
+
+                    contentInputs.forEach((contentInput) => {
+                        console.log(contentInput);
+                        addedContentOnThisStep.addContentItem({
+                            contentType: contentInput.type === 'file' ? 'IMAGE' : 'TEXT',
+                            value: contentInput.value,
+                        });
                     });
 
-                    if (bundle.pricing === 'CALCULATED') {
-                        const price = await productVariantService.getProductVariantPrice(product.id);
-
-                        //Add the price of the product to the bundle price
-                        totalProductPrice += price;
-                    }
-                });
-            } else if (input.stepType === 'CONTENT') {
-                const contentInputs: ContentDto[] = input.inputs as ContentDto[];
-
-                const addedContentOnThisStep = new AddedContentDto(input.stepNumber, []);
-
-                contentInputs.forEach((contentInput) => {
-                    console.log(contentInput);
-                    addedContentOnThisStep.addContentItem({
-                        contentType: contentInput.type === 'file' ? 'IMAGE' : 'TEXT',
-                        value: contentInput.value,
-                    });
-                });
-
-                addedContent.push(addedContentOnThisStep);
-            }
-        });
+                    addedContent.push(addedContentOnThisStep);
+                }
+            }),
+        );
 
         console.log(totalProductPrice);
 

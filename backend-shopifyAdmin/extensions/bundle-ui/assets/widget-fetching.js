@@ -89,7 +89,6 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
     });
 
     //Adding products to formData
-    console.log(stepInputs);
     formData.append('customerInputs', JSON.stringify(stepInputs));
 
     const response = await fetch(`${APP_URL}/bundleData/addToCart?bundleId=${bundleId}&shop=${shopDomain}`, {
@@ -100,6 +99,7 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
     const result = await response.json();
 
     if (result.ok) {
+        console.log(result);
         const bundleVariantForCart = result.data;
 
         let formData = {
