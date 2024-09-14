@@ -12,4 +12,7 @@ database.sqlite
 
 backend-shopifyAdmin/neat-bundles-83677745c654.json
 
+backend-shopifyAdmin/shopify-schema.json 
+backend-shopifyAdmin/src 
+
 .env

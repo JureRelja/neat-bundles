@@ -68,9 +68,9 @@ To authenticate and query data you can use the `shopify` const that is exported 
 
 ```js
 export async function loader({ request }) {
-  const { admin } = await shopify.authenticate.admin(request);
+    const { admin } = await shopify.authenticate.admin(request);
 
-  const response = await admin.graphql(`
+    const response = await admin.graphql(`
     {
       products(first: 25) {
         nodes {
@@ -80,13 +80,13 @@ export async function loader({ request }) {
       }
     }`);
 
-  const {
-    data: {
-      products: { nodes },
-    },
-  } = await response.json();
+    const {
+        data: {
+            products: { nodes },
+        },
+    } = await response.json();
 
-  return json(nodes);
+    return json(nodes);
 }
 ```
 
@@ -229,8 +229,8 @@ pnpm run deploy
 This template registers webhooks after OAuth completes, using the `afterAuth` hook when calling `shopifyApp`.
 The package calls that hook in 2 scenarios:
 
-- After installing the app
-- When an access token expires
+-   After installing the app
+-   When an access token expires
 
 During normal development, the app won't need to re-authenticate most of the time, so the subscriptions aren't updated.
 
@@ -281,13 +281,14 @@ This will not affect production, since tunnels are only for local development.
 
 By default this template uses SQLlite as the database. It is recommended to move to a persisted database for production. If you choose to use MongoDB, you will need to make some modifications to the schema and prisma configuration. For more information please see the [Prisma MongoDB documentation](https://www.prisma.io/docs/orm/overview/databases/mongodb).
 
-Alternatively  you can use a MongDB database directly with the [MongoDB session storage adapter](https://github.com/Shopify/shopify-app-js/tree/main/packages/apps/session-storage/shopify-app-session-storage-mongodb).
+Alternatively you can use a MongDB database directly with the [MongoDB session storage adapter](https://github.com/Shopify/shopify-app-js/tree/main/packages/apps/session-storage/shopify-app-session-storage-mongodb).
 
 #### Mapping the id field
-In MongoDB, an ID must be a single field that defines an @id attribute and a @map("_id") attribute.
-The prisma adapter expects the ID field to be the ID of the session, and not the _id field of the document.
 
-To make this work you can add a new field to the schema that maps the _id field to the id field. For more information see the [Prisma documentation](https://www.prisma.io/docs/orm/prisma-schema/data-model/models#defining-an-id-field)
+In MongoDB, an ID must be a single field that defines an @id attribute and a @map("\_id") attribute.
+The prisma adapter expects the ID field to be the ID of the session, and not the \_id field of the document.
+
+To make this work you can add a new field to the schema that maps the \_id field to the id field. For more information see the [Prisma documentation](https://www.prisma.io/docs/orm/prisma-schema/data-model/models#defining-an-id-field)
 
 ```prisma
 model Session {
@@ -297,10 +298,12 @@ model Session {
 }
 ```
 
-####  Error: The "mongodb" provider is not supported with this command
+#### Error: The "mongodb" provider is not supported with this command
+
 MongoDB does not support the [prisma migrate](https://www.prisma.io/docs/orm/prisma-migrate/understanding-prisma-migrate/overview) command. If you are using MongoDB please see the [Prisma documentation](https://www.prisma.io/docs/orm/overview/databases/mongodb) for more information.
 
 #### Prisma needs to perform transactions, which requires your mongodb server to be run as a replica set
+
 See the [Prisma documentation](https://www.prisma.io/docs/getting-started/setup-prisma/start-from-scratch/mongodb/connect-your-database-node-mongodb) for connecting to a MongoDB database.
 
 ## Benefits
@@ -312,30 +315,57 @@ Shopify apps are built on a variety of Shopify tools to create a great merchant 
 
 The Remix app template comes with the following out-of-the-box functionality:
 
-- [OAuth](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-remix#authenticating-admin-requests): Installing the app and granting permissions
-- [GraphQL Admin API](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-remix#using-the-shopify-admin-graphql-api): Querying or mutating Shopify admin data
-- [REST Admin API](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-remix#using-the-shopify-admin-rest-api): Resource classes to interact with the API
-- [Webhooks](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-remix#authenticating-webhook-requests): Callbacks sent by Shopify when certain events occur
-- [AppBridge](https://shopify.dev/docs/api/app-bridge): This template uses the next generation of the Shopify App Bridge library which works in unison with previous versions.
-- [Polaris](https://polaris.shopify.com/): Design system that enables apps to create Shopify-like experiences
+-   [OAuth](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-remix#authenticating-admin-requests): Installing the app and granting permissions
+-   [GraphQL Admin API](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-remix#using-the-shopify-admin-graphql-api): Querying or mutating Shopify admin data
+-   [REST Admin API](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-remix#using-the-shopify-admin-rest-api): Resource classes to interact with the API
+-   [Webhooks](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-remix#authenticating-webhook-requests): Callbacks sent by Shopify when certain events occur
+-   [AppBridge](https://shopify.dev/docs/api/app-bridge): This template uses the next generation of the Shopify App Bridge library which works in unison with previous versions.
+-   [Polaris](https://polaris.shopify.com/): Design system that enables apps to create Shopify-like experiences
 
 ## Tech Stack
 
 This template uses [Remix](https://remix.run). The following Shopify tools are also included to ease app development:
 
-- [Shopify App Remix](https://shopify.dev/docs/api/shopify-app-remix) provides authentication and methods for interacting with Shopify APIs.
-- [Shopify App Bridge](https://shopify.dev/docs/apps/tools/app-bridge) allows your app to seamlessly integrate your app within Shopify's Admin.
-- [Polaris React](https://polaris.shopify.com/) is a powerful design system and component library that helps developers build high quality, consistent experiences for Shopify merchants.
-- [Webhooks](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-remix#authenticating-webhook-requests): Callbacks sent by Shopify when certain events occur
-- [Polaris](https://polaris.shopify.com/): Design system that enables apps to create Shopify-like experiences
+-   [Shopify App Remix](https://shopify.dev/docs/api/shopify-app-remix) provides authentication and methods for interacting with Shopify APIs.
+-   [Shopify App Bridge](https://shopify.dev/docs/apps/tools/app-bridge) allows your app to seamlessly integrate your app within Shopify's Admin.
+-   [Polaris React](https://polaris.shopify.com/) is a powerful design system and component library that helps developers build high quality, consistent experiences for Shopify merchants.
+-   [Webhooks](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-remix#authenticating-webhook-requests): Callbacks sent by Shopify when certain events occur
+-   [Polaris](https://polaris.shopify.com/): Design system that enables apps to create Shopify-like experiences
 
 ## Resources
 
-- [Remix Docs](https://remix.run/docs/en/v1)
-- [Shopify App Remix](https://shopify.dev/docs/api/shopify-app-remix)
-- [Introduction to Shopify apps](https://shopify.dev/docs/apps/getting-started)
-- [App authentication](https://shopify.dev/docs/apps/auth)
-- [Shopify CLI](https://shopify.dev/docs/apps/tools/cli)
-- [App extensions](https://shopify.dev/docs/apps/app-extensions/list)
-- [Shopify Functions](https://shopify.dev/docs/api/functions)
-- [Getting started with internationalizing your app](https://shopify.dev/docs/apps/best-practices/internationalization/getting-started)
+-   [Remix Docs](https://remix.run/docs/en/v1)
+-   [Shopify App Remix](https://shopify.dev/docs/api/shopify-app-remix)
+-   [Introduction to Shopify apps](https://shopify.dev/docs/apps/getting-started)
+-   [App authentication](https://shopify.dev/docs/apps/auth)
+-   [Shopify CLI](https://shopify.dev/docs/apps/tools/cli)
+-   [App extensions](https://shopify.dev/docs/apps/app-extensions/list)
+-   [Shopify Functions](https://shopify.dev/docs/api/functions)
+-   [Getting started with internationalizing your app](https://shopify.dev/docs/apps/best-practices/internationalization/getting-started)
+
+## Generate shopify schema
+
+-   [graphql-js-schema-fetch https://{store-name}.myshopify.com/admin/api/2024-04/graphql.json --header 'X-Shopify-Access-Token: {acces-token}' > shopify-schema.json]
+
+-   [npm i graphql]
+-   [npm i -D typescript @graphql-codegen/cli]
+-   [npx graphql-code-generator init]
+
+## Codegen
+
+```
+import type { CodegenConfig } from '@graphql-codegen/cli';
+
+const config: CodegenConfig = {
+    schema: './shopify-schema.json',
+    documents: ['src/**/*.tsx'],
+    ignoreNoDocuments: true, // for better experience with the watcher
+    generates: {
+        './src/gql/': {
+            preset: 'client',
+        },
+    },
+};
+
+export default config;
+```

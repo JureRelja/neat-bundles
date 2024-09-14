@@ -65,4 +65,17 @@ export class BundleRepository {
 
         return bundle.id;
     }
+
+    public static async getMaxBundleId(shop: string) {
+        const { _max }: { _max: { id: number | null } } = await db.bundle.aggregate({
+            _max: {
+                id: true,
+            },
+            where: {
+                storeUrl: shop,
+            },
+        });
+
+        return _max.id;
+    }
 }

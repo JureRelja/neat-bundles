@@ -1,7 +1,10 @@
 {
-  "editor.fontSize": 12,
-  "editor.lineHeight": 1.25,
-  "[liquid]": {
-    "editor.formatOnSave": true
-  }
+    "editor.fontSize": 12,
+    "editor.lineHeight": 1.25,
+    "[liquid]": {
+        "editor.formatOnSave": true
+    },
+
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true
 }
