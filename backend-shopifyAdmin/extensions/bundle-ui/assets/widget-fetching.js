@@ -123,7 +123,7 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
 
         let bundleContentFormData = new FormData();
 
-        bundleContentFormData.append(`attributes[Bundle content for bundle: ${bundleVariantForCart.bundleTitle}]`, bundleVariantForCart.bundleInputsAdmin);
+        bundleContentFormData.append(`attributes[User data for bundle: ${bundleVariantForCart.bundleTitle}]`, bundleVariantForCart.bundleInputsAdmin);
 
         await fetch(window.Shopify.routes.root + 'cart/update.js', {
             method: 'POST',
@@ -133,57 +133,4 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
         console.log(data.message);
         alert('There was an error with adding the bundle to the cart. Try refreshing the page.');
     }
-};
-
-const testLineFunc = async (Shopify) => {
-    let formData = {
-        items: [
-            {
-                id: 50332070215998,
-                quantity: 1,
-            },
-        ],
-    };
-
-    await fetch(Shopify.routes.root + 'cart/add.js', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-    })
-        .then((response) => {
-            const data = response.json();
-
-            if (!data.message) {
-                console.log('success');
-            }
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-
-    let formData2 = new FormData();
-
-    formData2.append(
-        `attributes[Bundle content for bundle: ]`,
-        'Step #1 \nImage url: https://cdn.shopify.com/s/files/1/0533/2089/5889/products/1_2000x.jpg?v=1629780000 \nText: Text \n\nStep #2 \nImage url: Url \nText: Text',
-    );
-
-    formData2.append(
-        'attributes[Bundle content for bundle: Neat bundle 2]',
-        "Step #1 \
-        Image url: https://cdn.shopify.com/s/files/1/0533/2089/5889/products/1_2000x.jpg?v=1629780000 \
-        Text': Text \
-        Step #2 \
-            Image url: Url \
-            Text: Text",
-    );
-
-    await fetch(window.Shopify.routes.root + 'cart/update.js', {
-        method: 'POST',
-        body: formData2,
-    })
-        .then((response) => response.json())
-        .then((data) => console.log(data));
 };

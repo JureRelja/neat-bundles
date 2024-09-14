@@ -12,14 +12,14 @@ export class CreatedBundleRepository {
         productVariants?: AddedProductVariantDto[],
         addedContent?: AddedContentDto[], // Added content items for all steps
     ) {
-        console.log(addedContent);
-
         const createdBundle = await db.createdBundle.create({
             data: {
                 bundleId: bundleId,
                 createdAt: new Date(),
                 finalPrice: finalPrice,
                 discountAmount: discountAmount,
+
+                //Extract product variants from all steps
                 addedProductVariants: {
                     create: productVariants?.map((variant) => {
                         return variant;

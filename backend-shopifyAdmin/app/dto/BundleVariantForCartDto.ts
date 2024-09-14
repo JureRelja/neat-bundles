@@ -32,30 +32,35 @@ export class BundleVariantForCartDto {
 
         let cartAttributes: string = ''; // This is used to display what the customer has inputed in the admin orders page
 
-        lineItemProperties[`_bundle_id`] = `${bundleId}`;
+        lineItemProperties[`_neat_bundle_id`] = `${bundleId}`;
         lineItemProperties[`- :-----Bundle Content-----`] = '-';
 
         addedContent.forEach((addedContentOnStep) => {
             const stepNumber = addedContentOnStep.getStepNumber();
 
-            cartAttributes += 'Step ' + stepNumber + ' \n';
+            cartAttributes += 'Step #' + stepNumber + ': \n';
 
             addedContentOnStep.getContentItems().forEach((contentItem) => {
                 //If the content type is an image, we need to display the image url
                 if (contentItem.contentType === 'IMAGE') {
-                    lineItemProperties[`Step ${stepNumber} - Image url`] = contentItem.value;
-                    cartAttributes += 'Image url: ' + contentItem.value + '\n';
+                    lineItemProperties[`Step #${stepNumber} - IMAGE URL`] = contentItem.value;
+                    cartAttributes += 'IMAGE URL: ' + contentItem.value;
+
                     return;
                 }
 
-                lineItemProperties[`Step ${stepNumber} - ${contentItem.contentType}`] = contentItem.value;
-                cartAttributes += contentItem.contentType + ': ' + contentItem.value + '\n';
+                lineItemProperties[`Step #${stepNumber} - ${contentItem.contentType}`] = contentItem.value;
+                cartAttributes += contentItem.contentType + ': ' + contentItem.value;
+
+                if (addedContentOnStep.getContentItems().indexOf(contentItem) < addedContentOnStep.getContentItems().length - 1) {
+                    cartAttributes += ', \n';
+                }
             });
 
             if (addedContent.indexOf(addedContentOnStep) < addedContent.length - 1) {
                 lineItemProperties[`- :----------------${this.getStringWithNumberOfDashes(stepNumber)}}`] = '-';
 
-                cartAttributes += '\n\n';
+                cartAttributes += '  || \n\n';
             }
         });
 

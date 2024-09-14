@@ -13,7 +13,6 @@ import { CustomerInputService } from '../../service/impl/CustomerInputService';
 import { BundlePriceCalculationService } from '~/service/impl/BundlePriceCalculationService';
 import { ShopifyProductVariantService } from '~/service/impl/ShopifyProductVariantService';
 import { BundleVariantForCartDto } from '~/dto/BundleVariantForCartDto';
-import { AddedContentItemDto } from '~/dto/AddedContentItemDto';
 
 export const action = async ({ request }: ActionFunctionArgs) => {
     const res = await checkPublicAuth(request); //Public auth check
@@ -140,40 +139,34 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             });
         }
 
-        if (files) {
-            const fileStoreService = new FileStoreServiceImpl();
-            customerInputs.forEach((input) => {
-                if (input.stepType === 'CONTENT') {
-                    const contentInputs: ContentDto[] = input.inputs as ContentDto[];
-
-                    contentInputs.forEach(async (contentInput) => {
-                        if (contentInput.type === 'file') {
-                            //Upload the file to the storage
-                            const fileId = await fileStoreService.uploadFile(contentInput.value, files);
-
-                            contentInput = {
-                                ...contentInput,
-                                value: fileId,
-                            };
-                        }
-                    });
-                }
-            });
-        }
-
         //Service for creating the product variant
         const productVariantService = await ShopifyProductVariantService.build(shop);
 
         //Extract the data from the customer inputs
         const { addedProductVariants, addedContent, totalProductPrice } = await CustomerInputService.extractDataFromCustomerInputs(customerInputs, bundle, productVariantService);
 
-        console.log(totalProductPrice);
+        if (files) {
+            const fileStoreService = new FileStoreServiceImpl();
+
+            await Promise.all(
+                addedContent.map(async (contentItem) => {
+                    await Promise.all(
+                        contentItem.getContentItems().map(async (contentInput) => {
+                            if (contentInput.contentType === 'IMAGE') {
+                                //Upload the image to the storage
+                                const imageUrl = await fileStoreService.uploadFile(contentInput.value, files);
+
+                                //Set the input value to the image url for storing in the database
+                                contentInput.value = imageUrl;
+                            }
+                        }),
+                    );
+                }),
+            );
+        }
 
         //Get the final bundle prices
-        const { bundlePrice, bundleCompareAtPrice } = BundlePriceCalculationService.getFinalBundlePrices(bundle, totalProductPrice);
-
-        //Total discount amount
-        const discountAmount = bundleCompareAtPrice - bundlePrice;
+        const { bundlePrice, bundleCompareAtPrice, discountAmount } = BundlePriceCalculationService.getFinalBundlePrices(bundle, totalProductPrice);
 
         //Store the created bundle in the database
         //Get the id of the created bundle

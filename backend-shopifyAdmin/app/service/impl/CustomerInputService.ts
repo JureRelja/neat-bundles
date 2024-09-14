@@ -52,7 +52,6 @@ export class CustomerInputService {
                     const addedContentOnThisStep = new AddedContentDto(input.stepNumber, []);
 
                     contentInputs.forEach((contentInput) => {
-                        console.log(contentInput);
                         addedContentOnThisStep.addContentItem({
                             contentType: contentInput.type === 'file' ? 'IMAGE' : 'TEXT',
                             value: contentInput.value,
@@ -63,8 +62,6 @@ export class CustomerInputService {
                 }
             }),
         );
-
-        console.log(totalProductPrice);
 
         return { addedProductVariants, addedContent, totalProductPrice };
     }

@@ -27,6 +27,9 @@ export class BundlePriceCalculationService {
             bundlePrice = 0;
         }
 
-        return { bundlePrice, bundleCompareAtPrice };
+        //Total discount amount
+        const discountAmount = bundleCompareAtPrice - bundlePrice;
+
+        return { bundlePrice, bundleCompareAtPrice, discountAmount };
     }
 }
