@@ -6,19 +6,16 @@ import { checkPublicAuth } from '~/utils/publicApi.auth';
 import { ApiCacheService } from '../../service/impl/ApiCacheService';
 import { BundleStepAllResources, bundleStepFull } from '~/types/BundleStep';
 import { ApiCacheKeyService } from '~/service/impl/ApiCacheKeyService';
-import { authenticate } from '~/shopify.server';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    const { admin, session } = await authenticate.public.appProxy(request);
-
-    const res = await checkPublicAuth(request); //Public auth check
-    if (!res.ok)
-        return json(res, {
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-            },
-            status: 200,
-        });
+    // const res = await checkPublicAuth(request); //Public auth check
+    // if (!res.ok)
+    //     return json(res, {
+    //         headers: {
+    //             'Access-Control-Allow-Origin': '*',
+    //         },
+    //         status: 200,
+    //     });
 
     const url = new URL(request.url);
 
@@ -30,7 +27,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     //Cache aside
     const cacheKey = new ApiCacheKeyService(shop);
 
-    const cacheService = new ApiCacheService(cacheKey.getStepKey(stepNumber));
+    const cacheService = new ApiCacheService(cacheKey.getStepKey(stepNumber, bundleId));
 
     const cacheData = await cacheService.readCache();
 

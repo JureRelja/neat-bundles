@@ -6,11 +6,8 @@ import { JsonData } from '~/types/jsonData';
 import { checkPublicAuth } from '~/utils/publicApi.auth';
 import { ApiCacheService } from '../../service/impl/ApiCacheService';
 import { ApiCacheKeyService } from '~/service/impl/ApiCacheKeyService';
-import { authenticate } from '~/shopify.server';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    const { admin, session, storefront } = await authenticate.public.appProxy(request);
-
     const res = await checkPublicAuth(request); //Public auth check
 
     if (!res.ok)

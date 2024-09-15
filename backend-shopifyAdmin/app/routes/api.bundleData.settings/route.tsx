@@ -34,7 +34,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const cacheData = await cache.readCache();
 
     if (cacheData) {
-        return json(new JsonData(true, 'success', 'Bundle succesfuly retirieved.', [], cacheData, true), {
+        return json(new JsonData(true, 'success', 'Bundle settings succesfuly retirieved.', [], cacheData, true), {
             headers: {
                 'Access-Control-Allow-Origin': '*',
             },
@@ -61,7 +61,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             //Write to cache
             await cache.writeCache(bundleSettings);
 
-            return json(new JsonData(false, 'success', 'Bundle succesfuly retirieved.', [], bundleSettings), {
+            return json(new JsonData(false, 'success', 'Bundle settings succesfuly retirieved.', [], bundleSettings), {
                 headers: {
                     'Access-Control-Allow-Origin': '*',
                 },

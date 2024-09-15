@@ -34,12 +34,12 @@ export class ApiCacheKeyService {
         return `api-${this.shop}-${ApiEndpoint.BundleSettings}-${bundleId}`;
     }
 
-    public getStepKey(stepNum: string | null): string {
+    public getStepKey(stepNum: string | null, bundleId: string | null): string {
         if (stepNum === null) {
             return '';
         }
 
-        return `api-${this.shop}-${ApiEndpoint.BundleStep}-${stepNum}`;
+        return `api-${this.shop}-${ApiEndpoint.BundleStep}-${bundleId}-${stepNum}`;
     }
 
     public async getAllStepsKeys(bundleId: string | null): Promise<string[]> {
@@ -64,7 +64,7 @@ export class ApiCacheKeyService {
 
         //Generate keys for each step
         for (let i = 1; i <= numOfSteps._count.stepNumber; i++) {
-            const key = this.getStepKey(String(i));
+            const key = this.getStepKey(String(i), bundleId);
             keys.push(key);
         }
 

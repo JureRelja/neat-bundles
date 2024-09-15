@@ -337,7 +337,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             try {
                 //Adding the products data to the step
                 if (stepData.stepType === StepType.PRODUCT) {
-                    await db.bundleStep.update({
+                    const res = await db.bundleStep.update({
                         where: {
                             id: stepData.id,
                         },
@@ -352,6 +352,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                                     allowProductDuplicates: stepData.productInput?.allowProductDuplicates,
                                     showProductPrice: stepData.productInput?.showProductPrice,
                                     products: {
+                                        set: [],
                                         connectOrCreate: stepData.productInput?.products.map((product: Product) => {
                                             return {
                                                 where: {
@@ -368,6 +369,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                             },
                         },
                     });
+
+                    console.log(res);
                     //Adding the content inputs to the step
                 } else if (stepData.stepType === StepType.CONTENT) {
                     await db.bundleStep.update({
@@ -396,6 +399,16 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         },
                     });
                 }
+
+                // Clear the cache for the bundle
+                const cacheKeyService = new ApiCacheKeyService(session.shop);
+
+                await Promise.all([
+                    ApiCacheService.singleKeyDelete(cacheKeyService.getStepKey(stepData.stepNumber.toString(), params.bundleid as string)),
+                    ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
+                ]);
+
+                return redirect(`/app/bundles/${params.bundleid}`);
             } catch (error) {
                 console.log(error);
                 return json(
@@ -405,16 +418,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     { status: 400 },
                 );
             }
-
-            // Clear the cache for the bundle
-            const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-            await Promise.all([
-                ApiCacheService.singleKeyDelete(cacheKeyService.getStepKey(params.stepnum as string)),
-                ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
-            ]);
-
-            return redirect(`/app/bundles/${params.bundleid}`);
         }
 
         default:
@@ -568,48 +571,48 @@ export default function Index() {
                                             <BlockStack gap={GapInsideSection}>
                                                 {/* Commented for now. Users will only be able to select individual products. */}
                                                 {/* <ChoiceList
-                          title="Display products:"
-                          name={`productResourceType`}
-                          choices={[
-                            {
-                              label: "Selected products",
-                              value: ProductResourceType.PRODUCT,
-                            },
-                            {
-                              label: "Selected collections",
-                              value: ProductResourceType.COLLECTION,
-                            },
-                          ]}
-                          selected={[
-                            stepData.productInput?.resourceType as string,
-                          ]}
-                          onChange={(selected: string[]) => {
-                            setStepData((stepData: BundleStepAllResources) => {
-                              if (!stepData.productInput) return stepData;
+                                                    title="Display products:"
+                                                    name={`productResourceType`}
+                                                    choices={[
+                                                        {
+                                                        label: "Selected products",
+                                                        value: ProductResourceType.PRODUCT,
+                                                        },
+                                                        {
+                                                        label: "Selected collections",
+                                                        value: ProductResourceType.COLLECTION,
+                                                        },
+                                                    ]}
+                                                    selected={[
+                                                        stepData.productInput?.resourceType as string,
+                                                    ]}
+                                                    onChange={(selected: string[]) => {
+                                                        setStepData((stepData: BundleStepAllResources) => {
+                                                        if (!stepData.productInput) return stepData;
 
-                              return {
-                                ...stepData,
-                                productInput: {
-                                  ...stepData.productInput,
-                                  resourceType:
-                                    selected[0] as ProductResourceType,
-                                  productResources: [],
-                                },
-                              };
-                            });
-                          }}
-                        /> 
+                                                        return {
+                                                            ...stepData,
+                                                            productInput: {
+                                                            ...stepData.productInput,
+                                                            resourceType:
+                                                                selected[0] as ProductResourceType,
+                                                            productResources: [],
+                                                            },
+                                                        };
+                                                        });
+                                                    }}
+                                                    /> 
 
-                        <ResourcePicker
-                          resourceType={
-                            stepData.productInput
-                              ?.resourceType as ProductResourceType
-                          }
-                          selectedResources={
-                            stepData.productInput?.productResources as string[]
-                          }
-                          updateSelectedResources={updateSelectedResources}
-                        />*/}
+                                                    <ResourcePicker
+                                                    resourceType={
+                                                        stepData.productInput
+                                                        ?.resourceType as ProductResourceType
+                                                    }
+                                                    selectedResources={
+                                                        stepData.productInput?.productResources as string[]
+                                                    }
+                                                    updateSelectedResources={updateSelectedResources}
+                                                    />*/}
 
                                                 <ResourcePicker selectedProducts={stepData.productInput?.products as Product[]} updateSelectedProducts={updateSelectedProducts} />
                                             </BlockStack>
