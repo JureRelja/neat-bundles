@@ -122,8 +122,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
         //Moving the step up
         case 'moveStepDown': {
-            console.log('Moving step down');
-
             try {
                 const stepId: string = formData.get('id') as string;
 
@@ -147,6 +145,15 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         { status: 400 },
                     );
 
+                const StepThatWasDown = (
+                    await db.bundleStep.findMany({
+                        where: {
+                            stepNumber: step?.stepNumber + 1,
+                            bundleId: step.bundleId,
+                        },
+                    })
+                )[0];
+
                 const maxStep: { _max: { stepNumber: number | null } } = await db.bundleStep.aggregate({
                     _max: {
                         stepNumber: true,
@@ -157,7 +164,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 });
 
                 if (maxStep._max.stepNumber === null || step.stepNumber >= maxStep._max.stepNumber) {
-                    console.log("Step couldn't be moved down");
                     return json(
                         {
                             ...new JsonData(false, 'error', 'There was an error with your request', [
@@ -175,7 +181,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 await db.$transaction([
                     db.bundleStep.update({
                         where: {
-                            id: Number(stepId),
+                            id: step.id,
                         },
                         data: {
                             stepNumber: {
@@ -184,18 +190,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         },
                     }),
 
-                    db.bundleStep.updateMany({
+                    db.bundleStep.update({
                         where: {
-                            AND: [
-                                {
-                                    stepNumber: step.stepNumber + 1,
-                                },
-                                {
-                                    NOT: {
-                                        id: Number(stepId),
-                                    },
-                                },
-                            ],
+                            id: StepThatWasDown.id,
                         },
                         data: {
                             stepNumber: {
@@ -213,8 +210,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
                 ]);
 
-                console.log('Step moved down');
-
                 return json({
                     ...new JsonData(true, 'success', 'Step moved down'),
                 });
@@ -230,7 +225,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         }
         //Moving the step down
         case 'moveStepUp': {
-            console.log('Moving step up');
             try {
                 const stepId: string = formData.get('id') as string;
 
@@ -254,6 +248,15 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         { status: 400 },
                     );
 
+                const stepThatWasUp = (
+                    await db.bundleStep.findMany({
+                        where: {
+                            stepNumber: step?.stepNumber - 1,
+                            bundleId: step.bundleId,
+                        },
+                    })
+                )[0];
+
                 if (step.stepNumber <= 1) {
                     return json(
                         {
@@ -268,7 +271,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         { status: 400 },
                     );
                 }
-
                 await db.$transaction([
                     //Update the step
                     db.bundleStep.update({
@@ -281,19 +283,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                             },
                         },
                     }),
-                    //Update all other steps
-                    db.bundleStep.updateMany({
+                    //Update the step that was before this step
+                    db.bundleStep.update({
                         where: {
-                            AND: [
-                                {
-                                    stepNumber: step.stepNumber - 1,
-                                },
-                                {
-                                    NOT: {
-                                        id: Number(stepId),
-                                    },
-                                },
-                            ],
+                            id: stepThatWasUp.id,
                         },
                         data: {
                             stepNumber: {

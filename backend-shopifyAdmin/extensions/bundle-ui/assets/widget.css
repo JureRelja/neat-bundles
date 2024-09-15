@@ -102,7 +102,7 @@ p {
     font-weight: 600;
     background-color: #f3df76;
     text-align: center;
-    border-radius: 10px;
+
     width: 100%;
 }
 
@@ -157,22 +157,26 @@ p {
 }
 
 .product {
-    width: 220px;
+    width: 230px;
     display: flex;
     flex-direction: column;
     align-items: start;
     justify-content: start;
     gap: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
     padding-bottom: 10px;
     height: fit-content;
+    overflow: hidden;
+}
+
+.product-img {
+    position: relative;
+    width: 100%;
 }
 
 .product img {
-    width: 220px;
+    width: 100%;
     height: 200px;
-    border-radius: 5px 5px 0 0;
 }
 
 .product-details {
@@ -181,7 +185,7 @@ p {
     align-items: start;
     justify-content: start;
     gap: 5px;
-    padding: 0px 5px;
+    padding: 0px 10px;
 }
 
 .product-title {
@@ -202,7 +206,6 @@ p {
 
 .small-btn {
     padding: 5px 10px;
-    border-radius: 6px;
     font-size: 14px;
     font-weight: 500;
     display: flex;
@@ -257,10 +260,6 @@ p {
 .increment-decrement-container button {
     font-size: 22px;
     padding: 5px 30px;
-}
-
-.product-img {
-    position: relative;
 }
 
 .product-added-overlay {
@@ -347,7 +346,6 @@ p {
     transform: translate(-50%, -50%);
     background-color: #fff;
     padding: 20px;
-    border-radius: 10px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -364,6 +362,7 @@ p {
     overflow: scroll;
     height: 80vh;
     padding-right: 30px;
+    padding-left: 10px;
 }
 
 .modal-product-img {
@@ -378,7 +377,6 @@ p {
     width: 450px;
     height: 100%;
     object-fit: contain;
-    border-radius: 10px;
 }
 
 .product-description {
@@ -405,7 +403,6 @@ p {
 
 .variant-selector {
     padding: 8px 5px;
-    border-radius: 5px;
 }
 
 .option-value {
@@ -516,7 +513,6 @@ p {
 
 .content-input input {
     padding: 10px;
-    border-radius: 10px;
     border: 1px solid #a2a2a2;
 }
 
@@ -524,7 +520,6 @@ p {
     background: white;
     cursor: pointer;
     height: 200px;
-    border-radius: 10px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -564,7 +559,6 @@ p {
     align-items: center;
     gap: 5px;
     padding: 10px 20px;
-    border-radius: 8px;
 }
 
 .nav-button:hover {
@@ -615,8 +609,7 @@ p {
     min-width: 200px;
     max-width: 250px;
     background-color: #fbfafa;
-    border-radius: 5px;
-    padding: 5px;
+    padding: 5px 10px;
     margin-top: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border: 1px solid #a4a2a2;

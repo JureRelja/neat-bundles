@@ -10,10 +10,10 @@
       
     {% comment %} Render a placeholder widget if the user is in theme editor {% endcomment %}
     {% if request.design_mode == true %}
-      {% render 'widget', bundleId:  pageBundleNamespace.bundle_id_page.value %}
+      {% render 'widget', bundleId:  pageBundleNamespace.bundle_id_page.value, settings: block.settings %}
     
     {%  else %}
-      {% render 'widget', bundleId:  pageBundleNamespace.bundle_id_page.value %}
+      {% render 'widget', bundleId:  pageBundleNamespace.bundle_id_page.value, settings: block.settings %}
     
     {% endif %}
   {% endif %}

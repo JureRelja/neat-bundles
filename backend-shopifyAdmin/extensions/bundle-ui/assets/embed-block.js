@@ -47,7 +47,7 @@ window.onload = function () {
  * Determine whether a node's text content is entirely whitespace.
  *
  * @param nod  A node implementing the |CharacterData| interface (i.e.,
- *             a |Text|, |Comment|, or |CDATASection| node
+ *               a |Text|, |Comment|, or |CDATASection| node
  * @return     True if all of the text content of |nod| is whitespace,
  *             otherwise false.
  */
