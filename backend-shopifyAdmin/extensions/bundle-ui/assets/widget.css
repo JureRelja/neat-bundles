@@ -5,7 +5,7 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 100px;
 }
 
 .neat-bundles-inner-container {
@@ -611,7 +611,7 @@ p {
     position: absolute;
     top: 100%;
     right: 0%;
-
+    z-index: 100;
     min-width: 200px;
     max-width: 250px;
     background-color: #fbfafa;
@@ -621,6 +621,18 @@ p {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border: 1px solid #a4a2a2;
 }
+
+/* Mobile step navigation */
+@media (max-width: 768px) {
+    .nav-buttons {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        background-color: #fff;
+        left: 0;
+    }
+}
+
 /* Step avigation end */
 
 /* Final loading start */

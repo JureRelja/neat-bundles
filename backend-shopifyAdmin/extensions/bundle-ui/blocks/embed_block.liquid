@@ -1,29 +1,35 @@
 {% assign pageBundleNamespace = page.metafields.neat_bundles_app %}
 
-
-
-
 {% comment %} Checking if page is a bundle page to begin with {% endcomment %}
 {% if pageBundleNamespace %}
   {% if pageBundleNamespace.bundle_id_page %}
     {% comment %} Rendering a widget  {% endcomment %}
-      
-    {% comment %} Render a placeholder widget if the user is in theme editor {% endcomment %}
-    {% if request.design_mode == true %}
-      {% render 'widget', bundleId:  pageBundleNamespace.bundle_id_page.value %}
+    <template id="neat-bundles-widget-347204u230">
+      <div class="neat-bundles-widget-container">
+        <div class="neat-bundles-widget-container-inner">
     
-    {%  else %}
-      {% render 'widget', bundleId:  pageBundleNamespace.bundle_id_page.value %}
-    
-    {% endif %}
+        {% comment %} Render a placeholder widget if the user is in theme editor {% endcomment %}
+          {% if request.design_mode == true %}
+            {% render 'widget', bundleId:  pageBundleNamespace.bundle_id_page.value %}
+          
+          {%  else %}
+            {% render 'widget', bundleId:  pageBundleNamespace.bundle_id_page.value %}
+          
+          {% endif %}
+        </div>
+      </div>
+    </template>
+
   {% endif %}
 {% endif %}
 
 
 {% schema %}
   {
-    "name": "Bundle widget",
-    "target": "section",
+    "name": "Neat bundles widget",
+    "target": "body",
+    "javascript": "embed-block.js",
+    "stylesheet": "embed-block.css",
     "settings": [
 
       {
@@ -185,12 +191,3 @@
     ]
   }
 {% endschema %}
-
-
- {% comment %} {
-  "type": "number",
-  "id": "bundleId",
-  "label": "Enter Bundle ID",
-  "placeholder": "e.g. 204",
-  "info": "You can find the Bundle ID in the Neat Bundles app, next to the name of each bundle."
-}  {% endcomment %}

@@ -23,14 +23,14 @@ export async function checkPublicAuth(request: Request): Promise<JsonData<undefi
     }
 
     // Check if bundleId is provided
-    if (!bundleId) {
+    if (!bundleId || !Number(bundleId)) {
         return new JsonData(false, 'error', "There was an error with your request. 'bundleId' wasn't specified.");
     }
 
     //Checking if the the bundle is published and belongs to the store
     const bundle = await db.bundle.findUnique({
         where: {
-            id: Number(bundleId),
+            id: Number(bundleId) || undefined,
             deleted: false,
         },
         select: {

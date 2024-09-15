@@ -4,7 +4,6 @@ const fetchActiveStepData = async (bundleId, activeStepNumber) => {
     const data = await response.json();
 
     if (data.ok) {
-        console.log(data.data[0]);
         return data.data[0];
     } else {
         console.log(data.message);
