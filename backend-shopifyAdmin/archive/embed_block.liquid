@@ -1,9 +1,11 @@
+
+
 {% assign pageBundleNamespace = page.metafields.neat_bundles_app %}
 
 {% comment %} Checking if page is a bundle page to begin with {% endcomment %}
-{% if pageBundleNamespace %}
+ {% if pageBundleNamespace %}
   {% if pageBundleNamespace.bundle_id_page %}
-    {% comment %} Rendering a widget  {% endcomment %}
+    {% comment %} Rendering a widget  {% endcomment %} 
     <template id="neat-bundles-widget-347204u230">
       <div class="neat-bundles-widget-container">
         <div class="neat-bundles-widget-container-inner">
@@ -17,7 +19,9 @@
 {% endif %}
 
 
-{% schema %}
+
+
+ {% schema %}
   {
     "name": "Neat bundles",
     "target": "body",
@@ -25,3 +29,6 @@
     "stylesheet": "embed-block.css"
   }
 {% endschema %}
+
+
+

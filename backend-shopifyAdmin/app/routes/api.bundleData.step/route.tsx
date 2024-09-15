@@ -6,8 +6,11 @@ import { checkPublicAuth } from '~/utils/publicApi.auth';
 import { ApiCacheService } from '../../service/impl/ApiCacheService';
 import { BundleStepAllResources, bundleStepFull } from '~/types/BundleStep';
 import { ApiCacheKeyService } from '~/service/impl/ApiCacheKeyService';
+import { authenticate } from '~/shopify.server';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+    const { admin, session } = await authenticate.public.appProxy(request);
+
     const res = await checkPublicAuth(request); //Public auth check
     if (!res.ok)
         return json(res, {

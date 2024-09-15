@@ -31,14 +31,20 @@ export async function checkPublicAuth(request: Request): Promise<JsonData<undefi
     const bundle = await db.bundle.findUnique({
         where: {
             id: Number(bundleId),
+            deleted: false,
         },
         select: {
+            user: {
+                select: {
+                    hasAppInstalled: true,
+                },
+            },
             published: true,
             storeUrl: true,
         },
     });
 
-    if (!bundle || !bundle.published || bundle.storeUrl !== shop) {
+    if (!bundle || !bundle.published || bundle.storeUrl !== shop || !bundle.user.hasAppInstalled) {
         return new JsonData(false, 'error', "There was an error with your request. Requested bundle either doesn't exist or it's not active.");
     } else {
         return new JsonData(true, 'success', 'Bundle is published and belongs to the store.');

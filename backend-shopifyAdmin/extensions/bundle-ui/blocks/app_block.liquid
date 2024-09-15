@@ -13,16 +13,34 @@
 
 {% schema %}
   {
-    "name": "Neat bundles widget",
+    "name": "Bundle widget",
     "target": "section",
     "settings": [
       {
-        "type": "number",
-        "id": "bundleId",
-        "label": "Enter Bundle ID",
-        "placeholder": "e.g. 204",
-        "info": "You can find the Bundle ID in the Neat Bundles app, next to the name of each bundle."
+        "label": "Colour",
+        "id": "colour",
+        "type": "color",
+        "default": "#000000"
+      },
+      {
+        "label": "Size",
+        "id": "size",
+        "type": "range",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "default": 50
       }
+  
     ]
   }
 {% endschema %}
+
+
+ {% comment %} {
+  "type": "number",
+  "id": "bundleId",
+  "label": "Enter Bundle ID",
+  "placeholder": "e.g. 204",
+  "info": "You can find the Bundle ID in the Neat Bundles app, next to the name of each bundle."
+}  {% endcomment %}

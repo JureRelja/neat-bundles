@@ -2,8 +2,8 @@
 {{ 'widget.css' | asset_url | stylesheet_tag }}
 
 {% comment %} JS import {% endcomment %}
-<script src="{{ 'widget-utils.js' | asset_url }}"></script>
-<script src="{{ 'widget-fetching.js' | asset_url }}" rel="preload"></script>
+<script src="{{ 'widget-fetching.js' | asset_url }}" async></script>
+<script src="{{ 'widget-utils.js' | asset_url }}" async></script>
 
 <style>
 
@@ -29,7 +29,7 @@
 
     {% comment %} Not loading {% endcomment %}
     <template x-if="!initialLoading">
-      <div class="neat-bundles-inner-container">
+      <div class="neat-bundles-inner-container" x-init="$nextTick(() => { fetchDataForStep()})">
 
         {% comment %} Step heading {% endcomment %}
         <div class="steps-heading-container">
@@ -102,6 +102,7 @@
               {% comment %} Individualproducts {% endcomment %}
               <template x-for="product in activeStepProducts">
                 <div class="product">
+
                   <div class="product-img">
                     <img
                       x-bind:src="product.variants[product.selectedVariantIndex].featured_image?.src || product.featured_image"
@@ -420,7 +421,11 @@
           <div class="final-loading-container">
             <div class="final-loading-inner">
                 {% comment %} Loader {% endcomment %}
-              <img src="{{ 'finalAnimation.svg' | asset_url }}" alt="loader">
+              <img
+                src="{{ 'finalAnimation.svg' | asset_url }}"
+                alt="loader"
+                width="201"
+                height="201">
 
             </div>
           </div>
@@ -441,29 +446,22 @@
 
   document.addEventListener("alpine:init", () => {
     Alpine.data("bundle", () => ({
-      // Fetch bundle settings data
-      init(){
-        fetch(`${APP_URL}/bundleData?bundleId={{ bundleId }}`, {mode: 'cors'})
-          .then(response => response.json())
-          .then(data => {
-            if (data.ok) {
-              this.bundleData = data.data;
-              this.activeStepData = data.data.steps[0];
-            }
-            else {
-              console.log(data.message);
-              alert("There was an error with fetching your bundle. Please try again. If the problem persists, contact support.");
-            }
-          }).then(() => {
-            //Finished loading of the step icons and titles
-            this.initialLoading = false;
-          }).then(() => {
-            //Fetching products for the first step
-            this.fetchDataForStep();
-          }).catch(error => {
-            console.log('error', error);
-            alert("There was an error with fetching your bundle. Please try again. If the problem persists, contact support.");
-          })
+      async init(){
+        const response = await fetch(`${APP_URL}/bundleData?bundleId={{ bundleId }}`, {mode: 'cors'})
+
+        const data = await response.json();
+
+        if (data.ok) {
+          this.bundleData = data.data;
+          this.activeStepData = data.data.steps[0];
+          
+          this.initialLoading = false;
+
+        }
+        else {
+          console.log(data.message);
+          alert("There was an error with fetching your bundle. Please try again. If the problem persists, contact support.");
+        }
       },
 
       shopDomain: "{{ shop.permanent_domain }}", // Shopify store domain
@@ -481,10 +479,6 @@
       activeStepData: {}, // Current active step data
       activeStepProducts: [], // Products data
 
-      async testLine() {
-         await testLineFunc(window.Shopify);
-      },
-
       //Fetch data for the current step (either products or content)
       async fetchDataForStep(){
         this.stepLoading = true;
@@ -492,11 +486,13 @@
         //Get data for current step
         this.activeStepData = await fetchActiveStepData(this.bundleId, this.activeStep, this.activeStepData);
 
+        if (!this.activeStepData) return;
+
         if (this.bundleData.steps[this.activeStep - 1].stepType == "PRODUCT") {
           this.fetchProductForStep();
         } else if (this.bundleData.steps[this.activeStep - 1].stepType == "CONTENT") {
           //Fetch content data
-          this.activeStepData 
+
         }
         this.stepLoading = false;
       },
@@ -599,5 +595,7 @@
     }));
   });
 </script>
+
+
 {% comment %} Alpine.js import {% endcomment %}
-<script src="{{ 'Alpine-3.14.1.js' | asset_url }}"></script>
+<script src="{{ 'Alpine-3.14.1.js' | asset_url }}" defer></script>
