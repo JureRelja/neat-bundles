@@ -15,17 +15,32 @@
   }
 
   /* Inputed settings */
+
   .bundle_border_radius_big {
     border-radius: {{ settings.bundle_border_radius_big }}px;
   }
   .border_radius_image {
-    border-radius: {{ settings.bundle_border_radius_big }}% {{ settings.bundle_border_radius_big }}% 0 0;
-    
-  }
+    border-radius: {{ settings.bundle_border_radius_big }}%{{ settings.bundle_border_radius_big }}
+    % 0 0;
 
+  }
   .bundle_border_radius_small {
     border-radius: {{ settings.bundle_border_radius_small }}px;
 
+  }
+
+  .step_icon_color {
+    color: {{ settings.step_icon_color }};
+    border-color: {{ settings.step_icon_color }}
+  }
+
+  .passed_step_icon_color {
+    background-color: {{ settings.step_icon_color }};
+    border-color: {{ settings.step_icon_color }}
+  }
+
+  .step_title_color {
+    color: {{ settings.step_title_color }}
   }
 
 </style>
@@ -33,7 +48,6 @@
 {% comment %} Widget body start {% endcomment %}
 {% if bundleId != blank %}
   <div id="neat-bundles-widget-container" x-data="bundle">
-
     {% comment %} Loading {% endcomment %}
     <div
       class="initial-loading-container"
@@ -50,18 +64,18 @@
         <div class="steps-heading-container">
           <template x-for="step in bundleData.steps">
 
-            {% comment %} Previous steps icon {% endcomment %}
+            {% comment %} Passed steps icon {% endcomment %}
             <div>
               <div
                 class="step-heading-container"
                 @click="setActiveStep(step.stepNumber)"
                 x-show="step.stepNumber < reachedStep">
-                <div class="step-icon-container icon-color passed-step">
-                  <span x-text="step.stepNumber" class="icon-number passed-step "></span>
+                <div class="step-icon-container passed_step_icon_color">
+                  <span x-text="step.stepNumber" class="icon-number passed-step passed_step_icon_color"></span>
                 </div>
                 <span
                   x-text="step.title"
-                  class="step-title"
+                  class="step-title step_title_color"
                   x-bind:class="activeStep < reachedStep ? 'active-step' : ''"></span>
               </div>
 
@@ -70,12 +84,12 @@
                 class="step-heading-container"
                 @click="setActiveStep(step.stepNumber)"
                 x-show="step.stepNumber == reachedStep">
-                <div class="step-icon-container icon-color">
-                  <span x-text="step.stepNumber" class="icon-number"></span>
+                <div class="step-icon-container step_icon_color">
+                  <span x-text="step.stepNumber" class="icon-number step_icon_color"></span>
                 </div>
                 <span
                   x-text="step.title"
-                  class="step-title"
+                  class="step-title step_title_color"
                   x-bind:class="activeStep == reachedStep ? 'active-step' : ''"></span>
               </div>
 
@@ -84,10 +98,10 @@
                 class="step-heading-container inactive-step"
                 @click="setActiveStep(step.stepNumber)"
                 x-show="step.stepNumber > reachedStep">
-                <div class="step-icon-container icon-color ">
-                  <span x-text="step.stepNumber" class="icon-number"></span>
+                <div class="step-icon-container step_icon_color">
+                  <span x-text="step.stepNumber" class="icon-number step_icon_color"></span>
                 </div>
-                <span x-text="step.title" class="step-title"></span>
+                <span x-text="step.title" class="step-title step_title_color"></span>
               </div>
             </div>
           </template>
@@ -120,7 +134,6 @@
 
                   <div class="product-img">
                     <img
-                      
                       x-bind:src="product.variants[product.selectedVariantIndex].featured_image?.src || product.featured_image"
                       alt="product image"
                       width="200"
@@ -293,7 +306,10 @@
 
                   {% comment %} Content input of tpye 'TEXT' {% endcomment %}
                   <div x-show="contentInput.inputType == 'TEXT'" class="content-input">
-                    <label x-text="contentInput.inputLabel" :for="`text-input-${contentInput.id}`" class="bundle_border_radius_small"></label>
+                    <label
+                      x-text="contentInput.inputLabel"
+                      :for="`text-input-${contentInput.id}`"
+                      class="bundle_border_radius_small"></label>
                     <input
                       class="bundle_border_radius_small"
                       x-bind:id="`text-input-${contentInput.id}`"
@@ -305,7 +321,10 @@
                   </div>
                   {% comment %} Content input of tpye 'NUMBER' {% endcomment %}
                   <div x-show="contentInput.inputType == 'NUMBER'" class="content-input">
-                    <label x-text="contentInput.inputLabel" :for="`number-input-${contentInput.id}`" class="bundle_border_radius_small"></label>
+                    <label
+                      x-text="contentInput.inputLabel"
+                      :for="`number-input-${contentInput.id}`"
+                      class="bundle_border_radius_small"></label>
                     <input
                       class="bundle_border_radius_small"
                       x-bind:id="`number-input-${contentInput.id}`"
@@ -345,7 +364,6 @@
                       </label>
                       <input
                         class="image-input-field"
-
                         x-bind:id="`image-input-${contentInput.id}`"
                         type="file"
                         max="1"
