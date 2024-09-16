@@ -37,6 +37,7 @@
     "settings": [
 
 
+
       {
         "type": "header",
         "content": "GLOBAL BUNDLE SETTINGS"
@@ -65,6 +66,7 @@
       },
 
 
+
       {
         "type": "header",
         "content": "STEP NUMBER & TITLE"
@@ -81,6 +83,7 @@
         "label": "Step title text",
         "default": "#77CBB9"
       },
+
 
 
       {
@@ -101,25 +104,35 @@
       },
 
 
+      
       {
         "type": "header",
         "content": "PRODUCT SETTINGS"
       },
       {
-        "type": "range",
-        "id": "product_columns",
-        "label": "Number of product colums",
-        "info": "On smaller screens products will be shown in fewer columns.",
-        "default": 4,
-        "min": 0,
-        "max": 5,
-        "step": 1
-      },
-      {
-        "type": "text_alignment",
+        "type": "select",
         "id": "product_align",
-        "label": "Align products",
-        "default": "left"
+        "label": "Vertical alignment",
+        "options": [
+          {
+            "value": "flex-start",
+            "label": "Left"
+          },
+          {
+            "value": "center",
+            "label": "Middle"
+          },
+          {
+            "value": "flex-end",
+            "label": "Right"
+          },
+          {
+            "value": "space-between",
+            "label": "Justify"
+          }
+        ],
+        "default": "space-between",
+        "info": "Controls the horizontal aligment of products on bundle steps."
       },
       {
         "type": "color",
@@ -156,6 +169,7 @@
       },
 
 
+
       {
         "type": "header",
         "content": "INPUT FIELDS SETTINGS"
@@ -171,6 +185,7 @@
         "unit": "%",
         "default": 5
       },
+
 
 
       {
@@ -201,6 +216,7 @@
         "label": "'Next step' background",
         "default": "#000000"
       }
+
 
 
     ]

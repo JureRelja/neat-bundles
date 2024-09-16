@@ -1,9 +1,6 @@
 {% comment %} CSS code for widget {% endcomment %}
 {{ 'widget.css' | asset_url | stylesheet_tag }}
 
-{% comment %} Custom styles that the user can input {% endcomment %}
-{{ 'userSettingsStyles.css.liquid' | asset_url | stylesheet_tag }}
-
 
 {% comment %} JS import {% endcomment %}
 <script src="{{ 'widget-fetching.js' | asset_url }}" async></script>
@@ -17,6 +14,49 @@
   [x-cloak] {
     display: none !important;
   }
+
+
+  /* User inputed settings */
+
+  .bundle_border_radius_big {
+    border-radius: {{ settings.bundle_border_radius_big }}px;
+  }
+  .border_radius_image {
+    border-radius: {{ settings.bundle_border_radius_big }}%{{ settings.bundle_border_radius_big }}
+    % 0 0;
+
+  }
+  .bundle_border_radius_small {
+    border-radius: {{ settings.bundle_border_radius_small }}px;
+
+  }
+
+  .step_icon_color {
+    color: {{ settings.step_icon_color }};
+    border-color: {{ settings.step_icon_color }}
+  }
+
+  .passed_step_icon_color {
+    background-color: {{ settings.step_icon_color }};
+    border-color: {{ settings.step_icon_color }}
+  }
+
+  .step_title_color {
+    color: {{ settings.step_title_color }}
+  }
+
+  .step_description_color {
+    color: {{ settings.step_description_color }}
+  }
+
+  .step_description_bg_color {
+    background-color: {{ settings.step_description_bg_color }}
+  }
+
+  .product_align {
+    justify-content: {{ settings.product_align }};
+  }
+
 
 </style>
 
@@ -101,7 +141,7 @@
             </div>
 
             {% comment %} Product step {% endcomment %}
-            <div class="products-container" x-show="activeStepData.stepType == 'PRODUCT'">
+            <div class="products-container product_align" x-show="activeStepData.stepType == 'PRODUCT'">
 
               {% comment %} Individualproducts {% endcomment %}
               <template x-for="product in activeStepProducts">
@@ -125,11 +165,13 @@
                     </div>
                   </div>
                   <div class="product-details">
-                    <p x-text="product.title" class="product-title"></p>
-                    <span
-                      x-text="product.variants[product.selectedVariantIndex].price"
-                      x-show="activeStepData.productInput.showProductPrice"
-                      class="product-price"></span>
+                    <div class="product-title-and-price">
+                      <p x-text="product.title" class="product-title"></p>
+                      <span
+                        x-text="product.variants[product.selectedVariantIndex].price"
+                        x-show="activeStepData.productInput.showProductPrice"
+                        class="product-price"></span>
+                    </div>
 
                     {% comment %} Product action buttons {% endcomment %}
 
