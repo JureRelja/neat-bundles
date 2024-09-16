@@ -1,18 +1,18 @@
 node_modules
 
-backend-shopifyAdmin/.cache
-backend-shopifyAdmin/build
-backend-shopifyAdmin/app/build
-backend-shopifyAdmin/public/build/
-backend-shopifyAdmin/public/_dev
-backend-shopifyAdmin/app/public/build
-backend-shopifyAdmin/prisma/dev.sqlite
-backend-shopifyAdmin/prisma/dev.sqlite-journal
+.cache
+build
+app/build
+public/build/
+public/_dev
+app/public/build
+prisma/dev.sqlite
+prisma/dev.sqlite-journal
 database.sqlite
 
-backend-shopifyAdmin/neat-bundles-83677745c654.json
+neat-bundles-83677745c654.json
 
-backend-shopifyAdmin/shopify-schema.json 
-backend-shopifyAdmin/shopifyGraphql 
+shopify-schema.json 
+shopifyGraphql 
 
 .env

@@ -179,6 +179,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 }
 
                 await db.$transaction([
+                    //Increment the step on which the operation was clicked
                     db.bundleStep.update({
                         where: {
                             id: step.id,
