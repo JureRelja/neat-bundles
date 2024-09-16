@@ -1,6 +1,9 @@
 {% comment %} CSS code for widget {% endcomment %}
 {{ 'widget.css' | asset_url | stylesheet_tag }}
 
+{{ 'userSettingsStyles.css.liquid' | asset_url | stylesheet_tag }}
+
+
 {% comment %} JS import {% endcomment %}
 <script src="{{ 'widget-fetching.js' | asset_url }}" async></script>
 <script src="{{ 'widget-utils.js' | asset_url }}" async></script>
@@ -14,34 +17,6 @@
     display: none !important;
   }
 
-  /* Inputed settings */
-
-  .bundle_border_radius_big {
-    border-radius: {{ settings.bundle_border_radius_big }}px;
-  }
-  .border_radius_image {
-    border-radius: {{ settings.bundle_border_radius_big }}%{{ settings.bundle_border_radius_big }}
-    % 0 0;
-
-  }
-  .bundle_border_radius_small {
-    border-radius: {{ settings.bundle_border_radius_small }}px;
-
-  }
-
-  .step_icon_color {
-    color: {{ settings.step_icon_color }};
-    border-color: {{ settings.step_icon_color }}
-  }
-
-  .passed_step_icon_color {
-    background-color: {{ settings.step_icon_color }};
-    border-color: {{ settings.step_icon_color }}
-  }
-
-  .step_title_color {
-    color: {{ settings.step_title_color }}
-  }
 
 </style>
 
