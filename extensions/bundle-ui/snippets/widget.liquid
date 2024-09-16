@@ -1,6 +1,7 @@
 {% comment %} CSS code for widget {% endcomment %}
 {{ 'widget.css' | asset_url | stylesheet_tag }}
 
+{% comment %} Custom styles that the user can input {% endcomment %}
 {{ 'userSettingsStyles.css.liquid' | asset_url | stylesheet_tag }}
 
 
@@ -16,7 +17,6 @@
   [x-cloak] {
     display: none !important;
   }
-
 
 </style>
 
@@ -96,8 +96,8 @@
           <div class="step-body">
 
             {% comment %} Step description {% endcomment %}
-            <div class="step-description-container bundle_border_radius_big">
-              <p x-text="activeStepData.description"></p>
+            <div class="step-description-container bundle_border_radius_big step_description_bg_color">
+              <p x-text="activeStepData.description" class="step_description_color"></p>
             </div>
 
             {% comment %} Product step {% endcomment %}
