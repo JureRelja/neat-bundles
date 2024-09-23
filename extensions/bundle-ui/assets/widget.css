@@ -40,7 +40,7 @@ p {
 .steps-heading-container {
     display: flex;
     width: 100%;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
 }
 
@@ -138,6 +138,35 @@ p {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+@media (max-width: 768px) {
+    .steps-heading-container {
+        justify-content: space-between;
+    }
+
+    .step-heading-container {
+        width: 70px;
+    }
+
+    .step-icon-container {
+        width: 40px;
+        height: 40px;
+    }
+
+    .icon-number {
+        font-size: 20px;
+    }
+
+    .step-title {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 350px) {
+    .step-heading-container {
+        width: 60px;
+    }
 }
 
 /* Step body global end */
@@ -438,15 +467,16 @@ p {
 
     .view-product-modal-inner {
         flex-direction: column;
+        padding: 10px 10px 20px 10px;
         width: 95%;
-        top: 10%;
+        top: 50%;
         left: 50%;
-        transform: translate(-50%, -10%);
+        transform: translate(-50%, -50%);
         justify-content: flex-start;
         align-items: flex-start;
         gap: 10px;
         min-height: 40vh;
-        max-height: 90vh;
+        max-height: 95vh;
         overflow: scroll;
         padding-right: 20px;
     }
@@ -555,6 +585,7 @@ p {
     gap: 5px;
     padding: 10px 20px;
     border: none;
+    height: fit-content;
 }
 
 .nav-button:hover {
@@ -575,6 +606,7 @@ p {
 
 .next-step-btn-container {
     position: relative;
+    height: 100%;
 }
 
 .prev-step-btn {
@@ -604,7 +636,8 @@ p {
     .nav-buttons {
         position: fixed;
         z-index: 4;
-        padding: 10px 2.5% 85px 2.5%;
+        padding: 10px 2.5%;
+        height: fit-content;
         box-sizing: border-box;
         width: 95%;
         bottom: 0;
@@ -613,7 +646,15 @@ p {
         left: 0;
     }
 
+    .next-step-btn-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-end;
+    }
+
     .tooltip {
+        position: static;
     }
 }
 

@@ -487,7 +487,7 @@
             <template x-if="activeStepData.stepType == 'PRODUCT'">
               <div
                 class="tooltip bundle_border_radius_small"
-                x-show="!stepInputsFulfiled()"
+                x-show="!stepInputsFulfiled() && activeStep < bundleData.steps.length"
                 x-text="`Please select between ${activeStepData.productInput?.minProductsOnStep} and ${activeStepData.productInput?.maxProductsOnStep} products`"></div>
             </template>
 
