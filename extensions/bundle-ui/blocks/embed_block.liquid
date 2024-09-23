@@ -37,7 +37,6 @@
     "settings": [
 
 
-
       {
         "type": "header",
         "content": "GLOBAL BUNDLE SETTINGS"
@@ -66,7 +65,6 @@
       },
 
 
-
       {
         "type": "header",
         "content": "STEP NUMBER & TITLE"
@@ -83,7 +81,6 @@
         "label": "Step title text",
         "default": "#77CBB9"
       },
-
 
 
       {
@@ -104,7 +101,6 @@
       },
 
 
-      
       {
         "type": "header",
         "content": "PRODUCT SETTINGS"
@@ -138,7 +134,7 @@
         "type": "color",
         "id": "add_to_bundle_text_color",
         "label": "'Add to bundle' text",
-        "default": "#000000"
+        "default": "#ffffff"
       },
       {
         "type": "color",
@@ -157,35 +153,10 @@
       },
       {
         "type": "color",
-        "id": "remove_product_text_color",
-        "label": "'Remove product' text",
+        "id": "remove_product_text_border_color",
+        "label": "'Remove product' text & border",
         "default": "#000000"
       },
-      {
-        "type": "color",
-        "id": "remove_product_bg_color",
-        "label": "'Remove product' background",
-        "default": "#000000"
-      },
-
-
-
-      {
-        "type": "header",
-        "content": "INPUT FIELDS SETTINGS"
-      },
-      {
-        "type": "range",
-        "id": "input_field_border_radius",
-        "label": "Input field rounding (border radius)",
-        "info": "The higher the value, the rounder the corners will be on input fields.",
-        "min": 0,
-        "max": 30,
-        "step": 1,
-        "unit": "%",
-        "default": 5
-      },
-
 
 
       {
@@ -195,20 +166,15 @@
       {
         "type": "color",
         "id": "prev_step_text_color",
-        "label": "'Previous step' text",
-        "default": "#000000"
-      },
-      {
-        "type": "color",
-        "id": "prev_step_bg_color",
-        "label": "'Previous step' background",
-        "default": "#000000"
+        "label": "'Previous step' text & border",
+        "default": "#000000",
+        "info": "--------------------------"        
       },
       {
         "type": "color",
         "id": "next_step_text_color",
         "label": "'Next step' text",
-        "default": "#000000"
+        "default": "#ffffff"
       },
       {
         "type": "color",
@@ -218,7 +184,24 @@
       }
 
 
-
     ]
   }
 {% endschema %}
+
+
+{% comment %} 
+  {
+          "type": "header",
+          "content": "INPUT FIELDS SETTINGS"
+        },
+        {
+          "type": "range",
+          "id": "input_field_border_radius",
+          "label": "Input field rounding (border radius)",
+          "info": "The higher the value, the rounder the corners will be on input fields.",
+          "min": 0,
+          "max": 30,
+          "step": 1,
+          "unit": "px",
+          "default": 5
+      }, {% endcomment %}

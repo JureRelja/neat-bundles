@@ -57,6 +57,34 @@
     justify-content: {{ settings.product_align }};
   }
 
+  .add_to_bundle_text_bg_color {
+    background-color: {{ settings.add_to_bundle_bg_color }};
+    border-color: {{ settings.add_to_bundle_bg_color }};
+    color: {{ settings.add_to_bundle_text_color }}
+
+  }
+
+  .view_product_text_border_color {
+    color: {{ settings.view_product_text_border_color }};
+    border-color: {{ settings.view_product_text_border_color }}
+  }
+
+  .remove_product_text_border_color {
+    color: {{ settings.remove_product_text_border_color }};
+    border-color: {{ settings.remove_product_text_border_color }}
+
+  }
+
+  .prev_step_text_border_color {
+    color: {{ settings.prev_step_text_color }};
+    border-color: {{ settings.prev_step_bg_color }};
+
+  }
+  .next_step_text_bg_color {
+    color: {{ settings.next_step_text_color }};
+    background-color: {{ settings.next_step_bg_color }};
+
+  }
 
 </style>
 
@@ -180,21 +208,22 @@
                       x-data="{showModal: false}"
                       class="product-action-btns-container"
                       x-show="!isProductInBundle(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep)">
-                      <button class="small-btn view-product-btn bundle_border_radius_small" @click="() => {document.body.classList.add('modal-open'); showModal = true}">View product</button>
+                      <button class="small-btn view-product-btn view_product_text_border_color bundle_border_radius_small" @click="() => {document.body.classList.add('modal-open'); showModal = true}">View product</button>
 
                       {% comment %} Adding product that has no variants besides the default{% endcomment %}
                       <button
                         x-show="product.options.length == 0"
-                        class="small-btn add-to-bundle-btn bundle_border_radius_small"
+                        class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small"
                         :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
                         @click="addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs)">Add product</button>
 
                       {% comment %} Adding product that has other variants besides the default {% endcomment %}
                       <button
                         x-show="product.options.length > 0"
-                        class="small-btn add-to-bundle-btn bundle_border_radius_small"
+                        class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small"
                         :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
                         @click="() => {document.body.classList.add('modal-open'); showModal = true}">Select option</button>
+
 
                       {% comment %} View product modal {% endcomment %}
                       <div
@@ -244,7 +273,7 @@
                             </div>
 
                             <button
-                              class="small-btn add-to-bundle-btn bundle_border_radius_small"
+                              class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small"
                               :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
                               @click="() => { addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs);
                             document.body.classList.remove('modal-open');
@@ -262,12 +291,14 @@
                       </div>
                     </div>
 
+                    <p class="product-variant-unavailable-text" x-text="!product.variants[product.selectedVariantIndex].available ? 'This product is currenty unavailable.' : ''"></p>
+
                     {% comment %} This product is added to bundle storage {% endcomment %}
                     <div class="width-full" x-show="isProductInBundle(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep)">
 
                       {% comment %} This step doesn't allow duplicates {% endcomment %}
                       <div class="product-action-btns-container" x-show="!activeStepData.productInput.allowProductDuplicates">
-                        <button class="small-btn remove-from-bundle-btn bundle_border_radius_small" @click="removeProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs)">Remove
+                        <button class="small-btn remove-from-bundle-btn remove_product_text_border_color bundle_border_radius_small" @click="removeProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs)">Remove
                           <svg
                             width="16"
                             height="16"
@@ -276,34 +307,34 @@
                             xmlns="http://www.w3.org/2000/svg">
                             <path
                               d="M12.6667 3.83333L3.33334 13.1667"
-                              stroke="#F24E1E"
+                              stroke="{{ settings.remove_product_text_border_color }}"
                               stroke-width="1.33333"
                               stroke-linecap="round" />
                             <path
                               d="M3.33334 3.83333L12.6667 13.1667"
-                              stroke="#F24E1E"
+                              stroke="{{ settings.remove_product_text_border_color }}"
                               stroke-width="1.33333"
                               stroke-linecap="round" />
                           </svg>
                         </button>
-                        <button class="small-btn add-to-bundle-btn bundle_border_radius_small" disabled>Added
+                        <button class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small" disabled>Added
                           <svg
                             width="13"
                             height="9"
                             viewBox="0 0 13 9"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg">
-                            <path d="M4.69632 8.92638L0.5 4.73006L1.54908 3.68098L4.69632 6.82822L11.4509 0.0736198L12.5 1.1227L4.69632 8.92638Z" fill="#282828" />
+                            <path d="M4.69632 8.92638L0.5 4.73006L1.54908 3.68098L4.69632 6.82822L11.4509 0.0736198L12.5 1.1227L4.69632 8.92638Z" fill="{{ settings.add_to_bundle_text_color }}" />
                           </svg>
                         </button>
                       </div>
 
                       {% comment %} The step allows duplicates {% endcomment %}
                       <div class="increment-decrement-container" x-show="activeStepData.productInput.allowProductDuplicates">
-                        <button class="small-btn add-to-bundle-btn bundle_border_radius_small" @click="removeProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs)">-</button>
+                        <button class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small" @click="removeProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs)">-</button>
                         <p x-text="getProductQuantity(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep)"></p>
                         <button
-                          class="small-btn add-to-bundle-btn bundle_border_radius_small"
+                          class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small"
                           @click="addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs)"
                           x-bind:disabled="!canAddMoreProducts()">+</button>
                       </div>
@@ -403,7 +434,7 @@
         {% comment %} Desktop step navigation {% endcomment %}
         <div class="nav-buttons" x-show="!stepLoading">
           <button
-            class="nav-button prev-step-btn bundle_border_radius_small"
+            class="nav-button prev-step-btn prev_step_text_bg_color bundle_border_radius_small"
             @click="decrementStep"
             x-bind:disabled="activeStep == 1">
             <svg
@@ -414,7 +445,7 @@
               xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M1.33333 4.00004H10.6667M1.33333 4.00004L3.99999 1.33337M1.33333 4.00004L3.99999 6.66671"
-                stroke="#282828"
+                stroke="{{ settings.prev_step_text_color }}"
                 stroke-width="1.33333"
                 stroke-linecap="round"
                 stroke-linejoin="round" />
@@ -424,7 +455,7 @@
           <div class="next-step-btn-container">
 
             <button
-              class="nav-button next-step-btn bundle_border_radius_small"
+              class="nav-button next_step_text_bg_color bundle_border_radius_small"
               @click="incrementStep"
               x-bind:disabled="!stepInputsFulfiled()"
               x-show="activeStep < bundleData.steps.length"
@@ -438,7 +469,7 @@
                 xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M10.1667 4.00004H0.833374M10.1667 4.00004L7.50004 6.66671M10.1667 4.00004L7.50004 1.33337"
-                  stroke="white"
+                  stroke="{{ settings.next_step_text_color }}"
                   stroke-width="1.33333"
                   stroke-linecap="round"
                   stroke-linejoin="round" />
@@ -455,7 +486,7 @@
             </template>
 
             <button
-              class="nav-button add-to-cart-btn bundle_border_radius_small"
+              class="nav-button add_to_bundle_text_bg_color bundle_border_radius_small"
               @click="addBundleToCart()"
               x-bind:disabled="!stepInputsFulfiled()"
               x-show="activeStep == bundleData.steps.length"
