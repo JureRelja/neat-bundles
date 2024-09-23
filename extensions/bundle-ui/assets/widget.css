@@ -17,13 +17,6 @@
     row-gap: 20px;
 }
 
-.initial-loading-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100px;
-}
-
 p {
     margin: 0;
     letter-spacing: normal;

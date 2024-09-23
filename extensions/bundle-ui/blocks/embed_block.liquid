@@ -8,16 +8,23 @@
       <div class="neat-bundles-widget-container">
         <div class="neat-bundles-widget-container-inner">
 
+          {% comment %} Skeleton snippet used in embed block {% endcomment %}
+          {% capture widgetSkeleton %}
+            {% render 'widgetSkeleton' %}
+          {% endcapture %}
+
           {% comment %} Render a placeholder widget if the user is in theme editor {% endcomment %}
           {% if request.design_mode == true %}
             {% render 'widget'
               , bundleId: 2
-              , settings: block.settings %}
+              , settings: block.settings
+              , widgetSkeleton: widgetSkeleton %}
 
           {% else %}
             {% render 'widget'
               , bundleId: pageBundleNamespace.bundle_id_page.value
-              , settings: block.settings %}
+              , settings: block.settings
+              , widgetSkeleton: widgetSkeleton %}
 
           {% endif %}
         </div>

@@ -93,19 +93,18 @@
   <div id="neat-bundles-widget-container" x-data="bundle">
 
     {% comment %} Loading sceleton {% endcomment %}
-    <div
-      class="initial-loading-container"
-      x-show="showSceleton"
-      x-cloak>
-      <p>Loading...</p>
-    </div>
+    <template x-if="showSkeleton">
+      <div>
+        {{ widgetSkeleton }}
+      </div>
+    </template>
 
     {% comment %} Not loading {% endcomment %}
     <template x-if="!initialLoading">
       <div
         class="neat-bundles-inner-container"
         x-init="$nextTick(() => { fetchDataForStep()})"
-        x-show="!showSceleton">
+        x-show="!showSkeleton">
 
         {% comment %} Step heading {% endcomment %}
         <div class="steps-heading-container">
@@ -158,7 +157,7 @@
         {% comment %} Step body {% endcomment %}
         <div
           class="step-loading-container"
-          x-show="stepLoading && !showSceleton"
+          x-show="stepLoading && !showSkeleton"
           x-cloak>
           <p>Step loading...</p>
         </div>
@@ -559,7 +558,7 @@
         shopDomain: "{{ shop.permanent_domain }}", // Shopify store domain
         bundleId: "{{ bundleId }}", // Bundle ID
   
-        showSceleton: true, // Show sceleton loader
+        showSkeleton: true, // Show sceleton loader
         initialLoading: true, // Initial loading state
         stepLoading: true, // Step loading state
         finalLoading: false, // Final loading state
@@ -587,7 +586,7 @@
             //Fetch content data
   
           }
-          this.showSceleton = false;
+          this.showSkeleton = false;
           this.stepLoading = false;
         },
   
