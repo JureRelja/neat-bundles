@@ -91,17 +91,21 @@
 {% comment %} Widget body start {% endcomment %}
 {% if bundleId != blank %}
   <div id="neat-bundles-widget-container" x-data="bundle">
-    {% comment %} Loading {% endcomment %}
+
+    {% comment %} Loading sceleton {% endcomment %}
     <div
       class="initial-loading-container"
-      x-show="initialLoading"
+      x-show="showSceleton"
       x-cloak>
       <p>Loading...</p>
     </div>
 
     {% comment %} Not loading {% endcomment %}
     <template x-if="!initialLoading">
-      <div class="neat-bundles-inner-container" x-init="$nextTick(() => { fetchDataForStep()})">
+      <div
+        class="neat-bundles-inner-container"
+        x-init="$nextTick(() => { fetchDataForStep()})"
+        x-show="!showSceleton">
 
         {% comment %} Step heading {% endcomment %}
         <div class="steps-heading-container">
@@ -154,9 +158,9 @@
         {% comment %} Step body {% endcomment %}
         <div
           class="step-loading-container"
-          x-show="stepLoading"
+          x-show="stepLoading && !showSceleton"
           x-cloak>
-          <p>Loading...</p>
+          <p>Step loading...</p>
         </div>
 
         {% comment %} Products loaded {% endcomment %}
@@ -204,94 +208,96 @@
                     {% comment %} Product action buttons {% endcomment %}
 
                     {% comment %} This product is not added to bundle storage {% endcomment %}
-                    <div
-                      x-data="{showModal: false}"
-                      class="product-action-btns-container"
-                      x-show="!isProductInBundle(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep)">
-                      <button class="small-btn view-product-btn view_product_text_border_color bundle_border_radius_small" @click="() => {document.body.classList.add('modal-open'); showModal = true}">View product</button>
-
-                      {% comment %} Adding product that has no variants besides the default{% endcomment %}
-                      <button
-                        x-show="product.options.length == 0"
-                        class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small"
-                        :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
-                        @click="addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs)">Add product</button>
-
-                      {% comment %} Adding product that has other variants besides the default {% endcomment %}
-                      <button
-                        x-show="product.options.length > 0"
-                        class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small"
-                        :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
-                        @click="() => {document.body.classList.add('modal-open'); showModal = true}">Select option</button>
-
-
-                      {% comment %} View product modal {% endcomment %}
+                    <div class="width-full">
                       <div
-                        class="view-product-modal"
-                        x-show="showModal"
-                        x-transition>
-                        <div class="view-product-modal-inner bundle_border_radius_big" @click.away="showModal = false">
-                          <div class="mobile-close-btn close-modal-container">
-                            <span class="close" @click="() => {document.body.classList.remove('modal-open'); showModal = false}">&times;</span>
-                          </div>
+                        x-data="{showModal: false}"
+                        class="product-action-btns-container"
+                        x-show="!isProductInBundle(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep)">
+                        <button class="small-btn view-product-btn view_product_text_border_color bundle_border_radius_small" @click="() => {document.body.classList.add('modal-open'); showModal = true}">View product</button>
 
-                          <div class="modal-product-img">
-                            <img
-                              class="bundle_border_radius_big"
-                              x-bind:src="product.variants[product.selectedVariantIndex].featured_image?.src || product.featured_image"
-                              alt="product image"
-                              width="400"
-                              height="400">
-                          </div>
-                          <div class="modal-product-details">
-                            <div class="desktop-close-btn close-modal-container ">
+                        {% comment %} Adding product that has no variants besides the default{% endcomment %}
+                        <button
+                          x-show="product.options.length == 0"
+                          class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small"
+                          :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
+                          @click="addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs)">Add product</button>
+
+                        {% comment %} Adding product that has other variants besides the default {% endcomment %}
+                        <button
+                          x-show="product.options.length > 0"
+                          class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small"
+                          :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
+                          @click="() => {document.body.classList.add('modal-open'); showModal = true}">Select option</button>
+
+
+                        {% comment %} View product modal {% endcomment %}
+                        <div
+                          class="view-product-modal"
+                          x-show="showModal"
+                          x-transition>
+                          <div class="view-product-modal-inner bundle_border_radius_big" @click.away="() => {document.body.classList.remove('modal-open'); showModal = false}">
+                            <div class="mobile-close-btn close-modal-container">
                               <span class="close" @click="() => {document.body.classList.remove('modal-open'); showModal = false}">&times;</span>
                             </div>
 
-                            <h2 x-text="product.title"></h2>
+                            <div class="modal-product-img">
+                              <img
+                                class="bundle_border_radius_big"
+                                x-bind:src="product.variants[product.selectedVariantIndex].featured_image?.src || product.featured_image"
+                                alt="product image"
+                                width="400"
+                                height="400">
+                            </div>
+                            <div class="modal-product-details">
+                              <div class="desktop-close-btn close-modal-container ">
+                                <span class="close" @click="() => {document.body.classList.remove('modal-open'); showModal = false}">&times;</span>
+                              </div>
 
-                            {% comment %} Product variant selector {% endcomment %}
-                            <div
-                              x-data="{selectedOptions: product.variants[product.selectedVariantIndex].options.map(option => option)}"
-                              x-init="$watch('selectedOptions', value => {
+                              <h2 x-text="product.title"></h2>
+
+                              {% comment %} Product variant selector {% endcomment %}
+                              <div
+                                x-data="{selectedOptions: product.variants[product.selectedVariantIndex].options.map(option => option)}"
+                                x-init="$watch('selectedOptions', value => {
                               product.selectedVariantIndex = findVariantIndex(value, product.variants)
                             })"
-                              class="product-options-container">
+                                class="product-options-container">
 
-                              {% comment %} Option values {% endcomment %}
-                              <template x-for="option in product.options">
-                                <div class="product-option-picker-container">
-                                  <label x-text="option.name" class="option-title"></label>
-                                  <select class="variant-selector bundle_border_radius_small" x-model="selectedOptions[product.options.indexOf(option)]">
-                                    <template x-for="value in option.values">
-                                      <option x-text="value" class="option-value"></option>
-                                    </template>
-                                  </select>
-                                </div>
-                              </template>
-                              <p class="product-variant-unavailable-text" x-text="!product.variants[product.selectedVariantIndex].available ? 'This product option is currenty unavailable.' : ''"></p>
-                            </div>
+                                {% comment %} Option values {% endcomment %}
+                                <template x-for="option in product.options">
+                                  <div class="product-option-picker-container">
+                                    <label x-text="option.name" class="option-title"></label>
+                                    <select class="variant-selector bundle_border_radius_small" x-model="selectedOptions[product.options.indexOf(option)]">
+                                      <template x-for="value in option.values">
+                                        <option x-text="value" class="option-value"></option>
+                                      </template>
+                                    </select>
+                                  </div>
+                                </template>
+                                <p class="product-variant-unavailable-text" x-text="!product.variants[product.selectedVariantIndex].available ? 'This product option is currenty unavailable.' : ''"></p>
+                              </div>
 
-                            <button
-                              class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small"
-                              :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
-                              @click="() => { addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs);
+                              <button
+                                class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small"
+                                :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
+                                @click="() => { addProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs);
                             document.body.classList.remove('modal-open');
                             showModal = false;}
                           ">
-                              Add product</button>
+                                Add product</button>
 
-                            <div class="product-description">
-                              <p x-html="product.description"></p>
+                              <div class="product-description">
+                                <p x-html="product.description"></p>
+                              </div>
+
+
                             </div>
-
-
                           </div>
                         </div>
                       </div>
+                      <p class="product-variant-unavailable-text" x-text="!product.variants[product.selectedVariantIndex].available ? 'This product is currenty unavailable.' : ''"></p>
                     </div>
 
-                    <p class="product-variant-unavailable-text" x-text="!product.variants[product.selectedVariantIndex].available ? 'This product is currenty unavailable.' : ''"></p>
 
                     {% comment %} This product is added to bundle storage {% endcomment %}
                     <div class="width-full" x-show="isProductInBundle(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep)">
@@ -540,7 +546,7 @@
           if (data.ok) {
             this.bundleData = data.data;
             this.activeStepData = data.data.steps[0];
-            
+
             this.initialLoading = false;
   
           }
@@ -553,7 +559,8 @@
         shopDomain: "{{ shop.permanent_domain }}", // Shopify store domain
         bundleId: "{{ bundleId }}", // Bundle ID
   
-        initialLoading: true, // Loading state
+        showSceleton: true, // Show sceleton loader
+        initialLoading: true, // Initial loading state
         stepLoading: true, // Step loading state
         finalLoading: false, // Final loading state
         bundleData: {}, // Bundle settings data
@@ -580,6 +587,7 @@
             //Fetch content data
   
           }
+          this.showSceleton = false;
           this.stepLoading = false;
         },
   
