@@ -93,14 +93,14 @@
   <div id="neat-bundles-widget-container" x-data="bundle">
 
     {% comment %} Loading sceleton {% endcomment %}
-    <template x-if="showSkeleton">
+    <template x-if="true">
       <div>
         {{ widgetSkeleton }}
       </div>
     </template>
 
     {% comment %} Not loading {% endcomment %}
-    <template x-if="!initialLoading">
+    <template x-if="!true">
       <div
         class="neat-bundles-inner-container"
         x-init="$nextTick(() => { fetchDataForStep()})"
