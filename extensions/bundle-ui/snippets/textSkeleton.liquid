@@ -1,0 +1,13 @@
+{% comment %} CSS code for widget {% endcomment %}
+{{ 'textSkeleton.css' | asset_url | stylesheet_tag }}
+{{ 'widgetSkeleton.css' | asset_url | stylesheet_tag }}
+
+{% if type == 'small-short' %}
+  <div class="skeleton-bg"></div>
+{% elsif type == 'big-short' %}
+  <div class="skeleton-bg"></div>
+{% elsif type == 'small-long' %}
+  <div class="skeleton-bg"></div>
+{% elsif type == 'big-long' %}
+  <div class="skeleton-bg"></div>
+{% endif %}

@@ -8,9 +8,36 @@
       <div class="neat-bundles-widget-container">
         <div class="neat-bundles-widget-container-inner">
 
+         {% comment %} Button skeleton used in widgetSkeleton.liquid {% endcomment %}
+         {% capture bigBtnSkeleton %}
+          {% render 'btnSkeleton' type="big" %}
+        {% endcapture %}
+
+         {% comment %} Button skeleton used in widgetSkeleton.liquid {% endcomment %}
+         {% capture smallBtnSkeleton %}
+          {% render 'btnSkeleton' type="small" %}
+        {% endcapture %}
+
+
+         {% comment %} Button skeleton used in widgetSkeleton.liquid {% endcomment %}
+         {% capture smallLongTextSkeleton %}
+          {% render 'textSkeleton' type: "small-long" %}
+        {% endcapture %}
+
+         {% comment %} Button skeleton used in widgetSkeleton.liquid {% endcomment %}
+         {% capture smallShortTextSkeleton %}
+          {% render 'textSkeleton' type: "small-short" %}
+        {% endcapture %}
+
+
           {% comment %} Skeleton snippet used in embed block {% endcomment %}
           {% capture widgetSkeleton %}
-            {% render 'widgetSkeleton' %}
+            {% render 'widgetSkeleton', 
+              bigBtnSkeleton: bigBtnSkeleton, 
+              smallBtnSkeleton: smallBtnSkeleton, 
+              smallLongTextSkeleton: smallLongTextSkeleton, 
+              smallShortTextSkeleton: smallShortTextSkeleton 
+            %}
           {% endcapture %}
 
           {% comment %} Render a placeholder widget if the user is in theme editor {% endcomment %}
