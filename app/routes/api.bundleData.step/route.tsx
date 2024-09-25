@@ -8,14 +8,14 @@ import { BundleStepAllResources, bundleStepFull } from '~/types/BundleStep';
 import { ApiCacheKeyService } from '~/service/impl/ApiCacheKeyService';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    // const res = await checkPublicAuth(request); //Public auth check
-    // if (!res.ok)
-    //     return json(res, {
-    //         headers: {
-    //             'Access-Control-Allow-Origin': '*',
-    //         },
-    //         status: 200,
-    //     });
+    const res = await checkPublicAuth(request); //Public auth check
+    if (!res.ok)
+        return json(res, {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+            },
+            status: 200,
+        });
 
     const url = new URL(request.url);
 

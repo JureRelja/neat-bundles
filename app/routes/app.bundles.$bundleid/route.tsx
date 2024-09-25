@@ -30,7 +30,7 @@ import { authenticate } from '../../shopify.server';
 import { useEffect, useState } from 'react';
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '../../constants';
 import db from '../../db.server';
-import { StepType, BundlePricing, BundleDiscountType, BundleBuilder } from '@prisma/client';
+import { StepType, BundlePricing, BundleDiscountType } from '@prisma/client';
 import { BundleStepBasicResources } from '../../types/BundleStep';
 import { BundleFullStepBasicClient, BundleFullStepBasicServer, inclBundleFullStepsBasic } from '../../types/Bundle';
 import { JsonData, error } from '../../types/jsonData';
@@ -632,19 +632,21 @@ export default function Index() {
                                                     value: BundlePricing.CALCULATED,
                                                     helpText: (
                                                         <Tooltip
+                                                            width="wide"
+                                                            activatorWrapper="div"
                                                             content={`e.g. use case: you want to sell shirt,
                                       pants, and a hat in a bundle with a 10%
-                                      discount on whole order and you want the
-                                      total price before discount to be a sum of
-                                      the prices of individual products.`}>
-                                                            <InlineStack align="start">
+                                      discount on whole order, and you want the
+                                      total price before discount to be the sum of
+                                      the prices of individual products that customer has selected.`}>
+                                                            <div className={styles.tooltipContent}>
                                                                 <Box>
-                                                                    <Text as="p">Final price is calculated based on the products that customers selects.</Text>
+                                                                    <p>Final price is calculated based on the products that customers selects.</p>
                                                                 </Box>
                                                                 <Box>
                                                                     <Icon source={QuestionCircleIcon} />
                                                                 </Box>
-                                                            </InlineStack>
+                                                            </div>
                                                         </Tooltip>
                                                     ),
                                                 },
@@ -653,18 +655,20 @@ export default function Index() {
                                                     value: BundlePricing.FIXED,
                                                     helpText: (
                                                         <Tooltip
+                                                            width="wide"
+                                                            activatorWrapper="div"
                                                             content={`e.g. use case: you want to sell 5 cookies
-                                    in a bundle at a same discount, but want
+                                    in a bundle, always at the same price, but want
                                     your customers to be able to select which
-                                    cookies they want`}>
-                                                            <InlineStack align="start">
+                                    cookies they want.`}>
+                                                            <div className={styles.tooltipContent}>
                                                                 <Box>
                                                                     <Text as="p">All bundles created will be priced the same.</Text>
                                                                 </Box>
                                                                 <Box>
                                                                     <Icon source={QuestionCircleIcon} />
                                                                 </Box>
-                                                            </InlineStack>
+                                                            </div>
                                                         </Tooltip>
                                                     ),
                                                     renderChildren: (isSelected: boolean) => {

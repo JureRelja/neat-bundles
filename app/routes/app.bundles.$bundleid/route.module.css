@@ -1,27 +1,33 @@
 #tableWrapper {
-  position: relative;
+    position: relative;
 }
 
 .loadingTable {
-  width: 100%;
-  height: 100%;
-  background-color: #e3e3e3;
-  opacity: 0.5;
-  position: absolute;
-  z-index: 50;
-  border-radius: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: #e3e3e3;
+    opacity: 0.5;
+    position: absolute;
+    z-index: 50;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .hide {
-  display: none;
+    display: none;
 }
 
 .dummyIconPlaceholder {
-  color: transparent;
-  background-color: transparent;
-  width: 20px;
-  height: 20px;
+    color: transparent;
+    background-color: transparent;
+    width: 20px;
+    height: 20px;
+}
+
+.tooltipContent {
+    display: flex;
+    justify-content: flex-start;
+    align-self: flex-start;
 }
