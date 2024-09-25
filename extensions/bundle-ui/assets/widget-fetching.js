@@ -121,7 +121,7 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
 
         bundleContentFormData.append(`attributes[User data for bundle: ${bundleVariantForCart.bundleTitle}]`, bundleVariantForCart.bundleInputsAdmin);
 
-        await fetch(window.Shopify.routes.root + 'cart/update.js', {
+        await fetch(Shopify.routes.root + 'cart/update.js', {
             method: 'POST',
             body: bundleContentFormData,
         }).then(() => (window.location.href = `/cart`));

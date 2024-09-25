@@ -573,7 +573,7 @@
           }
           
           this.showSkeleton = false;
-          //document.getElementById('widget-skeleton').style.display = 'none';
+          document.getElementById('widget-skeleton').style.display = 'none';
           this.stepLoading = false;
         },
   
@@ -616,8 +616,11 @@
             if (!this.activeStepData.contentInputs || this.activeStepData.contentInputs.length == 0) return false;
   
             for (let i = 0; i < this.activeStepData.contentInputs.length; i++) {
-              if (this.activeStepData.contentInputs[i].required && (this.activeStepData.contentInputs[i].value == '' || !this.activeStepData.contentInputs[i].value)) return false;
+
+              if (this.activeStepData.contentInputs[i].inputType == "NONE") continue;
+              if (this.activeStepData.contentInputs[i].required && (!this.activeStepData.contentInputs[i].value || this.activeStepData.contentInputs[i].value == "" )) return false;
             }
+
             return true;
           }
         },

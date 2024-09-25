@@ -102,6 +102,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 const contentInputs: ContentDto[] = customerInputsOnThisStep?.inputs as ContentDto[];
 
                 step.contentInputs?.forEach((contentInput) => {
+                    if (contentInput.inputType === 'NONE') return;
+
                     //Customer content input on this step
                     const contentInputsOnThisStep: ContentDto = contentInputs.find((input) => {
                         return input.id == contentInput.id;

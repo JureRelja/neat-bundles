@@ -8,8 +8,6 @@ import { settingsIncludeAll, SettingsWithAllResources } from '~/types/BundleSett
 import { ApiCacheKeyService } from '~/service/impl/ApiCacheKeyService';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    console.log(request);
-
     const res = await checkPublicAuth(request); //Public auth check
     if (!res.ok)
         return json(res, {

@@ -11,6 +11,7 @@ export class ShopifyBundleProductService {
                   product {
                     id
                     handle
+                    
                   }
                   userErrors {
                     field
