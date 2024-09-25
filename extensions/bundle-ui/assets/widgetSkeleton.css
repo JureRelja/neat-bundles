@@ -11,10 +11,23 @@
     }
 }
 
-.skeleton-container {
+.steps-heading-container-skeleton {
     display: flex;
     justify-content: center;
+    align-items: flex-start;
+    gap: 30px;
+}
+
+.step-heading-container-skeleton {
+    display: flex;
+    justify-content: flex-start;
     align-items: center;
     flex-direction: column;
-    height: 100px;
+    gap: 10px;
+}
+
+.skeleton-circle {
+    border-radius: 50%;
+    width: 52px;
+    height: 52px;
 }

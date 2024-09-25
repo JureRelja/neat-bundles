@@ -5,7 +5,6 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    margin-bottom: 100px;
 }
 
 .neat-bundles-inner-container {
@@ -15,6 +14,7 @@
     align-items: center;
     justify-content: center;
     row-gap: 20px;
+    height: fit-content;
 }
 
 p {
@@ -43,6 +43,7 @@ p {
     align-items: center;
     justify-content: center;
     width: 100px;
+    gap: 10px;
 }
 
 .step-heading-container:hover {
@@ -55,11 +56,14 @@ p {
     border-radius: 50%;
     width: 50px;
     height: 50px;
-    border: 3px solid;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+.step-icon-container-border {
+    border: 3px solid;
 }
 
 .icon-number {
@@ -125,14 +129,6 @@ p {
     }
 }
 
-.step-loading-container {
-    height: 400px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
 @media (max-width: 768px) {
     .steps-heading-container {
         justify-content: space-between;
@@ -184,6 +180,7 @@ p {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     padding-bottom: 10px;
     overflow: hidden;
+    border-radius: 10px;
 }
 
 .product-img {
@@ -232,6 +229,7 @@ p {
     justify-content: space-between;
     width: 100%;
     margin-bottom: 5px;
+    gap: 10px;
 }
 
 .small-btn {
@@ -564,9 +562,19 @@ p {
 /* Content step end */
 
 /* Step navigation start */
+.nav-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-start;
+    width: 100%;
+    gap: 10px;
+}
+
 .nav-buttons {
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
     width: 100%;
 }
 
@@ -597,60 +605,23 @@ p {
     opacity: 0.4;
 }
 
-.next-step-btn-container {
-    position: relative;
-    height: 100%;
-}
-
 .prev-step-btn {
     border: 1px solid;
     background-color: transparent;
 }
 
 .tooltip {
-    position: absolute;
-    top: 100%;
-    right: 0%;
     min-width: 200px;
-    max-width: 250px;
+    max-width: 230px;
     background-color: #fbfafa;
+    border-radius: 5px;
     padding: 5px 10px;
-    margin-top: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.tooltip-border {
     border: 1px solid #a4a2a2;
 }
-
-/* Mobile step navigation */
-@media (max-width: 768px) {
-    #neat-bundles-widget-container {
-        margin-bottom: 0px;
-    }
-
-    .nav-buttons {
-        position: fixed;
-        z-index: 4;
-        padding: 10px 2.5%;
-        height: fit-content;
-        box-sizing: border-box;
-        width: 95%;
-        bottom: 0;
-        width: 100%;
-        background-color: #fff;
-        left: 0;
-    }
-
-    .next-step-btn-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: flex-end;
-    }
-
-    .tooltip {
-        position: static;
-    }
-}
-
 /* Step avigation end */
 
 /* Final loading start */

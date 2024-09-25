@@ -1,0 +1,31 @@
+{% comment %} CSS code for widget {% endcomment %}
+{{ 'productsSkeleton.css' | asset_url | stylesheet_tag }}
+{{ 'widget.css' | asset_url | stylesheet_tag }}
+{{ 'widgetSkeleton.css' | asset_url | stylesheet_tag }}
+
+
+<div class="products-container">
+
+  {% for i in (1..4) %}
+    {% comment %} Individualproducts {% endcomment %}
+    <div class="product">
+
+      <div class="skeleton-bg product-img-skeleton">&nbsp;</div>
+
+      <div class="product-details-skeleton">
+
+        <div class="product-title-and-price">
+          {{ smallLongTextSkeleton }}
+          {{ smallShortTextSkeleton }}
+        </div>
+
+        {% comment %} Product action buttons {% endcomment %}
+        <div class="product-action-btns-container">
+          {{ smallBtnSkeleton }}
+          {{ smallBtnSkeleton }}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+
+</div>

@@ -21,11 +21,7 @@
   .bundle_border_radius_big {
     border-radius: {{ settings.bundle_border_radius_big }}px;
   }
-  .border_radius_image {
-    border-radius: {{ settings.bundle_border_radius_big }}%{{ settings.bundle_border_radius_big }}
-    % 0 0;
 
-  }
   .bundle_border_radius_small {
     border-radius: {{ settings.bundle_border_radius_small }}px;
 
@@ -51,10 +47,6 @@
 
   .step_description_bg_color {
     background-color: {{ settings.step_description_bg_color }}
-  }
-
-  .product_align {
-    justify-content: {{ settings.product_align }};
   }
 
   .add_to_bundle_text_bg_color {
@@ -93,14 +85,15 @@
   <div id="neat-bundles-widget-container" x-data="bundle">
 
     {% comment %} Loading sceleton {% endcomment %}
-    <template x-if="true">
-      <div>
+    <template x-if="showSkeleton">
+      <div class="width-full">
+
         {{ widgetSkeleton }}
       </div>
     </template>
 
     {% comment %} Not loading {% endcomment %}
-    <template x-if="!true">
+    <template x-if="!initialLoading">
       <div
         class="neat-bundles-inner-container"
         x-init="$nextTick(() => { fetchDataForStep()})"
@@ -116,8 +109,8 @@
                 class="step-heading-container"
                 @click="setActiveStep(step.stepNumber)"
                 x-show="step.stepNumber < reachedStep">
-                <div class="step-icon-container passed_step_icon_color">
-                  <span x-text="step.stepNumber" class="icon-number passed-step passed_step_icon_color"></span>
+                <div class="step-icon-container step-icon-container-border passed_step_icon_color">
+                  <span x-text="step.stepNumber" class="icon-number passed-step"></span>
                 </div>
                 <span
                   x-text="step.title"
@@ -130,7 +123,7 @@
                 class="step-heading-container"
                 @click="setActiveStep(step.stepNumber)"
                 x-show="step.stepNumber == reachedStep">
-                <div class="step-icon-container step_icon_color">
+                <div class="step-icon-container step-icon-container-border step_icon_color">
                   <span x-text="step.stepNumber" class="icon-number step_icon_color"></span>
                 </div>
                 <span
@@ -144,7 +137,7 @@
                 class="step-heading-container inactive-step"
                 @click="setActiveStep(step.stepNumber)"
                 x-show="step.stepNumber > reachedStep">
-                <div class="step-icon-container step_icon_color">
+                <div class="step-icon-container step-icon-container-border step_icon_color">
                   <span x-text="step.stepNumber" class="icon-number step_icon_color"></span>
                 </div>
                 <span x-text="step.title" class="step-title step_title_color"></span>
@@ -156,10 +149,10 @@
 
         {% comment %} Step body {% endcomment %}
         <div
-          class="step-loading-container"
+          class="width-full"
           x-show="stepLoading && !showSkeleton"
           x-cloak>
-          <p>Step loading...</p>
+          {{ stepSkeleton }}
         </div>
 
         {% comment %} Products loaded {% endcomment %}
@@ -436,29 +429,27 @@
           </div>
         </template>
 
-        {% comment %} Desktop step navigation {% endcomment %}
-        <div class="nav-buttons" x-show="!stepLoading">
-          <button
-            class="nav-button prev-step-btn prev_step_text_bg_color bundle_border_radius_small"
-            @click="decrementStep"
-            x-bind:disabled="activeStep == 1">
-            <svg
-              width="12"
-              height="8"
-              viewBox="0 0 12 8"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M1.33333 4.00004H10.6667M1.33333 4.00004L3.99999 1.33337M1.33333 4.00004L3.99999 6.66671"
-                stroke="{{ settings.prev_step_text_color }}"
-                stroke-width="1.33333"
-                stroke-linecap="round"
-                stroke-linejoin="round" />
-            </svg>
-            Previous step</button>
-
-          <div class="next-step-btn-container">
-
+        {% comment %}  Step navigation {% endcomment %}
+        <div class="nav-wrapper">
+          <div class="nav-buttons" x-show="!stepLoading">
+            <button
+              class="nav-button prev-step-btn prev_step_text_bg_color bundle_border_radius_small"
+              @click="decrementStep"
+              x-bind:disabled="activeStep == 1">
+              <svg
+                width="12"
+                height="8"
+                viewBox="0 0 12 8"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M1.33333 4.00004H10.6667M1.33333 4.00004L3.99999 1.33337M1.33333 4.00004L3.99999 6.66671"
+                  stroke="{{ settings.prev_step_text_color }}"
+                  stroke-width="1.33333"
+                  stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+              Previous step</button>
             <button
               class="nav-button next_step_text_bg_color bundle_border_radius_small"
               @click="incrementStep"
@@ -482,14 +473,6 @@
 
             </button>
 
-            {% comment %} Tooltip to indicate how many products a customer needs to select {% endcomment %}
-            <template x-if="activeStepData.stepType == 'PRODUCT'">
-              <div
-                class="tooltip bundle_border_radius_small"
-                x-show="!stepInputsFulfiled() && activeStep < bundleData.steps.length"
-                x-text="`Please select between ${activeStepData.productInput?.minProductsOnStep} and ${activeStepData.productInput?.maxProductsOnStep} products`"></div>
-            </template>
-
             <button
               class="nav-button add_to_bundle_text_bg_color bundle_border_radius_small"
               @click="addBundleToCart()"
@@ -497,14 +480,16 @@
               x-show="activeStep == bundleData.steps.length"
               x-ref="finishBtn">Finish</button>
 
-            {% comment %} Tooltip to indicate how many products a customer needs to select {% endcomment %}
-            <template x-if="activeStepData.stepType == 'PRODUCT'">
-              <div
-                class="tooltip bundle_border_radius_small"
-                x-show="activeStep == bundleData.steps.length && !stepInputsFulfiled()"
-                x-text="`Please select between ${activeStepData.productInput?.minProductsOnStep} and ${activeStepData.productInput?.maxProductsOnStep} products`"></div>
-            </template>
+
           </div>
+          {% comment %} Tooltip to indicate how many products a customer needs to select on all steps except final step{% endcomment %}
+          <template x-if="activeStepData.stepType == 'PRODUCT' && !stepLoading">
+            <div
+              class="tooltip bundle_border_radius_small tooltip-border"
+              x-show="!stepInputsFulfiled()"
+              x-text="`Please select between ${activeStepData.productInput?.minProductsOnStep} and ${activeStepData.productInput?.maxProductsOnStep} products`"></div>
+          </template>
+
         </div>
 
 
