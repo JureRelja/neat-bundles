@@ -42,7 +42,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     } else {
         // Returning bundle alone or with selected step
         try {
-            const bundleData: BundleAndStepsBasicServer | null = await db.bundle.findUnique({
+            const bundleData: BundleAndStepsBasicServer | null = await db.bundleBuilder.findUnique({
                 where: {
                     id: Number(bundleId),
                 },

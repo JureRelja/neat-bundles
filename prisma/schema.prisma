@@ -12,17 +12,17 @@ datasource db {
 
 //Admin side storage
 model User {
-  id            Int      @id @default(autoincrement())
-  hasAppInstalled Boolean @default(true)
-  ownerName     String   @default("")
-  storeName     String
-  storeUrl      String   @unique
-  primaryDomain String
-  email         String
-  bundles       Bundle[]
+  id              Int             @id @default(autoincrement())
+  hasAppInstalled Boolean         @default(true)
+  ownerName       String          @default("")
+  storeName       String
+  storeUrl        String          @unique
+  primaryDomain   String
+  email           String
+  bundleBuilders  BundleBuilder[]
 }
 
-model Bundle {
+model BundleBuilder {
   id               Int                @id @default(autoincrement())
   deleted          Boolean            @default(false)
   shopifyProductId String             @unique //GraphQL GID format
@@ -38,20 +38,20 @@ model Bundle {
   bundleSettings   BundleSettings?
   storeUrl         String
   user             User               @relation(fields: [storeUrl], references: [storeUrl], onDelete: Cascade)
-  createdBundles   createdBundle[]
+  createdBundles   CreatedBundle[]
 }
 
 //Step models
 model BundleStep {
-  id            Int            @id @default(autoincrement())
-  bundleId      Int
-  bundle        Bundle         @relation(fields: [bundleId], references: [id], onDelete: Cascade)
-  stepNumber    Int
-  title         String
-  description   String         @default("Description for this step")
-  stepType      StepType
-  productInput  ProductInput? //Data if the step is of type PRODUCT
-  contentInputs ContentInput[] //Data if the step is of type CONTENT
+  id              Int            @id @default(autoincrement())
+  bundleBuilderId Int
+  bundleBuilder   BundleBuilder  @relation(fields: [bundleBuilderId], references: [id], onDelete: Cascade)
+  stepNumber      Int
+  title           String
+  description     String         @default("Description for this step")
+  stepType        StepType
+  productInput    ProductInput? //Data if the step is of type PRODUCT
+  contentInputs   ContentInput[] //Data if the step is of type CONTENT
 }
 
 model ProductInput {
@@ -95,8 +95,8 @@ enum InputType {
 
 model BundleSettings {
   id                     Int           @id @default(autoincrement())
-  bundle                 Bundle        @relation(fields: [bundleId], references: [id], onDelete: Cascade)
-  bundleId               Int           @unique
+  bundleBuilder          BundleBuilder @relation(fields: [bundleBuilderId], references: [id], onDelete: Cascade)
+  bundleBuilderId        Int           @unique
   displayDiscountBanner  Boolean       @default(true)
   skipTheCart            Boolean       @default(true)
   allowBackNavigation    Boolean       @default(true)
@@ -148,22 +148,22 @@ model BundleLabels {
 
 //Customer side storage
 
-model createdBundle {
+model CreatedBundle {
   id                   Int                   @id @default(autoincrement())
-  bundleId             Int
+  bundleBuilderId      Int
+  bundleBuilder        BundleBuilder         @relation(fields: [bundleBuilderId], references: [id], onDelete: Cascade)
   addedProductVariants AddedProductVariant[] //List of variants in GraphQL GID format
   addedContent         AddedContent[]
   finalPrice           Float
   discountAmount       Float //Discount amount is the same currency as final total price
   createdAt            DateTime              @default(now())
-  Bundle               Bundle                @relation(fields: [bundleId], references: [id])
 }
 
 model AddedProductVariant {
   id              Int           @id @default(autoincrement())
   productVariant  String //GraphQL GID format
   quantity        Int
-  createdBundle   createdBundle @relation(fields: [createdBundleId], references: [id], onDelete: Cascade)
+  createdBundle   CreatedBundle @relation(fields: [createdBundleId], references: [id], onDelete: Cascade)
   createdBundleId Int
 }
 
@@ -171,6 +171,6 @@ model AddedContent {
   id              Int           @id @default(autoincrement())
   contentType     InputType
   contentValue    String
-  createdBundle   createdBundle @relation(fields: [createdBundleId], references: [id], onDelete: Cascade)
+  createdBundle   CreatedBundle @relation(fields: [createdBundleId], references: [id], onDelete: Cascade)
   createdBundleId Int
 }

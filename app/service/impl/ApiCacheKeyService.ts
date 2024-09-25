@@ -18,32 +18,32 @@ export class ApiCacheKeyService {
         return this.key;
     }
 
-    public getBundleDataKey(bundleId: string | null): string {
-        if (bundleId === null) {
+    public getBundleDataKey(bundleBuilderId: string | null): string {
+        if (bundleBuilderId === null) {
             return '';
         }
 
-        return `api-${this.shop}-${ApiEndpoint.BundleData}-${bundleId}`;
+        return `api-${this.shop}-${ApiEndpoint.BundleData}-${bundleBuilderId}`;
     }
 
-    public getBundleSettingsKey(bundleId: string | null): string {
-        if (bundleId === null) {
+    public getBundleSettingsKey(bundleBuilderId: string | null): string {
+        if (bundleBuilderId === null) {
             return '';
         }
 
-        return `api-${this.shop}-${ApiEndpoint.BundleSettings}-${bundleId}`;
+        return `api-${this.shop}-${ApiEndpoint.BundleSettings}-${bundleBuilderId}`;
     }
 
-    public getStepKey(stepNum: string | null, bundleId: string | null): string {
+    public getStepKey(stepNum: string | null, bundleBuilderId: string | null): string {
         if (stepNum === null) {
             return '';
         }
 
-        return `api-${this.shop}-${ApiEndpoint.BundleStep}-${bundleId}-${stepNum}`;
+        return `api-${this.shop}-${ApiEndpoint.BundleStep}-${bundleBuilderId}-${stepNum}`;
     }
 
-    public async getAllStepsKeys(bundleId: string | null): Promise<string[]> {
-        if (bundleId === null) {
+    public async getAllStepsKeys(bundleBuilderId: string | null): Promise<string[]> {
+        if (bundleBuilderId === null) {
             return [];
         }
 
@@ -53,7 +53,7 @@ export class ApiCacheKeyService {
                 stepNumber: true,
             },
             where: {
-                bundleId: Number(bundleId),
+                bundleBuilderId: Number(bundleBuilderId),
             },
         });
 
@@ -64,23 +64,23 @@ export class ApiCacheKeyService {
 
         //Generate keys for each step
         for (let i = 1; i <= numOfSteps._count.stepNumber; i++) {
-            const key = this.getStepKey(String(i), bundleId);
+            const key = this.getStepKey(String(i), bundleBuilderId);
             keys.push(key);
         }
 
         return keys;
     }
 
-    public async getAllBundleKeys(bundleId: string | null): Promise<string[]> {
-        if (bundleId === null) {
+    public async getAllBundleKeys(bundleBuilderId: string | null): Promise<string[]> {
+        if (bundleBuilderId === null) {
             return [];
         }
 
         const keys: string[] = [];
 
-        keys.push(this.getBundleDataKey(bundleId));
-        keys.push(this.getBundleSettingsKey(bundleId));
-        keys.push(...(await this.getAllStepsKeys(bundleId)));
+        keys.push(this.getBundleDataKey(bundleBuilderId));
+        keys.push(this.getBundleSettingsKey(bundleBuilderId));
+        keys.push(...(await this.getAllStepsKeys(bundleBuilderId)));
 
         return keys;
     }

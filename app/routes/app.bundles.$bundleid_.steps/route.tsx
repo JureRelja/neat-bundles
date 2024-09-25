@@ -24,7 +24,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     if (!params.stepnum) {
         bundleStep = await db.bundleStep.findFirst({
             where: {
-                bundleId: Number(params.bundleid),
+                bundleBuilderId: Number(params.bundleid),
                 stepNumber: Number(1),
             },
             select: bundleStepBasic,
@@ -32,7 +32,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     } else {
         bundleStep = await db.bundleStep.findFirst({
             where: {
-                bundleId: Number(params.bundleid),
+                bundleBuilderId: Number(params.bundleid),
                 stepNumber: Number(params.stepnum),
             },
             select: bundleStepBasic,
@@ -63,7 +63,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     stepNumber: true,
                 },
                 where: {
-                    bundleId: Number(params.bundleid),
+                    bundleBuilderId: Number(params.bundleid),
                 },
             });
 
@@ -84,7 +84,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             try {
                 const newStep: BundleStep = await db.bundleStep.create({
                     data: {
-                        bundleId: Number(params.bundleid),
+                        bundleBuilderId: Number(params.bundleid),
                         stepNumber: numOfSteps._max.stepNumber ? numOfSteps._max.stepNumber + 1 : 1,
                         stepType: StepType.PRODUCT,
                         title: 'Step ' + (numOfSteps._max.stepNumber ? numOfSteps._max.stepNumber + 1 : 1),
@@ -149,7 +149,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     await db.bundleStep.findMany({
                         where: {
                             stepNumber: step?.stepNumber + 1,
-                            bundleId: step.bundleId,
+                            bundleBuilderId: step.bundleBuilderId,
                         },
                     })
                 )[0];
@@ -159,7 +159,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         stepNumber: true,
                     },
                     where: {
-                        bundleId: step.bundleId,
+                        bundleBuilderId: step.bundleBuilderId,
                     },
                 });
 
@@ -253,7 +253,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     await db.bundleStep.findMany({
                         where: {
                             stepNumber: step?.stepNumber - 1,
-                            bundleId: step.bundleId,
+                            bundleBuilderId: step.bundleBuilderId,
                         },
                     })
                 )[0];

@@ -22,7 +22,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const url = new URL(request.url);
 
     //Get query params
-    const bundleId = url.searchParams.get('bundleId');
+    const bundleBuilderId = url.searchParams.get('bundleId');
     const stepNumber = url.searchParams.get('stepNum');
     const storeUrl = url.searchParams.get('shop') as string;
 
@@ -44,7 +44,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         try {
             let bundleSettings: SettingsWithAllResources | null = await db.bundleSettings.findUnique({
                 where: {
-                    bundleId: Number(bundleId),
+                    bundleBuilderId: Number(bundleBuilderId),
                 },
                 include: settingsIncludeAll,
             });

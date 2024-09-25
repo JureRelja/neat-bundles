@@ -1,9 +1,9 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
-name = "neat-bundle-builder"
-handle = "neat-bundle-builder"
-application_url = "https://danny-wu-dance-ny.trycloudflare.com"
+name = "Neat bundles"
+handle = "neat-bundles"
+application_url = "https://collapse-unwrap-scientist-down.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "write_content,write_online_store_navigation,write_products"
 
 [auth]
 redirect_urls = [
-  "https://danny-wu-dance-ny.trycloudflare.com/auth/callback",
-  "https://danny-wu-dance-ny.trycloudflare.com/auth/shopify/callback",
-  "https://danny-wu-dance-ny.trycloudflare.com/api/auth/callback"
+  "https://collapse-unwrap-scientist-down.trycloudflare.com/auth/callback",
+  "https://collapse-unwrap-scientist-down.trycloudflare.com/auth/shopify/callback",
+  "https://collapse-unwrap-scientist-down.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-07"
 
 [app_proxy]
-url = "https://danny-wu-dance-ny.trycloudflare.com"
+url = "https://collapse-unwrap-scientist-down.trycloudflare.com"
 subpath = "nb"
 prefix = "apps"
 

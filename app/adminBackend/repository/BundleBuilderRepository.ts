@@ -1,9 +1,9 @@
 import db from '../../db.server';
 
 export class BundleRepository {
-    public static async createNewBundle(shop: string, bundleTitle: string, bundleProductId: string, bundlePageId: string) {
+    public static async createNewBundleBuilder(shop: string, bundleTitle: string, bundleProductId: string, bundlePageId: string) {
         //Create a new bundle in the database
-        const bundle = await db.bundle.create({
+        const bundle = await db.bundleBuilder.create({
             data: {
                 user: {
                     connect: {
@@ -67,8 +67,8 @@ export class BundleRepository {
         return bundle.id;
     }
 
-    public static async getMaxBundleId(shop: string) {
-        const { _max }: { _max: { id: number | null } } = await db.bundle.aggregate({
+    public static async getMaxBundleBuilderId(shop: string) {
+        const { _max }: { _max: { id: number | null } } = await db.bundleBuilder.aggregate({
             _max: {
                 id: true,
             },

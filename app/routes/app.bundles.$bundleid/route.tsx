@@ -30,7 +30,7 @@ import { authenticate } from '../../shopify.server';
 import { useEffect, useState } from 'react';
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '../../constants';
 import db from '../../db.server';
-import { StepType, BundlePricing, BundleDiscountType, Bundle } from '@prisma/client';
+import { StepType, BundlePricing, BundleDiscountType, BundleBuilder } from '@prisma/client';
 import { BundleStepBasicResources } from '../../types/BundleStep';
 import { BundleFullStepBasicClient, BundleFullStepBasicServer, inclBundleFullStepsBasic } from '../../types/Bundle';
 import { JsonData, error } from '../../types/jsonData';
@@ -43,20 +43,20 @@ import { ApiCacheKeyService } from '~/service/impl/ApiCacheKeyService';
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
 
-    const bundle: BundleFullStepBasicServer | null = await db.bundle.findUnique({
+    const bundleBuilder: BundleFullStepBasicServer | null = await db.bundleBuilder.findUnique({
         where: {
             id: Number(params.bundleid),
         },
         include: inclBundleFullStepsBasic,
     });
 
-    if (!bundle) {
+    if (!bundleBuilder) {
         throw new Response(null, {
             status: 404,
             statusText: 'Not Found',
         });
     }
-    return json(new JsonData(true, 'success', 'Bundle succesfuly retrieved', [], bundle), { status: 200 });
+    return json(new JsonData(true, 'success', 'Bundle succesfuly retrieved', [], bundleBuilder), { status: 200 });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -69,7 +69,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         case 'deleteBundle': {
             try {
                 //Delete the bundle along with its steps, contentInputs, bundleSettings?, bundleColors, and bundleLabels
-                const bundleToDelete = await db.bundle.update({
+                const bundleBuilderToDelete = await db.bundleBuilder.update({
                     where: {
                         id: Number(params.bundleid),
                     },
@@ -82,7 +82,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     },
                 });
 
-                if (!bundleToDelete)
+                if (!bundleBuilderToDelete)
                     return json(
                         {
                             ...new JsonData(false, 'error', 'There was an error with your request', [
@@ -100,7 +100,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     //Deleting a associated bundle page
                     admin.rest.resources.Page.delete({
                         session: session,
-                        id: Number(bundleToDelete.shopifyPageId),
+                        id: Number(bundleBuilderToDelete.shopifyPageId),
                     }),
                     //Deleting a associated bundle product
                     admin.graphql(
@@ -113,7 +113,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         {
                             variables: {
                                 productDeleteInput: {
-                                    id: bundleToDelete.shopifyProductId,
+                                    id: bundleBuilderToDelete.shopifyProductId,
                                 },
                             },
                         },
@@ -163,7 +163,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 });
 
             try {
-                await db.bundle.update({
+                await db.bundleBuilder.update({
                     where: {
                         id: Number(bundleData.id),
                     },

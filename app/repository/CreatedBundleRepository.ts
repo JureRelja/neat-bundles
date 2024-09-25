@@ -6,7 +6,7 @@ export class CreatedBundleRepository {
     constructor() {}
 
     public static async createCreatedBundle(
-        bundleId: number,
+        bundleBuilderId: number,
         finalPrice: number,
         discountAmount: number,
         productVariants?: AddedProductVariantDto[],
@@ -14,7 +14,7 @@ export class CreatedBundleRepository {
     ) {
         const createdBundle = await db.createdBundle.create({
             data: {
-                bundleId: bundleId,
+                bundleBuilderId: bundleBuilderId,
                 createdAt: new Date(),
                 finalPrice: finalPrice,
                 discountAmount: discountAmount,

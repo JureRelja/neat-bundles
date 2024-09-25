@@ -21,13 +21,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     //Get query params
     const stepNumber = url.searchParams.get('stepNum');
-    const bundleId = url.searchParams.get('bundleId');
+    const bundleBuilderId = url.searchParams.get('bundleId');
     const shop = url.searchParams.get('shop') as string;
 
     //Cache aside
     const cacheKey = new ApiCacheKeyService(shop);
 
-    const cacheService = new ApiCacheService(cacheKey.getStepKey(stepNumber, bundleId));
+    const cacheService = new ApiCacheService(cacheKey.getStepKey(stepNumber, bundleBuilderId));
 
     const cacheData = await cacheService.readCache();
 
@@ -43,7 +43,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         try {
             const bundleStep: BundleStepAllResources[] | null = await db.bundleStep.findMany({
                 where: {
-                    bundleId: Number(bundleId),
+                    bundleBuilderId: Number(bundleBuilderId),
                     stepNumber: Number(stepNumber),
                 },
                 include: bundleStepFull,

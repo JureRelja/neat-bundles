@@ -35,7 +35,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 
     const stepData: BundleStepAllResources | null = await db.bundleStep.findFirst({
         where: {
-            bundleId: Number(params.bundleid),
+            bundleBuilderId: Number(params.bundleid),
             stepNumber: Number(params.stepnum),
         },
         include: bundleStepFull,
@@ -90,13 +90,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 await db.$transaction([
                     db.bundleStep.deleteMany({
                         where: {
-                            bundleId: Number(params.bundleid),
+                            bundleBuilderId: Number(params.bundleid),
                             stepNumber: Number(params.stepnum),
                         },
                     }),
                     db.bundleStep.updateMany({
                         where: {
-                            bundleId: Number(params.bundleid),
+                            bundleBuilderId: Number(params.bundleid),
                             stepNumber: {
                                 gt: Number(params.stepnum),
                             },
@@ -143,7 +143,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     stepNumber: true,
                 },
                 where: {
-                    bundleId: Number(params.bundleid),
+                    bundleBuilderId: Number(params.bundleid),
                 },
             });
 
@@ -164,7 +164,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             try {
                 let stepToDuplicate: BundleStepAllResources | null = await db.bundleStep.findFirst({
                     where: {
-                        bundleId: Number(params.bundleid),
+                        bundleBuilderId: Number(params.bundleid),
                         stepNumber: Number(params.stepnum),
                     },
                     include: bundleStepFull,
@@ -192,7 +192,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         //Incrementing the step number for all steps with stepNumber greater than the duplicated step
                         db.bundleStep.updateMany({
                             where: {
-                                bundleId: Number(params.bundleid),
+                                bundleBuilderId: Number(params.bundleid),
                                 stepNumber: {
                                     gt: Number(params.stepnum),
                                 },
@@ -205,7 +205,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         }),
                         db.bundleStep.create({
                             data: {
-                                bundleId: Number(params.bundleid),
+                                bundleBuilderId: Number(params.bundleid),
                                 stepNumber: stepToDuplicate.stepNumber + 1,
                                 title: `${stepToDuplicate.title} - Copy`,
                                 description: stepToDuplicate.description,
@@ -236,7 +236,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     await db.$transaction([
                         db.bundleStep.updateMany({
                             where: {
-                                bundleId: Number(params.bundleid),
+                                bundleBuilderId: Number(params.bundleid),
                                 stepNumber: {
                                     gt: Number(params.stepnum),
                                 },
@@ -249,7 +249,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         }),
                         db.bundleStep.create({
                             data: {
-                                bundleId: Number(params.bundleid),
+                                bundleBuilderId: Number(params.bundleid),
                                 stepNumber: stepToDuplicate.stepNumber + 1,
                                 title: `${stepToDuplicate.title} - Copy`,
                                 description: stepToDuplicate.description,

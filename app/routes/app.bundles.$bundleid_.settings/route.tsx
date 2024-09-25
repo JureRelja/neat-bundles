@@ -20,7 +20,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 
     const bundleSettings: SettingsWithAllResources | null = await db.bundleSettings.findUnique({
         where: {
-            bundleId: Number(params.bundleid),
+            bundleBuilderId: Number(params.bundleid),
         },
         include: settingsIncludeAll,
     });
@@ -55,7 +55,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     try {
         const result: BundleSettings | null = await db.bundleSettings.update({
             where: {
-                bundleId: Number(params.bundleid),
+                bundleBuilderId: Number(params.bundleid),
             },
             data: {
                 displayDiscountBanner: bundleSettings.displayDiscountBanner,

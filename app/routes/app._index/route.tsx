@@ -66,7 +66,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         });
     }
 
-    const bundles: BundleAndStepsBasicServer[] = await db.bundle.findMany({
+    const bundleBuilders: BundleAndStepsBasicServer[] = await db.bundleBuilder.findMany({
         where: {
             user: {
                 storeUrl: session.shop,
@@ -81,7 +81,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     return json(
         {
-            ...new JsonData(true, 'success', 'Bundles were succesfully returned', [], bundles),
+            ...new JsonData(true, 'success', 'Bundles were succesfully returned', [], bundleBuilders),
         },
         { status: 200 },
     );

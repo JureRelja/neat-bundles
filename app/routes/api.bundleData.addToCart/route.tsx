@@ -28,7 +28,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     //Get query params
     const url = new URL(request.url);
     const shop = url.searchParams.get('shop') as string;
-    const bundleId = url.searchParams.get('bundleId');
+    const bundleBuilderId = url.searchParams.get('bundleId');
 
     try {
         const formData = await request.formData();
@@ -51,9 +51,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         //Check if all bundle conditions are met
 
         //Get the bundle with all the steps
-        const bundle: BundleFullAndStepsFullDto = (await db.bundle.findUnique({
+        const bundleBuilder: BundleFullAndStepsFullDto = (await db.bundleBuilder.findUnique({
             where: {
-                id: Number(bundleId as string),
+                id: Number(bundleBuilderId as string),
             },
             include: bundleFullStepsFull,
         })) as BundleFullAndStepsFullDto;
@@ -61,7 +61,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         let error = false;
 
         //Check conditions for each step
-        bundle.steps.forEach((step) => {
+        bundleBuilder.steps.forEach((step) => {
             const customerInputsOnThisStep = customerInputs.find((input: CustomerInputDto) => {
                 return input.stepNumber === step.stepNumber;
             });
@@ -143,7 +143,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         const productVariantService = await ShopifyProductVariantService.build(shop);
 
         //Extract the data from the customer inputs
-        const { addedProductVariants, addedContent, totalProductPrice } = await CustomerInputService.extractDataFromCustomerInputs(customerInputs, bundle, productVariantService);
+        const { addedProductVariants, addedContent, totalProductPrice } = await CustomerInputService.extractDataFromCustomerInputs(
+            customerInputs,
+            bundleBuilder,
+            productVariantService,
+        );
 
         if (files) {
             const fileStoreService = new FileStoreServiceImpl();
@@ -166,21 +170,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         }
 
         //Get the final bundle prices
-        const { bundlePrice, bundleCompareAtPrice, discountAmount } = BundlePriceCalculationService.getFinalBundlePrices(bundle, totalProductPrice);
+        const { bundlePrice, bundleCompareAtPrice, discountAmount } = BundlePriceCalculationService.getFinalBundlePrices(bundleBuilder, totalProductPrice);
 
         //Store the created bundle in the database
         //Get the id of the created bundle
-        const newCreatedBundleId = await CreatedBundleRepository.createCreatedBundle(bundle.id, bundlePrice, discountAmount, addedProductVariants, addedContent);
+        const newCreatedBundleId = await CreatedBundleRepository.createCreatedBundle(bundleBuilder.id, bundlePrice, discountAmount, addedProductVariants, addedContent);
 
         //Create a new dummy product variant with the bundle data and return the variant id
-        const newVariantId = await productVariantService.createProductVariant(newCreatedBundleId, bundle.shopifyProductId, bundleCompareAtPrice, bundlePrice);
+        const newVariantId = await productVariantService.createProductVariant(newCreatedBundleId, bundleBuilder.shopifyProductId, bundleCompareAtPrice, bundlePrice);
 
         //Link the addedProductVariants to the new bundle variant
         const success = await productVariantService.updateProductVariantRelationship(newVariantId, addedProductVariants);
 
         //Create the bundle variant for the cart
         //This variant includes the variant id and the list of added content inputs
-        const bundleVariantForCart = new BundleVariantForCartDto(newVariantId, bundle.title, addedContent);
+        const bundleVariantForCart = new BundleVariantForCartDto(newVariantId, bundleBuilder.title, addedContent);
 
         if (!success) {
             return json(new JsonData(false, 'error', 'Error while adding the bundle to the cart.', []), {

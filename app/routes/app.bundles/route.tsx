@@ -3,7 +3,7 @@ import type { ActionFunctionArgs } from '@remix-run/node';
 import { authenticate } from '../../shopify.server';
 import { JsonData } from '../../types/jsonData';
 import { BundlePageService } from '@adminBackend/service/BundlePageService';
-import { BundleRepository } from '@adminBackend/repository/BundleRepository';
+import { BundleRepository } from '~/adminBackend/repository/BundleBuilderRepository';
 import { ShopifyBundleProductService } from '~/adminBackend/service/ShopifyBundleProductService';
 import { ShopifyRedirectService } from '~/adminBackend/service/ShopifyRedirectService';
 
@@ -27,7 +27,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     switch (action) {
         case 'createBundle': {
             try {
-                const maxBundleId = await BundleRepository.getMaxBundleId(session.shop);
+                const maxBundleId = await BundleRepository.getMaxBundleBuilderId(session.shop);
 
                 const defaultBundleTitle = `New bundle ${maxBundleId ? maxBundleId : ''}`;
 
@@ -50,7 +50,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     //Create redirect
                     ShopifyRedirectService.createProductToBundleRedirect(admin, bundlePageService.getPage().handle as string, bundleProductId),
                     //Create new bundle
-                    BundleRepository.createNewBundle(session.shop, defaultBundleTitle, bundleProductId, bundlePageService.getPage().id?.toString() as string),
+                    BundleRepository.createNewBundleBuilder(session.shop, defaultBundleTitle, bundleProductId, bundlePageService.getPage().id?.toString() as string),
                 ]);
 
                 await bundlePageService.setPageMetafields(bundleId);
