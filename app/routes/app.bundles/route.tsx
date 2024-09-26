@@ -32,7 +32,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 const defaultBundleTitle = `New bundle ${maxBundleId ? maxBundleId : ''}`;
 
                 //Create a new product that will be used as a bundle wrapper
-                const bundleProductId = await ShopifyBundleProductService.createBundleProduct(admin, defaultBundleTitle);
+                const bundleProductId = await ShopifyBundleProductService.createBundleProduct(admin, defaultBundleTitle, session.shop);
 
                 if (!bundleProductId) {
                     return;

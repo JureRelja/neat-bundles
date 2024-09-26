@@ -12,14 +12,15 @@ datasource db {
 
 //Admin side storage
 model User {
-  id              Int             @id @default(autoincrement())
-  hasAppInstalled Boolean         @default(true)
-  ownerName       String          @default("")
-  storeName       String
-  storeUrl        String          @unique
-  primaryDomain   String
-  email           String
-  bundleBuilders  BundleBuilder[]
+  id                       Int             @id @default(autoincrement())
+  hasAppInstalled          Boolean         @default(true)
+  ownerName                String          @default("")
+  storeName                String
+  storeUrl                 String          @unique
+  primaryDomain            String
+  email                    String
+  onlineStorePublicationId String //GraphQL GID format
+  bundleBuilders           BundleBuilder[]
 }
 
 model BundleBuilder {

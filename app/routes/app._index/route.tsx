@@ -29,6 +29,7 @@ import { JsonData } from '../../types/jsonData';
 import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
 import styles from '../app.bundles.$bundleid/route.module.css';
+import { ShopifyCatalogService } from '~/adminBackend/service/ShopifyCatalogService';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
@@ -55,6 +56,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
         const data = await response.json();
 
+        const onlineStorePublicationId = await ShopifyCatalogService.getOnlineStorePublicationId(admin);
+
+        if (!onlineStorePublicationId) {
+            return json(
+                {
+                    ...new JsonData(false, 'error', 'Failed to get the publication id of the online store', [], []),
+                },
+                { status: 500 },
+            );
+        }
+
         await db.user.create({
             data: {
                 ownerName: '',
@@ -62,6 +74,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
                 email: data.data.shop.email,
                 storeName: data.data.shop.name,
                 primaryDomain: data.data.shop.primaryDomain.url,
+                onlineStorePublicationId: onlineStorePublicationId,
             },
         });
     }
