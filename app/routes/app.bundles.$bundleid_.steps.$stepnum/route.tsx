@@ -29,6 +29,7 @@ import ContentStepInputs from './content-step-inputs';
 import ResourcePicker from './resource-picker';
 import { ApiCacheService } from '~/service/impl/ApiCacheService';
 import { ApiCacheKeyService } from '~/service/impl/ApiCacheKeyService';
+import { s } from 'node_modules/vite/dist/node/types.d-aGj9QkWt';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
@@ -327,6 +328,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     field: 'Maximum products on step',
                     message: 'Please enter the maximum number of products (1 or more) that the customer can select on this step.',
                 });
+            } else if (stepData.productInput?.minProductsOnStep > stepData.productInput?.maxProductsOnStep) {
+                errors.push({
+                    fieldId: 'minProducts',
+                    field: 'Minimum products on step',
+                    message: 'Minimum number of products can not be greater than the maximum number of products.',
+                });
             }
 
             if (errors.length > 0)
@@ -370,7 +377,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         },
                     });
 
-                    console.log(res);
                     //Adding the content inputs to the step
                 } else if (stepData.stepType === StepType.CONTENT) {
                     await db.bundleStep.update({
@@ -654,7 +660,7 @@ export default function Index() {
                                                             autoComplete="off"
                                                             inputMode="numeric"
                                                             name={`maxProductsToSelect`}
-                                                            min={1}
+                                                            min={stepData.productInput?.minProductsOnStep || 1} //Maximum number of products needs to be equal or greater than the minimum number of products
                                                             value={stepData.productInput?.maxProductsOnStep.toString()}
                                                             onChange={(value) => {
                                                                 setStepData((stepData: BundleStepAllResources) => {
