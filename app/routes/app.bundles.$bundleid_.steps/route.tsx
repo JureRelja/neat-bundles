@@ -88,11 +88,30 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         stepNumber: numOfSteps._max.stepNumber ? numOfSteps._max.stepNumber + 1 : 1,
                         stepType: StepType.PRODUCT,
                         title: 'Step ' + (numOfSteps._max.stepNumber ? numOfSteps._max.stepNumber + 1 : 1),
+                        description: `This is a description for Step ${numOfSteps._max.stepNumber}`,
                         productInput: {
-                            create: {},
+                            create: {
+                                minProductsOnStep: 1,
+                                maxProductsOnStep: 3,
+                                allowProductDuplicates: false,
+                                showProductPrice: true,
+                            },
                         },
                         contentInputs: {
-                            create: [{}, {}],
+                            create: [
+                                {
+                                    inputType: 'TEXT',
+                                    inputLabel: 'Enter text',
+                                    maxChars: 50,
+                                    required: true,
+                                },
+                                {
+                                    inputLabel: '',
+                                    maxChars: 0,
+                                    required: false,
+                                    inputType: 'NONE',
+                                },
+                            ],
                         },
                     },
                 });

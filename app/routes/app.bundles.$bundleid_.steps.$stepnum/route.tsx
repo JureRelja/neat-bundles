@@ -213,15 +213,28 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                                 stepType: stepToDuplicate.stepType,
                                 contentInputs: {
                                     createMany: {
-                                        data: [{}, {}],
+                                        data: [
+                                            {
+                                                inputType: 'TEXT',
+                                                inputLabel: 'Enter text',
+                                                maxChars: 50,
+                                                required: true,
+                                            },
+                                            {
+                                                inputLabel: '',
+                                                maxChars: 0,
+                                                required: false,
+                                                inputType: 'NONE',
+                                            },
+                                        ],
                                     },
                                 },
                                 productInput: {
                                     create: {
-                                        minProductsOnStep: stepToDuplicate.productInput?.minProductsOnStep,
-                                        maxProductsOnStep: stepToDuplicate.productInput?.maxProductsOnStep,
-                                        allowProductDuplicates: stepToDuplicate.productInput?.allowProductDuplicates,
-                                        showProductPrice: stepToDuplicate.productInput?.showProductPrice,
+                                        minProductsOnStep: stepToDuplicate.productInput?.minProductsOnStep as number,
+                                        maxProductsOnStep: stepToDuplicate.productInput?.maxProductsOnStep as number,
+                                        allowProductDuplicates: stepToDuplicate.productInput?.allowProductDuplicates as boolean,
+                                        showProductPrice: stepToDuplicate.productInput?.showProductPrice as boolean,
                                         products: {
                                             connect: stepToDuplicate.productInput?.products.map((product: Product) => {
                                                 return { shopifyProductId: product.shopifyProductId };
@@ -256,7 +269,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                                 description: stepToDuplicate.description,
                                 stepType: stepToDuplicate.stepType,
                                 productInput: {
-                                    create: {},
+                                    create: {
+                                        minProductsOnStep: 1,
+                                        maxProductsOnStep: 3,
+                                        allowProductDuplicates: false,
+                                        showProductPrice: true,
+                                    },
                                 },
                                 contentInputs: {
                                     createMany: {
@@ -333,6 +351,18 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     fieldId: 'minProducts',
                     field: 'Minimum products on step',
                     message: 'Minimum number of products can not be greater than the maximum number of products.',
+                });
+            } else if (stepData.productInput?.products.length < stepData.productInput.minProductsOnStep) {
+                errors.push({
+                    fieldId: 'minProducts',
+                    field: 'Minimum products on step',
+                    message: 'The amount of products you selected is under the minimum amount of products defined.',
+                });
+            } else if (stepData.productInput?.products.length > stepData.productInput.maxProductsOnStep) {
+                errors.push({
+                    fieldId: 'maxProducts',
+                    field: 'Maximum products on step',
+                    message: 'The amount of products you selected is over the maximum amount of products defined.',
                 });
             }
 

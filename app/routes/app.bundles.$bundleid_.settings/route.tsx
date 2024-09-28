@@ -4,7 +4,7 @@ import { useLoaderData, useNavigation, useNavigate, Form } from '@remix-run/reac
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
 import db from '../../db.server';
-import { Card, BlockStack, Text, RangeSlider, Divider, InlineGrid, ChoiceList, Page, ButtonGroup, Button, Box, SkeletonPage } from '@shopify/polaris';
+import { Card, BlockStack, Text, RangeSlider, Divider, InlineGrid, ChoiceList, Page, Button, Box, SkeletonPage } from '@shopify/polaris';
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, HorizontalGap } from '../../constants';
 import { SettingsWithAllResources, settingsIncludeAll } from '../../types/BundleSettings';
 import ColorPicker from './color-picker';
@@ -62,7 +62,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 skipTheCart: bundleSettings.skipTheCart,
                 allowBackNavigation: bundleSettings.allowBackNavigation,
                 showOutOfStockProducts: bundleSettings.showOutOfStockProducts,
-                numOfProductColumns: bundleSettings.numOfProductColumns,
                 bundleColors: {
                     update: {
                         addToBundleBtn: bundleSettings.bundleColors.addToBundleBtn,
@@ -324,23 +323,6 @@ export default function Index() {
                                                     };
                                                 });
                                             }}
-                                        />
-                                        <RangeSlider
-                                            label={`Number of product columns`}
-                                            output
-                                            value={settingsState.numOfProductColumns}
-                                            onChange={(newValue: RangeSliderValue) => {
-                                                setSetttingsState((prevSettings: SettingsWithAllResources) => {
-                                                    return {
-                                                        ...prevSettings,
-                                                        numOfProductColumns: newValue as number,
-                                                    };
-                                                });
-                                            }}
-                                            min={1}
-                                            max={5}
-                                            step={1}
-                                            helpText="On smaller screens products will be shown in fewer columns."
                                         />
                                     </BlockStack>
                                 </Card>
