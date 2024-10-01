@@ -16,6 +16,7 @@ import {
     ButtonGroup,
     ChoiceList,
     Divider,
+    InlineError,
 } from '@shopify/polaris';
 
 import { authenticate } from '../../shopify.server';
@@ -354,13 +355,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 });
             } else if (stepData.productInput?.products.length < stepData.productInput.minProductsOnStep) {
                 errors.push({
-                    fieldId: 'minProducts',
+                    fieldId: 'products',
                     field: 'Minimum products on step',
                     message: 'The amount of products you selected is under the minimum amount of products defined.',
                 });
             } else if (stepData.productInput?.products.length > stepData.productInput.maxProductsOnStep) {
                 errors.push({
-                    fieldId: 'maxProducts',
+                    fieldId: 'products',
                     field: 'Maximum products on step',
                     message: 'The amount of products you selected is over the maximum amount of products defined.',
                 });
@@ -651,6 +652,7 @@ export default function Index() {
                                                     />*/}
 
                                                 <ResourcePicker selectedProducts={stepData.productInput?.products as Product[]} updateSelectedProducts={updateSelectedProducts} />
+                                                <InlineError message={errors?.find((err: error) => err.fieldId === 'products')?.message || ''} fieldID="products" />
                                             </BlockStack>
 
                                             <Divider />

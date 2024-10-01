@@ -83,4 +83,11 @@ export class BundlePageService {
             update: true,
         });
     }
+
+    public getPageHandle(): string {
+        if (!this.bundlePage.handle) {
+            throw new Error('Page handle is not set');
+        }
+        return this.bundlePage.handle;
+    }
 }

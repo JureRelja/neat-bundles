@@ -6,6 +6,7 @@ import { BundlePageService } from '@adminBackend/service/BundlePageService';
 import { BundleRepository } from '~/adminBackend/repository/BundleBuilderRepository';
 import { ShopifyBundleProductService } from '~/adminBackend/service/ShopifyBundleProductService';
 import { ShopifyRedirectService } from '~/adminBackend/service/ShopifyRedirectService';
+import userRepository from '~/adminBackend/repository/UserRepository';
 
 export const loader = async ({ request }: ActionFunctionArgs) => {
     await authenticate.admin(request);
@@ -42,15 +43,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 const bundlePageService = await BundlePageService.build(session, admin, defaultBundleTitle);
 
                 if (!bundlePageService.getPage() || !bundlePageService.getPage().id) {
-                    console.log('page error');
+                    throw new Error('Failed to create a new bundle page');
                     return;
                 }
+
+                const bundlePageHandle = bundlePageService.getPageHandle();
+                const user = await userRepository.getUserByStoreUrl(admin, session.shop);
+
+                //Url of the bundle page
+                const bundlePageUrl = `https://${user.primaryDomain}/pages/${bundlePageHandle}`;
 
                 const [urlRedirectRes, bundleId] = await Promise.all([
                     //Create redirect
                     ShopifyRedirectService.createProductToBundleRedirect(admin, bundlePageService.getPage().handle as string, bundleProductId),
                     //Create new bundle
-                    BundleRepository.createNewBundleBuilder(session.shop, defaultBundleTitle, bundleProductId, bundlePageService.getPage().id?.toString() as string),
+                    BundleRepository.createNewBundleBuilder(session.shop, defaultBundleTitle, bundleProductId, bundlePageService.getPage().id?.toString() as string, bundlePageUrl),
                 ]);
 
                 await bundlePageService.setPageMetafields(bundleId);

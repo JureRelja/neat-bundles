@@ -37,6 +37,7 @@ model BundleBuilder {
   discountType     BundleDiscountType 
   discountValue    Float              
   bundleSettings   BundleSettings?
+  bundlePageUrl    String            
   storeUrl         String
   user             User               @relation(fields: [storeUrl], references: [storeUrl], onDelete: Cascade)
   createdBundles   CreatedBundle[]

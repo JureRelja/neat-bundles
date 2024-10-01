@@ -1,7 +1,7 @@
 import db from '../../db.server';
 
 export class BundleRepository {
-    public static async createNewBundleBuilder(shop: string, bundleTitle: string, bundleProductId: string, bundlePageId: string) {
+    public static async createNewBundleBuilder(shop: string, bundleTitle: string, bundleProductId: string, bundlePageId: string, bundlePageUrl: string) {
         //Create a new bundle in the database
         const bundle = await db.bundleBuilder.create({
             data: {
@@ -49,6 +49,7 @@ export class BundleRepository {
                         },
                     },
                 },
+                bundlePageUrl: bundlePageUrl,
                 steps: {
                     create: [
                         {

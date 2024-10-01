@@ -392,7 +392,6 @@ export default function Index({}) {
                 <SkeletonPage />
             ) : (
                 <Page
-                    fullWidth
                     titleMetadata={stepData.stepType === StepType.PRODUCT ? <Badge tone="warning">Product step</Badge> : <Badge tone="magic">Content step</Badge>}
                     backAction={{
                         content: 'Products',
@@ -405,13 +404,13 @@ export default function Index({}) {
                     title={`Edit step - ${stepData.stepNumber}`}>
                     <BlockStack gap={GapBetweenSections}>
                         <Layout>
-                            <Layout.Section>
+                            {/* <Layout.Section> 
                                 <div ref={previewBoxRef} className={`${sticky.isSticky ? styles.sticky : ''}`}>
                                     <BlockStack gap={GapBetweenSections}>
-                                        {/* <BundlePreview /> */}
+                                        <BundlePreview /> 
                                         <BundlePreview />
 
-                                        {/* Navigation between steps */}
+                                         Navigation between steps  
                                         <InlineStack align="space-between">
                                             <Button
                                                 disabled={stepData.stepNumber === 1}
@@ -435,9 +434,32 @@ export default function Index({}) {
                                     </BlockStack>
                                 </div>
                             </Layout.Section>
+
                             <Layout.Section variant="oneThird">
                                 <Outlet />
-                            </Layout.Section>
+                            </Layout.Section> */}
+
+                            <InlineStack align="center" blockAlign="center" gap={GapBetweenSections}>
+                                <Button
+                                    disabled={stepData.stepNumber === 1}
+                                    onClick={() => {
+                                        revalidator.revalidate();
+                                        navigate(`/app/bundles/${params.bundleid}/steps/${stepData.stepNumber - 1}`);
+                                    }}>
+                                    ← Step {stepData.stepNumber !== 1 ? (stepData.stepNumber - 1).toString() : '1'}
+                                </Button>
+
+                                <Outlet />
+
+                                <Button
+                                    disabled={stepData.stepNumber === 3}
+                                    onClick={() => {
+                                        revalidator.revalidate();
+                                        navigate(`/app/bundles/${params.bundleid}/steps/${stepData.stepNumber + 1}`);
+                                    }}>
+                                    Step {stepData.stepNumber !== 3 ? (stepData.stepNumber + 1).toString() : '3'} →
+                                </Button>
+                            </InlineStack>
                         </Layout>
                         <Divider borderColor="transparent" />
                     </BlockStack>
