@@ -24,7 +24,7 @@ import {
     Spinner,
     Divider,
 } from '@shopify/polaris';
-import { DeleteIcon, PlusIcon, ArrowDownIcon, ArrowUpIcon, PageAddIcon, EditIcon, QuestionCircleIcon, ExternalIcon, SettingsIcon } from '@shopify/polaris-icons';
+import { DeleteIcon, PlusIcon, ArrowDownIcon, ArrowUpIcon, PageAddIcon, EditIcon, QuestionCircleIcon, ExternalIcon, SettingsIcon, ClipboardIcon } from '@shopify/polaris-icons';
 import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
 import { useEffect, useState } from 'react';
@@ -420,6 +420,15 @@ export default function Index() {
         });
     }, [isLoading]);
 
+    //Update field error on change
+    const updateFieldErrorHandler = (fieldId: string) => {
+        errors?.forEach((err: error) => {
+            if (err.fieldId === fieldId) {
+                err.message = '';
+            }
+        });
+    };
+
     return (
         <>
             {isLoading || isSubmitting ? (
@@ -450,6 +459,7 @@ export default function Index() {
                                 content: 'Preview',
                                 accessibilityLabel: 'Preview action label',
                                 icon: ExternalIcon,
+                                url: `${serverBundle.bundlePageUrl}?preview=true`,
                             },
                         ]}
                         titleMetadata={serverBundle.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
@@ -578,6 +588,7 @@ export default function Index() {
                                                         label="Title"
                                                         labelHidden
                                                         autoComplete="off"
+                                                        inputMode="text"
                                                         name="bundleTitle"
                                                         helpText="This title will be displayed to your customers on bundle page, in checkout and in cart."
                                                         error={errors?.find((err: error) => err.fieldId === 'bundleTitle')?.message}
@@ -586,6 +597,7 @@ export default function Index() {
                                                             setBundleState((prevBundle: BundleFullStepBasicClient) => {
                                                                 return { ...prevBundle, title: newTitile };
                                                             });
+                                                            updateFieldErrorHandler('bundleTitle');
                                                         }}
                                                         type="text"
                                                     />
@@ -621,6 +633,30 @@ export default function Index() {
                                             />
                                         </BlockStack>
                                     </Card>
+
+                                    {/* Bundle builder page url */}
+                                    <Box id="bundleTitle">
+                                        <Card>
+                                            <BlockStack gap={GapBetweenTitleAndContent}>
+                                                <Text as="p" variant="headingMd">
+                                                    Bundle page
+                                                </Text>
+
+                                                <BlockStack gap={GapInsideSection}>
+                                                    <TextField
+                                                        label="Bundle page"
+                                                        labelHidden
+                                                        autoComplete="off"
+                                                        readOnly
+                                                        name="bundlePage"
+                                                        helpText="Send customers to this page to let them create their unique bundles."
+                                                        value={bundleState.bundlePageUrl}
+                                                        type="url"
+                                                    />
+                                                </BlockStack>
+                                            </BlockStack>
+                                        </Card>
+                                    </Box>
 
                                     <Card>
                                         <ChoiceList
@@ -678,6 +714,7 @@ export default function Index() {
                                                                     label="Price"
                                                                     type="number"
                                                                     name="priceAmount"
+                                                                    inputMode="numeric"
                                                                     autoComplete="off"
                                                                     min={0}
                                                                     error={errors?.find((err: error) => err.fieldId === 'priceAmount')?.message}
@@ -690,6 +727,7 @@ export default function Index() {
                                                                                 priceAmount: parseFloat(newPrice),
                                                                             };
                                                                         });
+                                                                        updateFieldErrorHandler('priceAmount');
                                                                     }}
                                                                 />
                                                             </Box>
@@ -754,8 +792,9 @@ export default function Index() {
                                                     name={`discountValue`}
                                                     prefix={bundleState.discountType === BundleDiscountType.PERCENTAGE ? '%' : '$'}
                                                     min={0}
-                                                    max={'100'}
+                                                    max={100}
                                                     value={bundleState.discountValue.toString()}
+                                                    error={errors?.find((err: error) => err.fieldId === 'discountValue')?.message}
                                                     onChange={(newDiscountValue) => {
                                                         setBundleState((prevBundle: BundleFullStepBasicClient) => {
                                                             return {
@@ -763,6 +802,7 @@ export default function Index() {
                                                                 discountValue: parseInt(newDiscountValue),
                                                             };
                                                         });
+                                                        updateFieldErrorHandler('discountValue');
                                                     }}
                                                 />
                                             </BlockStack>

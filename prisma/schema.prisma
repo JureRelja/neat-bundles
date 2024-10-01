@@ -17,7 +17,7 @@ model User {
   ownerName                String          @default("")
   storeName                String
   storeUrl                 String          @unique
-  primaryDomain            String
+  primaryDomain            String         //https://{domain} format
   email                    String
   onlineStorePublicationId String //GraphQL GID format
   bundleBuilders           BundleBuilder[]

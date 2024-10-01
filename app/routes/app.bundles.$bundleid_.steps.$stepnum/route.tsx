@@ -353,17 +353,14 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     field: 'Minimum products on step',
                     message: 'Minimum number of products can not be greater than the maximum number of products.',
                 });
-            } else if (stepData.productInput?.products.length < stepData.productInput.minProductsOnStep) {
+            } else if (
+                stepData.productInput?.products.length < stepData.productInput.minProductsOnStep ||
+                stepData.productInput?.products.length > stepData.productInput.maxProductsOnStep
+            ) {
                 errors.push({
                     fieldId: 'products',
-                    field: 'Minimum products on step',
-                    message: 'The amount of products you selected is under the minimum amount of products defined.',
-                });
-            } else if (stepData.productInput?.products.length > stepData.productInput.maxProductsOnStep) {
-                errors.push({
-                    fieldId: 'products',
-                    field: 'Maximum products on step',
-                    message: 'The amount of products you selected is over the maximum amount of products defined.',
+                    field: 'Products',
+                    message: `Please select between ${stepData.productInput.minProductsOnStep} and ${stepData.productInput.maxProductsOnStep} products.`,
                 });
             }
 
@@ -497,6 +494,7 @@ export default function Index() {
                 },
             };
         });
+        updateFieldErrorHandler('products');
     };
 
     const updateContentInput = (contentInput: ContentInput) => {
@@ -522,6 +520,15 @@ export default function Index() {
             }
         });
     }, [isLoading]);
+
+    //Update field error on change
+    const updateFieldErrorHandler = (fieldId: string) => {
+        errors?.forEach((err: error) => {
+            if (err.fieldId === fieldId) {
+                err.message = '';
+            }
+        });
+    };
 
     return (
         <>
@@ -553,6 +560,7 @@ export default function Index() {
                                                             title: newTitle,
                                                         };
                                                     });
+                                                    updateFieldErrorHandler('stepTitle');
                                                 }}
                                                 autoComplete="off"
                                             />
@@ -570,6 +578,7 @@ export default function Index() {
                                                             description: newDesc,
                                                         };
                                                     });
+                                                    updateFieldErrorHandler('stepDESC');
                                                 }}
                                                 error={errors?.find((err: error) => err.fieldId === 'stepDESC')?.message}
                                                 autoComplete="off"
@@ -680,6 +689,7 @@ export default function Index() {
                                                                         },
                                                                     };
                                                                 });
+                                                                updateFieldErrorHandler('minProducts');
                                                             }}
                                                             error={errors?.find((err: error) => err.fieldId === 'minProducts')?.message}
                                                         />
@@ -705,6 +715,7 @@ export default function Index() {
                                                                         },
                                                                     };
                                                                 });
+                                                                updateFieldErrorHandler('maxProducts');
                                                             }}
                                                             error={errors?.find((err: error) => err.fieldId === 'maxProducts')?.message}
                                                         />

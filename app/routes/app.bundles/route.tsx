@@ -51,7 +51,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 const user = await userRepository.getUserByStoreUrl(admin, session.shop);
 
                 //Url of the bundle page
-                const bundlePageUrl = `https://${user.primaryDomain}/pages/${bundlePageHandle}`;
+                const bundlePageUrl = `${user.primaryDomain}/pages/${bundlePageHandle}`;
 
                 const [urlRedirectRes, bundleId] = await Promise.all([
                     //Create redirect
