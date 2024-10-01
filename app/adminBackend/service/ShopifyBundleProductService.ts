@@ -1,6 +1,6 @@
 import { AdminApiContext } from '@shopify/shopify-app-remix/server';
 import { bundleTagIndentifier } from '../../constants';
-import { ProductCreatePayload } from '@shopifyGraphql/graphql';
+import { Product, ProductCreatePayload, ProductUpdatePayload } from '@shopifyGraphql/graphql';
 import { ShopifyCatalogService } from './ShopifyCatalogService';
 
 export class ShopifyBundleProductService {
@@ -51,4 +51,42 @@ export class ShopifyBundleProductService {
 
         return product.product?.id as string;
     }
+
+    public async updateBundleProductTitle(admin: AdminApiContext, newBundleProductTitle: string): Promise<boolean> {
+        const response = await admin.graphql(
+            `#graphql
+          mutation updateProductTitle($productInput: productInput!) {
+            productUpdate(input: $productInput) {
+              product{
+                id
+              }
+              userErrors {
+                  field
+                  message
+                }
+            }
+          }`,
+            {
+                variables: {
+                    productInput: {
+                        title: newBundleProductTitle,
+                    },
+                },
+            },
+        );
+
+        const data = await response.json();
+
+        const product: ProductUpdatePayload = data.data.productUpdate;
+
+        if ((product.userErrors && product.userErrors.length > 0) || !product.product || !product.product.id) {
+            return false;
+        }
+
+        return true;
+    }
 }
+
+const shopifyBundleProductService = new ShopifyBundleProductService();
+
+export default shopifyBundleProductService;

@@ -10,6 +10,7 @@ export const bundleAndSteps = {
     createdAt: true,
     pricing: true,
     priceAmount: true,
+    bundlePageUrl: true,
     steps: {
         select: {
             title: true,

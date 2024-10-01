@@ -2,7 +2,7 @@ import { AdminApiContext, Session } from '@shopify/shopify-app-remix/server';
 import { Page } from 'node_modules/@shopify/shopify-api/dist/ts/rest/admin/2024-04/page';
 import { bundlePageKey, bundlePageNamespace, bundlePageType } from '~/constants';
 
-export class BundlePageService {
+export class ShopifyBundleBuilderPage {
     private bundlePage: Page;
     private admin;
     private pageTitle;
@@ -31,7 +31,7 @@ export class BundlePageService {
             update: true,
         });
 
-        return new BundlePageService(admin, pageTitle, bundlePage);
+        return new ShopifyBundleBuilderPage(admin, pageTitle, bundlePage);
     }
 
     public getPage() {
@@ -89,5 +89,20 @@ export class BundlePageService {
             throw new Error('Page handle is not set');
         }
         return this.bundlePage.handle;
+    }
+
+    public static async updateBundleBuilderPageTitle(admin: AdminApiContext, session: Session, shopifyPageId: number, newBundleBuilderPageTitle: string): Promise<boolean> {
+        const bundleBuilderPage: Page | null = admin.rest.resources.Page.find({
+            session: session,
+            id: shopifyPageId,
+        });
+
+        if (!bundleBuilderPage) return false;
+
+        bundleBuilderPage.title = newBundleBuilderPageTitle;
+
+        await bundleBuilderPage.save();
+
+        return true;
     }
 }

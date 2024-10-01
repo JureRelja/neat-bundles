@@ -4,7 +4,7 @@ import { useLoaderData, useNavigation, useNavigate, Form } from '@remix-run/reac
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
 import db from '../../db.server';
-import { Card, BlockStack, Text, RangeSlider, Divider, InlineGrid, ChoiceList, Page, Button, Box, SkeletonPage } from '@shopify/polaris';
+import { Card, BlockStack, Text, RangeSlider, Divider, InlineGrid, ChoiceList, Page, Button, Box, SkeletonPage, SkeletonBodyText } from '@shopify/polaris';
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, HorizontalGap } from '../../constants';
 import { SettingsWithAllResources, settingsIncludeAll } from '../../types/BundleSettings';
 import ColorPicker from './color-picker';
@@ -213,7 +213,28 @@ export default function Index() {
     return (
         <>
             {isLoading ? (
-                <SkeletonPage primaryAction fullWidth></SkeletonPage>
+                <SkeletonPage primaryAction>
+                    <BlockStack gap="500">
+                        <Card>
+                            <SkeletonBodyText />
+                        </Card>
+                        <Card>
+                            <SkeletonBodyText />
+                        </Card>
+                        <Card>
+                            <SkeletonBodyText />
+                        </Card>
+                        <Card>
+                            <SkeletonBodyText />
+                        </Card>
+                        <Card>
+                            <SkeletonBodyText />
+                        </Card>
+                        <Card>
+                            <SkeletonBodyText />
+                        </Card>
+                    </BlockStack>
+                </SkeletonPage>
             ) : (
                 // Bundle settings page
                 <Page
@@ -244,7 +265,7 @@ export default function Index() {
                                 </Box>
                                 <Card>
                                     <BlockStack gap={GapInsideSection}>
-                                        <ChoiceList
+                                        {/* <ChoiceList
                                             title="Discount banner"
                                             allowMultiple
                                             name={`displayDiscountBanner`}
@@ -263,7 +284,7 @@ export default function Index() {
                                                     };
                                                 });
                                             }}
-                                        />
+                                        /> */}
                                         <ChoiceList
                                             title="Cart"
                                             allowMultiple
@@ -328,7 +349,7 @@ export default function Index() {
                                 </Card>
                             </InlineGrid>
 
-                            <Divider />
+                            {/* <Divider borderColor="transparent" /> */}
 
                             {/* Labels settings, commented for now */}
                             {/* <InlineGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="400">
@@ -447,10 +468,10 @@ export default function Index() {
                 </Card>
               </InlineGrid> */}
 
-                            <Divider />
+                            {/* <Divider /> */}
 
                             {/* Colors settings */}
-                            <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                            {/* <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
                                 <Box as="section">
                                     <BlockStack gap="400">
                                         <Text as="h3" variant="headingMd">
@@ -493,14 +514,14 @@ export default function Index() {
                                         </BlockStack>
                                     </BlockStack>
                                 </Card>
-                            </InlineGrid>
+                            </InlineGrid> */}
 
                             <Divider borderColor="transparent" />
 
                             {/* Save action */}
                             <BlockStack inlineAlign="end">
                                 <Button variant="primary" submit>
-                                    Save settings
+                                    Save
                                 </Button>
                             </BlockStack>
 

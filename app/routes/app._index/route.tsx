@@ -1,5 +1,5 @@
 import { useNavigation, json, useLoaderData, Link } from '@remix-run/react';
-import type { LoaderFunctionArgs } from '@remix-run/node';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import {
     Page,
     Card,
@@ -30,6 +30,8 @@ import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
 import styles from '../app.bundles.$bundleid/route.module.css';
 import { ShopifyCatalogService } from '~/adminBackend/service/ShopifyCatalogService';
+import { request } from 'http';
+import { useState } from 'react';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
@@ -100,6 +102,27 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     );
 };
 
+export const action = async ({ request }: ActionFunctionArgs) => {
+    const { admin, session } = await authenticate.admin(request);
+
+    const formData = await request.formData();
+    const action = formData.get('action');
+
+    switch (action) {
+        case 'dismissHomePageBanner': {
+            break;
+        }
+        default: {
+            return json(
+                {
+                    ...new JsonData(true, 'success', "This is the default action that doesn't do anything."),
+                },
+                { status: 200 },
+            );
+        }
+    }
+};
+
 export default function Index() {
     const nav = useNavigation();
     const isLoading = nav.state !== 'idle';
@@ -115,11 +138,24 @@ export default function Index() {
         navigateSubmit('createBundle', '/app/bundles');
     };
 
+    //Client state
+    const [showBanner, setShowBanner] = useState(true);
+    const [showTutorial, setShowTutorial] = useState(true);
+
     return (
         <>
             {isLoading ? (
-                <SkeletonPage primaryAction fullWidth>
+                <SkeletonPage primaryAction>
                     <BlockStack gap="500">
+                        <Card>
+                            <SkeletonBodyText />
+                        </Card>
+                        <Card>
+                            <SkeletonBodyText />
+                        </Card>
+                        <Card>
+                            <SkeletonBodyText />
+                        </Card>
                         <Card>
                             <SkeletonBodyText />
                         </Card>
@@ -201,7 +237,7 @@ export default function Index() {
                                                 <Button icon={SettingsIcon} variant="secondary" tone="success" url={`/app/bundles/${bundle.id}/settings/?redirect=/app`}>
                                                     Settings
                                                 </Button>,
-                                                <Button icon={ExternalIcon} variant="secondary" tone="success" onClick={() => {}}>
+                                                <Button icon={ExternalIcon} variant="secondary" tone="success" url={`${bundle.bundlePageUrl}?preview=true`} target="_blank">
                                                     Preview
                                                 </Button>,
                                             ];
@@ -223,37 +259,50 @@ export default function Index() {
                         </div>
 
                         {/* Video tutorial on how to use the app */}
-                        <MediaCard
-                            title="Watch a short tutorial to get quickly started"
-                            primaryAction={{
-                                content: 'Watch tutorial',
-                                onAction: () => {},
-                                icon: ExternalIcon,
-                                url: 'https://help.shopify.com',
-                                target: '_blank',
-                            }}
-                            size="small"
-                            description="We recommend watching this short tutorial to get started with creating Neat Bundle Builder"
-                            popoverActions={[{ content: 'Dismiss', onAction: () => {} }]}>
-                            <VideoThumbnail
-                                videoLength={80}
-                                thumbnailUrl="https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850"
-                                onClick={() => console.log('clicked')}
-                            />
-                        </MediaCard>
+
+                        {showTutorial && (
+                            <MediaCard
+                                title="Watch a short tutorial to get quickly started"
+                                primaryAction={{
+                                    content: 'Watch tutorial',
+                                    onAction: () => {},
+                                    icon: ExternalIcon,
+                                    url: 'https://help.shopify.com',
+                                    target: '_blank',
+                                }}
+                                size="small"
+                                description="We recommend watching this short tutorial to get started with creating Neat Bundle Builder"
+                                onDismiss={() => {
+                                    setShowTutorial(false);
+                                }}
+                                popoverActions={[{ content: 'Dismiss', onAction: () => {} }]}>
+                                <VideoThumbnail
+                                    videoLength={80}
+                                    thumbnailUrl="https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850"
+                                    onClick={() => console.log('clicked')}
+                                />
+                            </MediaCard>
+                        )}
 
                         {/* Banner for encuraging users to rate the app */}
-                        <Banner title="Enjoying the app?" onDismiss={() => {}}>
-                            <BlockStack gap="200">
-                                <Box>
-                                    <p>We'd highly appreciate getting a review!</p>
-                                </Box>
 
-                                <Box>
-                                    <Button>⭐ Leave a review</Button>
-                                </Box>
-                            </BlockStack>
-                        </Banner>
+                        {showBanner && (
+                            <Banner
+                                title="Enjoying the app?"
+                                onDismiss={() => {
+                                    setShowBanner(false);
+                                }}>
+                                <BlockStack gap="200">
+                                    <Box>
+                                        <p>We'd highly appreciate getting a review!</p>
+                                    </Box>
+
+                                    <Box>
+                                        <Button>⭐ Leave a review</Button>
+                                    </Box>
+                                </BlockStack>
+                            </Banner>
+                        )}
                         <Divider borderColor="transparent" />
                     </BlockStack>
                 </Page>

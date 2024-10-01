@@ -11,7 +11,7 @@ export class BundleRepository {
                     },
                 },
                 title: bundleTitle,
-                published: true,
+                published: false,
                 shopifyProductId: bundleProductId,
                 shopifyPageId: bundlePageId,
                 pricing: 'CALCULATED',

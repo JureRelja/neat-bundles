@@ -2,7 +2,7 @@ import { redirect, json, Outlet } from '@remix-run/react';
 import type { ActionFunctionArgs } from '@remix-run/node';
 import { authenticate } from '../../shopify.server';
 import { JsonData } from '../../types/jsonData';
-import { BundlePageService } from '@adminBackend/service/BundlePageService';
+import { ShopifyBundleBuilderPage } from '~/adminBackend/service/ShopifyBundleBuilderPage';
 import { BundleRepository } from '~/adminBackend/repository/BundleBuilderRepository';
 import { ShopifyBundleProductService } from '~/adminBackend/service/ShopifyBundleProductService';
 import { ShopifyRedirectService } from '~/adminBackend/service/ShopifyRedirectService';
@@ -40,7 +40,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 }
 
                 //Service for creating and managing new page
-                const bundlePageService = await BundlePageService.build(session, admin, defaultBundleTitle);
+                const bundlePageService = await ShopifyBundleBuilderPage.build(session, admin, defaultBundleTitle);
 
                 if (!bundlePageService.getPage() || !bundlePageService.getPage().id) {
                     throw new Error('Failed to create a new bundle page');

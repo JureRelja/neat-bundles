@@ -1,4 +1,4 @@
-import { Button, BlockStack, InlineStack, Divider, SkeletonPage, Page, Badge, Layout } from '@shopify/polaris';
+import { Button, BlockStack, InlineStack, Divider, SkeletonPage, Page, Badge, Layout, SkeletonBodyText, Card } from '@shopify/polaris';
 import { GapBetweenSections } from '../../constants';
 import { StepType } from '@prisma/client';
 import { json, redirect } from '@remix-run/node';
@@ -389,7 +389,28 @@ export default function Index({}) {
     return (
         <>
             {isLoading ? (
-                <SkeletonPage />
+                <SkeletonPage primaryAction>
+                    <BlockStack gap="500">
+                        <Card>
+                            <SkeletonBodyText />
+                        </Card>
+                        <Card>
+                            <SkeletonBodyText />
+                        </Card>
+                        <Card>
+                            <SkeletonBodyText />
+                        </Card>
+                        <Card>
+                            <SkeletonBodyText />
+                        </Card>
+                        <Card>
+                            <SkeletonBodyText />
+                        </Card>
+                        <Card>
+                            <SkeletonBodyText />
+                        </Card>
+                    </BlockStack>
+                </SkeletonPage>
             ) : (
                 <Page
                     titleMetadata={stepData.stepType === StepType.PRODUCT ? <Badge tone="warning">Product step</Badge> : <Badge tone="magic">Content step</Badge>}
