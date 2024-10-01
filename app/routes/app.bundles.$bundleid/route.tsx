@@ -40,7 +40,7 @@ import { useNavigateSubmit } from '../../hooks/useNavigateSubmit';
 import styles from './route.module.css';
 import { ApiCacheService } from '~/service/impl/ApiCacheService';
 import { ApiCacheKeyService } from '~/service/impl/ApiCacheKeyService';
-import shopifyBundleProductService from '@adminBackend/service/ShopifyBundleProductService';
+import shopifyBundleProductService from '~/adminBackend/repository/ShopifyBundleProductRepository';
 import { ShopifyBundleBuilderPage } from '~/adminBackend/service/ShopifyBundleBuilderPage';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
@@ -186,7 +186,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                             discountValue: bundleData.discountValue,
                         },
                     }),
-                    shopifyBundleProductService.updateBundleProductTitle(admin, bundleData.title),
+                    shopifyBundleProductService.updateBundleProductTitle(admin, bundleData.shopifyProductId, bundleData.title),
                     ShopifyBundleBuilderPage.updateBundleBuilderPageTitle(admin, session, Number(bundleData.shopifyPageId), bundleData.title),
                 ]);
 

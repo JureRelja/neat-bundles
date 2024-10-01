@@ -29,7 +29,7 @@ import { JsonData } from '../../types/jsonData';
 import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
 import styles from '../app.bundles.$bundleid/route.module.css';
-import { ShopifyCatalogService } from '~/adminBackend/service/ShopifyCatalogService';
+import { ShopifyCatalogService } from '~/adminBackend/repository/ShopifyCatalogRepository';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);

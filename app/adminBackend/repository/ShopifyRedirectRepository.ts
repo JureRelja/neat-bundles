@@ -1,7 +1,7 @@
 import { UrlRedirectCreatePayload } from '@shopifyGraphql/graphql';
 import { AdminApiContext } from '@shopify/shopify-app-remix/server';
 
-export class ShopifyRedirectService {
+export class ShopifyRedirectRepository {
     public static async createProductToBundleRedirect(admin: AdminApiContext, pageHandle: string, productHandle: string) {
         const response = await admin.graphql(
             `#graphql

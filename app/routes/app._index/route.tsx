@@ -29,7 +29,7 @@ import { JsonData } from '../../types/jsonData';
 import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
 import styles from '../app.bundles.$bundleid/route.module.css';
-import { ShopifyCatalogService } from '~/adminBackend/service/ShopifyCatalogService';
+import { ShopifyCatalogRepository } from '~/adminBackend/repository/ShopifyCatalogRepository';
 import { request } from 'http';
 import { useState } from 'react';
 
@@ -58,7 +58,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
         const data = await response.json();
 
-        const onlineStorePublicationId = await ShopifyCatalogService.getOnlineStorePublicationId(admin);
+        const onlineStorePublicationId = await ShopifyCatalogRepository.getOnlineStorePublicationId(admin);
 
         if (!onlineStorePublicationId) {
             return json(

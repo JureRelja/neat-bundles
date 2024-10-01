@@ -1,8 +1,8 @@
 import { AdminApiContext } from '@shopify/shopify-app-remix/server';
 import { Catalog } from '@shopifyGraphql/graphql';
-import userRepository from '../repository/UserRepository';
+import userRepository from './UserRepository';
 
-export class ShopifyCatalogService {
+export class ShopifyCatalogRepository {
     //** Get the publication id of the "Online store" sales channel */
     public static async getOnlineStorePublicationId(admin: AdminApiContext) {
         const getAllPublicationsResponse = await admin.graphql(

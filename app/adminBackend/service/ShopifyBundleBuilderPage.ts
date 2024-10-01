@@ -92,7 +92,7 @@ export class ShopifyBundleBuilderPage {
     }
 
     public static async updateBundleBuilderPageTitle(admin: AdminApiContext, session: Session, shopifyPageId: number, newBundleBuilderPageTitle: string): Promise<boolean> {
-        const bundleBuilderPage: Page | null = admin.rest.resources.Page.find({
+        const bundleBuilderPage: Page | null = await admin.rest.resources.Page.find({
             session: session,
             id: shopifyPageId,
         });
@@ -101,7 +101,9 @@ export class ShopifyBundleBuilderPage {
 
         bundleBuilderPage.title = newBundleBuilderPageTitle;
 
-        await bundleBuilderPage.save();
+        await bundleBuilderPage.save({
+            update: true,
+        });
 
         return true;
     }

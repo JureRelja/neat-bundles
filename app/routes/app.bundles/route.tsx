@@ -4,8 +4,8 @@ import { authenticate } from '../../shopify.server';
 import { JsonData } from '../../types/jsonData';
 import { ShopifyBundleBuilderPage } from '~/adminBackend/service/ShopifyBundleBuilderPage';
 import { BundleRepository } from '~/adminBackend/repository/BundleBuilderRepository';
-import { ShopifyBundleProductService } from '~/adminBackend/service/ShopifyBundleProductService';
-import { ShopifyRedirectService } from '~/adminBackend/service/ShopifyRedirectService';
+import { ShopifyBundleProductRepository } from '~/adminBackend/repository/ShopifyBundleProductRepository';
+import { ShopifyRedirectRepository } from '~/adminBackend/repository/ShopifyRedirectRepository';
 import userRepository from '~/adminBackend/repository/UserRepository';
 
 export const loader = async ({ request }: ActionFunctionArgs) => {
@@ -33,7 +33,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 const defaultBundleTitle = `New bundle ${maxBundleId ? maxBundleId : ''}`;
 
                 //Create a new product that will be used as a bundle wrapper
-                const bundleProductId = await ShopifyBundleProductService.createBundleProduct(admin, defaultBundleTitle, session.shop);
+                const bundleProductId = await ShopifyBundleProductRepository.createBundleProduct(admin, defaultBundleTitle, session.shop);
 
                 if (!bundleProductId) {
                     return;
@@ -55,7 +55,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
                 const [urlRedirectRes, bundleId] = await Promise.all([
                     //Create redirect
-                    ShopifyRedirectService.createProductToBundleRedirect(admin, bundlePageService.getPage().handle as string, bundleProductId),
+                    ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundlePageService.getPage().handle as string, bundleProductId),
                     //Create new bundle
                     BundleRepository.createNewBundleBuilder(session.shop, defaultBundleTitle, bundleProductId, bundlePageService.getPage().id?.toString() as string, bundlePageUrl),
                 ]);

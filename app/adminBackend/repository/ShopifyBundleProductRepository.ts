@@ -1,9 +1,9 @@
 import { AdminApiContext } from '@shopify/shopify-app-remix/server';
 import { bundleTagIndentifier } from '../../constants';
 import { Product, ProductCreatePayload, ProductUpdatePayload } from '@shopifyGraphql/graphql';
-import { ShopifyCatalogService } from './ShopifyCatalogService';
+import { ShopifyCatalogRepository } from './ShopifyCatalogRepository';
 
-export class ShopifyBundleProductService {
+export class ShopifyBundleProductRepository {
     public static async createBundleProduct(admin: AdminApiContext, productTitle: string, storeUrl: string): Promise<string | null> {
         const response = await admin.graphql(
             `#graphql
@@ -43,7 +43,7 @@ export class ShopifyBundleProductService {
             return null;
         }
 
-        const publishProductReponse = await ShopifyCatalogService.publishProductToOnlineStore(admin, product.product.id, storeUrl);
+        const publishProductReponse = await ShopifyCatalogRepository.publishProductToOnlineStore(admin, product.product.id, storeUrl);
 
         if (!publishProductReponse) {
             return null;
@@ -52,10 +52,10 @@ export class ShopifyBundleProductService {
         return product.product?.id as string;
     }
 
-    public async updateBundleProductTitle(admin: AdminApiContext, newBundleProductTitle: string): Promise<boolean> {
+    public async updateBundleProductTitle(admin: AdminApiContext, bundleProductId: string, newBundleProductTitle: string): Promise<boolean> {
         const response = await admin.graphql(
             `#graphql
-          mutation updateProductTitle($productInput: productInput!) {
+          mutation updateProductTitle($productInput: ProductInput!) {
             productUpdate(input: $productInput) {
               product{
                 id
@@ -69,6 +69,7 @@ export class ShopifyBundleProductService {
             {
                 variables: {
                     productInput: {
+                        id: bundleProductId,
                         title: newBundleProductTitle,
                     },
                 },
@@ -87,6 +88,6 @@ export class ShopifyBundleProductService {
     }
 }
 
-const shopifyBundleProductService = new ShopifyBundleProductService();
+const shopifyBundleProductService = new ShopifyBundleProductRepository();
 
 export default shopifyBundleProductService;
