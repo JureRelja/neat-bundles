@@ -403,8 +403,8 @@ export default function Index({}) {
                     }}
                     title={`Edit step - ${stepData.stepNumber}`}>
                     <BlockStack gap={GapBetweenSections}>
-                        <Layout>
-                            {/* <Layout.Section> 
+                        {/* <Layout> */}
+                        {/* <Layout.Section> 
                                 <div ref={previewBoxRef} className={`${sticky.isSticky ? styles.sticky : ''}`}>
                                     <BlockStack gap={GapBetweenSections}>
                                         <BundlePreview /> 
@@ -439,28 +439,8 @@ export default function Index({}) {
                                 <Outlet />
                             </Layout.Section> */}
 
-                            <InlineStack align="center" blockAlign="center" gap={GapBetweenSections}>
-                                <Button
-                                    disabled={stepData.stepNumber === 1}
-                                    onClick={() => {
-                                        revalidator.revalidate();
-                                        navigate(`/app/bundles/${params.bundleid}/steps/${stepData.stepNumber - 1}`);
-                                    }}>
-                                    ← Step {stepData.stepNumber !== 1 ? (stepData.stepNumber - 1).toString() : '1'}
-                                </Button>
-
-                                <Outlet />
-
-                                <Button
-                                    disabled={stepData.stepNumber === 3}
-                                    onClick={() => {
-                                        revalidator.revalidate();
-                                        navigate(`/app/bundles/${params.bundleid}/steps/${stepData.stepNumber + 1}`);
-                                    }}>
-                                    Step {stepData.stepNumber !== 3 ? (stepData.stepNumber + 1).toString() : '3'} →
-                                </Button>
-                            </InlineStack>
-                        </Layout>
+                        {/* </Layout> */}
+                        <Outlet />
                         <Divider borderColor="transparent" />
                     </BlockStack>
                 </Page>
