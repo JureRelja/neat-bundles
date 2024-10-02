@@ -31,7 +31,8 @@ import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
 import styles from '../app.bundles.$bundleid/route.module.css';
 import { ShopifyCatalogRepository } from '~/adminBackend/repository/ShopifyCatalogRepository';
 import { request } from 'http';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Modal, TitleBar } from '@shopify/app-bridge-react';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
@@ -142,6 +143,9 @@ export default function Index() {
     const [showBanner, setShowBanner] = useState(true);
     const [showTutorial, setShowTutorial] = useState(true);
 
+    const [bundleForDelete, setBundleForDelete] = useState<BundleAndStepsBasicClient | null>(null);
+    const [showBundleDeleteConfirmModal, setShowBundleDeleteConfirmModal] = useState(false);
+
     return (
         <>
             {isLoading ? (
@@ -168,144 +172,168 @@ export default function Index() {
                     </BlockStack>
                 </SkeletonPage>
             ) : (
-                <Page
-                    title="Bundles"
-                    primaryAction={
-                        <Button icon={PlusIcon} variant="primary" onClick={createBundle}>
-                            Create bundle
-                        </Button>
-                    }>
-                    <BlockStack gap="500">
-                        <div id={styles.tableWrapper}>
-                            <div className={tableLoading ? styles.loadingTable : styles.hide}>
-                                <Spinner accessibilityLabel="Spinner example" size="large" />
-                            </div>
-                            <Card>
-                                {bundles.length > 0 ? (
-                                    <DataTable
-                                        columnContentTypes={['text', 'text', 'text', 'text', 'text', 'text']}
-                                        headings={['Bundle ID', 'Name', 'Steps', 'Status', 'Actions', 'Settings', 'Preview']}
-                                        rows={bundles.map((bundle: BundleAndStepsBasicClient) => {
-                                            return [
-                                                <Text as="p" tone="base">
-                                                    {bundle.id}
-                                                </Text>,
+                <>
+                    {/* Modal for users to confirm that they want to delete the bundle. */}
+                    <Modal id="delete-confirm-modal" open={showBundleDeleteConfirmModal}>
+                        <Box padding="300">
+                            <Text as="p">If you delete this bundle, everything will be lost forever.</Text>
+                        </Box>
+                        <TitleBar title="Are you sure you want to delete this bundle?">
+                            <button onClick={() => shopify.modal.hide('delete-confirm-modal')}>Close</button>
+                            <button
+                                variant="primary"
+                                tone="critical"
+                                onClick={() => {
+                                    if (!bundleForDelete) return;
 
-                                                //
-                                                <Link to={`/app/bundles/${bundle.id}`}>
-                                                    <Text as="p" tone="base">
-                                                        {bundle.title}
-                                                    </Text>
-                                                </Link>,
-                                                //
-                                                bundle.steps.length,
-                                                //
-                                                <Link to={`/app/bundles/${bundle.id}`}>
-                                                    {bundle.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
-                                                </Link>,
-                                                //
-                                                <ButtonGroup>
-                                                    <Button
-                                                        icon={DeleteIcon}
-                                                        variant="secondary"
-                                                        tone="critical"
-                                                        onClick={() => {
-                                                            asyncSubmit.submit('deleteBundle', `/app/bundles/${bundle.id}`);
-                                                        }}>
-                                                        Delete
-                                                    </Button>
-
-                                                    {/* <Button
-                          icon={PageAddIcon}
-                          variant="secondary"
-                          onClick={() => {
-                            submitAction(
-                              "duplicateBundle",
-                              true,
-                              `/app/bundles/${bundle.id}`,
-                            );
-                          }}
-                        >
-                          Duplicate
-                        </Button> */}
-
-                                                    <Button icon={EditIcon} variant="primary" url={`/app/bundles/${bundle.id}`}>
-                                                        Edit
-                                                    </Button>
-                                                </ButtonGroup>,
-                                                //
-                                                <Button icon={SettingsIcon} variant="secondary" tone="success" url={`/app/bundles/${bundle.id}/settings/?redirect=/app`}>
-                                                    Settings
-                                                </Button>,
-                                                <Button icon={ExternalIcon} variant="secondary" tone="success" url={`${bundle.bundlePageUrl}?preview=true`} target="_blank">
-                                                    Preview
-                                                </Button>,
-                                            ];
-                                        })}></DataTable>
-                                ) : (
-                                    <EmptyState
-                                        heading="Let’s create the first custom bundle for your customers!"
-                                        action={{
-                                            content: 'Create bundle',
-                                            icon: PlusIcon,
-                                            onAction: createBundle,
-                                        }}
-                                        fullWidth
-                                        image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png">
-                                        <p>Your customers will be able to use the custom bundles you create to create and buy their own custom bundles.</p>
-                                    </EmptyState>
-                                )}
-                            </Card>
-                        </div>
-
-                        {/* Video tutorial on how to use the app */}
-
-                        {showTutorial && (
-                            <MediaCard
-                                title="Watch a short tutorial to get quickly started"
-                                primaryAction={{
-                                    content: 'Watch tutorial',
-                                    onAction: () => {},
-                                    icon: ExternalIcon,
-                                    url: 'https://help.shopify.com',
-                                    target: '_blank',
-                                }}
-                                size="small"
-                                description="We recommend watching this short tutorial to get started with creating Neat Bundle Builder"
-                                onDismiss={() => {
-                                    setShowTutorial(false);
-                                }}
-                                popoverActions={[{ content: 'Dismiss', onAction: () => {} }]}>
-                                <VideoThumbnail
-                                    videoLength={80}
-                                    thumbnailUrl="https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850"
-                                    onClick={() => console.log('clicked')}
-                                />
-                            </MediaCard>
-                        )}
-
-                        {/* Banner for encuraging users to rate the app */}
-
-                        {showBanner && (
-                            <Banner
-                                title="Enjoying the app?"
-                                onDismiss={() => {
-                                    setShowBanner(false);
+                                    asyncSubmit.submit('deleteBundle', `/app/bundles/${bundleForDelete.id}`);
+                                    shopify.modal.hide('delete-confirm-modal');
                                 }}>
-                                <BlockStack gap="200">
-                                    <Box>
-                                        <p>We'd highly appreciate getting a review!</p>
-                                    </Box>
+                                Delete
+                            </button>
+                        </TitleBar>
+                    </Modal>
 
-                                    <Box>
-                                        <Button>⭐ Leave a review</Button>
-                                    </Box>
-                                </BlockStack>
-                            </Banner>
-                        )}
-                        <Divider borderColor="transparent" />
-                    </BlockStack>
-                </Page>
+                    <Page
+                        title="Bundles"
+                        primaryAction={
+                            <Button icon={PlusIcon} variant="primary" onClick={createBundle}>
+                                Create bundle
+                            </Button>
+                        }>
+                        <BlockStack gap="500">
+                            <div id={styles.tableWrapper}>
+                                <div className={tableLoading ? styles.loadingTable : styles.hide}>
+                                    <Spinner accessibilityLabel="Spinner example" size="large" />
+                                </div>
+                                <Card>
+                                    {bundles.length > 0 ? (
+                                        <DataTable
+                                            columnContentTypes={['text', 'text', 'text', 'text', 'text', 'text']}
+                                            headings={['Bundle ID', 'Name', 'Steps', 'Status', 'Actions', 'Settings', 'Preview']}
+                                            rows={bundles.map((bundle: BundleAndStepsBasicClient) => {
+                                                return [
+                                                    <Text as="p" tone="base">
+                                                        {bundle.id}
+                                                    </Text>,
+
+                                                    //
+                                                    <Link to={`/app/bundles/${bundle.id}`}>
+                                                        <Text as="p" tone="base">
+                                                            {bundle.title}
+                                                        </Text>
+                                                    </Link>,
+                                                    //
+                                                    bundle.steps.length,
+                                                    //
+                                                    <Link to={`/app/bundles/${bundle.id}`}>
+                                                        {bundle.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
+                                                    </Link>,
+                                                    //
+                                                    <ButtonGroup>
+                                                        <Button
+                                                            icon={DeleteIcon}
+                                                            variant="secondary"
+                                                            tone="critical"
+                                                            onClick={() => {
+                                                                setBundleForDelete(bundle);
+                                                                setShowBundleDeleteConfirmModal(true);
+                                                            }}>
+                                                            Delete
+                                                        </Button>
+
+                                                        {/* <Button
+                                                        icon={PageAddIcon}
+                                                        variant="secondary"
+                                                        onClick={() => {
+                                                            submitAction(
+                                                            "duplicateBundle",
+                                                            true,
+                                                            `/app/bundles/${bundle.id}`,
+                                                            );
+                                                        }}
+                                                        >
+                                                        Duplicate
+                                                        </Button> */}
+
+                                                        <Button icon={EditIcon} variant="primary" url={`/app/bundles/${bundle.id}`}>
+                                                            Edit
+                                                        </Button>
+                                                    </ButtonGroup>,
+                                                    //
+                                                    <Button icon={SettingsIcon} variant="secondary" tone="success" url={`/app/bundles/${bundle.id}/settings/?redirect=/app`}>
+                                                        Settings
+                                                    </Button>,
+                                                    <Button icon={ExternalIcon} variant="secondary" tone="success" url={`${bundle.bundlePageUrl}?preview=true`} target="_blank">
+                                                        Preview
+                                                    </Button>,
+                                                ];
+                                            })}></DataTable>
+                                    ) : (
+                                        <EmptyState
+                                            heading="Let’s create the first custom bundle for your customers!"
+                                            action={{
+                                                content: 'Create bundle',
+                                                icon: PlusIcon,
+                                                onAction: createBundle,
+                                            }}
+                                            fullWidth
+                                            image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png">
+                                            <p>Your customers will be able to use the custom bundles you create to create and buy their own custom bundles.</p>
+                                        </EmptyState>
+                                    )}
+                                </Card>
+                            </div>
+
+                            {/* Video tutorial on how to use the app */}
+
+                            {showTutorial && (
+                                <MediaCard
+                                    title="Watch a short tutorial to get quickly started"
+                                    primaryAction={{
+                                        content: 'Watch tutorial',
+                                        onAction: () => {},
+                                        icon: ExternalIcon,
+                                        url: 'https://help.shopify.com',
+                                        target: '_blank',
+                                    }}
+                                    size="small"
+                                    description="We recommend watching this short tutorial to get started with creating Neat Bundle Builder"
+                                    onDismiss={() => {
+                                        setShowTutorial(false);
+                                    }}
+                                    popoverActions={[{ content: 'Dismiss', onAction: () => {} }]}>
+                                    <VideoThumbnail
+                                        videoLength={80}
+                                        thumbnailUrl="https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850"
+                                        onClick={() => console.log('clicked')}
+                                    />
+                                </MediaCard>
+                            )}
+
+                            {/* Banner for encuraging users to rate the app */}
+
+                            {showBanner && (
+                                <Banner
+                                    title="Enjoying the app?"
+                                    onDismiss={() => {
+                                        setShowBanner(false);
+                                    }}>
+                                    <BlockStack gap="200">
+                                        <Box>
+                                            <p>We'd highly appreciate getting a review!</p>
+                                        </Box>
+
+                                        <Box>
+                                            <Button>⭐ Leave a review</Button>
+                                        </Box>
+                                    </BlockStack>
+                                </Banner>
+                            )}
+                            <Divider borderColor="transparent" />
+                        </BlockStack>
+                    </Page>
+                </>
             )}
         </>
     );

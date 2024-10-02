@@ -31,7 +31,6 @@ import ContentStepInputs from './content-step-inputs';
 import ResourcePicker from './resource-picker';
 import { ApiCacheService } from '~/service/impl/ApiCacheService';
 import { ApiCacheKeyService } from '~/service/impl/ApiCacheKeyService';
-import { s } from 'node_modules/vite/dist/node/types.d-aGj9QkWt';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
@@ -336,32 +335,52 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     field: 'Step description',
                     message: 'Step description needs to be entered.',
                 });
-            } else if (!stepData.productInput?.minProductsOnStep) {
-                errors.push({
-                    fieldId: 'minProducts',
-                    field: 'Minimum products on step',
-                    message: 'Please enter the minimum number of products (1 or more) that the customer can select on this step.',
-                });
-            } else if (!stepData.productInput?.maxProductsOnStep) {
-                errors.push({
-                    fieldId: 'maxProducts',
-                    field: 'Maximum products on step',
-                    message: 'Please enter the maximum number of products (1 or more) that the customer can select on this step.',
-                });
-            } else if (stepData.productInput?.minProductsOnStep > stepData.productInput?.maxProductsOnStep) {
-                errors.push({
-                    fieldId: 'minProducts',
-                    field: 'Minimum products on step',
-                    message: 'Minimum number of products can not be greater than the maximum number of products.',
-                });
-            } else if (
-                stepData.productInput?.products.length < stepData.productInput.minProductsOnStep ||
-                stepData.productInput?.products.length > stepData.productInput.maxProductsOnStep
-            ) {
-                errors.push({
-                    fieldId: 'products',
-                    field: 'Products',
-                    message: `Please select between ${stepData.productInput.minProductsOnStep} and ${stepData.productInput.maxProductsOnStep} products.`,
+            } else if (stepData.stepType === StepType.PRODUCT) {
+                if (!stepData.productInput?.minProductsOnStep) {
+                    errors.push({
+                        fieldId: 'minProducts',
+                        field: 'Minimum products on step',
+                        message: 'Please enter the minimum number of products (1 or more) that the customer can select on this step.',
+                    });
+                } else if (!stepData.productInput?.maxProductsOnStep) {
+                    errors.push({
+                        fieldId: 'maxProducts',
+                        field: 'Maximum products on step',
+                        message: 'Please enter the maximum number of products (1 or more) that the customer can select on this step.',
+                    });
+                } else if (stepData.productInput?.minProductsOnStep > stepData.productInput?.maxProductsOnStep) {
+                    errors.push({
+                        fieldId: 'minProducts',
+                        field: 'Minimum products on step',
+                        message: 'Minimum number of products can not be greater than the maximum number of products.',
+                    });
+                } else if (
+                    stepData.productInput?.products.length < stepData.productInput.minProductsOnStep ||
+                    stepData.productInput?.products.length > stepData.productInput.maxProductsOnStep
+                ) {
+                    errors.push({
+                        fieldId: 'products',
+                        field: 'Products',
+                        message: `Please select between ${stepData.productInput.minProductsOnStep} and ${stepData.productInput.maxProductsOnStep} products.`,
+                    });
+                }
+            } else if (stepData.stepType === StepType.CONTENT) {
+                stepData.contentInputs.forEach((contentInput: ContentInput, index: number) => {
+                    if (contentInput.inputType === 'NONE') return;
+
+                    if (!contentInput.inputLabel) {
+                        errors.push({
+                            fieldId: `inputLabel${contentInput.id}`,
+                            field: 'Input label',
+                            message: 'Input label needs to be entered.',
+                        });
+                    } else if (!contentInput.maxChars || contentInput.maxChars < 1) {
+                        errors.push({
+                            fieldId: `maxChars${contentInput.id}`,
+                            field: 'Max characters',
+                            message: 'Please enter the maximum number of characters.',
+                        });
+                    }
                 });
             }
 
@@ -476,7 +495,7 @@ export default function Index() {
     //Data that was previously submitted in the from
     const submittedStepData: BundleStepAllResources = actionData?.data as BundleStepAllResources;
 
-    const errors = actionData?.errors; //Errors from the form submission
+    const errors = actionData?.errors as error[]; //Errors from the form submission
 
     const serverStepData: BundleStepAllResources = useLoaderData<typeof loader>().data; //Data that was loaded from the server
 
@@ -726,13 +745,14 @@ export default function Index() {
                                                 </>
                                             ) : (
                                                 <BlockStack gap={GapBetweenSections}>
-                                                    {stepData.contentInputs.map((contentInput, index) => (
+                                                    {stepData.contentInputs.map((contentInput) => (
                                                         <ContentStepInputs
                                                             key={contentInput.id}
                                                             contentInput={contentInput}
-                                                            inputId={index + 1}
+                                                            errors={errors}
+                                                            inputId={contentInput.id}
+                                                            updateFieldErrorHandler={updateFieldErrorHandler}
                                                             updateContentInput={updateContentInput}
-                                                            stepNumber={stepData.stepNumber}
                                                         />
                                                     ))}
                                                 </BlockStack>
