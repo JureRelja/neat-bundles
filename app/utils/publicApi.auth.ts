@@ -1,6 +1,7 @@
 import db from '~/db.server';
 import { JsonData } from '~/types/jsonData';
 import { SignatureValidator } from '../service/impl/SignatureValidator';
+import { bundlePagePreviewKey } from '~/constants';
 
 // Function to check if the bundle is published and belongs to the store
 export async function checkPublicAuth(request: Request): Promise<JsonData<undefined>> {
@@ -9,6 +10,7 @@ export async function checkPublicAuth(request: Request): Promise<JsonData<undefi
 
     const shop = url.searchParams.get('shop');
     const bundleId = url.searchParams.get('bundleId');
+    const isBundleInPreview = url.searchParams.get(bundlePagePreviewKey);
 
     //Veryfing digital signature
     const signatureValidator = new SignatureValidator(url.searchParams);
@@ -49,9 +51,17 @@ export async function checkPublicAuth(request: Request): Promise<JsonData<undefi
         return new JsonData(true, 'success', 'Returning test bundle.');
     }
 
-    if (!bundleBuilder || !bundleBuilder.published || bundleBuilder.storeUrl !== shop || !bundleBuilder.user.hasAppInstalled) {
-        return new JsonData(false, 'error', "There was an error with your request. Requested bundle either doesn't exist or it's not active.");
-    } else {
-        return new JsonData(true, 'success', 'Bundle is published and belongs to the store.');
+    if (!bundleBuilder || bundleBuilder.storeUrl !== shop) {
+        return new JsonData(false, 'error', "There was an error with your request. Requested bundle either doesn't exist.");
     }
+
+    if (isBundleInPreview === 'true') {
+        return new JsonData(true, 'success', 'Bundle is in preview mode.');
+    }
+
+    if (!bundleBuilder.published) {
+        return new JsonData(false, 'error', 'There was an error with your request. Requested bundle is not active.');
+    }
+
+    return new JsonData(true, 'success', 'Bundle is published and belongs to the store.');
 }

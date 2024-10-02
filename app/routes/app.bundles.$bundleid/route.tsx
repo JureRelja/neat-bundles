@@ -29,7 +29,7 @@ import { DeleteIcon, PlusIcon, ArrowDownIcon, ArrowUpIcon, PageAddIcon, EditIcon
 import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
 import { useEffect, useState } from 'react';
-import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '../../constants';
+import { bundlePagePreviewKey, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '../../constants';
 import db from '../../db.server';
 import { StepType, BundlePricing, BundleDiscountType } from '@prisma/client';
 import { BundleStepBasicResources } from '../../types/BundleStep';
@@ -493,7 +493,7 @@ export default function Index() {
                                 content: 'Preview',
                                 accessibilityLabel: 'Preview action label',
                                 icon: ExternalIcon,
-                                url: `${serverBundle.bundlePageUrl}?preview=true`,
+                                url: `${serverBundle.bundlePageUrl}?${bundlePagePreviewKey}=true`,
                                 target: '_blank',
                             },
                         ]}

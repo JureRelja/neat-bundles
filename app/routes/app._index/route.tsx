@@ -33,6 +33,7 @@ import { ShopifyCatalogRepository } from '~/adminBackend/repository/ShopifyCatal
 import { request } from 'http';
 import { useEffect, useState } from 'react';
 import { Modal, TitleBar } from '@shopify/app-bridge-react';
+import { bundlePagePreviewKey } from '~/constants';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
@@ -264,7 +265,12 @@ export default function Index() {
                                                     <Button icon={SettingsIcon} variant="secondary" tone="success" url={`/app/bundles/${bundle.id}/settings/?redirect=/app`}>
                                                         Settings
                                                     </Button>,
-                                                    <Button icon={ExternalIcon} variant="secondary" tone="success" url={`${bundle.bundlePageUrl}?preview=true`} target="_blank">
+                                                    <Button
+                                                        icon={ExternalIcon}
+                                                        variant="secondary"
+                                                        tone="success"
+                                                        url={`${bundle.bundlePageUrl}?${bundlePagePreviewKey}=true`}
+                                                        target="_blank">
                                                         Preview
                                                     </Button>,
                                                 ];

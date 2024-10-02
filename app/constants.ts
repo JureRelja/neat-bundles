@@ -11,3 +11,4 @@ export const bundleTagIndentifier = 'ncb-neat-custom-bundle';
 export const bundlePageKey = 'bundle_id_page';
 export const bundlePageType = 'number_integer';
 export const bundlePageNamespace = 'neat_bundles_app';
+export const bundlePagePreviewKey = 'neatBundlePreview';

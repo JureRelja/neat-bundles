@@ -13,6 +13,8 @@ import { CustomerInputService } from '../../service/impl/CustomerInputService';
 import { BundlePriceCalculationService } from '~/service/impl/BundlePriceCalculationService';
 import { ShopifyProductVariantService } from '~/service/impl/ShopifyProductVariantService';
 import { BundleVariantForCartDto } from '~/dto/BundleVariantForCartDto';
+import { bundlePagePreviewKey } from '~/constants';
+import { c } from 'node_modules/vite/dist/node/types.d-aGj9QkWt';
 
 export const action = async ({ request }: ActionFunctionArgs) => {
     const res = await checkPublicAuth(request); //Public auth check
@@ -29,6 +31,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const url = new URL(request.url);
     const shop = url.searchParams.get('shop') as string;
     const bundleBuilderId = url.searchParams.get('bundleId');
+    const isBundleInPreview = url.searchParams.get(bundlePagePreviewKey);
+
+    if (isBundleInPreview === 'true') {
+        return json(new JsonData(true, 'success', "You can't create a bundle.", []));
+    }
 
     try {
         const formData = await request.formData();
