@@ -25,8 +25,11 @@ export default function App() {
                 <Link to="/app" rel="home">
                     Home
                 </Link>
-                <Link to="/app" rel="home">
-                    Home
+                <Link to="/app" rel="bundles">
+                    Bundles
+                </Link>
+                <Link to="" target="_blank" rel="styling">
+                    Styling
                 </Link>
             </NavMenu>
             <Outlet />

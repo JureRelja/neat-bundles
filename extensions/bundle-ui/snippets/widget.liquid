@@ -443,6 +443,7 @@
               <button
                 class="nav-button prev-step-btn prev_step_text_bg_color bundle_border_radius_small"
                 @click="decrementStep"
+                x-show="bundleSettings.allowBackNavigation"
                 x-bind:disabled="activeStep == 1">
                 <svg
                   width="12"
@@ -458,6 +459,9 @@
                     stroke-linejoin="round" />
                 </svg>
                 Previous step</button>
+              <p x-show="!bundleSettings.allowBackNavigation">&nbsp;</p>
+
+
               <button
                 class="nav-button next_step_text_bg_color bundle_border_radius_small"
                 @click="incrementStep"
@@ -550,6 +554,7 @@
   
             if (data.ok) {
               this.bundleData = data.data;
+              this.bundleSettings = data.data.bundleSettings;
               this.activeStepData = data.data.steps[0];
 
               this.initialLoading = false;
@@ -575,6 +580,7 @@
         stepLoading: true, // Step loading state
         finalLoading: false, // Final loading state
         bundleData: {}, // Bundle settings data
+        bundleSettings: {}, // Bundle settings
   
         //Current bundle selects and inputs 
         stepInputs: [], //Inputs on steps in format [{stepNumber: 1, stepType: "PRODUCT", inputs: [{id: id, quantity: quantity}]}, {stepNumber: 2, stepType: "CONTENT" inputs: [{type: text, value: value}]}]
