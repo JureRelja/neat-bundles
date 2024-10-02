@@ -17,6 +17,7 @@ import {
     ChoiceList,
     Divider,
     InlineError,
+    Layout,
 } from '@shopify/polaris';
 
 import { authenticate } from '../../shopify.server';
@@ -539,84 +540,46 @@ export default function Index() {
                     <input type="hidden" name="action" value="updateStep" />
                     <input type="hidden" name="stepData" value={JSON.stringify(stepData)} />
                     <BlockStack gap={GapBetweenSections}>
-                        <Card>
-                            <BlockStack gap={GapBetweenTitleAndContent}>
-                                <Text as="h2" variant="headingMd">
-                                    Step settings
-                                </Text>
-                                <BlockStack gap={GapBetweenSections}>
-                                    <BlockStack gap={GapInsideSection}>
-                                        <Box id="stepTitle">
-                                            <TextField
-                                                label="Step title"
-                                                error={errors?.find((err: error) => err.fieldId === 'stepTitle')?.message}
-                                                type="text"
-                                                name={`stepTitle`}
-                                                value={stepData.title}
-                                                onChange={(newTitle: string) => {
+                        <Layout>
+                            <Layout.Section>
+                                <Card>
+                                    <BlockStack gap={GapBetweenTitleAndContent}>
+                                        <Text as="h2" variant="headingMd">
+                                            Step settings
+                                        </Text>
+                                        <BlockStack gap={GapBetweenSections}>
+                                            <ChoiceList
+                                                title="Step type:"
+                                                name={`stepType`}
+                                                choices={[
+                                                    {
+                                                        label: 'Product step',
+                                                        value: StepType.PRODUCT,
+                                                        helpText: `Customers can choose products on this step`,
+                                                    },
+                                                    {
+                                                        label: 'Content step',
+                                                        value: StepType.CONTENT,
+                                                        helpText: `Customer can add text or images on this step`,
+                                                    },
+                                                ]}
+                                                selected={[stepData.stepType]}
+                                                onChange={(selected: string[]) => {
                                                     setStepData((stepData: BundleStepAllResources) => {
                                                         return {
                                                             ...stepData,
-                                                            title: newTitle,
+                                                            stepType: selected[0] as StepType,
                                                         };
                                                     });
-                                                    updateFieldErrorHandler('stepTitle');
                                                 }}
-                                                autoComplete="off"
                                             />
-                                        </Box>
-                                        <Box id="stepDESC">
-                                            <TextField
-                                                label="Step description"
-                                                value={stepData.description}
-                                                type="text"
-                                                name={`stepDescription`}
-                                                onChange={(newDesc: string) => {
-                                                    setStepData((stepData: BundleStepAllResources) => {
-                                                        return {
-                                                            ...stepData,
-                                                            description: newDesc,
-                                                        };
-                                                    });
-                                                    updateFieldErrorHandler('stepDESC');
-                                                }}
-                                                error={errors?.find((err: error) => err.fieldId === 'stepDESC')?.message}
-                                                autoComplete="off"
-                                            />
-                                        </Box>
-                                    </BlockStack>
-                                    <ChoiceList
-                                        title="Step type:"
-                                        name={`stepType`}
-                                        choices={[
-                                            {
-                                                label: 'Product step',
-                                                value: StepType.PRODUCT,
-                                                helpText: `Customers can choose products on this step`,
-                                            },
-                                            {
-                                                label: 'Content step',
-                                                value: StepType.CONTENT,
-                                                helpText: `Customer can add text or images on this step`,
-                                            },
-                                        ]}
-                                        selected={[stepData.stepType]}
-                                        onChange={(selected: string[]) => {
-                                            setStepData((stepData: BundleStepAllResources) => {
-                                                return {
-                                                    ...stepData,
-                                                    stepType: selected[0] as StepType,
-                                                };
-                                            });
-                                        }}
-                                    />
 
-                                    <Divider borderColor="border-inverse" />
-                                    {stepData.stepType === StepType.PRODUCT ? (
-                                        <>
-                                            <BlockStack gap={GapInsideSection}>
-                                                {/* Commented for now. Users will only be able to select individual products. */}
-                                                {/* <ChoiceList
+                                            <Divider borderColor="border-inverse" />
+                                            {stepData.stepType === StepType.PRODUCT ? (
+                                                <>
+                                                    <BlockStack gap={GapInsideSection}>
+                                                        {/* Commented for now. Users will only be able to select individual products. */}
+                                                        {/* <ChoiceList
                                                     title="Display products:"
                                                     name={`productResourceType`}
                                                     choices={[
@@ -660,117 +623,175 @@ export default function Index() {
                                                     updateSelectedResources={updateSelectedResources}
                                                     />*/}
 
-                                                <ResourcePicker selectedProducts={stepData.productInput?.products as Product[]} updateSelectedProducts={updateSelectedProducts} />
-                                                <InlineError message={errors?.find((err: error) => err.fieldId === 'products')?.message || ''} fieldID="products" />
-                                            </BlockStack>
-
-                                            <Divider />
-                                            <BlockStack gap={GapInsideSection}>
-                                                <Text as="p">Rules</Text>
-
-                                                <InlineGrid columns={2} gap={HorizontalGap}>
-                                                    <Box id="minProducts">
-                                                        <TextField
-                                                            label="Minimum products to select"
-                                                            type="number"
-                                                            autoComplete="off"
-                                                            inputMode="numeric"
-                                                            name={`minProductsToSelect`}
-                                                            min={1}
-                                                            value={stepData.productInput?.minProductsOnStep.toString()}
-                                                            onChange={(value) => {
-                                                                setStepData((stepData: BundleStepAllResources) => {
-                                                                    if (!stepData.productInput) return stepData;
-                                                                    return {
-                                                                        ...stepData,
-                                                                        productInput: {
-                                                                            ...stepData.productInput,
-                                                                            minProductsOnStep: Number(value),
-                                                                        },
-                                                                    };
-                                                                });
-                                                                updateFieldErrorHandler('minProducts');
-                                                            }}
-                                                            error={errors?.find((err: error) => err.fieldId === 'minProducts')?.message}
+                                                        <ResourcePicker
+                                                            selectedProducts={stepData.productInput?.products as Product[]}
+                                                            updateSelectedProducts={updateSelectedProducts}
                                                         />
-                                                    </Box>
+                                                        <InlineError message={errors?.find((err: error) => err.fieldId === 'products')?.message || ''} fieldID="products" />
+                                                    </BlockStack>
 
-                                                    <Box id="maxProducts">
-                                                        <TextField
-                                                            label="Maximum products to select"
-                                                            type="number"
-                                                            autoComplete="off"
-                                                            inputMode="numeric"
-                                                            name={`maxProductsToSelect`}
-                                                            min={stepData.productInput?.minProductsOnStep || 1} //Maximum number of products needs to be equal or greater than the minimum number of products
-                                                            value={stepData.productInput?.maxProductsOnStep.toString()}
-                                                            onChange={(value) => {
-                                                                setStepData((stepData: BundleStepAllResources) => {
-                                                                    if (!stepData.productInput) return stepData;
-                                                                    return {
-                                                                        ...stepData,
-                                                                        productInput: {
-                                                                            ...stepData.productInput,
-                                                                            maxProductsOnStep: Number(value),
-                                                                        },
-                                                                    };
-                                                                });
-                                                                updateFieldErrorHandler('maxProducts');
-                                                            }}
-                                                            error={errors?.find((err: error) => err.fieldId === 'maxProducts')?.message}
-                                                        />
-                                                    </Box>
-                                                </InlineGrid>
-                                                <ChoiceList
-                                                    title="Display products"
-                                                    allowMultiple
-                                                    name={`displayProducts`}
-                                                    choices={[
-                                                        {
-                                                            label: 'Allow customers to select one product more than once',
-                                                            value: 'allowProductDuplicates',
-                                                        },
-                                                        {
-                                                            label: 'Show price under each product',
-                                                            value: 'showProductPrice',
-                                                        },
-                                                    ]}
-                                                    selected={[
-                                                        stepData.productInput?.allowProductDuplicates ? 'allowProductDuplicates' : '',
-                                                        stepData.productInput?.showProductPrice ? 'showProductPrice' : '',
-                                                    ]}
-                                                    onChange={(selectedValues: string[]) => {
-                                                        setStepData((stepData: BundleStepAllResources) => {
-                                                            if (!stepData.productInput) return stepData;
-                                                            return {
-                                                                ...stepData,
-                                                                productInput: {
-                                                                    ...stepData.productInput,
-                                                                    allowProductDuplicates: selectedValues.includes('allowProductDuplicates'),
-                                                                    showProductPrice: selectedValues.includes('showProductPrice'),
+                                                    <BlockStack gap={GapInsideSection}>
+                                                        <Text as="h2" variant="headingSm">
+                                                            Product rules
+                                                        </Text>
+
+                                                        <InlineGrid columns={2} gap={HorizontalGap}>
+                                                            <Box id="minProducts">
+                                                                <TextField
+                                                                    label="Minimum products to select"
+                                                                    type="number"
+                                                                    helpText="Customers must select at least this number of products."
+                                                                    autoComplete="off"
+                                                                    inputMode="numeric"
+                                                                    name={`minProductsToSelect`}
+                                                                    min={1}
+                                                                    value={stepData.productInput?.minProductsOnStep.toString()}
+                                                                    onChange={(value) => {
+                                                                        setStepData((stepData: BundleStepAllResources) => {
+                                                                            if (!stepData.productInput) return stepData;
+                                                                            return {
+                                                                                ...stepData,
+                                                                                productInput: {
+                                                                                    ...stepData.productInput,
+                                                                                    minProductsOnStep: Number(value),
+                                                                                },
+                                                                            };
+                                                                        });
+                                                                        updateFieldErrorHandler('minProducts');
+                                                                    }}
+                                                                    error={errors?.find((err: error) => err.fieldId === 'minProducts')?.message}
+                                                                />
+                                                            </Box>
+
+                                                            <Box id="maxProducts">
+                                                                <TextField
+                                                                    label="Maximum products to select"
+                                                                    helpText="Customers can select up to this number of products."
+                                                                    type="number"
+                                                                    autoComplete="off"
+                                                                    inputMode="numeric"
+                                                                    name={`maxProductsToSelect`}
+                                                                    min={stepData.productInput?.minProductsOnStep || 1} //Maximum number of products needs to be equal or greater than the minimum number of products
+                                                                    value={stepData.productInput?.maxProductsOnStep.toString()}
+                                                                    onChange={(value) => {
+                                                                        setStepData((stepData: BundleStepAllResources) => {
+                                                                            if (!stepData.productInput) return stepData;
+                                                                            return {
+                                                                                ...stepData,
+                                                                                productInput: {
+                                                                                    ...stepData.productInput,
+                                                                                    maxProductsOnStep: Number(value),
+                                                                                },
+                                                                            };
+                                                                        });
+                                                                        updateFieldErrorHandler('maxProducts');
+                                                                    }}
+                                                                    error={errors?.find((err: error) => err.fieldId === 'maxProducts')?.message}
+                                                                />
+                                                            </Box>
+                                                        </InlineGrid>
+                                                        <ChoiceList
+                                                            title="Display products"
+                                                            allowMultiple
+                                                            name={`displayProducts`}
+                                                            choices={[
+                                                                {
+                                                                    label: 'Allow customers to select one product more than once',
+                                                                    value: 'allowProductDuplicates',
                                                                 },
-                                                            };
-                                                        });
-                                                    }}
-                                                />
-                                            </BlockStack>
-                                        </>
-                                    ) : (
-                                        <BlockStack gap={GapBetweenSections}>
-                                            {stepData.contentInputs.map((contentInput, index) => (
-                                                <ContentStepInputs
-                                                    key={contentInput.id}
-                                                    contentInput={contentInput}
-                                                    inputId={index + 1}
-                                                    updateContentInput={updateContentInput}
-                                                    stepNumber={stepData.stepNumber}
-                                                />
-                                            ))}
+                                                                {
+                                                                    label: 'Show price under each product',
+                                                                    value: 'showProductPrice',
+                                                                },
+                                                            ]}
+                                                            selected={[
+                                                                stepData.productInput?.allowProductDuplicates ? 'allowProductDuplicates' : '',
+                                                                stepData.productInput?.showProductPrice ? 'showProductPrice' : '',
+                                                            ]}
+                                                            onChange={(selectedValues: string[]) => {
+                                                                setStepData((stepData: BundleStepAllResources) => {
+                                                                    if (!stepData.productInput) return stepData;
+                                                                    return {
+                                                                        ...stepData,
+                                                                        productInput: {
+                                                                            ...stepData.productInput,
+                                                                            allowProductDuplicates: selectedValues.includes('allowProductDuplicates'),
+                                                                            showProductPrice: selectedValues.includes('showProductPrice'),
+                                                                        },
+                                                                    };
+                                                                });
+                                                            }}
+                                                        />
+                                                    </BlockStack>
+                                                </>
+                                            ) : (
+                                                <BlockStack gap={GapBetweenSections}>
+                                                    {stepData.contentInputs.map((contentInput, index) => (
+                                                        <ContentStepInputs
+                                                            key={contentInput.id}
+                                                            contentInput={contentInput}
+                                                            inputId={index + 1}
+                                                            updateContentInput={updateContentInput}
+                                                            stepNumber={stepData.stepNumber}
+                                                        />
+                                                    ))}
+                                                </BlockStack>
+                                            )}
                                         </BlockStack>
-                                    )}
+                                    </BlockStack>
+                                </Card>
+                            </Layout.Section>
+
+                            <Layout.Section variant="oneThird">
+                                <BlockStack gap={GapBetweenSections}>
+                                    <Card>
+                                        <BlockStack gap={GapInsideSection}>
+                                            <Text as="h2" variant="headingMd">
+                                                Step details
+                                            </Text>
+
+                                            <TextField
+                                                label="Step title"
+                                                error={errors?.find((err: error) => err.fieldId === 'stepTitle')?.message}
+                                                type="text"
+                                                name={`stepTitle`}
+                                                value={stepData.title}
+                                                helpText="This title will be displayed to the customer."
+                                                onChange={(newTitle: string) => {
+                                                    setStepData((stepData: BundleStepAllResources) => {
+                                                        return {
+                                                            ...stepData,
+                                                            title: newTitle,
+                                                        };
+                                                    });
+                                                    updateFieldErrorHandler('stepTitle');
+                                                }}
+                                                autoComplete="off"
+                                            />
+
+                                            <TextField
+                                                label="Step description"
+                                                value={stepData.description}
+                                                type="text"
+                                                name={`stepDescription`}
+                                                helpText="This description will be displayed to the customer."
+                                                onChange={(newDesc: string) => {
+                                                    setStepData((stepData: BundleStepAllResources) => {
+                                                        return {
+                                                            ...stepData,
+                                                            description: newDesc,
+                                                        };
+                                                    });
+                                                    updateFieldErrorHandler('stepDESC');
+                                                }}
+                                                error={errors?.find((err: error) => err.fieldId === 'stepDESC')?.message}
+                                                autoComplete="off"
+                                            />
+                                        </BlockStack>
+                                    </Card>
                                 </BlockStack>
-                            </BlockStack>
-                        </Card>
+                            </Layout.Section>
+                        </Layout>
 
                         {/* Save action */}
                         <Box width="full">
