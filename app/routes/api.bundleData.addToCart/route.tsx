@@ -1,20 +1,19 @@
 import type { ActionFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import db from '~/db.server';
-import { JsonData } from '~/types/jsonData';
-import { checkPublicAuth } from '~/utils/publicApi.auth';
-import { FileStoreServiceImpl } from '~/service/impl/FIleStoreServiceImpl';
-import { BundleFullAndStepsFullDto, bundleFullStepsFull } from '~/dto/BundleFullAndStepsFullDto';
-import { CustomerInputDto } from '../../dto/CustomerInputDto';
-import { ProductDto } from '~/dto/ProductDto';
-import { ContentDto } from '~/dto/ContentDto';
-import { CreatedBundleRepository } from '~/repository/CreatedBundleRepository';
-import { CustomerInputService } from '../../service/impl/CustomerInputService';
-import { BundlePriceCalculationService } from '~/service/impl/BundlePriceCalculationService';
-import { ShopifyProductVariantService } from '~/service/impl/ShopifyProductVariantService';
-import { BundleVariantForCartDto } from '~/dto/BundleVariantForCartDto';
+import { JsonData } from '~/adminBackend/service/dto/jsonData';
+import { checkPublicAuth } from '~/adminBackend/service/utils/publicApi.auth';
+import { FileStoreRepositoryImpl } from '~/adminBackend/repository/impl/FIleStoreServiceImpl';
+import { BundleFullAndStepsFullDto, bundleFullStepsFull } from '@adminBackend/service/dto/BundleFullAndStepsFullDto';
+import { CustomerInputDto } from '@adminBackend/service/dto/CustomerInputDto';
+import { ProductDto } from '@adminBackend/service/dto/ProductDto';
+import { ContentDto } from '@adminBackend/service/dto/ContentDto';
+import { CreatedBundleRepository } from '@adminBackend/repository/impl/CreatedBundleRepository';
+import { CustomerInputsDto } from '~/adminBackend/service/dto/CustomerInputsDto';
+import { ShopifyProductVariantService } from '~/adminBackend/repository/impl/ShopifyProductVariantRepository';
+import { BundleVariantForCartDto } from '@adminBackend/service/dto/BundleVariantForCartDto';
 import { bundlePagePreviewKey } from '~/constants';
-import { c } from 'node_modules/vite/dist/node/types.d-aGj9QkWt';
+import { AddedContentItemDto } from '~/adminBackend/service/dto/AddedContentItemDto';
 
 export const action = async ({ request }: ActionFunctionArgs) => {
     const res = await checkPublicAuth(request); //Public auth check
@@ -152,19 +151,19 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         const productVariantService = await ShopifyProductVariantService.build(shop);
 
         //Extract the data from the customer inputs
-        const { addedProductVariants, addedContent, totalProductPrice } = await CustomerInputService.extractDataFromCustomerInputs(
+        const { addedProductVariants, addedContent, totalProductPrice } = await CustomerInputsDto.extractDataFromCustomerInputs(
             customerInputs,
             bundleBuilder,
             productVariantService,
         );
 
         if (files) {
-            const fileStoreService = new FileStoreServiceImpl();
+            const fileStoreService = new FileStoreRepositoryImpl();
 
             await Promise.all(
                 addedContent.map(async (contentItem) => {
                     await Promise.all(
-                        contentItem.getContentItems().map(async (contentInput) => {
+                        contentItem.getContentItems().map(async (contentInput: AddedContentItemDto) => {
                             if (contentInput.contentType === 'IMAGE') {
                                 //Upload the image to the storage
                                 const imageUrl = await fileStoreService.uploadFile(contentInput.value, files);
@@ -179,7 +178,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         }
 
         //Get the final bundle prices
-        const { bundlePrice, bundleCompareAtPrice, discountAmount } = BundlePriceCalculationService.getFinalBundlePrices(bundleBuilder, totalProductPrice);
+        const { bundlePrice, bundleCompareAtPrice, discountAmount } = BundleVariantForCartDto.getFinalBundlePrices(bundleBuilder, totalProductPrice);
 
         //Store the created bundle in the database
         //Get the id of the created bundle

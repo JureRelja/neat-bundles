@@ -1,5 +1,5 @@
 import { AddedProductVariantDto } from '~/dto/AddedProductVariantDto';
-import db from '../db.server';
+import db from '../../../db.server';
 import { AddedContentDto } from '~/dto/AddedContentDto';
 
 export class CreatedBundleRepository {

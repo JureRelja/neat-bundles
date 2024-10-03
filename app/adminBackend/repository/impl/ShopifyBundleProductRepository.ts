@@ -1,5 +1,5 @@
 import { AdminApiContext } from '@shopify/shopify-app-remix/server';
-import { bundleTagIndentifier } from '../../constants';
+import { bundleTagIndentifier } from '../../../constants';
 import { Product, ProductCreatePayload, ProductUpdatePayload } from '@shopifyGraphql/graphql';
 import { ShopifyCatalogRepository } from './ShopifyCatalogRepository';
 

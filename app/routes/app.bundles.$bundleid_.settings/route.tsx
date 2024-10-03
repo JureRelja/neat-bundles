@@ -6,13 +6,13 @@ import { authenticate } from '../../shopify.server';
 import db from '../../db.server';
 import { Card, BlockStack, Text, RangeSlider, Divider, InlineGrid, ChoiceList, Page, Button, Box, SkeletonPage, SkeletonBodyText } from '@shopify/polaris';
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, HorizontalGap } from '../../constants';
-import { SettingsWithAllResources, settingsIncludeAll } from '../../types/BundleSettings';
+import { SettingsWithAllResources, settingsIncludeAll } from '../../adminBackend/service/dto/BundleSettings';
 import ColorPicker from './color-picker';
 import { useMemo, useState } from 'react';
-import { JsonData } from '~/types/jsonData';
+import { JsonData } from '~/adminBackend/service/dto/jsonData';
 import { RangeSliderValue } from '@shopify/polaris/build/ts/src/components/RangeSlider/types';
-import { ApiCacheService } from '~/service/impl/ApiCacheService';
-import { ApiCacheKeyService } from '~/service/impl/ApiCacheKeyService';
+import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
+import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
 import { BundleSettings } from '@prisma/client';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {

@@ -1,5 +1,5 @@
 import { AdminApiContext } from '@shopify/shopify-app-remix/server';
-import db from '../../db.server';
+import db from '../../../db.server';
 import { User } from '@prisma/client';
 
 class UserRepository {

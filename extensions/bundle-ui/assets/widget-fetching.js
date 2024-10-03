@@ -128,6 +128,14 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
             .then(() => {
                 if (skipTheCart) window.location.href = `/checkout`;
                 else window.location.href = `/cart`;
+
+                let formData = new FormData();
+                formData.append('deleteVariant', bundleId);
+
+                const response = fetch(`${APP_URL}/bundleProduct?bundleId=${bundleId}&shop=${shopDomain}&variant=${bundleVariantForCart}`, {
+                    method: 'POST',
+                    body: formData,
+                });
             })
             .catch((error) => {
                 console.log('error', error);

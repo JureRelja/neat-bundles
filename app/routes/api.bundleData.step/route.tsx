@@ -1,11 +1,11 @@
 import type { LoaderFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import db from '~/db.server';
-import { JsonData } from '~/types/jsonData';
-import { checkPublicAuth } from '~/utils/publicApi.auth';
-import { ApiCacheService } from '../../service/impl/ApiCacheService';
-import { BundleStepAllResources, bundleStepFull } from '~/types/BundleStep';
-import { ApiCacheKeyService } from '~/service/impl/ApiCacheKeyService';
+import { JsonData } from '~/adminBackend/service/dto/jsonData';
+import { checkPublicAuth } from '~/adminBackend/service/utils/publicApi.auth';
+import { ApiCacheService } from '../../adminBackend/service/utils/ApiCacheService';
+import { BundleStepAllResources, bundleStepFull } from '~/adminBackend/service/dto/BundleStep';
+import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const res = await checkPublicAuth(request); //Public auth check

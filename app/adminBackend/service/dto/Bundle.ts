@@ -1,6 +1,6 @@
 import { Prisma, BundleBuilder } from '@prisma/client';
-import { bundleStepBasic } from './BundleStep';
-import { settingsIncludeAll, SettingsWithAllResources } from './BundleSettings';
+import { bundleStepBasic } from '@adminBackend/service/dto/BundleStep';
+import { settingsIncludeAll, SettingsWithAllResources } from '@adminBackend/service/dto/BundleSettings';
 
 //Defining basic bundle resources
 export const bundleAndSteps = {

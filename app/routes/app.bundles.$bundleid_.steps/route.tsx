@@ -8,13 +8,13 @@ import { useAppBridge } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
 import db from '../../db.server';
 import { BundleStep } from '@prisma/client';
-import { JsonData } from '../../types/jsonData';
-import { bundleStepBasic, BundleStepBasicResources } from '~/types/BundleStep';
+import { JsonData } from '../../adminBackend/service/dto/jsonData';
+import { bundleStepBasic, BundleStepBasicResources } from '~/adminBackend/service/dto/BundleStep';
 import { useEffect, useRef, useState } from 'react';
 import styles from './route.module.css';
 import BundlePreview from './bundlePreview';
-import { ApiCacheService } from '~/service/impl/ApiCacheService';
-import { ApiCacheKeyService } from '~/service/impl/ApiCacheKeyService';
+import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
+import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);

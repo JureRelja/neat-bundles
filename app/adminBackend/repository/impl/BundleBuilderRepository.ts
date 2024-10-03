@@ -1,4 +1,4 @@
-import db from '../../db.server';
+import db from '../../../db.server';
 
 export class BundleRepository {
     public static async createNewBundleBuilder(shop: string, bundleTitle: string, bundleProductId: string, bundlePageId: string, bundlePageUrl: string) {

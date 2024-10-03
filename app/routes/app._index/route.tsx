@@ -24,12 +24,12 @@ import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from '@sho
 import { authenticate } from '../../shopify.server';
 import db from '../../db.server';
 import { User } from '@prisma/client';
-import { BundleAndStepsBasicServer, BundleAndStepsBasicClient, bundleAndSteps } from '../../types/Bundle';
-import { JsonData } from '../../types/jsonData';
+import { BundleAndStepsBasicServer, BundleAndStepsBasicClient, bundleAndSteps } from '../../adminBackend/service/dto/Bundle';
+import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
 import styles from '../app.bundles.$bundleid/route.module.css';
-import { ShopifyCatalogRepository } from '~/adminBackend/repository/ShopifyCatalogRepository';
+import { ShopifyCatalogRepository } from '~/adminBackend/repository/impl/ShopifyCatalogRepository';
 import { request } from 'http';
 import { useEffect, useState } from 'react';
 import { Modal, TitleBar } from '@shopify/app-bridge-react';

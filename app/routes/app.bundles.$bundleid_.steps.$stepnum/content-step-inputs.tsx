@@ -1,7 +1,7 @@
 import { BlockStack, Text, Select, TextField, InlineGrid, ChoiceList } from '@shopify/polaris';
 import { GapInsideSection, HorizontalGap } from '../../constants';
 import { ContentInput, InputType } from '@prisma/client';
-import { error } from '~/types/jsonData';
+import { error } from '~/adminBackend/service/dto/jsonData';
 
 export default function Index({
     contentInput,

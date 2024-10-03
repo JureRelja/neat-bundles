@@ -24,12 +24,12 @@ import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from '@sho
 import { authenticate } from '../../shopify.server';
 import db from '../../db.server';
 import { User } from '@prisma/client';
-import { BundleAndStepsBasicServer, BundleAndStepsBasicClient, bundleAndSteps } from '../../types/Bundle';
-import { JsonData } from '../../types/jsonData';
+import { BundleAndStepsBasicServer, BundleAndStepsBasicClient, bundleAndSteps } from '../../adminBackend/service/dto/Bundle';
+import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
 import styles from '../app.bundles.$bundleid/route.module.css';
-import { ShopifyCatalogService } from '~/adminBackend/repository/ShopifyCatalogRepository';
+import { ShopifyCatalogRepository } from '~/adminBackend/repository/impl/ShopifyCatalogRepository';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
@@ -56,7 +56,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
         const data = await response.json();
 
-        const onlineStorePublicationId = await ShopifyCatalogService.getOnlineStorePublicationId(admin);
+        const onlineStorePublicationId = await ShopifyCatalogRepository.getOnlineStorePublicationId(admin);
 
         if (!onlineStorePublicationId) {
             return json(

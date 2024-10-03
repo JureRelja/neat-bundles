@@ -1,14 +1,14 @@
 import { AdminApiContext } from '@shopify/shopify-app-remix/server';
-import { AddedProductVariantDto } from '~/dto/AddedProductVariantDto';
-import { BundleFullAndStepsFullDto } from '~/dto/BundleFullAndStepsFullDto';
-import { CustomerInputDto } from '~/dto/CustomerInputDto';
-import { ProductDto } from '~/dto/ProductDto';
-import { ShopifyProductVariantService } from './ShopifyProductVariantService';
-import { AddedContentDto } from '~/dto/AddedContentDto';
-import { ContentDto } from '~/dto/ContentDto';
-import { AddedContentItemDto } from '~/dto/AddedContentItemDto';
+import { AddedProductVariantDto } from '@adminBackend/service/dto/AddedProductVariantDto';
+import { BundleFullAndStepsFullDto } from '@adminBackend/service/dto/BundleFullAndStepsFullDto';
+import { CustomerInputDto } from '@adminBackend/service/dto/CustomerInputDto';
+import { ProductDto } from '@adminBackend/service/dto/ProductDto';
+import { ShopifyProductVariantService } from '../../repository/impl/ShopifyProductVariantRepository';
+import { AddedContentDto } from '@adminBackend/service/dto/AddedContentDto';
+import { ContentDto } from '@adminBackend/service/dto/ContentDto';
+import { AddedContentItemDto } from '@adminBackend/service/dto/AddedContentItemDto';
 
-export class CustomerInputService {
+export class CustomerInputsDto {
     constructor() {}
 
     //Go through the customer inputs and extract the data

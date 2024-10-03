@@ -1,4 +1,4 @@
-import { BundleBuildersControllerService } from '../interface/BundleBuildersControllerService';
+import { BundleBuildersControllerService } from '../BundleBuildersControllerService';
 
 class BundleBuildersControllerServiceImpl implements BundleBuildersControllerService {
     createBundleProduct(admin: any, productTitle: string, storeUrl: string): Promise<string | null> {

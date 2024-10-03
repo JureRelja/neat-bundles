@@ -32,16 +32,16 @@ import { useEffect, useState } from 'react';
 import { bundlePagePreviewKey, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '../../constants';
 import db from '../../db.server';
 import { StepType, BundlePricing, BundleDiscountType } from '@prisma/client';
-import { BundleStepBasicResources } from '../../types/BundleStep';
-import { BundleFullStepBasicClient, BundleFullStepBasicServer, inclBundleFullStepsBasic } from '../../types/Bundle';
-import { JsonData, error } from '../../types/jsonData';
+import { BundleStepBasicResources } from '../../adminBackend/service/dto/BundleStep';
+import { BundleFullStepBasicClient, BundleFullStepBasicServer, inclBundleFullStepsBasic } from '../../adminBackend/service/dto/Bundle';
+import { JsonData, error } from '../../adminBackend/service/dto/jsonData';
 import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '../../hooks/useNavigateSubmit';
 import styles from './route.module.css';
-import { ApiCacheService } from '~/service/impl/ApiCacheService';
-import { ApiCacheKeyService } from '~/service/impl/ApiCacheKeyService';
-import shopifyBundleProductService from '~/adminBackend/repository/ShopifyBundleProductRepository';
-import { ShopifyBundleBuilderPage } from '~/adminBackend/service/ShopifyBundleBuilderPage';
+import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
+import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
+import shopifyBundleProductService from '~/adminBackend/repository/impl/ShopifyBundleProductRepository';
+import { ShopifyBundleBuilderPage } from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepository';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);

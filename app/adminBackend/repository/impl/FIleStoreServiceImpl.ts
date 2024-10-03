@@ -1,10 +1,10 @@
-import { FileStoreService } from '../FileStoreService';
+import { FileStoreRepository } from '../FileStoreRepository';
 import { Storage } from '@google-cloud/storage';
 
 const storage = new Storage();
 const bucket = process.env.BUCKET_NAME as string;
 
-export class FileStoreServiceImpl implements FileStoreService {
+export class FileStoreRepositoryImpl implements FileStoreRepository {
     constructor() {
         // Implementation
     }

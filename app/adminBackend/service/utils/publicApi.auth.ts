@@ -1,6 +1,6 @@
 import db from '~/db.server';
-import { JsonData } from '~/types/jsonData';
-import { SignatureValidator } from '../service/impl/SignatureValidator';
+import { JsonData } from '~/adminBackend/service/dto/jsonData';
+import { SignatureValidator } from './SignatureValidator';
 import { bundlePagePreviewKey } from '~/constants';
 
 // Function to check if the bundle is published and belongs to the store

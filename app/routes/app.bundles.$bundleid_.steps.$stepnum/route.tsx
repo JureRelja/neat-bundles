@@ -25,12 +25,12 @@ import { useEffect, useState } from 'react';
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, HorizontalGap } from '../../constants';
 import db from '../../db.server';
 import { StepType, ContentInput, Product } from '@prisma/client';
-import { BundleStepAllResources, bundleStepFull } from '~/types/BundleStep';
-import { error, JsonData } from '../../types/jsonData';
+import { BundleStepAllResources, bundleStepFull } from '~/adminBackend/service/dto/BundleStep';
+import { error, JsonData } from '../../adminBackend/service/dto/jsonData';
 import ContentStepInputs from './content-step-inputs';
 import ResourcePicker from './resource-picker';
-import { ApiCacheService } from '~/service/impl/ApiCacheService';
-import { ApiCacheKeyService } from '~/service/impl/ApiCacheKeyService';
+import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
+import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
