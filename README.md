@@ -345,13 +345,19 @@ This template uses [Remix](https://remix.run). The following Shopify tools are a
 
 ## Generate shopify schema
 
--   [graphql-js-schema-fetch https://{store-name}.myshopify.com/admin/api/2024-04/graphql.json --header 'X-Shopify-Access-Token: {acces-token}' > shopify-schema.json]
+Install required packages
 
 -   [npm i graphql]
 -   [npm i -D typescript @graphql-codegen/cli]
 -   [npx graphql-code-generator init]
 
-## Codegen
+Get the schema
+
+-   [graphql-js-schema-fetch https://{store-name}.myshopify.com/admin/api/2024-10/graphql.json --header 'X-Shopify-Access-Token: {acces-token}' > shopify-schema.json]
+
+## Setup codegen
+
+-   create codgen.ts file in root of your project
 
 ```
 import type { CodegenConfig } from '@graphql-codegen/cli';
@@ -369,3 +375,7 @@ const config: CodegenConfig = {
 
 export default config;
 ```
+
+Run the generation command
+
+-   graphql-codegen --config codegen.ts

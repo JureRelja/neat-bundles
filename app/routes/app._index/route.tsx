@@ -30,19 +30,15 @@ import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
 import styles from '../app.bundles.$bundleid/route.module.css';
 import { ShopifyCatalogRepository } from '~/adminBackend/repository/impl/ShopifyCatalogRepository';
-import { request } from 'http';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Modal, TitleBar } from '@shopify/app-bridge-react';
 import { bundlePagePreviewKey } from '~/constants';
+import userRepository from '~/adminBackend/repository/impl/UserRepository';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
 
-    const user: User | null = await db.user.findUnique({
-        where: {
-            storeUrl: session.shop,
-        },
-    });
+    const user = userRepository.getUserByStoreUrl(admin, session.shop);
 
     if (!user) {
         const response = await admin.graphql(
@@ -83,7 +79,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         });
     }
 
-    const bundleBuilders: BundleAndStepsBasicServer[] = await db.bundleBuilder.findMany({
+    const bundleBuildersWithoutPageUrl = await db.bundleBuilder.findMany({
         where: {
             user: {
                 storeUrl: session.shop,
@@ -96,9 +92,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         },
     });
 
+    const bundleBuildersWithPageUrl = bundleBuildersWithoutPageUrl.map((bundleBuilder) => {
+        return {
+            ...bundleBuilder,
+            bundleBuilderPageUrl: `/app/bundles/${bundleBuilder.id}`,
+        };
+    });
+
     return json(
         {
-            ...new JsonData(true, 'success', 'Bundles were succesfully returned', [], bundleBuilders),
+            ...new JsonData(true, 'success', 'Bundles were succesfully returned', [], bundleBuildersWithPageUrl),
         },
         { status: 200 },
     );
@@ -134,7 +137,7 @@ export default function Index() {
 
     const loaderResponse: JsonData<BundleAndStepsBasicClient[]> = useLoaderData<typeof loader>();
 
-    const bundles: BundleAndStepsBasicClient[] = loaderResponse.data;
+    const bundleBuilders: BundleAndStepsBasicClient[] = loaderResponse.data;
 
     const createBundle = () => {
         navigateSubmit('createBundle', '/app/bundles');
@@ -208,27 +211,27 @@ export default function Index() {
                                     <Spinner accessibilityLabel="Spinner example" size="large" />
                                 </div>
                                 <Card>
-                                    {bundles.length > 0 ? (
+                                    {bundleBuilders.length > 0 ? (
                                         <DataTable
                                             columnContentTypes={['text', 'text', 'text', 'text', 'text', 'text']}
                                             headings={['Bundle ID', 'Name', 'Steps', 'Status', 'Actions', 'Settings', 'Preview']}
-                                            rows={bundles.map((bundle: BundleAndStepsBasicClient) => {
+                                            rows={bundleBuilders.map((bundleBuilder: BundleAndStepsBasicClient) => {
                                                 return [
                                                     <Text as="p" tone="base">
-                                                        {bundle.id}
+                                                        {bundleBuilder.id}
                                                     </Text>,
 
                                                     //
-                                                    <Link to={`/app/bundles/${bundle.id}`}>
+                                                    <Link to={`/app/bundles/${bundleBuilder.id}`}>
                                                         <Text as="p" tone="base">
-                                                            {bundle.title}
+                                                            {bundleBuilder.title}
                                                         </Text>
                                                     </Link>,
                                                     //
-                                                    bundle.steps.length,
+                                                    bundleBuilder.steps.length,
                                                     //
-                                                    <Link to={`/app/bundles/${bundle.id}`}>
-                                                        {bundle.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
+                                                    <Link to={`/app/bundles/${bundleBuilder.id}`}>
+                                                        {bundleBuilder.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
                                                     </Link>,
                                                     //
                                                     <ButtonGroup>
@@ -237,7 +240,7 @@ export default function Index() {
                                                             variant="secondary"
                                                             tone="critical"
                                                             onClick={() => {
-                                                                setBundleForDelete(bundle);
+                                                                setBundleForDelete(bundleBuilder);
                                                                 setShowBundleDeleteConfirmModal(true);
                                                             }}>
                                                             Delete
@@ -257,19 +260,19 @@ export default function Index() {
                                                         Duplicate
                                                         </Button> */}
 
-                                                        <Button icon={EditIcon} variant="primary" url={`/app/bundles/${bundle.id}`}>
+                                                        <Button icon={EditIcon} variant="primary" url={`/app/bundles/${bundleBuilder.id}`}>
                                                             Edit
                                                         </Button>
                                                     </ButtonGroup>,
                                                     //
-                                                    <Button icon={SettingsIcon} variant="secondary" tone="success" url={`/app/bundles/${bundle.id}/settings/?redirect=/app`}>
+                                                    <Button icon={SettingsIcon} variant="secondary" tone="success" url={`/app/bundles/${bundleBuilder.id}/settings/?redirect=/app`}>
                                                         Settings
                                                     </Button>,
                                                     <Button
                                                         icon={ExternalIcon}
                                                         variant="secondary"
                                                         tone="success"
-                                                        url={`${bundle.bundlePageUrl}?${bundlePagePreviewKey}=true`}
+                                                        url={`${bundleBuilder}?${bundlePagePreviewKey}=true`}
                                                         target="_blank">
                                                         Preview
                                                     </Button>,

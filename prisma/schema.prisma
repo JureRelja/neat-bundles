@@ -17,30 +17,30 @@ model User {
   ownerName                String          @default("")
   storeName                String
   storeUrl                 String          @unique
-  primaryDomain            String         //https://{domain} format
+  primaryDomain            String //https://{domain} format
   email                    String
   onlineStorePublicationId String //GraphQL GID format
   bundleBuilders           BundleBuilder[]
 }
 
 model BundleBuilder {
-  id               Int                @id @default(autoincrement())
-  deleted          Boolean            @default(false)
-  shopifyProductId String             @unique //GraphQL GID format
-  shopifyPageId    String             @unique //Normal BigInt number, but stored as a string for easier manipulation
-  title            String
-  published        Boolean            @default(false)
-  createdAt        DateTime           @default(now())
-  steps            BundleStep[]
-  pricing          BundlePricing      
-  priceAmount      Float?
-  discountType     BundleDiscountType 
-  discountValue    Float              
-  bundleSettings   BundleSettings?
-  bundlePageUrl    String            
-  storeUrl         String
-  user             User               @relation(fields: [storeUrl], references: [storeUrl], onDelete: Cascade)
-  createdBundles   CreatedBundle[]
+  id                       Int                @id @default(autoincrement())
+  deleted                  Boolean            @default(false)
+  shopifyProductId         String             @unique //GraphQL GID format
+  shopifyPageId            String             @unique //Normal BigInt number, but stored as a string for easier manipulation
+  title                    String
+  published                Boolean            @default(false)
+  createdAt                DateTime           @default(now())
+  steps                    BundleStep[]
+  pricing                  BundlePricing
+  priceAmount              Float?
+  discountType             BundleDiscountType
+  discountValue            Float
+  bundleSettings           BundleSettings?
+  bundleBuilderPageHandle  String
+  storeUrl                 String
+  user                     User               @relation(fields: [storeUrl], references: [storeUrl], onDelete: Cascade)
+  createdBundles           CreatedBundle[]
 }
 
 //Step models
@@ -50,7 +50,7 @@ model BundleStep {
   bundleBuilder   BundleBuilder  @relation(fields: [bundleBuilderId], references: [id], onDelete: Cascade)
   stepNumber      Int
   title           String
-  description     String         
+  description     String
   stepType        StepType
   productInput    ProductInput? //Data if the step is of type PRODUCT
   contentInputs   ContentInput[] //Data if the step is of type CONTENT
@@ -61,10 +61,10 @@ model ProductInput {
   bundleStepId           Int        @unique
   bundleStep             BundleStep @relation(fields: [bundleStepId], references: [id], onDelete: Cascade)
   products               Product[]
-  minProductsOnStep      Int         //Minimum number of products that must be selected on this step
-  maxProductsOnStep      Int         //Maximum number of products that can be selected on this step
-  allowProductDuplicates Boolean    
-  showProductPrice       Boolean    
+  minProductsOnStep      Int //Minimum number of products that must be selected on this step
+  maxProductsOnStep      Int //Maximum number of products that can be selected on this step
+  allowProductDuplicates Boolean
+  showProductPrice       Boolean
 }
 
 model Product {
@@ -77,10 +77,10 @@ model ContentInput {
   id           Int        @id @default(autoincrement())
   bundleStepId Int
   bundleStep   BundleStep @relation(fields: [bundleStepId], references: [id], onDelete: Cascade)
-  inputType    InputType  
-  inputLabel   String     
-  maxChars     Int        
-  required     Boolean    
+  inputType    InputType
+  inputLabel   String
+  maxChars     Int
+  required     Boolean
 }
 
 enum StepType {
@@ -99,10 +99,10 @@ model BundleSettings {
   id                     Int           @id @default(autoincrement())
   bundleBuilder          BundleBuilder @relation(fields: [bundleBuilderId], references: [id], onDelete: Cascade)
   bundleBuilderId        Int           @unique
-  displayDiscountBanner  Boolean       
-  skipTheCart            Boolean    
-  allowBackNavigation    Boolean       
-  showOutOfStockProducts Boolean       
+  displayDiscountBanner  Boolean
+  skipTheCart            Boolean
+  allowBackNavigation    Boolean
+  showOutOfStockProducts Boolean
   bundleColors           BundleColors?
   bundleLabels           BundleLabels?
 }
@@ -123,28 +123,28 @@ model BundleColors {
   id                    Int            @id @default(autoincrement())
   bundleSettings        BundleSettings @relation(fields: [bundleSettingsId], references: [id], onDelete: Cascade)
   bundleSettingsId      Int            @unique
-  stepsIcon             String         
-  addToBundleBtn        String         
-  addToBundleText       String         
-  nextStepBtn           String         
-  nextStepBtnText       String         
-  titleAndDESC          String         
-  viewProductBtn        String         
-  viewProductBtnText    String         
-  removeProductsBtn     String         
-  removeProductsBtnText String         
-  prevStepBtn           String         
-  prevStepBtnText       String         
+  stepsIcon             String
+  addToBundleBtn        String
+  addToBundleText       String
+  nextStepBtn           String
+  nextStepBtnText       String
+  titleAndDESC          String
+  viewProductBtn        String
+  viewProductBtnText    String
+  removeProductsBtn     String
+  removeProductsBtnText String
+  prevStepBtn           String
+  prevStepBtnText       String
 }
 
 model BundleLabels {
   id               Int            @id @default(autoincrement())
   bundleSettings   BundleSettings @relation(fields: [bundleSettingsId], references: [id], onDelete: Cascade)
   bundleSettingsId Int            @unique
-  addToBundleBtn   String         
-  nextStepBtn      String         
-  prevStepBtn      String         
-  viewProductBtn   String         
+  addToBundleBtn   String
+  nextStepBtn      String
+  prevStepBtn      String
+  viewProductBtn   String
 }
 
 //Customer side storage
@@ -152,8 +152,7 @@ model CreatedBundle {
   id                   Int                   @id @default(autoincrement())
   bundleBuilderId      Int
   bundleBuilder        BundleBuilder         @relation(fields: [bundleBuilderId], references: [id], onDelete: Cascade)
-  shopifyProductVariantId String                //GraphQL GID format
-  isVariantSold       Boolean               @default(false)
+  isVariantSold        Boolean               @default(false)
   addedProductVariants AddedProductVariant[] //List of variants in GraphQL GID format
   addedContent         AddedContent[]
   finalPrice           Float

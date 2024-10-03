@@ -2,11 +2,13 @@ import { redirect, json, Outlet } from '@remix-run/react';
 import type { ActionFunctionArgs } from '@remix-run/node';
 import { authenticate } from '../../shopify.server';
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
-import { ShopifyBundleBuilderPage } from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepository';
-import { BundleRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
-import { ShopifyBundleProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
+import shopifyBundleBuilderPageGraphql from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepository';
+import { ShopifyBundleBuilderPageRepository } from '@adminBackend/repository/ShopifyBundleBuilderPageRepository';
+import { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
+import { ShopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
 import { ShopifyRedirectRepository } from '~/adminBackend/repository/impl/ShopifyRedirectRepository';
 import userRepository from '~/adminBackend/repository/impl/UserRepository';
+import shopifyBundleBuilderPageRepositoryREST from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryREST';
 
 export const loader = async ({ request }: ActionFunctionArgs) => {
     await authenticate.admin(request);
@@ -28,39 +30,26 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     switch (action) {
         case 'createBundle': {
             try {
-                const maxBundleId = await BundleRepository.getMaxBundleBuilderId(session.shop);
+                const maxBundleId = await BundleBuilderRepository.getMaxBundleBuilderId(session.shop);
 
                 const defaultBundleTitle = `New bundle ${maxBundleId ? maxBundleId : ''}`;
 
                 //Create a new product that will be used as a bundle wrapper
-                const bundleProductId = await ShopifyBundleProductRepository.createBundleProduct(admin, defaultBundleTitle, session.shop);
+                const bundleProductId = await ShopifyBundleBuilderProductRepository.createBundleProduct(admin, defaultBundleTitle, session.shop);
 
-                if (!bundleProductId) {
-                    return;
-                }
+                //Repository for creating a new page
+                const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryREST;
 
-                //Service for creating and managing new page
-                const bundlePageService = await ShopifyBundleBuilderPage.build(session, admin, defaultBundleTitle);
-
-                if (!bundlePageService.getPage() || !bundlePageService.getPage().id) {
-                    throw new Error('Failed to create a new bundle page');
-                    return;
-                }
-
-                const bundlePageHandle = bundlePageService.getPageHandle();
-                const user = await userRepository.getUserByStoreUrl(admin, session.shop);
-
-                //Url of the bundle page
-                const bundlePageUrl = `${user.primaryDomain}/pages/${bundlePageHandle}`;
+                const bundleBuilderPage = await shopifyBundleBuilderPage.createPage(admin, session, defaultBundleTitle);
 
                 const [urlRedirectRes, bundleId] = await Promise.all([
                     //Create redirect
-                    ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundlePageService.getPage().handle as string, bundleProductId),
+                    ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundleBuilderPage.handle as string, bundleProductId),
                     //Create new bundle
-                    BundleRepository.createNewBundleBuilder(session.shop, defaultBundleTitle, bundleProductId, bundlePageService.getPage().id?.toString() as string, bundlePageUrl),
+                    BundleBuilderRepository.createNewBundleBuilder(session.shop, defaultBundleTitle, bundleProductId, String(bundleBuilderPage.id), bundleBuilderPage.handle),
                 ]);
 
-                await bundlePageService.setPageMetafields(bundleId);
+                await shopifyBundleBuilderPage.setPageMetafields(bundleId, bundleBuilderPage.id, session, admin);
 
                 return redirect(`/app/bundles/${bundleId}`);
             } catch (error) {

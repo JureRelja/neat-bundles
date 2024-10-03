@@ -25,7 +25,19 @@ import {
     Divider,
     Layout,
 } from '@shopify/polaris';
-import { DeleteIcon, PlusIcon, ArrowDownIcon, ArrowUpIcon, PageAddIcon, EditIcon, QuestionCircleIcon, ExternalIcon, SettingsIcon, ClipboardIcon } from '@shopify/polaris-icons';
+import {
+    DeleteIcon,
+    PlusIcon,
+    ArrowDownIcon,
+    ArrowUpIcon,
+    PageAddIcon,
+    EditIcon,
+    QuestionCircleIcon,
+    ExternalIcon,
+    SettingsIcon,
+    ClipboardIcon,
+    RefreshIcon,
+} from '@shopify/polaris-icons';
 import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
 import { useEffect, useState } from 'react';
@@ -40,13 +52,17 @@ import { useNavigateSubmit } from '../../hooks/useNavigateSubmit';
 import styles from './route.module.css';
 import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
 import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
-import shopifyBundleProductService from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
-import { ShopifyBundleBuilderPage } from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepository';
+import shopifyBundleProductService, { ShopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
+import shopifyBundleBuilderPageGraphql from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepository';
+import { ShopifyBundleBuilderPageRepository } from '~/adminBackend/repository/ShopifyBundleBuilderPageRepository';
+import { BundleBuilderRepository } from '@adminBackend/repository/impl/BundleBuilderRepository';
+import userRepository from '~/adminBackend/repository/impl/UserRepository';
+import shopifyBundleBuilderPageRepositoryREST from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryREST';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    await authenticate.admin(request);
+    const { admin, session } = await authenticate.admin(request);
 
-    const bundleBuilder: BundleFullStepBasicServer | null = await db.bundleBuilder.findUnique({
+    const bundleBuilder = await db.bundleBuilder.findUnique({
         where: {
             id: Number(params.bundleid),
         },
@@ -59,7 +75,15 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
             statusText: 'Not Found',
         });
     }
-    return json(new JsonData(true, 'success', 'Bundle succesfuly retrieved', [], bundleBuilder), { status: 200 });
+
+    const user = await userRepository.getUserByStoreUrl(admin, session.shop);
+
+    //Url of the bundle page
+    const bundleBuilderPageUrl = `${user.primaryDomain}/pages/${bundleBuilder.bundleBuilderPageHandle}`;
+
+    const bundleBuilderWithPageUrl: BundleFullStepBasicServer = { ...bundleBuilder, bundleBuilderPageUrl };
+
+    return json(new JsonData(true, 'success', 'Bundle succesfuly retrieved', [], bundleBuilderWithPageUrl), { status: 200 });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -99,28 +123,15 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         { status: 400 },
                     );
 
+                const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryREST;
+                const shopifyBundleBuilderProduct: ShopifyBundleBuilderProductRepository = shopifyBundleProductService;
+
                 await Promise.all([
                     //Deleting a associated bundle page
-                    admin.rest.resources.Page.delete({
-                        session: session,
-                        id: Number(bundleBuilderToDelete.shopifyPageId),
-                    }),
+                    shopifyBundleBuilderPage.deletePage(admin, session, bundleBuilderToDelete.shopifyPageId),
+
                     //Deleting a associated bundle product
-                    admin.graphql(
-                        `#graphql
-            mutation deleteProduct($productDeleteInput: ProductDeleteInput!) {
-              productDelete(input: $productDeleteInput) {
-                deletedProductId
-              }
-            }`,
-                        {
-                            variables: {
-                                productDeleteInput: {
-                                    id: bundleBuilderToDelete.shopifyProductId,
-                                },
-                            },
-                        },
-                    ),
+                    shopifyBundleBuilderProduct.deleteBundleBuilderProduct(admin, bundleBuilderToDelete.shopifyProductId),
                 ]);
             } catch (error) {
                 console.log(error, 'Either the bundle product or the bundle page was already deleted.');
@@ -171,6 +182,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     ...new JsonData(false, 'error', 'There was an error while trying to update the bundle.', errors, bundleData),
                 });
 
+            //Repository for creating a new page
+            const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryREST;
+
             try {
                 await Promise.all([
                     db.bundleBuilder.update({
@@ -187,7 +201,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         },
                     }),
                     shopifyBundleProductService.updateBundleProductTitle(admin, bundleData.shopifyProductId, bundleData.title),
-                    ShopifyBundleBuilderPage.updateBundleBuilderPageTitle(admin, session, Number(bundleData.shopifyPageId), bundleData.title),
+                    shopifyBundleBuilderPage.updateBundleBuilderPageTitle(admin, session, Number(bundleData.shopifyPageId), bundleData.title),
                 ]);
 
                 // Clear the cache for the bundle
@@ -198,6 +212,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 return redirect(`/app`);
             } catch (error) {
                 console.log(error);
+
                 return json({
                     ...new JsonData(false, 'error', 'There was an error while trying to update the bundle.', [
                         {
@@ -208,6 +223,43 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     ]),
                 });
             }
+
+        case 'recreateBundleBuilder': {
+            //Repository for creating a new page
+            const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryREST;
+
+            const bundleBuilder = await db.bundleBuilder.findUnique({
+                where: {
+                    id: Number(params.bundleid),
+                },
+                include: inclBundleFullStepsBasic,
+            });
+
+            if (!bundleBuilder) {
+                return json(
+                    {
+                        ...new JsonData(false, 'error', 'There was an error with your request', [
+                            {
+                                fieldId: 'bundleId',
+                                field: 'Bundle ID',
+                                message: "Bundle with the provided id doesn't exist.",
+                            },
+                        ]),
+                    },
+                    { status: 400 },
+                );
+            }
+
+            const newBundleBuilderProductId = await ShopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilder.title, session.shop);
+
+            //Service for creating and managing new page
+            const newBundleBuilderPage = await shopifyBundleBuilderPage.createPageWithMetafields(admin, session, bundleBuilder.title, Number(params.bundleid));
+
+            newBundleBuilderPage.id = newBundleBuilderPage.id.toString();
+
+            BundleBuilderRepository.updateBundleBuilderProductId(Number(params.bundleid), newBundleBuilderProductId);
+            BundleBuilderRepository.updateBundleBuilderPage(Number(params.bundleid), newBundleBuilderPage);
+        }
 
         // case "duplicateBundle":
         //   const bundleToDuplicate: BundleAllResources | null =
@@ -388,10 +440,11 @@ export default function Index() {
     const submittedBundle: BundleFullStepBasicClient = actionData?.data as BundleFullStepBasicClient;
 
     //Data from the loader
-    const serverBundle: BundleFullStepBasicClient = useLoaderData<typeof loader>().data;
+    const serverBundle = useLoaderData<typeof loader>().data;
 
     //Using 'old' bundle data if there were errors when submitting the form. Otherwise, use the data from the loader.
     const [bundleState, setBundleState] = useState<BundleFullStepBasicClient>(errors?.length === 0 || !errors ? serverBundle : submittedBundle);
+
     const bundleSteps: BundleStepBasicResources[] = serverBundle.steps.sort((a: BundleStepBasicResources, b: BundleStepBasicResources): number => a.stepNumber - b.stepNumber);
 
     //Function for adding the step if there are less than 5 steps total
@@ -440,6 +493,10 @@ export default function Index() {
                 err.message = '';
             }
         });
+    };
+
+    const refreshBundleBuilderHandler = () => {
+        navigateSubmit('recreateBundleBuilder', `/app/bundles/${params.bundleid}`);
     };
 
     return (
@@ -493,8 +550,15 @@ export default function Index() {
                                 content: 'Preview',
                                 accessibilityLabel: 'Preview action label',
                                 icon: ExternalIcon,
-                                url: `${serverBundle.bundlePageUrl}?${bundlePagePreviewKey}=true`,
+                                url: `${serverBundle.bundleBuilderPageUrl}?${bundlePagePreviewKey}=true`,
                                 target: '_blank',
+                            },
+                            {
+                                icon: RefreshIcon,
+                                onAction: refreshBundleBuilderHandler,
+                                content: 'Recreate bundle',
+                                helpText:
+                                    'If you accidentally deleted the page where this bundle is displayed or you deleted the dummy product associated with this bundle, click this button to recreate them.',
                             },
                         ]}
                         titleMetadata={serverBundle.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
@@ -636,7 +700,7 @@ export default function Index() {
                                                             readOnly
                                                             name="bundlePage"
                                                             helpText="Send customers to this page to let them create their unique bundles."
-                                                            value={bundleState.bundlePageUrl}
+                                                            value={serverBundle.bundleBuilderPageUrl}
                                                             type="url"
                                                         />
                                                     </BlockStack>

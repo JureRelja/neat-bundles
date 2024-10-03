@@ -10,7 +10,7 @@ export const bundleAndSteps = {
     createdAt: true,
     pricing: true,
     priceAmount: true,
-    bundlePageUrl: true,
+    bundleBuilderPageHandle: true,
     steps: {
         select: {
             title: true,
@@ -23,7 +23,7 @@ export const bundleAndSteps = {
 // On the server, date is a Date object
 export type BundleAndStepsBasicServer = Prisma.BundleBuilderGetPayload<{
     select: typeof bundleAndSteps;
-}>;
+}> & { bundleBuilderPageUrl: string };
 
 /////////////////
 
@@ -37,7 +37,7 @@ export const inclBundleFullStepsBasic = {
 // On the server, date is a Date object
 export type BundleFullStepBasicServer = Prisma.BundleBuilderGetPayload<{
     include: typeof inclBundleFullStepsBasic;
-}>;
+}> & { bundleBuilderPageUrl: string };
 
 type BundleFullStepBasic_noDate = Omit<BundleFullStepBasicServer, 'createdAt'>;
 
@@ -54,6 +54,7 @@ type BundleAndStepsBasic_noDate = Omit<BundleAndStepsBasicServer, 'createdAt'>;
 // On the client, Date object is converted to a string
 export type BundleAndStepsBasicClient = BundleAndStepsBasic_noDate & {
     createdAt: string;
+    bundleBuilderPageUrl: string;
 };
 
 /////////////////

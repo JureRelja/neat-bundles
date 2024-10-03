@@ -188,13 +188,28 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         //Get the id of the created bundle
         const newCreatedBundleId = await CreatedBundleRepository.createCreatedBundle(bundleBuilder.id, bundlePrice, discountAmount, addedProductVariants, addedContent);
 
-        const doesBundleBuilderProductExist = await ShopifyBundleBuilderProductRepository.checkIfBundleBuilderProductExists(admin, bundleBuilder.shopifyProductId);
+        //Check if the bundle builder product exists (it may have been deleted by the user on accident)
+        const doesBundleBuilderProductExist = await ShopifyBundleBuilderProductRepository.checkIfProductExists(admin, bundleBuilder.shopifyProductId);
 
+        //If the product does not exist, create a new one
         if (!doesBundleBuilderProductExist) {
             const newBundleBuilderProductId = await ShopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilder.title, shop);
 
             if (newBundleBuilderProductId) {
                 bundleBuilder.shopifyProductId = newBundleBuilderProductId;
+            }
+        } else {
+            //Check the number of variants for the bundle builder product
+            const numOfBundleBuilderProductVariants = await ShopifyBundleBuilderProductRepository.getNumberOfProductVariants(admin, bundleBuilder.shopifyProductId);
+            console.log(numOfBundleBuilderProductVariants);
+
+            //If the number of variants is greater than 100, create a new product
+            if (numOfBundleBuilderProductVariants >= 100) {
+                const newBundleBuilderProductId = await ShopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilder.title, shop);
+
+                if (newBundleBuilderProductId) {
+                    bundleBuilder.shopifyProductId = newBundleBuilderProductId;
+                }
             }
         }
 

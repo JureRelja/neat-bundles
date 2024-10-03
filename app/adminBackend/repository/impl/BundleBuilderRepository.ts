@@ -1,7 +1,8 @@
+import { Page } from '@shopifyGraphql/graphql';
 import db from '../../../db.server';
 
-export class BundleRepository {
-    public static async createNewBundleBuilder(shop: string, bundleTitle: string, bundleProductId: string, bundlePageId: string, bundlePageUrl: string) {
+export class BundleBuilderRepository {
+    public static async createNewBundleBuilder(shop: string, bundleTitle: string, bundleProductId: string, bundlePageId: string, bundleBuilderPageUrlHandle: string) {
         //Create a new bundle in the database
         const bundle = await db.bundleBuilder.create({
             data: {
@@ -49,7 +50,7 @@ export class BundleRepository {
                         },
                     },
                 },
-                bundlePageUrl: bundlePageUrl,
+                bundleBuilderPageHandle: bundleBuilderPageUrlHandle,
                 steps: {
                     create: [
                         {
@@ -150,6 +151,29 @@ export class BundleRepository {
         });
 
         return bundle.id;
+    }
+
+    public static async updateBundleBuilderProductId(bundleBuilderId: number, productId: string) {
+        await db.bundleBuilder.update({
+            where: {
+                id: bundleBuilderId,
+            },
+            data: {
+                shopifyProductId: productId,
+            },
+        });
+    }
+
+    public static async updateBundleBuilderPage(bundleBuilderId: number, newPage: { id: string; handle: string }) {
+        await db.bundleBuilder.update({
+            where: {
+                id: bundleBuilderId,
+            },
+            data: {
+                shopifyPageId: newPage.id,
+                bundleBuilderPageHandle: newPage.handle,
+            },
+        });
     }
 
     public static async getMaxBundleBuilderId(shop: string) {
