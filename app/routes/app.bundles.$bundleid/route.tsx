@@ -40,7 +40,7 @@ import { useNavigateSubmit } from '../../hooks/useNavigateSubmit';
 import styles from './route.module.css';
 import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
 import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
-import shopifyBundleProductService from '~/adminBackend/repository/impl/ShopifyBundleProductRepository';
+import shopifyBundleProductService from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
 import { ShopifyBundleBuilderPage } from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepository';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {

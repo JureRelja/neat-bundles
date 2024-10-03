@@ -3,7 +3,7 @@ import { AddedProductVariantDto } from '@adminBackend/service/dto/AddedProductVa
 import { BundleFullAndStepsFullDto } from '@adminBackend/service/dto/BundleFullAndStepsFullDto';
 import { CustomerInputDto } from '@adminBackend/service/dto/CustomerInputDto';
 import { ProductDto } from '@adminBackend/service/dto/ProductDto';
-import { ShopifyProductVariantService } from '../../repository/impl/ShopifyProductVariantRepository';
+import { ShopifyProductVariantService } from '../../repository/impl/ShopifyCreatedBundleProductVariantRepository';
 import { AddedContentDto } from '@adminBackend/service/dto/AddedContentDto';
 import { ContentDto } from '@adminBackend/service/dto/ContentDto';
 import { AddedContentItemDto } from '@adminBackend/service/dto/AddedContentItemDto';

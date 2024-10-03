@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "Neat bundles"
 handle = "neat-bundles"
-application_url = "https://medicare-mode-school-pike.trycloudflare.com"
+application_url = "https://drama-revenge-procedure-ambient.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "write_content,write_online_store_navigation,write_products,write_publi
 
 [auth]
 redirect_urls = [
-  "https://medicare-mode-school-pike.trycloudflare.com/auth/callback",
-  "https://medicare-mode-school-pike.trycloudflare.com/auth/shopify/callback",
-  "https://medicare-mode-school-pike.trycloudflare.com/api/auth/callback"
+  "https://drama-revenge-procedure-ambient.trycloudflare.com/auth/callback",
+  "https://drama-revenge-procedure-ambient.trycloudflare.com/auth/shopify/callback",
+  "https://drama-revenge-procedure-ambient.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
-api_version = "2024-07"
+api_version = "2024-10"
 
 [app_proxy]
-url = "https://medicare-mode-school-pike.trycloudflare.com"
+url = "https://drama-revenge-procedure-ambient.trycloudflare.com"
 subpath = "nb"
 prefix = "apps"
 

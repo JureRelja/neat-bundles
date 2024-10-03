@@ -1,6 +1,6 @@
-import { AddedProductVariantDto } from '~/dto/AddedProductVariantDto';
+import { AddedProductVariantDto } from '@adminBackend/service/dto/AddedProductVariantDto';
 import db from '../../../db.server';
-import { AddedContentDto } from '~/dto/AddedContentDto';
+import { AddedContentDto } from '@adminBackend/service/dto/AddedContentDto';
 
 export class CreatedBundleRepository {
     constructor() {}

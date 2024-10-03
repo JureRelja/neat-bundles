@@ -1,6 +1,8 @@
 import { AdminApiContext } from '@shopify/shopify-app-remix/server';
 import { unauthenticated } from '../../../shopify.server';
 import { AddedProductVariantDto } from '@adminBackend/service/dto/AddedProductVariantDto';
+import { Product } from '@shopifyGraphql/graphql';
+import { ShopifyBundleBuilderProductRepository } from './ShopifyBundleBuilderProductRepository';
 
 export class ShopifyProductVariantService {
     private admin: AdminApiContext;

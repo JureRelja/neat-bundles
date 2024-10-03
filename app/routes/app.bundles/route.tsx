@@ -4,7 +4,7 @@ import { authenticate } from '../../shopify.server';
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import { ShopifyBundleBuilderPage } from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepository';
 import { BundleRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
-import { ShopifyBundleProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleProductRepository';
+import { ShopifyBundleProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
 import { ShopifyRedirectRepository } from '~/adminBackend/repository/impl/ShopifyRedirectRepository';
 import userRepository from '~/adminBackend/repository/impl/UserRepository';
 

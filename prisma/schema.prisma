@@ -148,11 +148,12 @@ model BundleLabels {
 }
 
 //Customer side storage
-
 model CreatedBundle {
   id                   Int                   @id @default(autoincrement())
   bundleBuilderId      Int
   bundleBuilder        BundleBuilder         @relation(fields: [bundleBuilderId], references: [id], onDelete: Cascade)
+  shopifyProductVariantId String                //GraphQL GID format
+  isVariantSold       Boolean               @default(false)
   addedProductVariants AddedProductVariant[] //List of variants in GraphQL GID format
   addedContent         AddedContent[]
   finalPrice           Float

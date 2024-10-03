@@ -10,10 +10,12 @@ import { ProductDto } from '@adminBackend/service/dto/ProductDto';
 import { ContentDto } from '@adminBackend/service/dto/ContentDto';
 import { CreatedBundleRepository } from '@adminBackend/repository/impl/CreatedBundleRepository';
 import { CustomerInputsDto } from '~/adminBackend/service/dto/CustomerInputsDto';
-import { ShopifyProductVariantService } from '~/adminBackend/repository/impl/ShopifyProductVariantRepository';
+import { ShopifyProductVariantService } from '~/adminBackend/repository/impl/ShopifyCreatedBundleProductVariantRepository';
 import { BundleVariantForCartDto } from '@adminBackend/service/dto/BundleVariantForCartDto';
 import { bundlePagePreviewKey } from '~/constants';
 import { AddedContentItemDto } from '~/adminBackend/service/dto/AddedContentItemDto';
+import { ShopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
+import { unauthenticated } from '~/shopify.server';
 
 export const action = async ({ request }: ActionFunctionArgs) => {
     const res = await checkPublicAuth(request); //Public auth check
@@ -31,6 +33,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const shop = url.searchParams.get('shop') as string;
     const bundleBuilderId = url.searchParams.get('bundleId');
     const isBundleInPreview = url.searchParams.get(bundlePagePreviewKey);
+
+    const { admin } = await unauthenticated.admin(shop);
 
     if (isBundleInPreview === 'true') {
         return json(new JsonData(true, 'success', "You can't create a bundle.", []));
@@ -183,6 +187,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         //Store the created bundle in the database
         //Get the id of the created bundle
         const newCreatedBundleId = await CreatedBundleRepository.createCreatedBundle(bundleBuilder.id, bundlePrice, discountAmount, addedProductVariants, addedContent);
+
+        const doesBundleBuilderProductExist = await ShopifyBundleBuilderProductRepository.checkIfBundleBuilderProductExists(admin, bundleBuilder.shopifyProductId);
+
+        if (!doesBundleBuilderProductExist) {
+            const newBundleBuilderProductId = await ShopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilder.title, shop);
+
+            if (newBundleBuilderProductId) {
+                bundleBuilder.shopifyProductId = newBundleBuilderProductId;
+            }
+        }
 
         //Create a new dummy product variant with the bundle data and return the variant id
         const newVariantId = await productVariantService.createProductVariant(newCreatedBundleId, bundleBuilder.shopifyProductId, bundleCompareAtPrice, bundlePrice);
