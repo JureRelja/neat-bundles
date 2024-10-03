@@ -96,7 +96,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         // Clear the cache for the bundle
         const cacheKeyService = new ApiCacheKeyService(session.shop);
 
-        await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleSettingsKey(params.bundleid as string));
+        await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
 
         const url: URL = new URL(request.url);
 

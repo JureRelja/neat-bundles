@@ -177,7 +177,7 @@
               <div class="products-container product_align" x-show="activeStepData.stepType == 'PRODUCT' && activeStepProducts.length != 0">
                 {% comment %} Individualproducts {% endcomment %}
                 <template x-for="product in activeStepProducts">
-                  <div class="product bundle_border_radius_big">
+                  <div class="product bundle_border_radius_big" x-show="bundleSettings.showOutOfStockProducts || !product.outOfStock">
 
                     <div class="product-img">
                       <img
@@ -660,14 +660,14 @@
         
         //Add bundle to cart
         async addBundleToCart(){
-          if (this.isBundleLiveMode) {
+          if (!this.isBundleLiveMode) {
             alert("This bundle is in preview mode. You can't add it to cart.");
             return;
           }
 
           this.finalLoading = true;
   
-          await finishAndAddBundleToCart(this.stepInputs, this.bundleId, this.shopDomain, window.Shopify);
+          await finishAndAddBundleToCart(this.stepInputs, this.bundleId, this.shopDomain, window.Shopify, this.bundleSettings.skipTheCart);
   
           this.finalLoading = false;
         },

@@ -67,7 +67,7 @@ const fetchProducts = async (activeStepData, activeStepProducts, windowShopify, 
     }
 };
 
-const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopify) => {
+const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopify, skipTheCart) => {
     let formData = new FormData();
 
     //Adding files to formData
@@ -124,7 +124,14 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
         await fetch(Shopify.routes.root + 'cart/update.js', {
             method: 'POST',
             body: bundleContentFormData,
-        }).then(() => (window.location.href = `/cart`));
+        })
+            .then(() => {
+                if (skipTheCart) window.location.href = `/checkout`;
+                else window.location.href = `/cart`;
+            })
+            .catch((error) => {
+                console.log('error', error);
+            });
     } else {
         console.log(data.message);
         alert('There was an error with adding the bundle to the cart. Try refreshing the page.');

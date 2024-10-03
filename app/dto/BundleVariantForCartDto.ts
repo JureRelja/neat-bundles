@@ -28,6 +28,10 @@ export class BundleVariantForCartDto {
         addedContent: AddedContentDto[],
         bundleId: number,
     ): { customerBundleInputs: { [key: string]: string }; adminBundleInputs: string } {
+        if (addedContent.length === 0) {
+            return { customerBundleInputs: {}, adminBundleInputs: '' };
+        }
+
         const lineItemProperties: { [key: string]: string } = {}; //This is used to display what the customer has inputed in the cart and checkout page
 
         let cartAttributes: string = ''; // This is used to display what the customer has inputed in the admin orders page
