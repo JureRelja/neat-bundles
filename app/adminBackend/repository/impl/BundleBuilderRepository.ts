@@ -2,7 +2,7 @@ import { Page } from '@shopifyGraphql/graphql';
 import db from '../../../db.server';
 
 export class BundleBuilderRepository {
-    public static async createNewBundleBuilder(shop: string, bundleTitle: string, bundleProductId: string, bundlePageId: string, bundleBuilderPageUrlHandle: string) {
+    public static async createNewBundleBuilder(shop: string, bundleTitle: string, bundleProductId: string, bundlePageId: string, bundleBuilderPageHandle: string) {
         //Create a new bundle in the database
         const bundle = await db.bundleBuilder.create({
             data: {
@@ -50,7 +50,7 @@ export class BundleBuilderRepository {
                         },
                     },
                 },
-                bundleBuilderPageHandle: bundleBuilderPageUrlHandle,
+                bundleBuilderPageHandle: bundleBuilderPageHandle,
                 steps: {
                     create: [
                         {
@@ -164,7 +164,7 @@ export class BundleBuilderRepository {
         });
     }
 
-    public static async updateBundleBuilderPage(bundleBuilderId: number, newPage: { id: string; handle: string }) {
+    public static async updateBundleBuilderPage(bundleBuilderId: number, newPage: Page) {
         await db.bundleBuilder.update({
             where: {
                 id: bundleBuilderId,

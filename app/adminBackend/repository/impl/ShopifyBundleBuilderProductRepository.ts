@@ -7,8 +7,8 @@ export class ShopifyBundleBuilderProductRepository {
     public static async createBundleProduct(admin: AdminApiContext, productTitle: string, storeUrl: string): Promise<string> {
         const response = await admin.graphql(
             `#graphql
-              mutation createBundleBuilderProduct($productInput: ProductInput!) {
-                productCreate(input: $productInput) {
+              mutation createBundleBuilderProduct($productInput: ProductCreateInput!) {
+                productCreate(product: $productInput) {
                   product {
                     id
                     handle
@@ -39,6 +39,7 @@ export class ShopifyBundleBuilderProductRepository {
         const product: ProductCreatePayload = data.data.productCreate;
 
         if ((product.userErrors && product.userErrors.length > 0) || !product.product || !product.product.id) {
+            console.log(product.userErrors);
             throw new Error('Failed to create the bundle product.');
         }
 
@@ -82,8 +83,8 @@ export class ShopifyBundleBuilderProductRepository {
     public async updateBundleProductTitle(admin: AdminApiContext, bundleProductId: string, newBundleProductTitle: string): Promise<boolean> {
         const response = await admin.graphql(
             `#graphql
-          mutation updateProductTitle($productInput: ProductInput!) {
-            productUpdate(input: $productInput) {
+          mutation updateProductTitle($productInput: ProductUpdateInput!) {
+            productUpdate(product: $productInput) {
               product{
                 id
               }

@@ -183,7 +183,7 @@ export default function Index() {
                             <Text as="p">If you delete this bundle, everything will be lost forever.</Text>
                         </Box>
                         <TitleBar title="Are you sure you want to delete this bundle?">
-                            <button onClick={() => shopify.modal.hide('delete-confirm-modal')}>Close</button>
+                            <button onClick={() => setShowBundleDeleteConfirmModal(false)}>Close</button>
                             <button
                                 variant="primary"
                                 tone="critical"
@@ -191,7 +191,7 @@ export default function Index() {
                                     if (!bundleForDelete) return;
 
                                     asyncSubmit.submit('deleteBundle', `/app/bundles/${bundleForDelete.id}`);
-                                    shopify.modal.hide('delete-confirm-modal');
+                                    setShowBundleDeleteConfirmModal(false);
                                 }}>
                                 Delete
                             </button>

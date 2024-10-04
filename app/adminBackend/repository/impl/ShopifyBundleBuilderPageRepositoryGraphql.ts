@@ -1,12 +1,12 @@
 import { AdminApiContext, Session } from '@shopify/shopify-app-remix/server';
-import { Page, PageCreatePayload } from '@shopifyGraphql/graphql';
 import { bundlePageKey, bundlePageNamespace, bundlePageType } from '~/constants';
 import { ShopifyBundleBuilderPageRepository } from '../ShopifyBundleBuilderPageRepository';
+import { Page } from '@shopifyGraphql/graphql';
 
 export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPageRepository {
     constructor() {}
 
-    public async createPage(admin: AdminApiContext, session: Session, pageTitle: string): Promise<{ id: string; handle: string }> {
+    public async createPage(admin: AdminApiContext, session: Session, pageTitle: string): Promise<Page> {
         //BundlePage
         const pageResponse = await admin.graphql(
             `#graphql 
@@ -15,6 +15,7 @@ export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPage
                     page {
                     # Page fields
                         id
+                        handle
                     }
                     userErrors {
                         field
@@ -37,9 +38,10 @@ export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPage
 
         const pageData = (await pageResponse.json()).data;
 
-        const pageCreatePayload: PageCreatePayload = pageData.pageCreate;
+        const pageCreatePayload = pageData.pageCreate;
 
         if (pageCreatePayload.userErrors.length > 0) {
+            console.log(pageCreatePayload.userErrors);
             throw new Error('Failed to create the bundle builder page');
         }
 
@@ -48,7 +50,7 @@ export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPage
         return bundleBuilderPage;
     }
 
-    public async createPageWithMetafields(admin: AdminApiContext, session: Session, pageTitle: string, bundleBuilderId: number): Promise<{ id: string; handle: string }> {
+    public async createPageWithMetafields(admin: AdminApiContext, session: Session, pageTitle: string, bundleBuilderId: number): Promise<Page> {
         //BundlePage
         const pageResponse = await admin.graphql(
             `#graphql 
@@ -57,6 +59,7 @@ export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPage
                     page {
                     # Page fields
                         id
+                        handle
                     }
                     userErrors {
                         field
@@ -71,7 +74,7 @@ export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPage
                         metafields: [
                             {
                                 key: bundlePageKey,
-                                value: bundleBuilderId,
+                                value: bundleBuilderId.toString(),
                                 type: bundlePageType,
                                 namespace: bundlePageNamespace,
                             },
@@ -101,9 +104,8 @@ export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPage
             `#graphql
             mutation deletePage($id: ID!) {
                 pageDelete(id: $id) {
-                    page {
-                        id
-                    }
+                    deletedPageId
+
                     userErrors {
                         field
                         message
@@ -142,7 +144,7 @@ export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPage
                         metafields: [
                             {
                                 key: bundlePageKey,
-                                value: bundleBuilderId,
+                                value: bundleBuilderId.toString(),
                                 type: bundlePageType,
                                 namespace: bundlePageNamespace,
                             },
@@ -161,11 +163,11 @@ export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPage
         }
     }
 
-    public async updateBundleBuilderPageTitle(admin: AdminApiContext, session: Session, shopifyPageId: number, newBundleBuilderPageTitle: string): Promise<boolean> {
+    public async updateBundleBuilderPageTitle(admin: AdminApiContext, session: Session, shopifyPageId: string, newBundleBuilderPageTitle: string): Promise<boolean> {
         const updatePageTitleResponse = await admin.graphql(
             `#graphql
-            mutation updatePageTitle($id: ID!, $page: PageCreateInput!) {
-                pageUpdate(id: $id, page: $page) {ShopifyBundleBuilderPage
+            mutation updatePageTitle($id: ID!, $page: PageUpdateInput!) {
+                pageUpdate(id: $id, page: $page) {
                     page {
                         title
                     }

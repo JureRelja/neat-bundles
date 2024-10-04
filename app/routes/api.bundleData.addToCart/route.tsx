@@ -201,7 +201,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         } else {
             //Check the number of variants for the bundle builder product
             const numOfBundleBuilderProductVariants = await ShopifyBundleBuilderProductRepository.getNumberOfProductVariants(admin, bundleBuilder.shopifyProductId);
-            console.log(numOfBundleBuilderProductVariants);
 
             //If the number of variants is greater than 100, create a new product
             if (numOfBundleBuilderProductVariants >= 100) {

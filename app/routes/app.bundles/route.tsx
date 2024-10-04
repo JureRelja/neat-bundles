@@ -2,13 +2,11 @@ import { redirect, json, Outlet } from '@remix-run/react';
 import type { ActionFunctionArgs } from '@remix-run/node';
 import { authenticate } from '../../shopify.server';
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
-import shopifyBundleBuilderPageGraphql from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepository';
+import shopifyBundleBuilderPageRepositoryGraphql from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql';
 import { ShopifyBundleBuilderPageRepository } from '@adminBackend/repository/ShopifyBundleBuilderPageRepository';
 import { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
 import { ShopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
 import { ShopifyRedirectRepository } from '~/adminBackend/repository/impl/ShopifyRedirectRepository';
-import userRepository from '~/adminBackend/repository/impl/UserRepository';
-import shopifyBundleBuilderPageRepositoryREST from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryREST';
 
 export const loader = async ({ request }: ActionFunctionArgs) => {
     await authenticate.admin(request);
@@ -38,9 +36,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 const bundleProductId = await ShopifyBundleBuilderProductRepository.createBundleProduct(admin, defaultBundleTitle, session.shop);
 
                 //Repository for creating a new page
-                const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryREST;
+                const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
 
                 const bundleBuilderPage = await shopifyBundleBuilderPage.createPage(admin, session, defaultBundleTitle);
+
+                console.log(bundleBuilderPage);
 
                 const [urlRedirectRes, bundleId] = await Promise.all([
                     //Create redirect

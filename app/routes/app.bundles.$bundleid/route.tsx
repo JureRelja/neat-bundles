@@ -53,11 +53,10 @@ import styles from './route.module.css';
 import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
 import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
 import shopifyBundleProductService, { ShopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
-import shopifyBundleBuilderPageGraphql from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepository';
+import shopifyBundleBuilderPageRepositoryGraphql from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql';
 import { ShopifyBundleBuilderPageRepository } from '~/adminBackend/repository/ShopifyBundleBuilderPageRepository';
 import { BundleBuilderRepository } from '@adminBackend/repository/impl/BundleBuilderRepository';
 import userRepository from '~/adminBackend/repository/impl/UserRepository';
-import shopifyBundleBuilderPageRepositoryREST from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryREST';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -123,7 +122,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         { status: 400 },
                     );
 
-                const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryREST;
+                const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
                 const shopifyBundleBuilderProduct: ShopifyBundleBuilderProductRepository = shopifyBundleProductService;
 
                 await Promise.all([
@@ -183,7 +182,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 });
 
             //Repository for creating a new page
-            const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryREST;
+            const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
 
             try {
                 await Promise.all([
@@ -201,7 +200,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         },
                     }),
                     shopifyBundleProductService.updateBundleProductTitle(admin, bundleData.shopifyProductId, bundleData.title),
-                    shopifyBundleBuilderPage.updateBundleBuilderPageTitle(admin, session, Number(bundleData.shopifyPageId), bundleData.title),
+                    shopifyBundleBuilderPage.updateBundleBuilderPageTitle(admin, session, bundleData.shopifyPageId, bundleData.title),
                 ]);
 
                 // Clear the cache for the bundle
@@ -226,7 +225,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
         case 'recreateBundleBuilder': {
             //Repository for creating a new page
-            const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryREST;
+            const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
 
             const bundleBuilder = await db.bundleBuilder.findUnique({
                 where: {
@@ -254,8 +253,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
             //Service for creating and managing new page
             const newBundleBuilderPage = await shopifyBundleBuilderPage.createPageWithMetafields(admin, session, bundleBuilder.title, Number(params.bundleid));
-
-            newBundleBuilderPage.id = newBundleBuilderPage.id.toString();
 
             BundleBuilderRepository.updateBundleBuilderProductId(Number(params.bundleid), newBundleBuilderProductId);
             BundleBuilderRepository.updateBundleBuilderPage(Number(params.bundleid), newBundleBuilderPage);
