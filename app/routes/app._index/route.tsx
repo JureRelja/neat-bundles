@@ -38,7 +38,7 @@ import userRepository from '~/adminBackend/repository/impl/UserRepository';
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
 
-    const user = userRepository.getUserByStoreUrl(admin, session.shop);
+    const user = await userRepository.getUserByStoreUrl(admin, session.shop);
 
     if (!user) {
         const response = await admin.graphql(
@@ -95,7 +95,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const bundleBuildersWithPageUrl = bundleBuildersWithoutPageUrl.map((bundleBuilder) => {
         return {
             ...bundleBuilder,
-            bundleBuilderPageUrl: `/app/bundles/${bundleBuilder.id}`,
+            bundleBuilderPageUrl: `${user.primaryDomain}/pages/${bundleBuilder.bundleBuilderPageHandle}`, //Url of the bundle page
         };
     });
 
@@ -272,7 +272,7 @@ export default function Index() {
                                                         icon={ExternalIcon}
                                                         variant="secondary"
                                                         tone="success"
-                                                        url={`${bundleBuilder}?${bundlePagePreviewKey}=true`}
+                                                        url={`${bundleBuilder.bundleBuilderPageUrl}?${bundlePagePreviewKey}=true`}
                                                         target="_blank">
                                                         Preview
                                                     </Button>,
