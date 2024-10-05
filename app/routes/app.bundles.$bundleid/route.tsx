@@ -249,13 +249,37 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 );
             }
 
-            const newBundleBuilderProductId = await ShopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilder.title, session.shop);
+            await Promise.all([
+                new Promise(async (res, rej) => {
+                    //Check if the bundle builder product exists (it may have been deleted by the user on accident)
+                    const doesBundleBuilderProductExist = await ShopifyBundleBuilderProductRepository.checkIfProductExists(admin, bundleBuilder.shopifyProductId);
 
-            //Service for creating and managing new page
-            const newBundleBuilderPage = await shopifyBundleBuilderPage.createPageWithMetafields(admin, session, bundleBuilder.title, Number(params.bundleid));
+                    if (!doesBundleBuilderProductExist) {
+                        //create new product
+                        const newBundleBuilderProductId = await ShopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilder.title, session.shop);
 
-            BundleBuilderRepository.updateBundleBuilderProductId(Number(params.bundleid), newBundleBuilderProductId);
-            BundleBuilderRepository.updateBundleBuilderPage(Number(params.bundleid), newBundleBuilderPage);
+                        //set bundle product to new product
+                        await BundleBuilderRepository.updateBundleBuilderProductId(Number(params.bundleid), newBundleBuilderProductId);
+                    }
+                    res(null);
+                }),
+
+                new Promise(async (res, rej) => {
+                    //Check if the page exists
+                    const doesBundleBuilderPageExist = await shopifyBundleBuilderPage.checkIfPageExists(admin, bundleBuilder.shopifyPageId);
+
+                    if (!doesBundleBuilderPageExist) {
+                        //create new page
+                        const newBundleBuilderPage = await shopifyBundleBuilderPage.createPageWithMetafields(admin, session, bundleBuilder.title, Number(params.bundleid));
+
+                        //set bundle page to new page
+                        await BundleBuilderRepository.updateBundleBuilderPage(Number(params.bundleid), newBundleBuilderPage);
+                    }
+                    res(null);
+                }),
+            ]);
+
+            return json({ ...new JsonData(true, 'success', 'Bundle builder refreshed') }, { status: 200 });
         }
 
         // case "duplicateBundle":

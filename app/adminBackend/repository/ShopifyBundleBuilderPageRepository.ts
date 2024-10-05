@@ -11,4 +11,6 @@ export interface ShopifyBundleBuilderPageRepository {
     setPageMetafields(bundleBuilderId: number, pageId: string, session: Session, admin: AdminApiContext): Promise<void>;
 
     updateBundleBuilderPageTitle(admin: AdminApiContext, session: Session, shopifyPageId: string, newBundleBuilderPageTitle: string): Promise<boolean>;
+
+    checkIfPageExists(adming: AdminApiContext, shopifyPageId: string): Promise<boolean>;
 }

@@ -199,6 +199,29 @@ export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPage
 
         return true;
     }
+
+    public async checkIfPageExists(admin: AdminApiContext, shopifyPageId: string): Promise<boolean> {
+        const checkPageResponse = await admin.graphql(
+            `#graphql
+            query checkIfPageExists($id: ID!) {
+                page(id: $id) {
+                    id
+                }
+            }`,
+            {
+                variables: {
+                    id: shopifyPageId,
+                },
+            },
+        );
+
+        const checkPageData = (await checkPageResponse.json()).data;
+
+        const doesPageExist = checkPageData.page !== null;
+        console.log(doesPageExist);
+
+        return doesPageExist;
+    }
 }
 
 const shopifyBundleBuilderPageRepository = new ShopifyBundleBuilderPageGraphql();

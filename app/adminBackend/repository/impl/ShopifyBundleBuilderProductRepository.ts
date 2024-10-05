@@ -134,11 +134,7 @@ export class ShopifyBundleBuilderProductRepository {
 
         const doesBundleBuilderProductExist = doesBundleBuilderProductExistData.data.product !== null;
 
-        if (doesBundleBuilderProductExist) {
-            return true;
-        }
-
-        return false;
+        return doesBundleBuilderProductExist;
     }
 
     public static async getNumberOfProductVariants(admin: AdminApiContext, shopifyProductId: string): Promise<number> {
