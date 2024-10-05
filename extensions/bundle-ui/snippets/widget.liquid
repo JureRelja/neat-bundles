@@ -392,33 +392,31 @@
                     <template x-if="contentInput.inputType == 'IMAGE'">
                       <div class="content-input image-input">
                         <p x-text="contentInput.inputLabel"></p>
-                        <label :for="`image-input-${contentInput.id}`" class="bundle_border_radius_small">
-                          <svg
-                            x-show="contentInput.value == '' || !contentInput.value"
-                            width="50"
-                            height="50"
-                            viewBox="0 0 39 39"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <path
-                              d="M6.32205 35.9346H31.8767C33.8929 35.9346 35.5273 34.3002 35.5273 32.284V6.72934C35.5273 4.71313 33.8929 3.07867 31.8767 3.07867H6.32205C4.30584 3.07867 2.67139 4.71313 2.67139 6.72934V32.284C2.67139 34.3002 4.30584 35.9346 6.32205 35.9346ZM6.32205 35.9346L26.4007 15.856L35.5273 24.9826M15.4487 13.118C15.4487 14.6301 14.2229 15.856 12.7107 15.856C11.1986 15.856 9.97271 14.6301 9.97271 13.118C9.97271 11.6058 11.1986 10.38 12.7107 10.38C14.2229 10.38 15.4487 11.6058 15.4487 13.118Z"
-                              stroke="#1E1E1E"
-                              stroke-width="4.00662"
-                              stroke-linecap="round"
-                              stroke-linejoin="round" />
-                          </svg>
+                        {% comment %} <label :for="`image-input-${contentInput.id}`" class="bundle_border_radius_small">
+                                                    <svg
+                                                      x-show="contentInput.value == '' || !contentInput.value"
+                                                      width="50"
+                                                      height="50"
+                                                      viewBox="0 0 39 39"
+                                                      fill="none"
+                                                      xmlns="http://www.w3.org/2000/svg">
+                                                      <path
+                                                        d="M6.32205 35.9346H31.8767C33.8929 35.9346 35.5273 34.3002 35.5273 32.284V6.72934C35.5273 4.71313 33.8929 3.07867 31.8767 3.07867H6.32205C4.30584 3.07867 2.67139 4.71313 2.67139 6.72934V32.284C2.67139 34.3002 4.30584 35.9346 6.32205 35.9346ZM6.32205 35.9346L26.4007 15.856L35.5273 24.9826M15.4487 13.118C15.4487 14.6301 14.2229 15.856 12.7107 15.856C11.1986 15.856 9.97271 14.6301 9.97271 13.118C9.97271 11.6058 11.1986 10.38 12.7107 10.38C14.2229 10.38 15.4487 11.6058 15.4487 13.118Z"
+                                                        stroke="#1E1E1E"
+                                                        stroke-width="4.00662"
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round" />
+                                                    </svg>
 
-                          <p x-show="contentInput.value == '' || !contentInput.value">Click here to select your image</p>
+                                                    <p x-show="contentInput.value == '' || !contentInput.value">Click here to select your image</p>
 
-                          <div
-                            :id="`preview-image-input-${contentInput.id}`"
-                            class="image-preview-container"
-                            x-show="contentInput.value && contentInput.value != ''"></div>
+                                                    <div
+                                                      :id="`preview-image-input-${contentInput.id}`"
+                                                      class="image-preview-container"
+                                                      x-show="contentInput.value && contentInput.value != ''"></div>
 
-                        </label>
+                                                </label> {% endcomment %}
                         <input
-                          class="image-input-field"
-                          x-bind:id="`image-input-${contentInput.id}`"
                           type="file"
                           max="1"
                           x-on:change="() => {

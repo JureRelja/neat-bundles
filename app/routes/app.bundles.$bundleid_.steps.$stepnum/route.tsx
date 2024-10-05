@@ -374,7 +374,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                             field: 'Input label',
                             message: 'Input label needs to be entered.',
                         });
-                    } else if (!contentInput.maxChars || contentInput.maxChars < 1) {
+                    } else if (contentInput.inputType != 'IMAGE' && (!contentInput.maxChars || contentInput.maxChars < 1)) {
                         errors.push({
                             fieldId: `maxChars${contentInput.id}`,
                             field: 'Max characters',
