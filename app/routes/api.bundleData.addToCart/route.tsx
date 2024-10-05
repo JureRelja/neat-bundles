@@ -126,7 +126,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     }
 
                     //Check if the content is not too long
-                    if (contentInputsOnThisStep.value.length > contentInput.maxChars) {
+                    if (contentInput.inputType != 'IMAGE' && contentInputsOnThisStep.value.length > contentInput.maxChars) {
                         error = true;
                         return;
                     }
@@ -143,6 +143,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         });
 
         if (error) {
+            console.log(error);
+
             return json(new JsonData(false, 'error', 'Invalid form data.', []), {
                 headers: {
                     'Access-Control-Allow-Origin': '*',
@@ -237,16 +239,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             },
             status: 200,
         });
-    } catch (error) {
-        console.log(error);
+    } catch (err) {
+        console.log(err);
+        console.log('There was an error');
 
-        if (error) {
-            return json(new JsonData(false, 'error', 'Invalid form data.', []), {
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                },
-                status: 200,
-            });
-        }
+        return json(new JsonData(false, 'error', 'Invalid form data.', []), {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+            },
+            status: 200,
+        });
     }
 };

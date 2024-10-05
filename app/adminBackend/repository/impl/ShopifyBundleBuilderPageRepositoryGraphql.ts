@@ -27,9 +27,10 @@ export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPage
                 variables: {
                     page: {
                         title: pageTitle,
-                        body: `<p>This is a page for displaying the bundle created by <b>Neat bundles</b> app</p>
-        <p>Neat bundles creates a page for every bundle you configure in the app. These pages are used to display the bundle to your customers.</p>
-        <p>You can delete this text or customize this page like every other page using Shopify admin.</p>
+                        body: `<div style="display: block"></div>
+                        <p style="display: none;">This is a page for displaying the bundle created by Neat bundles app. 
+                        Neat bundles creates a page for every bundle you configure in the app. These pages are used to display the bundle to your customers. 
+                        You can delete this text or customize this page like every other page using Shopify admin.</p>
         `,
                     },
                 },
@@ -79,9 +80,11 @@ export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPage
                                 namespace: bundlePageNamespace,
                             },
                         ],
-                        body: `<p>This is a page for displaying the bundle created by <b>Neat bundles</b> app</p>
-        <p>Neat bundles creates a page for every bundle you configure in the app. These pages are used to display the bundle to your customers.</p>
-        <p>You can delete this text or customize this page like every other page using Shopify admin.</p>`,
+                        body: `<div style="display: block"></div>
+                       <p style="display: none;">This is a page for displaying the bundle created by Neat bundles app. 
+                       Neat bundles creates a page for every bundle you configure in the app. These pages are used to display the bundle to your customers. 
+                       You can delete this text or customize this page like every other page using Shopify admin.</p>
+        `,
                     },
                 },
             },

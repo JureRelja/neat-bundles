@@ -76,9 +76,21 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
             //Adding files to formData
             stepInput.inputs.forEach((content) => {
                 if (content.type == 'file') {
-                    formData.append('files', content.value);
-                    formData.append('files', content.value);
-                    content.value = content.value.name;
+                    //Extract blob from the old file
+                    let blob = content.value.slice(0, content.value.size, content.value.type);
+
+                    //Create new unique filename
+                    let newFileName = Date.now().toString() + content.value.name;
+
+                    //Create new file with old file blob and new unique name
+                    let newFile = new File([blob], newFileName, { type: content.value.type });
+
+                    //Add file to formData
+                    formData.append('files', newFile);
+                    console.log(newFile);
+
+                    //Save filename as a reference to a file
+                    content.value = newFile.name;
                 }
             });
         }
@@ -126,14 +138,16 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
             body: bundleContentFormData,
         })
             .then(() => {
-                if (skipTheCart) window.location.href = `/checkout`;
-                else window.location.href = `/cart`;
+                setTimeout(() => {
+                    if (skipTheCart) window.location.href = `/checkout`;
+                    else window.location.href = `/cart`;
+                }, 100);
             })
             .catch((error) => {
                 console.log('error', error);
             });
     } else {
-        console.log(data.message);
+        console.log(result.message);
         alert('There was an error with adding the bundle to the cart. Try refreshing the page.');
     }
 };

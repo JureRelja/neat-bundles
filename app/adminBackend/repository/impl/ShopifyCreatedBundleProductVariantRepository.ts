@@ -39,6 +39,8 @@ export class ShopifyProductVariantService {
 
     //Create a new product variant
     public async createProductVariant(createdBundleId: number, shopifyProductId: string, compareAtPrice: number, price: number): Promise<string> {
+        console.log(compareAtPrice, price);
+
         const response = await this.admin.graphql(
             `#graphql
             mutation createProductVariant($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
