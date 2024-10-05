@@ -354,14 +354,11 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         field: 'Minimum products on step',
                         message: 'Minimum number of products can not be greater than the maximum number of products.',
                     });
-                } else if (
-                    stepData.productInput?.products.length < stepData.productInput.minProductsOnStep ||
-                    stepData.productInput?.products.length > stepData.productInput.maxProductsOnStep
-                ) {
+                } else if (stepData.productInput?.products.length < stepData.productInput.minProductsOnStep) {
                     errors.push({
                         fieldId: 'products',
                         field: 'Products',
-                        message: `Please select between ${stepData.productInput.minProductsOnStep} and ${stepData.productInput.maxProductsOnStep} products.`,
+                        message: `Please select at least ${stepData.productInput.minProductsOnStep} products.`,
                     });
                 }
             } else if (stepData.stepType === StepType.CONTENT) {
