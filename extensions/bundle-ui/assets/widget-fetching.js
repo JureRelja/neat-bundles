@@ -18,6 +18,8 @@ const fetchProducts = async (activeStepData, activeStepProducts, windowShopify, 
         const productHandlesToFetch = activeStepData.productInput.products.map((product) => product.shopifyProductHandle);
         activeStepProducts.length = 0; //Clearing the array
 
+        const tempActiveStepProducts = [];
+
         //Fetching products data
         await Promise.all(
             productHandlesToFetch.map(async (productHandle) => {
@@ -64,6 +66,11 @@ const fetchProducts = async (activeStepData, activeStepProducts, windowShopify, 
                     });
             }),
         );
+
+        //copying product to array
+        activeStepProducts = tempActiveStepProducts.sort((productA, productB) => {
+            return productA.title.localeCompare(productB.title);
+        });
     }
 };
 

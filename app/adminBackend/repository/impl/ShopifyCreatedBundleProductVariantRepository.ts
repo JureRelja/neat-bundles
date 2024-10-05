@@ -39,14 +39,14 @@ export class ShopifyProductVariantService {
 
     //Create a new product variant
     public async createProductVariant(createdBundleId: number, shopifyProductId: string, compareAtPrice: number, price: number): Promise<string> {
-        console.log(compareAtPrice, price);
-
         const response = await this.admin.graphql(
             `#graphql
             mutation createProductVariant($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
                 productVariantsBulkCreate(productId: $productId, variants: $variants) {
                     productVariants {
                         id
+                        compareAtPrice
+                        price
                     }
                     userErrors {
                         field
@@ -59,7 +59,6 @@ export class ShopifyProductVariantService {
                     productId: shopifyProductId,
                     variants: [
                         {
-                            compareAtPrice: compareAtPrice,
                             price: price,
                             optionValues: [
                                 {
@@ -73,7 +72,53 @@ export class ShopifyProductVariantService {
             },
         );
 
-        return (await response.json()).data.productVariantsBulkCreate.productVariants[0].id;
+        const data = (await response.json()).data;
+
+        if (data.productVariantsBulkCreate.userErrors > 0) {
+            console.log(data.productVariantsBulkCreate.userErrors);
+            throw Error('There was an error creating a bundle builder product variant.');
+        }
+
+        const productVariantId = data.productVariantsBulkCreate.productVariants[0].id;
+
+        console.log(price, compareAtPrice);
+        console.log(data.productVariantsBulkCreate.productVariants);
+
+        const response2 = await this.admin.graphql(
+            `#graphql
+            mutation productVariantsBulkUpdate($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+              productVariantsBulkUpdate(productId: $productId, variants: $variants) {
+                product {
+                  id
+                }
+                productVariants {
+                  id
+                  compareAtPrice
+                  price
+                }
+                userErrors {
+                  field
+                  message
+                }
+              }
+            }`,
+            {
+                variables: {
+                    productId: shopifyProductId,
+                    variants: [
+                        {
+                            id: productVariantId,
+                        },
+                    ],
+                },
+            },
+        );
+
+        const data2 = await response2.json();
+
+        console.log(data2.data.productVariantsBulkUpdate.productVariants);
+
+        return productVariantId;
     }
 
     //Update the product variant relationship
