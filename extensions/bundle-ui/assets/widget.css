@@ -124,7 +124,7 @@ p {
 
 @keyframes animateright {
     from {
-        right: -300px;
+        right: -100px;
         opacity: 0;
     }
     to {

@@ -23,54 +23,58 @@ const fetchProducts = async (activeStepData, activeStepProducts, windowShopify, 
         //Fetching products data
         await Promise.all(
             productHandlesToFetch.map(async (productHandle) => {
-                fetch(windowShopify.routes.root + `products/${productHandle}.js`)
-                    .then((response) => response.json())
-                    .then((product) => {
-                        if (product.id) {
-                            //Formating prices of products
-                            product = {
-                                ...product,
-                                price: Shopify.formatMoney(product.price),
-                                variants: product.variants.map((variant) => {
-                                    return {
-                                        ...variant,
-                                        price: Shopify.formatMoney(variant.price),
-                                    };
-                                }),
-                            };
+                try {
+                    const response = await fetch(windowShopify.routes.root + `products/${productHandle}.js`);
 
-                            product.selectedVariantIndex = 0; //By default first variant is selected
-                            product.outOfStock = product.variants.every((variant) => !variant.available);
+                    let product = await response.json();
 
-                            product.options = product.options.filter((option) => option.name !== 'Title' && option.values.length !== 1);
+                    if (product.id) {
+                        //Formating prices of products
+                        product = {
+                            ...product,
+                            price: Shopify.formatMoney(product.price),
+                            variants: product.variants.map((variant) => {
+                                return {
+                                    ...variant,
+                                    price: Shopify.formatMoney(variant.price),
+                                };
+                            }),
+                        };
 
-                            activeStepProducts.push(product);
+                        product.selectedVariantIndex = 0; //By default first variant is selected
+                        product.outOfStock = product.variants.every((variant) => !variant.available);
 
-                            // //leaving only available variants
-                            // product.variants = product.variants.filter((variant) => variant.available);
+                        product.options = product.options.filter((option) => option.name !== 'Title' && option.values.length !== 1);
 
-                            // if (product.variants.length > 0) {
-                            //   // Removing options values that don't have any available variants
-                            //   filterAvailableOptionsAndValues(product.options, product.variants);
-                            //   product.selectedVariantIndex = 0; //By default first variant is selected
-                            //   product.outOfStock = false
+                        tempActiveStepProducts.push(product);
 
-                            //   activeStepProducts.push(product);
-                            // }
-                        } else {
-                            console.log(data.message);
-                        }
-                    })
-                    .catch((error) => {
-                        console.log('error', error);
-                    });
+                        // //leaving only available variants
+                        // product.variants = product.variants.filter((variant) => variant.available);
+
+                        // if (product.variants.length > 0) {
+                        //   // Removing options values that don't have any available variants
+                        //   filterAvailableOptionsAndValues(product.options, product.variants);
+                        //   product.selectedVariantIndex = 0; //By default first variant is selected
+                        //   product.outOfStock = false
+
+                        //   activeStepProducts.push(product);
+                        // }
+                    } else {
+                        console.log(data.message);
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
             }),
         );
 
-        //copying product to array
-        activeStepProducts = tempActiveStepProducts.sort((productA, productB) => {
-            return productA.title.localeCompare(productB.title);
+        //Sorting products by title
+        tempActiveStepProducts.sort((a, b) => {
+            return a.title.localeCompare(b.title);
         });
+
+        //Adding products to the activeStepProducts array
+        activeStepProducts.push(...tempActiveStepProducts);
     }
 };
 
