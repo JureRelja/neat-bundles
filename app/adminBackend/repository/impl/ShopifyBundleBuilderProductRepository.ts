@@ -4,7 +4,7 @@ import { Product, ProductCreatePayload, ProductUpdatePayload } from '@shopifyGra
 import { ShopifyCatalogRepository } from './ShopifyCatalogRepository';
 
 export class ShopifyBundleBuilderProductRepository {
-    public static async createBundleProduct(admin: AdminApiContext, productTitle: string, storeUrl: string): Promise<string> {
+    public async createBundleProduct(admin: AdminApiContext, productTitle: string, storeUrl: string): Promise<string> {
         const response = await admin.graphql(
             `#graphql
               mutation createBundleBuilderProduct($productInput: ProductCreateInput!) {
@@ -115,7 +115,7 @@ export class ShopifyBundleBuilderProductRepository {
         return true;
     }
 
-    public static async checkIfProductExists(admin: AdminApiContext, shopifyProductId: string): Promise<boolean> {
+    public async checkIfProductExists(admin: AdminApiContext, shopifyProductId: string): Promise<boolean> {
         const doesBundleBuilderProductExistResponse = await admin.graphql(
             `#graphql
         query getBundleBuilderProduct($id: ID!) {
@@ -137,7 +137,7 @@ export class ShopifyBundleBuilderProductRepository {
         return doesBundleBuilderProductExist;
     }
 
-    public static async getNumberOfProductVariants(admin: AdminApiContext, shopifyProductId: string): Promise<number> {
+    public async getNumberOfProductVariants(admin: AdminApiContext, shopifyProductId: string): Promise<number> {
         const response = await admin.graphql(
             `#graphql
         query getProductVariants($id: ID!) {
@@ -166,6 +166,4 @@ export class ShopifyBundleBuilderProductRepository {
     }
 }
 
-const shopifyBundleBuilderProductRepository = new ShopifyBundleBuilderProductRepository();
-
-export default shopifyBundleBuilderProductRepository;
+export const shopifyBundleBuilderProductRepository = new ShopifyBundleBuilderProductRepository();

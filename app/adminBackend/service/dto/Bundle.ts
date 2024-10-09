@@ -21,6 +21,11 @@ export const bundleAndSteps = {
 } satisfies Prisma.BundleBuilderSelect;
 
 // On the server, date is a Date object
+export type BundleBuilderDto = Prisma.BundleBuilderGetPayload<{
+    select: typeof bundleAndSteps;
+}>;
+
+// On the server, date is a Date object
 export type BundleAndStepsBasicServer = Prisma.BundleBuilderGetPayload<{
     select: typeof bundleAndSteps;
 }> & { bundleBuilderPageUrl: string };

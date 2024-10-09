@@ -52,7 +52,7 @@ import { useNavigateSubmit } from '../../hooks/useNavigateSubmit';
 import styles from './route.module.css';
 import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
 import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
-import shopifyBundleProductService, { ShopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
+import { shopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
 import shopifyBundleBuilderPageRepositoryGraphql from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql';
 import { ShopifyBundleBuilderPageRepository } from '~/adminBackend/repository/ShopifyBundleBuilderPageRepository';
 import { BundleBuilderRepository } from '@adminBackend/repository/impl/BundleBuilderRepository';
@@ -123,14 +123,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     );
 
                 const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
-                const shopifyBundleBuilderProduct: ShopifyBundleBuilderProductRepository = shopifyBundleProductService;
 
                 await Promise.all([
                     //Deleting a associated bundle page
                     shopifyBundleBuilderPage.deletePage(admin, session, bundleBuilderToDelete.shopifyPageId),
 
                     //Deleting a associated bundle product
-                    shopifyBundleBuilderProduct.deleteBundleBuilderProduct(admin, bundleBuilderToDelete.shopifyProductId),
+                    shopifyBundleBuilderProductRepository.deleteBundleBuilderProduct(admin, bundleBuilderToDelete.shopifyProductId),
                 ]);
             } catch (error) {
                 console.log(error, 'Either the bundle product or the bundle page was already deleted.');
@@ -199,7 +198,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                             discountValue: bundleData.discountValue,
                         },
                     }),
-                    shopifyBundleProductService.updateBundleProductTitle(admin, bundleData.shopifyProductId, bundleData.title),
+                    shopifyBundleBuilderProductRepository.updateBundleProductTitle(admin, bundleData.shopifyProductId, bundleData.title),
                     shopifyBundleBuilderPage.updateBundleBuilderPageTitle(admin, session, bundleData.shopifyPageId, bundleData.title),
                 ]);
 
@@ -252,11 +251,11 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             await Promise.all([
                 new Promise(async (res, rej) => {
                     //Check if the bundle builder product exists (it may have been deleted by the user on accident)
-                    const doesBundleBuilderProductExist = await ShopifyBundleBuilderProductRepository.checkIfProductExists(admin, bundleBuilder.shopifyProductId);
+                    const doesBundleBuilderProductExist = await shopifyBundleBuilderProductRepository.checkIfProductExists(admin, bundleBuilder.shopifyProductId);
 
                     if (!doesBundleBuilderProductExist) {
                         //create new product
-                        const newBundleBuilderProductId = await ShopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilder.title, session.shop);
+                        const newBundleBuilderProductId = await shopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilder.title, session.shop);
 
                         //set bundle product to new product
                         await BundleBuilderRepository.updateBundleBuilderProductId(Number(params.bundleid), newBundleBuilderProductId);

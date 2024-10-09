@@ -10,11 +10,11 @@ import { ProductDto } from '@adminBackend/service/dto/ProductDto';
 import { ContentDto } from '@adminBackend/service/dto/ContentDto';
 import { CreatedBundleRepository } from '@adminBackend/repository/impl/CreatedBundleRepository';
 import { CustomerInputsDto } from '~/adminBackend/service/dto/CustomerInputsDto';
-import { ShopifyProductVariantService } from '~/adminBackend/repository/impl/ShopifyCreatedBundleProductVariantRepository';
+import { shopifyProductVariantRepository } from '~/adminBackend/repository/impl/ShopifyProductVariantRepository';
 import { BundleVariantForCartDto } from '@adminBackend/service/dto/BundleVariantForCartDto';
 import { bundlePagePreviewKey } from '~/constants';
 import { AddedContentItemDto } from '~/adminBackend/service/dto/AddedContentItemDto';
-import { ShopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
+import { shopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
 import { unauthenticated } from '~/shopify.server';
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -153,14 +153,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             });
         }
 
-        //Service for creating the product variant
-        const productVariantService = await ShopifyProductVariantService.build(shop);
-
         //Extract the data from the customer inputs
         const { addedProductVariants, addedContent, totalProductPrice } = await CustomerInputsDto.extractDataFromCustomerInputs(
             customerInputs,
             bundleBuilder,
-            productVariantService,
+            shopifyProductVariantRepository,
         );
 
         if (files) {
@@ -191,22 +188,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         const newCreatedBundleId = await CreatedBundleRepository.createCreatedBundle(bundleBuilder.id, bundlePrice, discountAmount, addedProductVariants, addedContent);
 
         //Check if the bundle builder product exists (it may have been deleted by the user on accident)
-        const doesBundleBuilderProductExist = await ShopifyBundleBuilderProductRepository.checkIfProductExists(admin, bundleBuilder.shopifyProductId);
+        const doesBundleBuilderProductExist = await shopifyBundleBuilderProductRepository.checkIfProductExists(admin, bundleBuilder.shopifyProductId);
 
         //If the product does not exist, create a new one
         if (!doesBundleBuilderProductExist) {
-            const newBundleBuilderProductId = await ShopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilder.title, shop);
+            const newBundleBuilderProductId = await shopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilder.title, shop);
 
             if (newBundleBuilderProductId) {
                 bundleBuilder.shopifyProductId = newBundleBuilderProductId;
             }
         } else {
             //Check the number of variants for the bundle builder product
-            const numOfBundleBuilderProductVariants = await ShopifyBundleBuilderProductRepository.getNumberOfProductVariants(admin, bundleBuilder.shopifyProductId);
+            const numOfBundleBuilderProductVariants = await shopifyBundleBuilderProductRepository.getNumberOfProductVariants(admin, bundleBuilder.shopifyProductId);
 
             //If the number of variants is greater than 100, create a new product
             if (numOfBundleBuilderProductVariants >= 100) {
-                const newBundleBuilderProductId = await ShopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilder.title, shop);
+                const newBundleBuilderProductId = await shopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilder.title, shop);
 
                 if (newBundleBuilderProductId) {
                     bundleBuilder.shopifyProductId = newBundleBuilderProductId;
@@ -215,10 +212,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         }
 
         //Create a new dummy product variant with the bundle data and return the variant id
-        const newVariantId = await productVariantService.createProductVariant(newCreatedBundleId, bundleBuilder.shopifyProductId, bundleCompareAtPrice, bundlePrice);
+        const newVariantId = await shopifyProductVariantRepository.createProductVariant(
+            admin,
+            newCreatedBundleId,
+            bundleBuilder.shopifyProductId,
+            bundleCompareAtPrice,
+            bundlePrice,
+        );
 
         //Link the addedProductVariants to the new bundle variant
-        const success = await productVariantService.updateProductVariantRelationship(newVariantId, addedProductVariants);
+        const success = await shopifyProductVariantRepository.updateProductVariantRelationship(admin, newVariantId, addedProductVariants);
 
         //Create the bundle variant for the cart
         //This variant includes the variant id and the list of added content inputs

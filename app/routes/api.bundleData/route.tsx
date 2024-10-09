@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { bundleAndSteps, BundleAndStepsBasicServer } from '~/adminBackend/service/dto/Bundle';
+import { bundleAndSteps, BundleAndStepsBasicServer, BundleBuilderDto } from '~/adminBackend/service/dto/Bundle';
 import db from '~/db.server';
 import { JsonData } from '~/adminBackend/service/dto/jsonData';
 import { checkPublicAuth } from '~/adminBackend/service/utils/publicApi.auth';
@@ -42,7 +42,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     } else {
         // Returning bundle alone or with selected step
         try {
-            const bundleData: BundleAndStepsBasicServer | null = await db.bundleBuilder.findUnique({
+            const bundleData: BundleBuilderDto | null = await db.bundleBuilder.findUnique({
                 where: {
                     id: Number(bundleId),
                 },

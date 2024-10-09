@@ -1,24 +1,12 @@
 import { AdminApiContext } from '@shopify/shopify-app-remix/server';
-import { unauthenticated } from '../../../shopify.server';
 import { AddedProductVariantDto } from '@adminBackend/service/dto/AddedProductVariantDto';
-import { Product } from '@shopifyGraphql/graphql';
-import { ShopifyBundleBuilderProductRepository } from './ShopifyBundleBuilderProductRepository';
 
-export class ShopifyProductVariantService {
-    private admin: AdminApiContext;
-
-    constructor(admin: AdminApiContext) {
-        this.admin = admin;
-    }
-
-    static async build(shop: string) {
-        const { admin } = await unauthenticated.admin(shop);
-        return new ShopifyProductVariantService(admin);
-    }
+export class ShopifyProductVariantRepository {
+    constructor() {}
 
     //Get the price of the product variant
-    public async getProductVariantPrice(productVariantId: string): Promise<number> {
-        const response = await this.admin.graphql(
+    public async getProductVariantPrice(admin: AdminApiContext, productVariantId: string): Promise<number> {
+        const response = await admin.graphql(
             `#graphql
             query getProductVariantPrice($productId: ID!) {
                 productVariant(id: $productId) {
@@ -38,8 +26,8 @@ export class ShopifyProductVariantService {
     }
 
     //Create a new product variant
-    public async createProductVariant(createdBundleId: number, shopifyProductId: string, compareAtPrice: number, price: number): Promise<string> {
-        const response = await this.admin.graphql(
+    public async createProductVariant(admin: AdminApiContext, createdBundleId: number, shopifyProductId: string, compareAtPrice: number, price: number): Promise<string> {
+        const response = await admin.graphql(
             `#graphql
             mutation createProductVariant($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
                 productVariantsBulkCreate(productId: $productId, variants: $variants) {
@@ -84,46 +72,12 @@ export class ShopifyProductVariantService {
         console.log(price, compareAtPrice);
         console.log(data.productVariantsBulkCreate.productVariants);
 
-        const response2 = await this.admin.graphql(
-            `#graphql
-            mutation productVariantsBulkUpdate($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-              productVariantsBulkUpdate(productId: $productId, variants: $variants) {
-                product {
-                  id
-                }
-                productVariants {
-                  id
-                  compareAtPrice
-                  price
-                }
-                userErrors {
-                  field
-                  message
-                }
-              }
-            }`,
-            {
-                variables: {
-                    productId: shopifyProductId,
-                    variants: [
-                        {
-                            id: productVariantId,
-                        },
-                    ],
-                },
-            },
-        );
-
-        const data2 = await response2.json();
-
-        console.log(data2.data.productVariantsBulkUpdate.productVariants);
-
         return productVariantId;
     }
 
     //Update the product variant relationship
-    public async updateProductVariantRelationship(variantId: string, addedProductVariants: AddedProductVariantDto[]): Promise<boolean> {
-        const response = await this.admin.graphql(
+    public async updateProductVariantRelationship(admin: AdminApiContext, variantId: string, addedProductVariants: AddedProductVariantDto[]): Promise<boolean> {
+        const response = await admin.graphql(
             `#graphql
           mutation CreateBundle($input: [ProductVariantRelationshipUpdateInput!]!) {
             productVariantRelationshipBulkUpdate(input: $input) {
@@ -169,3 +123,5 @@ export class ShopifyProductVariantService {
         return true;
     }
 }
+
+export const shopifyProductVariantRepository = new ShopifyProductVariantRepository();

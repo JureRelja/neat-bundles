@@ -5,8 +5,9 @@ import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import shopifyBundleBuilderPageRepositoryGraphql from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql';
 import { ShopifyBundleBuilderPageRepository } from '@adminBackend/repository/ShopifyBundleBuilderPageRepository';
 import { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
-import { ShopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
 import { ShopifyRedirectRepository } from '~/adminBackend/repository/impl/ShopifyRedirectRepository';
+import { shopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
+import { shopifyProductVariantRepository } from '~/adminBackend/repository/impl/ShopifyProductVariantRepository';
 
 export const loader = async ({ request }: ActionFunctionArgs) => {
     await authenticate.admin(request);
@@ -33,14 +34,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 const defaultBundleTitle = `New bundle ${maxBundleId ? maxBundleId : ''}`;
 
                 //Create a new product that will be used as a bundle wrapper
-                const bundleProductId = await ShopifyBundleBuilderProductRepository.createBundleProduct(admin, defaultBundleTitle, session.shop);
+                const bundleProductId = await shopifyBundleBuilderProductRepository.createBundleProduct(admin, defaultBundleTitle, session.shop);
 
                 //Repository for creating a new page
                 const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
 
                 const bundleBuilderPage = await shopifyBundleBuilderPage.createPage(admin, session, defaultBundleTitle);
-
-                console.log(bundleBuilderPage);
 
                 const [urlRedirectRes, bundleId] = await Promise.all([
                     //Create redirect
@@ -49,7 +48,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     BundleBuilderRepository.createNewBundleBuilder(session.shop, defaultBundleTitle, bundleProductId, String(bundleBuilderPage.id), bundleBuilderPage.handle),
                 ]);
 
-                await shopifyBundleBuilderPage.setPageMetafields(bundleId, bundleBuilderPage.id, session, admin);
+                await Promise.all([
+                    shopifyBundleBuilderPage.setPageMetafields(bundleId, bundleBuilderPage.id, session, admin),
+
+                    shopifyProductVariantRepository.createProductVariant(admin, bundleId, bundleProductId, 0, 0),
+                ]);
 
                 return redirect(`/app/bundles/${bundleId}`);
             } catch (error) {
