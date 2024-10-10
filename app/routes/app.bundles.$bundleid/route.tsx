@@ -173,6 +173,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     field: 'Discount value',
                     message: 'Please enter a desired discount.',
                 });
+            } else if (bundleData.discountType === 'FIXED' && bundleData.pricing === 'FIXED' && bundleData.discountValue > (bundleData.priceAmount || 0)) {
+                errors.push({
+                    fieldId: 'discountValue',
+                    field: 'Discount value',
+                    message: "Discount amount can't be heigher that the bundle price.",
+                });
             }
 
             if (errors.length > 0)

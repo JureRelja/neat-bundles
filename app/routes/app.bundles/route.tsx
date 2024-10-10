@@ -52,12 +52,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     BundleBuilderRepository.createNewBundleBuilder(session.shop, defaultBundleTitle, bundleProductId, String(bundleBuilderPage.id), bundleBuilderPage.handle),
                 ]);
 
-                // const [res1, productVariantId] = await Promise.all([
-                //     shopifyBundleBuilderPage.setPageMetafields(bundle.id, bundleBuilderPage.id, session, admin),
-
-                //     shopifyDiscountRepository.createDiscount(admin, bundle.discountType, bundle.discountValue),
-                // ]);
-
                 await shopifyBundleBuilderPage.setPageMetafields(bundle.id, bundleBuilderPage.id, session, admin);
 
                 return redirect(`/app/bundles/${bundle.id}`);
