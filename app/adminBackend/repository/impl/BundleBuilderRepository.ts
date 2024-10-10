@@ -150,7 +150,15 @@ export class BundleBuilderRepository {
             },
         });
 
-        return bundle.id;
+        return bundle;
+    }
+
+    public static async getBundleBuilderById(bundleBuilderId: number) {
+        return db.bundleBuilder.findUnique({
+            where: {
+                id: bundleBuilderId,
+            },
+        });
     }
 
     public static async updateBundleBuilderProductId(bundleBuilderId: number, productId: string) {

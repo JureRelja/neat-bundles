@@ -78,7 +78,7 @@ const findVariantIndex = (selectedOptions, productVariants) => {
 // };
 
 //Function to add products to bundle storage
-const addProductToBundle = (productId, activeStepNumber, stepInputs, maxProductsOnStep) => {
+const addProductToBundle = (productId, productPrice, activeStepNumber, stepInputs, maxProductsOnStep) => {
     if (getProductsOnStep(activeStepNumber, stepInputs) >= maxProductsOnStep) return;
 
     //Finding the index of the step in the stepInputs array
@@ -96,6 +96,7 @@ const addProductToBundle = (productId, activeStepNumber, stepInputs, maxProducts
             stepInputs[thisStepIndex].inputs.push({
                 id: productId,
                 quantity: 1,
+                price: productPrice,
             });
             //If the product is already added on this step
         } else {
@@ -107,7 +108,7 @@ const addProductToBundle = (productId, activeStepNumber, stepInputs, maxProducts
         stepInputs.push({
             stepNumber: activeStepNumber,
             stepType: 'PRODUCT',
-            inputs: [{ id: productId, quantity: 1 }],
+            inputs: [{ id: productId, quantity: 1, price: productPrice }],
         });
     }
 };

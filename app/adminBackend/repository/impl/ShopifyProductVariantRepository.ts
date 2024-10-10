@@ -1,5 +1,6 @@
 import { AdminApiContext } from '@shopify/shopify-app-remix/server';
 import { AddedProductVariantDto } from '@adminBackend/service/dto/AddedProductVariantDto';
+import { PriceCalculationType } from '@shopifyGraphql/graphql';
 
 export class ShopifyProductVariantRepository {
     constructor() {}
@@ -47,7 +48,7 @@ export class ShopifyProductVariantRepository {
                     productId: shopifyProductId,
                     variants: [
                         {
-                            price: price,
+                            compareAtPrice: compareAtPrice,
                             optionValues: [
                                 {
                                     optionName: 'Title',
@@ -69,20 +70,19 @@ export class ShopifyProductVariantRepository {
 
         const productVariantId = data.productVariantsBulkCreate.productVariants[0].id;
 
-        console.log(price, compareAtPrice);
-        console.log(data.productVariantsBulkCreate.productVariants);
-
         return productVariantId;
     }
 
     //Update the product variant relationship
-    public async updateProductVariantRelationship(admin: AdminApiContext, variantId: string, addedProductVariants: AddedProductVariantDto[]): Promise<boolean> {
+    public async updateProductVariantRelationship(admin: AdminApiContext, variantId: string, addedProductVariants: AddedProductVariantDto[], price: number): Promise<boolean> {
         const response = await admin.graphql(
             `#graphql
-          mutation CreateBundle($input: [ProductVariantRelationshipUpdateInput!]!) {
+          mutation addVariantsToBundleProductVariant($input: [ProductVariantRelationshipUpdateInput!]!) {
             productVariantRelationshipBulkUpdate(input: $input) {
               parentProductVariants {
                 id
+                price
+                compareAtPrice
                 productVariantComponents(first: 10) {
                   nodes {
                     id
@@ -105,6 +105,10 @@ export class ShopifyProductVariantRepository {
                     input: [
                         {
                             parentProductVariantId: variantId,
+                            priceInput: {
+                                calculation: PriceCalculationType.Fixed,
+                                price: price,
+                            },
                             productVariantRelationshipsToCreate: addedProductVariants.map((addedProductVariant) => {
                                 return { id: addedProductVariant.productVariant, quantity: addedProductVariant.quantity };
                             }),
@@ -119,6 +123,9 @@ export class ShopifyProductVariantRepository {
         if (data.data.productVariantRelationshipBulkUpdate.userErrors.length && data.data.productVariantRelationshipBulkUpdate.userErrors.length > 0) {
             return false;
         }
+
+        console.log(data.data.productVariantRelationshipBulkUpdate);
+        console.log(data.data.productVariantRelationshipBulkUpdate.parentProductVariants);
 
         return true;
     }

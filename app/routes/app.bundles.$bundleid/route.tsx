@@ -207,7 +207,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                 await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
 
-                return redirect(`/app`);
+                return json({ ...new JsonData(true, 'success', 'Bundle updated') }, { status: 200 });
+                //return redirect(`/app`);
             } catch (error) {
                 console.log(error);
 
@@ -481,8 +482,6 @@ export default function Index() {
 
     //Duplicating the step
     const duplicateStep = async (stepNumber: number): Promise<void> => {
-        await shopify.saveBar.leaveConfirmation();
-
         if (serverBundle.steps.length >= 5) {
             shopify.modal.show('no-more-steps-modal');
             return;
@@ -494,6 +493,12 @@ export default function Index() {
     const deleteBundleHandler = async (): Promise<void> => {
         await shopify.saveBar.leaveConfirmation();
         navigateSubmit('deleteBundle', `/app/bundles/${params.bundleid}?redirect=true`);
+    };
+
+    const handleNavigationOnUnsavedChanges = async (navPath: string): Promise<void> => {
+        await shopify.saveBar.leaveConfirmation();
+
+        navigate(navPath);
     };
 
     //Navigating to the first error
@@ -621,7 +626,12 @@ export default function Index() {
                                                                 rows={bundleSteps.map((step: BundleStepBasicResources) => {
                                                                     return [
                                                                         step.stepNumber,
-                                                                        <Link to={`/app/bundles/${params.bundleid}/steps/${step.stepNumber}`}>
+                                                                        <Link
+                                                                            onClick={handleNavigationOnUnsavedChanges.bind(
+                                                                                null,
+                                                                                `/app/bundles/${params.bundleid}/steps/${step.stepNumber}`,
+                                                                            )}
+                                                                            to={'#'}>
                                                                             <Text as="p" tone="base">
                                                                                 {step.title}
                                                                             </Text>
@@ -678,7 +688,10 @@ export default function Index() {
                                                                             <Button
                                                                                 icon={EditIcon}
                                                                                 variant="primary"
-                                                                                url={`/app/bundles/${params.bundleid}/steps/${step.stepNumber}`}>
+                                                                                onClick={handleNavigationOnUnsavedChanges.bind(
+                                                                                    null,
+                                                                                    `/app/bundles/${params.bundleid}/steps/${step.stepNumber}`,
+                                                                                )}>
                                                                                 Edit
                                                                             </Button>
                                                                         </ButtonGroup>,

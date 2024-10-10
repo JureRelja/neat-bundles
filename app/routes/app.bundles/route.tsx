@@ -8,6 +8,7 @@ import { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBu
 import { ShopifyRedirectRepository } from '~/adminBackend/repository/impl/ShopifyRedirectRepository';
 import { shopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
 import { shopifyProductVariantRepository } from '~/adminBackend/repository/impl/ShopifyProductVariantRepository';
+import { shopifyDiscountRepository } from '~/adminBackend/repository/impl/ShopifyDiscountRepository';
 
 export const loader = async ({ request }: ActionFunctionArgs) => {
     await authenticate.admin(request);
@@ -41,20 +42,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
                 const bundleBuilderPage = await shopifyBundleBuilderPage.createPage(admin, session, defaultBundleTitle);
 
-                const [urlRedirectRes, bundleId] = await Promise.all([
+                const [urlRedirectRes, bundle] = await Promise.all([
                     //Create redirect
                     ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundleBuilderPage.handle as string, bundleProductId),
                     //Create new bundle
                     BundleBuilderRepository.createNewBundleBuilder(session.shop, defaultBundleTitle, bundleProductId, String(bundleBuilderPage.id), bundleBuilderPage.handle),
                 ]);
 
-                await Promise.all([
-                    shopifyBundleBuilderPage.setPageMetafields(bundleId, bundleBuilderPage.id, session, admin),
+                // const [res1, productVariantId] = await Promise.all([
+                //     shopifyBundleBuilderPage.setPageMetafields(bundle.id, bundleBuilderPage.id, session, admin),
 
-                    shopifyProductVariantRepository.createProductVariant(admin, bundleId, bundleProductId, 0, 0),
-                ]);
+                //     shopifyDiscountRepository.createDiscount(admin, bundle.discountType, bundle.discountValue),
+                // ]);
 
-                return redirect(`/app/bundles/${bundleId}`);
+                await shopifyBundleBuilderPage.setPageMetafields(bundle.id, bundleBuilderPage.id, session, admin);
+
+                return redirect(`/app/bundles/${bundle.id}`);
             } catch (error) {
                 console.log(error);
             }

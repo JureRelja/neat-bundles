@@ -155,6 +155,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
         //Extract the data from the customer inputs
         const { addedProductVariants, addedContent, totalProductPrice } = await CustomerInputsDto.extractDataFromCustomerInputs(
+            admin,
             customerInputs,
             bundleBuilder,
             shopifyProductVariantRepository,
@@ -183,10 +184,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         //Get the final bundle prices
         const { bundlePrice, bundleCompareAtPrice, discountAmount } = BundleVariantForCartDto.getFinalBundlePrices(bundleBuilder, totalProductPrice);
 
-        //Store the created bundle in the database
-        //Get the id of the created bundle
-        const newCreatedBundleId = await CreatedBundleRepository.createCreatedBundle(bundleBuilder.id, bundlePrice, discountAmount, addedProductVariants, addedContent);
-
         //Check if the bundle builder product exists (it may have been deleted by the user on accident)
         const doesBundleBuilderProductExist = await shopifyBundleBuilderProductRepository.checkIfProductExists(admin, bundleBuilder.shopifyProductId);
 
@@ -211,6 +208,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             }
         }
 
+        //Store the created bundle in the database
+        //Get the id of the created bundle
+        const newCreatedBundleId = await CreatedBundleRepository.createCreatedBundle(bundleBuilder.id, bundlePrice, discountAmount, addedProductVariants, addedContent);
+
         //Create a new dummy product variant with the bundle data and return the variant id
         const newVariantId = await shopifyProductVariantRepository.createProductVariant(
             admin,
@@ -221,7 +222,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         );
 
         //Link the addedProductVariants to the new bundle variant
-        const success = await shopifyProductVariantRepository.updateProductVariantRelationship(admin, newVariantId, addedProductVariants);
+        const success = await shopifyProductVariantRepository.updateProductVariantRelationship(admin, newVariantId, addedProductVariants, bundlePrice);
 
         //Create the bundle variant for the cart
         //This variant includes the variant id and the list of added content inputs

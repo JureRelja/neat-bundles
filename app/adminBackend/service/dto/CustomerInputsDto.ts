@@ -3,7 +3,7 @@ import { AddedProductVariantDto } from '@adminBackend/service/dto/AddedProductVa
 import { BundleFullAndStepsFullDto } from '@adminBackend/service/dto/BundleFullAndStepsFullDto';
 import { CustomerInputDto } from '@adminBackend/service/dto/CustomerInputDto';
 import { ProductDto } from '@adminBackend/service/dto/ProductDto';
-import { ShopifyProductVariantService } from '../../repository/impl/ShopifyProductVariantRepository';
+import { shopifyProductVariantRepository, ShopifyProductVariantRepository } from '../../repository/impl/ShopifyProductVariantRepository';
 import { AddedContentDto } from '@adminBackend/service/dto/AddedContentDto';
 import { ContentDto } from '@adminBackend/service/dto/ContentDto';
 import { AddedContentItemDto } from '@adminBackend/service/dto/AddedContentItemDto';
@@ -16,7 +16,12 @@ export class CustomerInputsDto {
     //Extract the content types and values (if any)
     //Extract the total price of the products
 
-    public static async extractDataFromCustomerInputs(customerInputs: CustomerInputDto[], bundle: BundleFullAndStepsFullDto, productVariantService: ShopifyProductVariantService) {
+    public static async extractDataFromCustomerInputs(
+        admin: AdminApiContext,
+        customerInputs: CustomerInputDto[],
+        bundle: BundleFullAndStepsFullDto,
+        productVariantService: ShopifyProductVariantRepository,
+    ) {
         let addedProductVariants: AddedProductVariantDto[] = [];
 
         let addedContent: AddedContentDto[] = [];
@@ -39,7 +44,7 @@ export class CustomerInputsDto {
                             });
 
                             if (bundle.pricing === 'CALCULATED') {
-                                const price = await productVariantService.getProductVariantPrice(product.id);
+                                const price = await productVariantService.getProductVariantPrice(admin, product.id);
 
                                 //Add the price of the product to the bundle price
                                 totalProductPrice += price;
