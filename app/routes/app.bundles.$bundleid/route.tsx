@@ -942,6 +942,7 @@ export default function Index() {
                                                                 { label: 'Active', value: 'true' },
                                                                 { label: 'Draft', value: 'false' },
                                                             ]}
+                                                            helpText="Bundles set to 'ACTIVE' are visible to anyone browsing your store"
                                                             value={bundleState.published ? 'true' : 'false'}
                                                             onChange={(newSelection: string) => {
                                                                 setBundleState((prevBundle: BundleFullStepBasicClient) => {

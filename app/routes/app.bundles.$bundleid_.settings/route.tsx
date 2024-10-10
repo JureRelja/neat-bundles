@@ -4,13 +4,28 @@ import { useLoaderData, useNavigation, useNavigate, Form } from '@remix-run/reac
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
 import db from '../../db.server';
-import { Card, BlockStack, Text, RangeSlider, Divider, InlineGrid, ChoiceList, Page, Button, Box, SkeletonPage, SkeletonBodyText } from '@shopify/polaris';
-import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, HorizontalGap } from '../../constants';
+import {
+    Card,
+    BlockStack,
+    Text,
+    RangeSlider,
+    Divider,
+    InlineGrid,
+    ChoiceList,
+    Page,
+    Button,
+    Box,
+    SkeletonPage,
+    SkeletonBodyText,
+    Tooltip,
+    Icon,
+    InlineStack,
+} from '@shopify/polaris';
+import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '../../constants';
 import { SettingsWithAllResources, settingsIncludeAll } from '../../adminBackend/service/dto/BundleSettings';
-import ColorPicker from './color-picker';
-import { useMemo, useState } from 'react';
+import { QuestionCircleIcon } from '@shopify/polaris-icons';
+import { useState } from 'react';
 import { JsonData } from '~/adminBackend/service/dto/jsonData';
-import { RangeSliderValue } from '@shopify/polaris/build/ts/src/components/RangeSlider/types';
 import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
 import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
 import { BundleSettings } from '@prisma/client';
@@ -58,7 +73,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 bundleBuilderId: Number(params.bundleid),
             },
             data: {
-                displayDiscountBanner: bundleSettings.displayDiscountBanner,
+                hidePricingSummary: bundleSettings.hidePricingSummary,
                 skipTheCart: bundleSettings.skipTheCart,
                 allowBackNavigation: bundleSettings.allowBackNavigation,
                 showOutOfStockProducts: bundleSettings.showOutOfStockProducts,
@@ -125,91 +140,6 @@ export default function Index() {
 
     const [settingsState, setSetttingsState] = useState<SettingsWithAllResources>(serverSettings);
 
-    const updateColor = (newHexColor: string, colorId: string) => {
-        setSetttingsState((prevSettings: SettingsWithAllResources) => {
-            if (!prevSettings.bundleColors) return prevSettings;
-            return {
-                ...prevSettings,
-                bundleColors: {
-                    ...prevSettings.bundleColors,
-                    [colorId]: newHexColor,
-                },
-            };
-        });
-    };
-
-    // Button collors
-    const buttonColors = useMemo(() => {
-        return [
-            {
-                hex: settingsState.bundleColors?.addToBundleBtn,
-                label: '"Add to bundle" button background',
-                id: 'addToBundleBtn',
-            },
-            {
-                hex: settingsState.bundleColors?.addToBundleText,
-                label: '"Add to bundle" button text',
-                id: 'addToBundleText',
-            },
-            {
-                hex: settingsState.bundleColors?.viewProductBtn,
-                label: '"View products" button background',
-                id: 'viewProductsBtn',
-            },
-            {
-                hex: settingsState.bundleColors?.viewProductBtnText,
-                label: '"View products" button text',
-                id: 'viewProductsBtnText',
-            },
-            {
-                hex: settingsState.bundleColors?.removeProductsBtn,
-                label: '"Remove" button background',
-                id: 'removeProductBtn',
-            },
-            {
-                hex: settingsState.bundleColors?.removeProductsBtnText,
-                label: '"Remove" button text',
-                id: 'removeProductBtn',
-            },
-            {
-                hex: settingsState.bundleColors?.prevStepBtn,
-                label: '"Previous step" button background',
-                id: 'prevStepBtn',
-            },
-            {
-                hex: settingsState.bundleColors?.prevStepBtnText,
-                label: '"Previous step" button text',
-                id: 'prevStepBtnText',
-            },
-            {
-                hex: settingsState.bundleColors?.nextStepBtn,
-                label: '"Next step" button background',
-                id: 'nextStepBtn',
-            },
-            {
-                hex: settingsState.bundleColors?.nextStepBtnText,
-                label: '"Next step" button text',
-                id: 'nextStepBtnText',
-            },
-        ];
-    }, [settingsState.bundleColors]);
-
-    // Button collors
-    const bundleColos = useMemo(() => {
-        return [
-            {
-                hex: settingsState.bundleColors?.stepsIcon,
-                label: 'Steps icon color',
-                id: 'stepsIcon',
-            },
-            {
-                hex: settingsState.bundleColors?.titleAndDESC,
-                label: '"Title & description"',
-                id: 'titleAndDESC',
-            },
-        ];
-    }, [settingsState.bundleColors]);
-
     return (
         <>
             {isLoading ? (
@@ -250,102 +180,166 @@ export default function Index() {
                     <Form method="POST" data-discard-confirmation data-save-bar>
                         <input type="hidden" name="bundleSettings" value={JSON.stringify(settingsState)} />
 
-                        <BlockStack gap={GapBetweenSections}>
+                        <BlockStack gap={'1200'}>
                             {/* Checkbox settings */}
                             <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
                                 <Box as="section">
                                     <BlockStack gap="400">
                                         <Text as="h3" variant="headingMd">
-                                            Bundle behavior
+                                            Pricing summary
                                         </Text>
                                         <Text as="p" variant="bodyMd">
-                                            Change the behavior of this bundle.
+                                            Pricing summary shows customers the pricing and discount of the bundle that they are creating.
                                         </Text>
                                     </BlockStack>
                                 </Box>
                                 <Card>
-                                    <BlockStack gap={GapInsideSection}>
-                                        {/* <ChoiceList
-                                            title="Discount banner"
-                                            allowMultiple
-                                            name={`displayDiscountBanner`}
-                                            choices={[
-                                                {
-                                                    label: 'Display a discount banner through the order',
-                                                    value: 'true',
-                                                },
-                                            ]}
-                                            selected={settingsState.displayDiscountBanner ? ['true'] : []}
-                                            onChange={(value) => {
-                                                setSetttingsState((prevSettings: SettingsWithAllResources) => {
-                                                    return {
-                                                        ...prevSettings,
-                                                        displayDiscountBanner: value[0] === 'true',
-                                                    };
-                                                });
-                                            }}
-                                        /> */}
-                                        <ChoiceList
-                                            title="Cart"
-                                            allowMultiple
-                                            name={`skipTheCart`}
-                                            choices={[
-                                                {
-                                                    label: 'Skip the cart and go to checkout directly',
-                                                    value: 'true',
-                                                },
-                                            ]}
-                                            selected={settingsState.skipTheCart ? ['true'] : []}
-                                            onChange={(value) => {
-                                                setSetttingsState((prevSettings: SettingsWithAllResources) => {
-                                                    return {
-                                                        ...prevSettings,
-                                                        skipTheCart: value[0] === 'true',
-                                                    };
-                                                });
-                                            }}
-                                        />
-                                        <ChoiceList
-                                            title="Navigation"
-                                            name={`allowBackNavigation`}
-                                            allowMultiple
-                                            choices={[
-                                                {
-                                                    label: 'Allow customers to go back on steps',
-                                                    value: 'true',
-                                                },
-                                            ]}
-                                            selected={settingsState.allowBackNavigation ? ['true'] : []}
-                                            onChange={(value) => {
-                                                setSetttingsState((prevSettings: SettingsWithAllResources) => {
-                                                    return {
-                                                        ...prevSettings,
-                                                        allowBackNavigation: value[0] === 'true',
-                                                    };
-                                                });
-                                            }}
-                                        />
-                                        <ChoiceList
-                                            title="Navigation"
-                                            allowMultiple
-                                            name={`showOutOfStockProducts`}
-                                            choices={[
-                                                {
-                                                    label: 'Show “out of stock” and unavailable products',
-                                                    value: 'true',
-                                                },
-                                            ]}
-                                            selected={settingsState.showOutOfStockProducts ? ['true'] : []}
-                                            onChange={(value) => {
-                                                setSetttingsState((prevSettings: SettingsWithAllResources) => {
-                                                    return {
-                                                        ...prevSettings,
-                                                        showOutOfStockProducts: value[0] === 'true',
-                                                    };
-                                                });
-                                            }}
-                                        />
+                                    <ChoiceList
+                                        title="Pricing summary"
+                                        allowMultiple
+                                        name={`hidePricingSummary`}
+                                        choices={[
+                                            {
+                                                label: (
+                                                    <InlineStack>
+                                                        <Text as={'p'}>Hide pricing summary on steps</Text>
+                                                        <Tooltip
+                                                            width="wide"
+                                                            content="By hiding pricing summary, customers won't be able to see their bundle price until they add a bundle to cart or reach checkout.">
+                                                            <Icon source={QuestionCircleIcon}></Icon>
+                                                        </Tooltip>
+                                                    </InlineStack>
+                                                ),
+                                                value: 'true',
+                                            },
+                                        ]}
+                                        selected={settingsState.hidePricingSummary ? ['true'] : []}
+                                        onChange={(value) => {
+                                            setSetttingsState((prevSettings: SettingsWithAllResources) => {
+                                                return {
+                                                    ...prevSettings,
+                                                    hidePricingSummary: value[0] === 'true',
+                                                };
+                                            });
+                                        }}
+                                    />
+                                </Card>
+                            </InlineGrid>
+
+                            <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                                <Box as="section">
+                                    <BlockStack gap="400">
+                                        <Text as="h3" variant="headingMd">
+                                            Navigation
+                                        </Text>
+                                        <Text as="p" variant="bodyMd">
+                                            Navigation consists of navigating between individual bundle steps, and navigating after the customer finishes building their bundle.
+                                        </Text>
                                     </BlockStack>
+                                </Box>
+                                <Card>
+                                    <ChoiceList
+                                        title="Navigation"
+                                        name={`allowBackNavigation`}
+                                        allowMultiple
+                                        choices={[
+                                            {
+                                                label: (
+                                                    <InlineStack>
+                                                        <Text as={'p'}>Allow customers to go back on steps</Text>
+                                                        <Tooltip
+                                                            width="wide"
+                                                            content="If this is not selected, customers won't be able to use the 'back' button to go back on steps.">
+                                                            <Icon source={QuestionCircleIcon}></Icon>
+                                                        </Tooltip>
+                                                    </InlineStack>
+                                                ),
+                                                value: 'true',
+                                            },
+                                        ]}
+                                        selected={settingsState.allowBackNavigation ? ['true'] : []}
+                                        onChange={(value) => {
+                                            setSetttingsState((prevSettings: SettingsWithAllResources) => {
+                                                return {
+                                                    ...prevSettings,
+                                                    allowBackNavigation: value[0] === 'true',
+                                                };
+                                            });
+                                        }}
+                                    />
+                                    <ChoiceList
+                                        title="Cart"
+                                        allowMultiple
+                                        name={`skipTheCart`}
+                                        choices={[
+                                            {
+                                                label: (
+                                                    <InlineStack>
+                                                        <Text as={'p'}>Skip the cart and go to checkout directly</Text>
+                                                        <Tooltip
+                                                            width="wide"
+                                                            content="Without this option selected, all the customer will be redirected to cart page after the finish building their bundle.">
+                                                            <Icon source={QuestionCircleIcon}></Icon>
+                                                        </Tooltip>
+                                                    </InlineStack>
+                                                ),
+                                                value: 'true',
+                                            },
+                                        ]}
+                                        selected={settingsState.skipTheCart ? ['true'] : []}
+                                        onChange={(value) => {
+                                            setSetttingsState((prevSettings: SettingsWithAllResources) => {
+                                                return {
+                                                    ...prevSettings,
+                                                    skipTheCart: value[0] === 'true',
+                                                };
+                                            });
+                                        }}
+                                    />
+                                </Card>
+                            </InlineGrid>
+
+                            <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                                <Box as="section">
+                                    <BlockStack gap="400">
+                                        <Text as="h3" variant="headingMd">
+                                            Products
+                                        </Text>
+                                        <Text as="p" variant="bodyMd">
+                                            Change settings on how products are displayed and used.
+                                        </Text>
+                                    </BlockStack>
+                                </Box>
+                                <Card>
+                                    <ChoiceList
+                                        title="Products"
+                                        allowMultiple
+                                        name={`showOutOfStockProducts`}
+                                        choices={[
+                                            {
+                                                label: (
+                                                    <InlineStack>
+                                                        <Text as={'p'}>Show “out of stock” and unavailable products</Text>
+                                                        <Tooltip
+                                                            width="wide"
+                                                            content="By default, only products that have at least one variant that's in stock at the time of purchase will be displayed. If this is selected, all 'out of stock' products will be visible, but customers won't be able to add the to their bundles.">
+                                                            <Icon source={QuestionCircleIcon}></Icon>
+                                                        </Tooltip>
+                                                    </InlineStack>
+                                                ),
+                                                value: 'true',
+                                            },
+                                        ]}
+                                        selected={settingsState.showOutOfStockProducts ? ['true'] : []}
+                                        onChange={(value) => {
+                                            setSetttingsState((prevSettings: SettingsWithAllResources) => {
+                                                return {
+                                                    ...prevSettings,
+                                                    showOutOfStockProducts: value[0] === 'true',
+                                                };
+                                            });
+                                        }}
+                                    />
                                 </Card>
                             </InlineGrid>
 
@@ -467,56 +461,6 @@ export default function Index() {
                   </BlockStack>
                 </Card>
               </InlineGrid> */}
-
-                            {/* <Divider /> */}
-
-                            {/* Colors settings */}
-                            {/* <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
-                                <Box as="section">
-                                    <BlockStack gap="400">
-                                        <Text as="h3" variant="headingMd">
-                                            Bundle colors
-                                        </Text>
-                                        <Text as="p" variant="bodyMd">
-                                            Change the colors of all the elements that appear in the bundle to match your store's theme.
-                                        </Text>
-                                    </BlockStack>
-                                </Box>
-                                <Card>
-                                    <BlockStack gap={GapInsideSection}>
-                                        <BlockStack gap={GapBetweenTitleAndContent}>
-                                            <Text as="p">Buttons</Text>
-                                            <InlineGrid columns={2} gap={HorizontalGap}>
-                                                {buttonColors.map((color: { hex: string | undefined; label: string; id: string }) => (
-                                                    <ColorPicker
-                                                        key={color.id}
-                                                        label={color.label}
-                                                        color={color.hex as string} //Hex color code
-                                                        colorId={color.id}
-                                                        updateColor={updateColor}
-                                                    />
-                                                ))}
-                                            </InlineGrid>
-                                        </BlockStack>
-                                        <BlockStack gap={GapBetweenTitleAndContent}>
-                                            <Text as="p">Bundle colors</Text>
-                                            <InlineGrid columns={2} gap={HorizontalGap}>
-                                                {bundleColos.map((color: { hex: string | undefined; label: string; id: string }) => (
-                                                    <ColorPicker
-                                                        key={color.id}
-                                                        label={color.label}
-                                                        color={color.hex as string} //Hex color code
-                                                        colorId={color.id}
-                                                        updateColor={updateColor}
-                                                    />
-                                                ))}
-                                            </InlineGrid>
-                                        </BlockStack>
-                                    </BlockStack>
-                                </Card>
-                            </InlineGrid> */}
-
-                            <Divider borderColor="transparent" />
 
                             {/* Save action */}
                             <BlockStack inlineAlign="end">

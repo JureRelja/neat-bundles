@@ -20,7 +20,7 @@ export class BundleBuilderRepository {
                 discountValue: 10,
                 bundleSettings: {
                     create: {
-                        displayDiscountBanner: false,
+                        hidePricingSummary: false,
                         skipTheCart: false,
                         allowBackNavigation: true,
                         showOutOfStockProducts: false,

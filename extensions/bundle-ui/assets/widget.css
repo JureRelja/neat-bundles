@@ -669,7 +669,7 @@ p {
     text-decoration: line-through;
 }
 
-@media (max-width: 768) {
+@media (max-width: 768px) {
     .bundle-pricing-container {
         justify-content: center;
     }

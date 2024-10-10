@@ -34,13 +34,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
                 const defaultBundleTitle = `New bundle ${maxBundleId ? maxBundleId : ''}`;
 
-                //Create a new product that will be used as a bundle wrapper
-                const bundleProductId = await shopifyBundleBuilderProductRepository.createBundleProduct(admin, defaultBundleTitle, session.shop);
-
                 //Repository for creating a new page
                 const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
 
-                const bundleBuilderPage = await shopifyBundleBuilderPage.createPage(admin, session, defaultBundleTitle);
+                const [bundleProductId, bundleBuilderPage] = await Promise.all([
+                    //Create a new product that will be used as a bundle wrapper
+                    shopifyBundleBuilderProductRepository.createBundleProduct(admin, defaultBundleTitle, session.shop),
+
+                    //Create new page that will be used to display the bundle
+                    shopifyBundleBuilderPage.createPage(admin, session, defaultBundleTitle),
+                ]);
 
                 const [urlRedirectRes, bundle] = await Promise.all([
                     //Create redirect

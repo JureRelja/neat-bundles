@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "Neat bundles"
 handle = "neat-bundles"
-application_url = "https://lanka-frames-inter-crude.trycloudflare.com"
+application_url = "https://belts-untitled-planes-arbitration.trycloudflare.com"
 embedded = true
 
 [build]
@@ -13,20 +13,20 @@ include_config_on_deploy = true
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_content,write_discounts,write_online_store_navigation,write_products,write_publications"
+scopes = "write_content,write_online_store_navigation,write_products,write_publications"
 
 [auth]
 redirect_urls = [
-  "https://lanka-frames-inter-crude.trycloudflare.com/auth/callback",
-  "https://lanka-frames-inter-crude.trycloudflare.com/auth/shopify/callback",
-  "https://lanka-frames-inter-crude.trycloudflare.com/api/auth/callback"
+  "https://belts-untitled-planes-arbitration.trycloudflare.com/auth/callback",
+  "https://belts-untitled-planes-arbitration.trycloudflare.com/auth/shopify/callback",
+  "https://belts-untitled-planes-arbitration.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-10"
 
 [app_proxy]
-url = "https://lanka-frames-inter-crude.trycloudflare.com"
+url = "https://belts-untitled-planes-arbitration.trycloudflare.com"
 subpath = "nb"
 prefix = "apps"
 
