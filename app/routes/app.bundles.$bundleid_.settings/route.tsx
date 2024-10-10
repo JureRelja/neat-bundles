@@ -168,6 +168,8 @@ export default function Index() {
             ) : (
                 // Bundle settings page
                 <Page
+                    title={`Bundle settings | Bundle ID: ${serverSettings.bundleBuilderId}`}
+                    subtitle="Edit settings only for this bundle."
                     backAction={{
                         content: 'Products',
                         onAction: async () => {
@@ -175,8 +177,7 @@ export default function Index() {
                             await shopify.saveBar.leaveConfirmation();
                             navigate(-1);
                         },
-                    }}
-                    title={`Bundle settings`}>
+                    }}>
                     <Form method="POST" data-discard-confirmation data-save-bar>
                         <input type="hidden" name="bundleSettings" value={JSON.stringify(settingsState)} />
 

@@ -28,8 +28,17 @@ export default function App() {
                 <Link to="/app" rel="bundles">
                     Bundles
                 </Link>
-                <Link to="" target="_blank" rel="styling">
-                    Styling
+                <Link to="/app/settings" rel="settings">
+                    Global settings
+                </Link>
+                <Link to="/app/billing" target="_blank" rel="billing">
+                    Billing
+                </Link>
+                <Link to="/app/help" target="_blank" rel="featureRequest">
+                    Request a feature
+                </Link>
+                <Link to="/app/help" target="_blank" rel="help">
+                    Help
                 </Link>
             </NavMenu>
             <Outlet />

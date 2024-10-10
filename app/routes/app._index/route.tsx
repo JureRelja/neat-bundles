@@ -23,8 +23,7 @@ import {
 import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from '@shopify/polaris-icons';
 import { authenticate } from '../../shopify.server';
 import db from '../../db.server';
-import { User } from '@prisma/client';
-import { BundleAndStepsBasicServer, BundleAndStepsBasicClient, bundleAndSteps } from '../../adminBackend/service/dto/Bundle';
+import { BundleAndStepsBasicClient, bundleAndSteps } from '../../adminBackend/service/dto/Bundle';
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
