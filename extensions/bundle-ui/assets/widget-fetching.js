@@ -32,11 +32,13 @@ const fetchProducts = async (activeStepData, activeStepProducts, windowShopify, 
                         //Formating prices of products
                         product = {
                             ...product,
-                            price: Shopify.formatMoney(product.price),
+                            price: product.price,
+                            priceForDisplay: Shopify.formatMoney(product.price),
                             variants: product.variants.map((variant) => {
                                 return {
                                     ...variant,
-                                    price: Shopify.formatMoney(variant.price),
+                                    price: variant.price,
+                                    priceForDisplay: Shopify.formatMoney(variant.price),
                                 };
                             }),
                         };

@@ -52,6 +52,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
                     title: true,
                     published: true,
                     createdAt: true,
+                    discountType: true,
+                    discountValue: true,
                     priceAmount: true,
                     pricing: true,
                     bundleSettings: true,

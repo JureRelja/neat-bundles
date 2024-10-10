@@ -632,6 +632,55 @@ p {
 .tooltip-border {
     border: 1px solid #a4a2a2;
 }
+
+/* Bundle pricing */
+.bundle-pricing-container {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+}
+
+.bundle-pricing-summary {
+    display: flex;
+    flex-direction: column;
+    width: 450px;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.bundle-pricing-summary h4 {
+    padding: 0;
+    margin: 0;
+    text-decoration: underline;
+    margin-bottom: 5px;
+}
+
+.bundle-pricing-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+}
+
+.total-price {
+    text-decoration: line-through;
+}
+
+@media (max-width: 768) {
+    .bundle-pricing-container {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 450px) {
+    .bundle-pricing-summary {
+        width: 100%;
+    }
+}
+
 /* Step avigation end */
 
 /* Final loading start */
