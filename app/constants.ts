@@ -3,6 +3,7 @@ export const GapInsideSection = '300';
 export const GapBetweenSections = '300';
 export const GapBetweenTitleAndContent = '200';
 export const HorizontalGap = '300';
+export const BigGapBetweenSections = '1200';
 
 //Bundle product tag constant
 export const bundleTagIndentifier = 'ncb-neat-custom-bundle';

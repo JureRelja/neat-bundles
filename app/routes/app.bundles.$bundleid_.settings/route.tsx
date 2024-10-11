@@ -20,8 +20,10 @@ import {
     Tooltip,
     Icon,
     InlineStack,
+    FooterHelp,
+    Link,
 } from '@shopify/polaris';
-import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '../../constants';
+import { BigGapBetweenSections, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '../../constants';
 import { SettingsWithAllResources, settingsIncludeAll } from '../../adminBackend/service/dto/BundleSettings';
 import { QuestionCircleIcon } from '@shopify/polaris-icons';
 import { useState } from 'react';
@@ -181,7 +183,7 @@ export default function Index() {
                     <Form method="POST" data-discard-confirmation data-save-bar>
                         <input type="hidden" name="bundleSettings" value={JSON.stringify(settingsState)} />
 
-                        <BlockStack gap={'1200'}>
+                        <BlockStack gap={BigGapBetweenSections}>
                             {/* Checkbox settings */}
                             <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
                                 <Box as="section">
@@ -344,132 +346,18 @@ export default function Index() {
                                 </Card>
                             </InlineGrid>
 
-                            {/* <Divider borderColor="transparent" /> */}
+                            <BlockStack gap={GapBetweenSections}>
+                                {/* Save action */}
+                                <BlockStack inlineAlign="end">
+                                    <Button variant="primary" submit>
+                                        Save
+                                    </Button>
+                                </BlockStack>
 
-                            {/* Labels settings, commented for now */}
-                            {/* <InlineGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="400">
-                <Box as="section">
-                  <BlockStack gap="400">
-                    <Text as="h3" variant="headingMd">
-                      Dimensions
-                    </Text>
-                    <Text as="p" variant="bodyMd">
-                      Interjambs are the rounded protruding bits of your puzzlie
-                      piece
-                    </Text>
-                  </BlockStack>
-                </Box>
-                <Card>
-                  <BlockStack gap={GapInsideSection}>
-                    <Text as="p">Labels</Text>
-                    <InlineGrid columns={2} gap={HorizontalGap}>
-                      <BlockStack gap={GapInsideSection} inlineAlign="start">
-                        <TextField
-                          label='"Add to bundle" btn label'
-                          name={`addToBundleBtn`}
-                          value={settingsState.bundleLabels?.addToBundleBtn}
-                          autoComplete="off"
-                          onChange={(newLabel: string) => {
-                            setSetttingsState(
-                              (prevSettings: SettingsWithAllResources) => {
-                                if (!prevSettings.bundleLabels)
-                                  return prevSettings;
-
-                                return {
-                                  ...prevSettings,
-                                  bundleLabels: {
-                                    ...prevSettings.bundleLabels,
-                                    addToBundleBtn: newLabel,
-                                  },
-                                };
-                              },
-                            );
-                          }}
-                        />
-                        <TextField
-                          label='"Next" button label'
-                          name={`nextStepBtn`}
-                          value={settingsState.bundleLabels?.nextStepBtn}
-                          type="text"
-                          autoComplete="off"
-                          onChange={(newLabel: string) => {
-                            setSetttingsState(
-                              (prevSettings: SettingsWithAllResources) => {
-                                if (!prevSettings.bundleLabels)
-                                  return prevSettings;
-
-                                return {
-                                  ...prevSettings,
-                                  bundleLabels: {
-                                    ...prevSettings.bundleLabels,
-                                    addToBundleBtn: newLabel,
-                                  },
-                                };
-                              },
-                            );
-                          }}
-                        />
-                      </BlockStack>
-                      <BlockStack gap={GapInsideSection}>
-                        <TextField
-                          label='"View product" btn label'
-                          name={`viewProductBtn`}
-                          value={settingsState.bundleLabels?.viewProductBtn}
-                          type="text"
-                          autoComplete="off"
-                          onChange={(newLabel: string) => {
-                            setSetttingsState(
-                              (prevSettings: SettingsWithAllResources) => {
-                                if (!prevSettings.bundleLabels)
-                                  return prevSettings;
-
-                                return {
-                                  ...prevSettings,
-                                  bundleLabels: {
-                                    ...prevSettings.bundleLabels,
-                                    addToBundleBtn: newLabel,
-                                  },
-                                };
-                              },
-                            );
-                          }}
-                        />
-                        <TextField
-                          label='"Previous" button label'
-                          value={settingsState.bundleLabels?.prevStepBtn}
-                          type="text"
-                          name={`prevStepBtn`}
-                          autoComplete="off"
-                          onChange={(newLabel: string) => {
-                            setSetttingsState(
-                              (prevSettings: SettingsWithAllResources) => {
-                                if (!prevSettings.bundleLabels)
-                                  return prevSettings;
-
-                                return {
-                                  ...prevSettings,
-                                  bundleLabels: {
-                                    ...prevSettings.bundleLabels,
-                                    addToBundleBtn: newLabel,
-                                  },
-                                };
-                              },
-                            );
-                          }}
-                        />
-                      </BlockStack>
-                    </InlineGrid>
-                  </BlockStack>
-                </Card>
-              </InlineGrid> */}
-
-                            {/* Save action */}
-                            <BlockStack inlineAlign="end">
-                                <Button variant="primary" submit>
-                                    Save
-                                </Button>
+                                <FooterHelp>
+                                    This settings only apply to this bundle. Edit <Link url="/app/settings">global settings</Link> to apply changes to all bundles.
+                                </FooterHelp>
                             </BlockStack>
-
                             <Divider borderColor="transparent" />
                         </BlockStack>
                     </Form>

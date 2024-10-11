@@ -1,12 +1,11 @@
 import { json, redirect } from '@remix-run/node';
-import { Link, useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams } from '@remix-run/react';
+import { useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import {
     Page,
     Card,
     Button,
     BlockStack,
-    TextField,
     Text,
     Box,
     SkeletonPage,
@@ -21,23 +20,15 @@ import {
     Select,
     Tooltip,
     Icon,
-    Spinner,
-    Divider,
-    Layout,
+    InlineGrid,
 } from '@shopify/polaris';
 import { DeleteIcon, PlusIcon, ArrowDownIcon, ArrowUpIcon, PageAddIcon, EditIcon, QuestionCircleIcon, ExternalIcon, SettingsIcon, RefreshIcon } from '@shopify/polaris-icons';
 import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
-import { useEffect, useState } from 'react';
-import { bundlePagePreviewKey, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '../../constants';
-import db from '../../db.server';
-import { StepType, BundlePricing, BundleDiscountType } from '@prisma/client';
-import { BundleStepBasicResources } from '../../adminBackend/service/dto/BundleStep';
-import { BundleFullStepBasicClient } from '../../adminBackend/service/dto/Bundle';
-import { JsonData, error } from '../../adminBackend/service/dto/jsonData';
+import { BigGapBetweenSections } from '../../constants';
+import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '../../hooks/useNavigateSubmit';
-import styles from './route.module.css';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -133,13 +124,167 @@ export default function Index() {
                             onAction: async () => {
                                 // Save or discard the changes before leaving the page
                                 await shopify.saveBar.leaveConfirmation();
+                                navigate(-1);
                             },
                         }}
                         title="Global settings"
                         subtitle="Edit the behaviour of all bundles"
                         compactTitle>
                         <Form method="POST" data-discard-confirmation data-save-bar>
-                            <BlockStack gap={GapBetweenSections}></BlockStack>
+                            <BlockStack gap={BigGapBetweenSections}>
+                                <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                                    <Box as="section">
+                                        <BlockStack gap="400">
+                                            <Text as="h3" variant="headingMd">
+                                                Products
+                                            </Text>
+                                            <Text as="p" variant="bodyMd">
+                                                Change settings on how products are displayed and used.
+                                            </Text>
+                                        </BlockStack>
+                                    </Box>
+                                    <Card>
+                                        <ChoiceList
+                                            title="Products"
+                                            allowMultiple
+                                            name={`showOutOfStockProducts`}
+                                            choices={[
+                                                {
+                                                    label: (
+                                                        <InlineStack>
+                                                            <Text as={'p'}>Show “out of stock” and unavailable products</Text>
+                                                            <Tooltip
+                                                                width="wide"
+                                                                content="By default, only products that have at least one variant that's in stock at the time of purchase will be displayed. If this is selected, all 'out of stock' products will be visible, but customers won't be able to add the to their bundles.">
+                                                                <Icon source={QuestionCircleIcon}></Icon>
+                                                            </Tooltip>
+                                                        </InlineStack>
+                                                    ),
+                                                    value: 'true',
+                                                },
+                                            ]}
+                                            selected={['true']}
+                                            onChange={(value) => {}}
+                                        />
+                                    </Card>
+                                </InlineGrid>
+                            </BlockStack>
+                            {/* Labels settings, commented for now */}
+                            {/* <InlineGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="400">
+                <Box as="section">
+                  <BlockStack gap="400">
+                    <Text as="h3" variant="headingMd">
+                      Dimensions
+                    </Text>
+                    <Text as="p" variant="bodyMd">
+                      Interjambs are the rounded protruding bits of your puzzlie
+                      piece
+                    </Text>
+                  </BlockStack>
+                </Box>
+                <Card>
+                  <BlockStack gap={GapInsideSection}>
+                    <Text as="p">Labels</Text>
+                    <InlineGrid columns={2} gap={HorizontalGap}>
+                      <BlockStack gap={GapInsideSection} inlineAlign="start">
+                        <TextField
+                          label='"Add to bundle" btn label'
+                          name={`addToBundleBtn`}
+                          value={settingsState.bundleLabels?.addToBundleBtn}
+                          autoComplete="off"
+                          onChange={(newLabel: string) => {
+                            setSetttingsState(
+                              (prevSettings: SettingsWithAllResources) => {
+                                if (!prevSettings.bundleLabels)
+                                  return prevSettings;
+
+                                return {
+                                  ...prevSettings,
+                                  bundleLabels: {
+                                    ...prevSettings.bundleLabels,
+                                    addToBundleBtn: newLabel,
+                                  },
+                                };
+                              },
+                            );
+                          }}
+                        />
+                        <TextField
+                          label='"Next" button label'
+                          name={`nextStepBtn`}
+                          value={settingsState.bundleLabels?.nextStepBtn}
+                          type="text"
+                          autoComplete="off"
+                          onChange={(newLabel: string) => {
+                            setSetttingsState(
+                              (prevSettings: SettingsWithAllResources) => {
+                                if (!prevSettings.bundleLabels)
+                                  return prevSettings;
+
+                                return {
+                                  ...prevSettings,
+                                  bundleLabels: {
+                                    ...prevSettings.bundleLabels,
+                                    addToBundleBtn: newLabel,
+                                  },
+                                };
+                              },
+                            );
+                          }}
+                        />
+                      </BlockStack>
+                      <BlockStack gap={GapInsideSection}>
+                        <TextField
+                          label='"View product" btn label'
+                          name={`viewProductBtn`}
+                          value={settingsState.bundleLabels?.viewProductBtn}
+                          type="text"
+                          autoComplete="off"
+                          onChange={(newLabel: string) => {
+                            setSetttingsState(
+                              (prevSettings: SettingsWithAllResources) => {
+                                if (!prevSettings.bundleLabels)
+                                  return prevSettings;
+
+                                return {
+                                  ...prevSettings,
+                                  bundleLabels: {
+                                    ...prevSettings.bundleLabels,
+                                    addToBundleBtn: newLabel,
+                                  },
+                                };
+                              },
+                            );
+                          }}
+                        />
+                        <TextField
+                          label='"Previous" button label'
+                          value={settingsState.bundleLabels?.prevStepBtn}
+                          type="text"
+                          name={`prevStepBtn`}
+                          autoComplete="off"
+                          onChange={(newLabel: string) => {
+                            setSetttingsState(
+                              (prevSettings: SettingsWithAllResources) => {
+                                if (!prevSettings.bundleLabels)
+                                  return prevSettings;
+
+                                return {
+                                  ...prevSettings,
+                                  bundleLabels: {
+                                    ...prevSettings.bundleLabels,
+                                    addToBundleBtn: newLabel,
+                                  },
+                                };
+                              },
+                            );
+                          }}
+                        />
+                      </BlockStack>
+                    </InlineGrid>
+                  </BlockStack>
+                </Card>
+              </InlineGrid> */}
                         </Form>
                     </Page>
                 </>
