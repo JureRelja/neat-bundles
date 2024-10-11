@@ -2,23 +2,7 @@ import { json, redirect } from '@remix-run/node';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { Form, useNavigation, useLoaderData, useParams, useActionData } from '@remix-run/react';
 import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
-import {
-    Card,
-    Button,
-    BlockStack,
-    TextField,
-    Text,
-    Box,
-    SkeletonPage,
-    SkeletonBodyText,
-    SkeletonDisplayText,
-    InlineGrid,
-    ButtonGroup,
-    ChoiceList,
-    Divider,
-    InlineError,
-    Layout,
-} from '@shopify/polaris';
+import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, InlineGrid, ButtonGroup, ChoiceList, Divider, InlineError, Layout } from '@shopify/polaris';
 
 import { authenticate } from '../../shopify.server';
 import { useEffect, useState } from 'react';
@@ -63,7 +47,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
     const bundleId = params.bundleid;
     const stepNum = params.stepnum;
-    const shop = session.shop;
 
     if (!bundleId || !stepNum) {
         return json(
@@ -122,7 +105,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             const url = new URL(request.url);
 
             if (url.searchParams.has('redirect') && url.searchParams.get('redirect') === 'true') {
-                return redirect(`/app/bundles/${params.bundleid}`);
+                return redirect(`/app/edit-bundle-builder/${params.bundleid}`);
             }
 
             // Clear the cache for the bundle
@@ -305,7 +288,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 return json({
                     ...new JsonData(true, 'success', 'Step was duplicated'),
                 });
-                // return redirect(`/app/bundles/${params.bundleid}/`);
+                // return redirect(`/app/edit-bundle-builder/${params.bundleid}/`);
             } catch (error) {
                 console.log(error);
                 return json(
@@ -459,7 +442,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
                 ]);
 
-                return redirect(`/app/bundles/${params.bundleid}`);
+                return redirect(`/app/edit-bundle-builder/${params.bundleid}`);
             } catch (error) {
                 console.log(error);
                 return json(
@@ -819,7 +802,7 @@ export default function Index() {
                                         tone="critical"
                                         onClick={async (): Promise<void> => {
                                             await shopify.saveBar.leaveConfirmation();
-                                            navigateSubmit('deleteStep', `/app/bundles/${params.bundleid}/steps/${params.stepnum}?redirect=true`);
+                                            navigateSubmit('deleteStep', `${params.stepnum}?redirect=true`);
                                         }}>
                                         Delete
                                     </Button>

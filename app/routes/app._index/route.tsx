@@ -1,4 +1,4 @@
-import { json, redirect } from '@remix-run/react';
+import { json, Navigate, redirect } from '@remix-run/react';
 import type { LoaderFunctionArgs } from '@remix-run/node';
 import { authenticate } from '../../shopify.server';
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
@@ -40,10 +40,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
         await userRepository.createUser(admin, session.shop, data.email, data.name, data.primaryDomain.url, onlineStorePublicationId);
 
-        return null;
+        return redirect('/app/installation');
     }
 
     return null;
+    return redirect('/app/bundles');
 };
 
 export default function Index() {

@@ -119,7 +119,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                 await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
 
-                return redirect(`/app/bundles/${params.bundleid}/steps/${newStep.stepNumber}`);
+                return redirect(`/app/edit-bundle-builder/${params.bundleid}/steps/${newStep.stepNumber}`);
             } catch (error) {
                 console.log(error);
                 return json(
@@ -417,7 +417,7 @@ export default function Index({}) {
                         onAction: async () => {
                             // Save or discard the changes before leaving the page
                             await shopify.saveBar.leaveConfirmation();
-                            navigate(`/app/bundles/${params.bundleid}`);
+                            navigate(`/app/edit-bundle-builder/${params.bundleid}`);
                         },
                     }}
                     title={`Edit step: ${stepData.stepNumber} | Bundle ID: ${params.bundleid}`}>
@@ -435,7 +435,7 @@ export default function Index({}) {
                                                 disabled={stepData.stepNumber === 1}
                                                 onClick={() => {
                                                     revalidator.revalidate();
-                                                    navigate(`/app/bundles/${params.bundleid}/steps/${stepData.stepNumber - 1}`);
+                                                    navigate(`/app/edit-bundle-builder/${params.bundleid}/steps/${stepData.stepNumber - 1}`);
                                                 }}>
                                                 ← Step {stepData.stepNumber !== 1 ? (stepData.stepNumber - 1).toString() : '1'}
                                             </Button>
@@ -444,7 +444,7 @@ export default function Index({}) {
                                                 disabled={stepData.stepNumber === 3}
                                                 onClick={() => {
                                                     revalidator.revalidate();
-                                                    navigate(`/app/bundles/${params.bundleid}/steps/${stepData.stepNumber + 1}`);
+                                                    navigate(`/app/edit-bundle-builder/${params.bundleid}/steps/${stepData.stepNumber + 1}`);
                                                 }}>
                                                 Step {stepData.stepNumber !== 3 ? (stepData.stepNumber + 1).toString() : '3'} →
                                             </Button>

@@ -21,6 +21,7 @@ import {
     Tooltip,
     Icon,
     InlineGrid,
+    Divider,
 } from '@shopify/polaris';
 import { DeleteIcon, PlusIcon, ArrowDownIcon, ArrowUpIcon, PageAddIcon, EditIcon, QuestionCircleIcon, ExternalIcon, SettingsIcon, RefreshIcon } from '@shopify/polaris-icons';
 import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';

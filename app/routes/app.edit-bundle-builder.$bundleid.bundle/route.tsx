@@ -1,5 +1,5 @@
 import { json, redirect } from '@remix-run/node';
-import { Link, useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams } from '@remix-run/react';
+import { Link, useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Outlet } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import {
     Page,
@@ -483,7 +483,7 @@ export default function Index() {
             return;
         }
 
-        navigateSubmit('addStep', `/app/bundles/${params.bundleid}/steps`);
+        navigateSubmit('addStep', `steps`);
     };
 
     //Duplicating the step
@@ -492,13 +492,13 @@ export default function Index() {
             shopify.modal.show('no-more-steps-modal');
             return;
         }
-        asyncSubmit.submit('duplicateStep', `/app/bundles/${params.bundleid}/steps/${stepNumber}`);
+        asyncSubmit.submit('duplicateStep', `steps/${stepNumber}`);
     };
 
     //Deleting the bundle
     const deleteBundleHandler = async (): Promise<void> => {
         await shopify.saveBar.leaveConfirmation();
-        navigateSubmit('deleteBundle', `/app/bundles/${params.bundleid}?redirect=true`);
+        navigateSubmit('deleteBundle', `/app/edit-bundle-builder/${params.bundleid}?redirect=true`);
     };
 
     const handleNavigationOnUnsavedChanges = async (navPath: string): Promise<void> => {
@@ -527,7 +527,7 @@ export default function Index() {
     };
 
     const refreshBundleBuilderHandler = () => {
-        navigateSubmit('recreateBundleBuilder', `/app/bundles/${params.bundleid}`);
+        navigateSubmit('recreateBundleBuilder', `/app/edit-bundle-builder/${params.bundleid}`);
     };
 
     return (
@@ -574,7 +574,7 @@ export default function Index() {
                         secondaryActions={[
                             {
                                 content: 'Settings',
-                                url: `settings/?redirect=/app/bundles/${serverBundle.id}`,
+                                url: `settings/?redirect=/app/edit-bundle-builder/${serverBundle.id}`,
                                 icon: SettingsIcon,
                             },
                             {
@@ -604,6 +604,7 @@ export default function Index() {
                         title={`${serverBundle.title} | Bundle ID: ${serverBundle.id}`}
                         subtitle="Edit bundle details and steps"
                         compactTitle>
+                        <Outlet />
                         <Form method="POST" data-discard-confirmation data-save-bar>
                             <BlockStack gap={GapBetweenSections}>
                                 <Layout>
@@ -632,12 +633,7 @@ export default function Index() {
                                                                 rows={bundleSteps.map((step: BundleStepBasicResources) => {
                                                                     return [
                                                                         step.stepNumber,
-                                                                        <Link
-                                                                            onClick={handleNavigationOnUnsavedChanges.bind(
-                                                                                null,
-                                                                                `/app/bundles/${params.bundleid}/steps/${step.stepNumber}`,
-                                                                            )}
-                                                                            to={'#'}>
+                                                                        <Link onClick={handleNavigationOnUnsavedChanges.bind(null, `steps/${step.stepNumber}`)} to={'#'}>
                                                                             <Text as="p" tone="base">
                                                                                 {step.title}
                                                                             </Text>
@@ -667,7 +663,7 @@ export default function Index() {
                                                                                         size="slim"
                                                                                         variant="plain"
                                                                                         onClick={() => {
-                                                                                            asyncSubmit.submit('moveStepUp', `steps/`, Number(step.id));
+                                                                                            asyncSubmit.submit('moveStepUp', `steps`, Number(step.id));
                                                                                         }}
                                                                                     />
                                                                                 )}
@@ -679,7 +675,7 @@ export default function Index() {
                                                                                 variant="secondary"
                                                                                 tone="critical"
                                                                                 onClick={() => {
-                                                                                    asyncSubmit.submit('deleteStep', `/app/bundles/${params.bundleid}/steps/${step.stepNumber}`);
+                                                                                    asyncSubmit.submit('deleteStep', `steps/${step.stepNumber}`);
                                                                                 }}></Button>
 
                                                                             <Button
@@ -694,10 +690,7 @@ export default function Index() {
                                                                             <Button
                                                                                 icon={EditIcon}
                                                                                 variant="primary"
-                                                                                onClick={handleNavigationOnUnsavedChanges.bind(
-                                                                                    null,
-                                                                                    `/app/bundles/${params.bundleid}/steps/${step.stepNumber}`,
-                                                                                )}>
+                                                                                onClick={handleNavigationOnUnsavedChanges.bind(null, `steps/${step.stepNumber}`)}>
                                                                                 Edit
                                                                             </Button>
                                                                         </ButtonGroup>,

@@ -229,6 +229,8 @@ export default function Index() {
                                 </Card>
                             </InlineGrid>
 
+                            <Divider />
+
                             <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
                                 <Box as="section">
                                     <BlockStack gap="400">
@@ -301,6 +303,8 @@ export default function Index() {
                                     />
                                 </Card>
                             </InlineGrid>
+
+                            <Divider />
 
                             <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
                                 <Box as="section">

@@ -1,4 +1,4 @@
-import { useNavigation, json, useLoaderData, Link } from '@remix-run/react';
+import { useNavigation, json, useLoaderData, Link, Outlet } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import {
     Page,
@@ -26,7 +26,7 @@ import { BundleAndStepsBasicClient, bundleAndSteps } from '../../adminBackend/se
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
-import styles from '../app.bundles.$bundleid/route.module.css';
+import styles from './route.module.css';
 import { useState } from 'react';
 import { Modal, TitleBar } from '@shopify/app-bridge-react';
 import { bundlePagePreviewKey } from '~/constants';
@@ -100,7 +100,7 @@ export default function Index() {
     const bundleBuilders: BundleAndStepsBasicClient[] = loaderResponse.data;
 
     const createBundle = () => {
-        navigateSubmit('createBundle', '/app/bundles');
+        navigateSubmit('createBundle', '/app/edit-bundle-builder');
     };
 
     //Client state
@@ -150,7 +150,7 @@ export default function Index() {
                                 onClick={() => {
                                     if (!bundleForDelete) return;
 
-                                    asyncSubmit.submit('deleteBundle', `/app/bundles/${bundleForDelete.id}`);
+                                    asyncSubmit.submit('deleteBundle', `/app/edit-bundle-builder/${bundleForDelete.id}`);
                                     setShowBundleDeleteConfirmModal(false);
                                 }}>
                                 Delete
@@ -182,7 +182,7 @@ export default function Index() {
                                                     </Text>,
 
                                                     //
-                                                    <Link to={`/app/bundles/${bundleBuilder.id}`}>
+                                                    <Link to={`/app/bundleBuilder/${bundleBuilder.id}`}>
                                                         <Text as="p" tone="base">
                                                             {bundleBuilder.title}
                                                         </Text>
@@ -190,7 +190,7 @@ export default function Index() {
                                                     //
                                                     bundleBuilder.steps.length,
                                                     //
-                                                    <Link to={`/app/bundles/${bundleBuilder.id}`}>
+                                                    <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
                                                         {bundleBuilder.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
                                                     </Link>,
                                                     //
@@ -213,19 +213,23 @@ export default function Index() {
                                                             submitAction(
                                                             "duplicateBundle",
                                                             true,
-                                                            `/app/bundles/${bundle.id}`,
+                                                            `/app/edit-bundle-builder/${bundle.id}`,
                                                             );
                                                         }}
                                                         >
                                                         Duplicate
                                                         </Button> */}
 
-                                                        <Button icon={EditIcon} variant="primary" url={`/app/bundles/${bundleBuilder.id}`}>
+                                                        <Button icon={EditIcon} variant="primary" url={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
                                                             Edit
                                                         </Button>
                                                     </ButtonGroup>,
                                                     //
-                                                    <Button icon={SettingsIcon} variant="secondary" tone="success" url={`/app/bundles/${bundleBuilder.id}/settings/?redirect=/app`}>
+                                                    <Button
+                                                        icon={SettingsIcon}
+                                                        variant="secondary"
+                                                        tone="success"
+                                                        url={`/app/edit-bundle-builder/${bundleBuilder.id}/settings/?redirect=/app/edit-bundle-builder`}>
                                                         Settings
                                                     </Button>,
                                                     <Button
@@ -254,6 +258,7 @@ export default function Index() {
                                 </Card>
                             </div>
 
+                            <Outlet />
                             {/* Video tutorial on how to use the app */}
 
                             {showTutorial && (
