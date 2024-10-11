@@ -25,19 +25,19 @@ export default function App() {
                 <Link to="/app" rel="home">
                     Home
                 </Link>
-                <Link to="/app" rel="bundles">
-                    Bundles
-                </Link>
                 <Link to="/app/settings" rel="settings">
                     Global settings
                 </Link>
-                <Link to="/app/billing" target="_blank" rel="billing">
+                <Link to="/app/installation" rel="installation">
+                    Installation
+                </Link>
+                <Link to="/app/billing" rel="billing">
                     Billing
                 </Link>
-                <Link to="/app/help" target="_blank" rel="featureRequest">
+                <Link to="/app/featureRequest" rel="featureRequest">
                     Request a feature
                 </Link>
-                <Link to="/app/help" target="_blank" rel="help">
+                <Link to="/app/help" rel="help">
                     Help
                 </Link>
             </NavMenu>

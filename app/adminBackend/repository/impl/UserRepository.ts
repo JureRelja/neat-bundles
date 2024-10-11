@@ -16,6 +16,32 @@ class UserRepository {
 
         return user;
     }
+
+    public async createUser(
+        admin: AdminApiContext,
+        storeUrl: string,
+        storeEmail: string,
+        storeName: string,
+        primaryDomain: string,
+        onlineStorePublicationId: string,
+    ): Promise<User> {
+        const user = await db.user.create({
+            data: {
+                ownerName: '',
+                storeUrl: storeUrl,
+                email: storeEmail,
+                storeName: storeName,
+                primaryDomain: primaryDomain,
+                onlineStorePublicationId: onlineStorePublicationId,
+            },
+        });
+
+        if (!user) {
+            throw new Error(`Could not create user with store url ${storeUrl}`);
+        }
+
+        return user;
+    }
 }
 
 const userRepository = new UserRepository();
