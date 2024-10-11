@@ -420,7 +420,7 @@ export default function Index({}) {
                             navigate(`/app/edit-bundle-builder/${params.bundleid}`);
                         },
                     }}
-                    title={`Edit step: ${stepData.stepNumber} | Bundle ID: ${params.bundleid}`}>
+                    title={`Edit step: ${stepData.stepNumber}`}>
                     <BlockStack gap={GapBetweenSections}>
                         {/* <Layout> */}
                         {/* <Layout.Section> 

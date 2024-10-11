@@ -43,7 +43,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         return redirect('/app/installation');
     }
 
-    return null;
+    // return null;
     return redirect('/app/bundles');
 };
 

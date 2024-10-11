@@ -483,7 +483,7 @@ export default function Index() {
             return;
         }
 
-        navigateSubmit('addStep', `steps`);
+        navigateSubmit('addStep', `/app/edit-bundle-builder/${params.bundleid}/steps`);
     };
 
     //Duplicating the step
@@ -492,7 +492,7 @@ export default function Index() {
             shopify.modal.show('no-more-steps-modal');
             return;
         }
-        asyncSubmit.submit('duplicateStep', `steps/${stepNumber}`);
+        asyncSubmit.submit('duplicateStep', `/app/edit-bundle-builder/${params.bundleid}/steps/${stepNumber}`);
     };
 
     //Deleting the bundle
@@ -601,7 +601,7 @@ export default function Index() {
                                 navigate('/app');
                             },
                         }}
-                        title={`${serverBundle.title} | Bundle ID: ${serverBundle.id}`}
+                        title={`${serverBundle.title}`}
                         subtitle="Edit bundle details and steps"
                         compactTitle>
                         <Outlet />
@@ -633,7 +633,12 @@ export default function Index() {
                                                                 rows={bundleSteps.map((step: BundleStepBasicResources) => {
                                                                     return [
                                                                         step.stepNumber,
-                                                                        <Link onClick={handleNavigationOnUnsavedChanges.bind(null, `steps/${step.stepNumber}`)} to={'#'}>
+                                                                        <Link
+                                                                            onClick={handleNavigationOnUnsavedChanges.bind(
+                                                                                null,
+                                                                                `/app/edit-bundle-builder/${params.bundleid}/steps/${step.stepNumber}`,
+                                                                            )}
+                                                                            to={'#'}>
                                                                             <Text as="p" tone="base">
                                                                                 {step.title}
                                                                             </Text>
@@ -663,7 +668,7 @@ export default function Index() {
                                                                                         size="slim"
                                                                                         variant="plain"
                                                                                         onClick={() => {
-                                                                                            asyncSubmit.submit('moveStepUp', `steps`, Number(step.id));
+                                                                                            asyncSubmit.submit('moveStepUp', `steps/`, Number(step.id));
                                                                                         }}
                                                                                     />
                                                                                 )}
@@ -675,7 +680,10 @@ export default function Index() {
                                                                                 variant="secondary"
                                                                                 tone="critical"
                                                                                 onClick={() => {
-                                                                                    asyncSubmit.submit('deleteStep', `steps/${step.stepNumber}`);
+                                                                                    asyncSubmit.submit(
+                                                                                        'deleteStep',
+                                                                                        `/app/edit-bundle-builder/${params.bundleid}/steps/${step.stepNumber}`,
+                                                                                    );
                                                                                 }}></Button>
 
                                                                             <Button
@@ -690,7 +698,10 @@ export default function Index() {
                                                                             <Button
                                                                                 icon={EditIcon}
                                                                                 variant="primary"
-                                                                                onClick={handleNavigationOnUnsavedChanges.bind(null, `steps/${step.stepNumber}`)}>
+                                                                                onClick={handleNavigationOnUnsavedChanges.bind(
+                                                                                    null,
+                                                                                    `/app/edit-bundle-builder/${params.bundleid}/steps/${step.stepNumber}`,
+                                                                                )}>
                                                                                 Edit
                                                                             </Button>
                                                                         </ButtonGroup>,

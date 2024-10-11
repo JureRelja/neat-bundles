@@ -170,7 +170,7 @@ export default function Index() {
             ) : (
                 // Bundle settings page
                 <Page
-                    title={`Bundle settings | Bundle ID: ${serverSettings.bundleBuilderId}`}
+                    title={`Bundle settings`}
                     subtitle="Edit settings only for this bundle."
                     backAction={{
                         content: 'Products',
