@@ -3,11 +3,7 @@ import { ApiVersion, AppDistribution, BillingInterval, BillingReplacementBehavio
 import { RedisSessionStorage } from '@shopify/shopify-app-session-storage-redis';
 import { restResources } from '@shopify/shopify-api/rest/admin/2024-10';
 import { createClient } from 'redis';
-
-export const BASIC_MONTHLY_PLAN = 'Monthly subscription (Basic plan)';
-export const BASIC_ANNUAL_PLAN = 'Annual subscription (Basic plan)';
-
-export const BASIC_PLAN = '';
+import { BASIC_MONTHLY_PLAN, BASIC_ANNUAL_PLAN } from './constants';
 
 const shopify = shopifyApp({
     apiKey: process.env.SHOPIFY_API_KEY,

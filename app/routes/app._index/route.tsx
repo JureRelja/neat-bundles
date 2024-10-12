@@ -1,6 +1,8 @@
 import { json, Navigate, redirect, useLoaderData, useNavigate } from '@remix-run/react';
 import type { LoaderFunctionArgs } from '@remix-run/node';
-import { authenticate, BASIC_ANNUAL_PLAN, BASIC_MONTHLY_PLAN } from '../../shopify.server';
+import { authenticate } from '../../shopify.server';
+import { BASIC_ANNUAL_PLAN, BASIC_MONTHLY_PLAN } from '../../constants';
+
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import { ShopifyCatalogRepository } from '~/adminBackend/repository/impl/ShopifyCatalogRepository';
 import userRepository from '~/adminBackend/repository/impl/UserRepository';

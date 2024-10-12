@@ -1,12 +1,13 @@
-import { useNavigation, json, useLoaderData, Link } from '@remix-run/react';
+import { useNavigation, json, useLoaderData, Link, useNavigate } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, InlineStack, Button } from '@shopify/polaris';
-import { authenticate, BASIC_ANNUAL_PLAN, BASIC_MONTHLY_PLAN } from '../../shopify.server';
+import { authenticate } from '../../shopify.server';
+import { BASIC_ANNUAL_PLAN, BASIC_MONTHLY_PLAN } from '../../constants';
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
 import PricingPlan from './pricingPlan';
-import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '~/constants';
+import { BigGapBetweenSections, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '~/constants';
 import { useState } from 'react';
 import ToggleSwitch from './toogleSwitch';
 
@@ -75,6 +76,8 @@ export default function Index() {
     const asyncSubmit = useAsyncSubmit(); //Function for doing the submit action where the only data is action and url
     const navigateSubmit = useNavigateSubmit(); //Function for doing the submit action as if form was submitted
 
+    const navigate = useNavigate();
+
     const loaderResponse = useLoaderData<typeof loader>();
 
     const [pricingInterval, setPricingInterval] = useState<PricingInterval>('MONTHLY');
@@ -86,6 +89,8 @@ export default function Index() {
             return 'MONTHLY';
         });
     };
+
+    const handleSubscription = (subscriptionIdentifier: string) => {};
 
     return (
         <>
@@ -114,15 +119,22 @@ export default function Index() {
                 </SkeletonPage>
             ) : (
                 <>
-                    <Page title="Billing">
-                        <BlockStack align="center" gap={GapBetweenSections}>
+                    <Page
+                        title="Billing"
+                        backAction={{
+                            content: 'Back',
+                            onAction: async () => {
+                                navigate(-1);
+                            },
+                        }}>
+                        <BlockStack align="center" gap={BigGapBetweenSections}>
                             {/* Monthly/Yearly toogle */}
                             <InlineStack gap={GapInsideSection} align="center" blockAlign="center">
-                                <Text as="p" variant="headingMd">
+                                <Text as="h2" variant="headingLg">
                                     Monthly
                                 </Text>
                                 <ToggleSwitch label="Biling frequency" labelHidden={true} onChange={() => handlePricingIntervalToogle()} />
-                                <Text as="p" variant="headingMd">
+                                <Text as="h2" variant="headingLg">
                                     Yearly (15% off)
                                 </Text>
                             </InlineStack>
@@ -130,16 +142,20 @@ export default function Index() {
                             {/* Pricing plans */}
                             <InlineStack gap={GapBetweenSections} align="center">
                                 <PricingPlan
+                                    subscriptionIdentifier={BASIC_MONTHLY_PLAN}
+                                    handleSubscription={handleSubscription}
                                     title="Basic"
-                                    monthlyPricing={0}
-                                    yearlyPricing={0}
+                                    monthlyPricing={'Free'}
+                                    yearlyPricing={'Free'}
                                     pricingInterval={pricingInterval}
-                                    features={['Create up to 5 bundles', 'Create product steps', 'Customize the colors', 'Customer support']}
+                                    features={['Create up to 5 bundles', 'Create product steps', 'Customize colors', 'Customer support']}
                                 />
                                 <PricingPlan
+                                    subscriptionIdentifier={BASIC_ANNUAL_PLAN}
+                                    handleSubscription={handleSubscription}
                                     title="Pro"
-                                    monthlyPricing={4.99}
-                                    yearlyPricing={49.99}
+                                    monthlyPricing={'$4.99'}
+                                    yearlyPricing={'$49.99'}
                                     pricingInterval={pricingInterval}
                                     features={['Create unlimited bundles', 'Create product steps', 'Colect images and text on steps', 'Customize colors', 'Priority support']}
                                 />
