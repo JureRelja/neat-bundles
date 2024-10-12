@@ -1,62 +1,13 @@
-import { json, redirect } from '@remix-run/node';
-import { Link, useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Outlet } from '@remix-run/react';
+import { json } from '@remix-run/node';
+import { useNavigate, useNavigation, useLoaderData, Outlet } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import {
-    Page,
-    Card,
-    Button,
-    BlockStack,
-    TextField,
-    Text,
-    Box,
-    SkeletonPage,
-    ChoiceList,
-    SkeletonBodyText,
-    SkeletonDisplayText,
-    ButtonGroup,
-    DataTable,
-    EmptyState,
-    InlineStack,
-    Badge,
-    Select,
-    Tooltip,
-    Icon,
-    Spinner,
-    Divider,
-    Layout,
-} from '@shopify/polaris';
-import {
-    DeleteIcon,
-    PlusIcon,
-    ArrowDownIcon,
-    ArrowUpIcon,
-    PageAddIcon,
-    EditIcon,
-    QuestionCircleIcon,
-    ExternalIcon,
-    SettingsIcon,
-    ClipboardIcon,
-    RefreshIcon,
-} from '@shopify/polaris-icons';
-import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';
+import { Card, BlockStack, Text, SkeletonPage, SkeletonBodyText, InlineStack, Badge, Divider } from '@shopify/polaris';
 import { authenticate } from '../../shopify.server';
-import { useEffect, useState } from 'react';
-import { bundlePagePreviewKey, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '../../constants';
+import { GapBetweenTitleAndContent, GapInsideSection } from '../../constants';
 import db from '../../db.server';
-import { StepType, BundlePricing, BundleDiscountType } from '@prisma/client';
-import { BundleStepBasicResources } from '../../adminBackend/service/dto/BundleStep';
-import { bundleBasicAndSettings, BundleFullStepBasicClient, BundleFullStepBasicServer, inclBundleFullStepsBasic } from '../../adminBackend/service/dto/Bundle';
-import { JsonData, error } from '../../adminBackend/service/dto/jsonData';
-import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
+import { inclBundleFullStepsBasic } from '../../adminBackend/service/dto/Bundle';
+import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import { useNavigateSubmit } from '../../hooks/useNavigateSubmit';
-import styles from './route.module.css';
-import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
-import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
-import { shopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
-import shopifyBundleBuilderPageRepositoryGraphql from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql';
-import { ShopifyBundleBuilderPageRepository } from '~/adminBackend/repository/ShopifyBundleBuilderPageRepository';
-import { BundleBuilderRepository } from '@adminBackend/repository/impl/BundleBuilderRepository';
-import userRepository from '~/adminBackend/repository/impl/UserRepository';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);

@@ -1,8 +1,13 @@
 import '@shopify/shopify-app-remix/adapters/node';
-import { ApiVersion, AppDistribution, DeliveryMethod, shopifyApp } from '@shopify/shopify-app-remix/server';
+import { ApiVersion, AppDistribution, BillingInterval, BillingReplacementBehavior, DeliveryMethod, shopifyApp } from '@shopify/shopify-app-remix/server';
 import { RedisSessionStorage } from '@shopify/shopify-app-session-storage-redis';
 import { restResources } from '@shopify/shopify-api/rest/admin/2024-10';
 import { createClient } from 'redis';
+
+export const BASIC_MONTHLY_PLAN = 'Monthly subscription (Basic plan)';
+export const BASIC_ANNUAL_PLAN = 'Annual subscription (Basic plan)';
+
+export const BASIC_PLAN = '';
 
 const shopify = shopifyApp({
     apiKey: process.env.SHOPIFY_API_KEY,
@@ -14,6 +19,51 @@ const shopify = shopifyApp({
     sessionStorage: new RedisSessionStorage(process.env.REDIS_URL || ''),
     distribution: AppDistribution.AppStore,
     restResources,
+    billing: {
+        [BASIC_MONTHLY_PLAN]: {
+            replacementBehavior: BillingReplacementBehavior.ApplyOnNextBillingCycle,
+            lineItems: [
+                {
+                    discount: {
+                        durationLimitInIntervals: 1,
+                        value: {
+                            amount: 1.99,
+                        },
+                    },
+
+                    amount: 7.99,
+                    currencyCode: 'USD',
+                    interval: BillingInterval.Every30Days,
+                },
+                {
+                    amount: 49.99,
+                    currencyCode: 'USD',
+                    interval: BillingInterval.Annual,
+                },
+            ],
+        },
+        [BASIC_ANNUAL_PLAN]: {
+            replacementBehavior: BillingReplacementBehavior.ApplyOnNextBillingCycle,
+            lineItems: [
+                {
+                    discount: {
+                        durationLimitInIntervals: 1,
+                        value: {
+                            amount: 1.99,
+                        },
+                    },
+                    amount: 7.99,
+                    currencyCode: 'USD',
+                    interval: BillingInterval.Every30Days,
+                },
+                {
+                    amount: 49.99,
+                    currencyCode: 'USD',
+                    interval: BillingInterval.Annual,
+                },
+            ],
+        },
+    },
     webhooks: {
         APP_UNINSTALLED: {
             deliveryMethod: DeliveryMethod.Http,
