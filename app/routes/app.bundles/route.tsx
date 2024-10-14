@@ -18,6 +18,7 @@ import {
     Badge,
     Spinner,
     Divider,
+    InlineGrid,
 } from '@shopify/polaris';
 import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from '@shopify/polaris-icons';
 import { authenticate } from '../../shopify.server';
@@ -260,9 +261,9 @@ export default function Index() {
                                 </Card>
                             </div>
 
-                            <Outlet />
-                            {/* Video tutorial on how to use the app */}
+                            <Divider />
 
+                            {/* Video tutorial on how to use the app */}
                             {showTutorial && (
                                 <MediaCard
                                     title="Watch a short tutorial to get quickly started"
@@ -287,8 +288,26 @@ export default function Index() {
                                 </MediaCard>
                             )}
 
-                            {/* Banner for encuraging users to rate the app */}
+                            {/* How it works */}
+                            <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                                <Box as="section">
+                                    <BlockStack gap="400">
+                                        <Text as="h3" variant="headingMd">
+                                            How it works
+                                        </Text>
+                                        <Text as="p" variant="bodyMd">
+                                            Neat bundles is built by geeks who know their stuff and like to know how everything works. If you're one of us, read this section.
+                                        </Text>
+                                    </BlockStack>
+                                </Box>
+                                <Card>
+                                    <Text as="p" children={undefined}></Text>
+                                </Card>
+                            </InlineGrid>
 
+                            <Divider />
+
+                            {/* Banner for encuraging users to rate the app */}
                             {showBanner && (
                                 <Banner
                                     title="Enjoying the app?"

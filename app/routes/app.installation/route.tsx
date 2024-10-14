@@ -19,6 +19,7 @@ import {
     VideoThumbnail,
     Button,
     Badge,
+    ButtonGroup,
 } from '@shopify/polaris';
 import { CheckIcon, ExternalIcon, QuestionCircleIcon, XSmallIcon } from '@shopify/polaris-icons';
 import { authenticate } from '../../shopify.server';
@@ -212,58 +213,35 @@ export default function Index() {
                                             </InlineStack>
                                         ) : (
                                             <InlineStack gap={GapInsideSection}>
-                                                <Text as="h3">
-                                                    Your theme {data.activeTheme.name} is unfortunately not compatible with Neat Bundles. Please switch to a 2.0 theme.
-                                                </Text>
+                                                <InlineStack gap={GapInsideSection}>
+                                                    <Text as="h3">
+                                                        Your theme <b>{data.activeTheme.name}</b> is unfortunately not compatible with Neat Bundles.
+                                                    </Text>
 
-                                                <Badge tone="critical" icon={XSmallIcon}>
-                                                    Theme not compatible
-                                                </Badge>
+                                                    <Badge tone="critical" icon={XSmallIcon}>
+                                                        Theme not compatible
+                                                    </Badge>
+                                                </InlineStack>
+
+                                                <Text as="p">You are either using a custom theme or Online store 1.0 theme. </Text>
+                                                <Text as="p">
+                                                    Send us an email at <Link to="mailto:support@neatmerchantcom">support@neatmerchant.com</Link> and we can help you integrate our
+                                                    app with your theme. Exept in some extreme cases (very old or poorly designed theme) <b>integration will be free of charge.</b>
+                                                </Text>
                                             </InlineStack>
                                         )}
                                     </BlockStack>
                                 </Card>
                             </InlineGrid>
 
-                            <Divider />
-
-                            {/* How it works */}
-                            <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
-                                <Box as="section">
-                                    <BlockStack gap="400">
-                                        <Text as="h3" variant="headingMd">
-                                            How it works
-                                        </Text>
-                                        <Text as="p" variant="bodyMd">
-                                            Feel free to skip this section if you're not interested to know how Neat bundles interacts with your store to let your customers create
-                                            custome bundles.
-                                        </Text>
-                                    </BlockStack>
-                                </Box>
-                                <Card>
-                                    <ChoiceList
-                                        title="Pricing summary"
-                                        allowMultiple
-                                        name={`hidePricingSummary`}
-                                        choices={[
-                                            {
-                                                label: (
-                                                    <InlineStack>
-                                                        <Text as={'p'}>Hide pricing summary on steps</Text>
-                                                        <Tooltip
-                                                            width="wide"
-                                                            content="By hiding pricing summary, customers won't be able to see their bundle price until they add a bundle to cart or reach checkout.">
-                                                            <Icon source={QuestionCircleIcon}></Icon>
-                                                        </Tooltip>
-                                                    </InlineStack>
-                                                ),
-                                                value: 'true',
-                                            },
-                                        ]}
-                                        selected={[]}
-                                    />
-                                </Card>
-                            </InlineGrid>
+                            <Box width="full">
+                                <BlockStack inlineAlign="end">
+                                    <Button variant="primary" submit>
+                                        Finish
+                                    </Button>
+                                </BlockStack>
+                            </Box>
+                            <Divider borderColor="transparent" />
                         </BlockStack>
                     </Page>
                 </>
