@@ -27,7 +27,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         plans: [PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY],
         isTest: true,
     });
-    console.log(appSubscriptions);
 
     if (hasActivePayment) return appSubscriptions[0].name;
 

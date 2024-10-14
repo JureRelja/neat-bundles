@@ -1,4 +1,4 @@
-import { useNavigation, json, useLoaderData, Link } from '@remix-run/react';
+import { useNavigation, json, useLoaderData, Link, useNavigate } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import {
     Page,
@@ -71,6 +71,8 @@ export default function Index() {
 
     const data = loaderResponse.data[0];
 
+    const navigate = useNavigate();
+
     return (
         <>
             {isLoading ? (
@@ -98,7 +100,14 @@ export default function Index() {
                 </SkeletonPage>
             ) : (
                 <>
-                    <Page title="Installation">
+                    <Page
+                        title="Installation"
+                        backAction={{
+                            content: 'Back',
+                            onAction: async () => {
+                                navigate(-1);
+                            },
+                        }}>
                         <BlockStack gap={LargeGapBetweenSections}>
                             {data.displayThankYouBaner && (
                                 <>
