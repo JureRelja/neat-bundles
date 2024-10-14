@@ -1,6 +1,6 @@
-import { useNavigation, json, useLoaderData, Link } from '@remix-run/react';
+import { useNavigation, json, useLoaderData, Link, useNavigate } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Page, Card, BlockStack, SkeletonPage, SkeletonBodyText, Divider, FooterHelp } from '@shopify/polaris';
+import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, FooterHelp } from '@shopify/polaris';
 import { authenticate } from '~/shopify.server';
 import { JsonData } from '@adminBackend/service/dto/jsonData';
 import { useAsyncSubmit } from '~/hooks/useAsyncSubmit';
@@ -40,6 +40,7 @@ export default function Index() {
     const navigateSubmit = useNavigateSubmit(); //Function for doing the submit action as if form was submitted
 
     const loaderResponse = useLoaderData<typeof loader>();
+    const navigate = useNavigate();
 
     return (
         <>
@@ -68,7 +69,14 @@ export default function Index() {
                 </SkeletonPage>
             ) : (
                 <>
-                    <Page title="Bundles">
+                    <Page
+                        title="Bundles"
+                        backAction={{
+                            content: 'Back',
+                            onAction: async () => {
+                                navigate(-1);
+                            },
+                        }}>
                         <BlockStack gap="500">
                             <Divider borderColor="transparent" />
                         </BlockStack>

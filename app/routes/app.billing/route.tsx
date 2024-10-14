@@ -51,12 +51,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const formData = await request.formData();
     const action = formData.get('action');
 
-    console.log(action);
-    console.log('asfdd');
+    let isUpgrading = true;
 
     switch (action) {
         case 'CANCEL': {
-            console.log("i'm here");
             if (hasActivePayment) {
                 const cancelledSubscription = await billing.cancel({
                     subscriptionId: appSubscriptions[0].id,
@@ -64,7 +62,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     prorate: false,
                 });
 
-                console.log(cancelledSubscription);
+                isUpgrading = false;
             }
             await userRepository.updateUser({ ...user, activeBillingPlan: 'NONE' });
             break;
@@ -78,17 +76,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     prorate: false,
                 });
 
-                console.log(cancelledSubscription);
+                isUpgrading = false;
             }
 
             await userRepository.updateUser({ ...user, activeBillingPlan: 'BASIC' });
+
             break;
         }
         case PRO_PLAN_MONTHLY: {
+            // if (appSubscriptions[0].name === PROFESIONAL) {
+            //     isUpgrading = false;
+            // }
+
             const res = await billing.request({
                 plan: PRO_PLAN_MONTHLY,
                 isTest: true,
-                returnUrl: `https://admin.shopify.com/store/${session.shop.split('.')[0]}/apps/neat-bundles/app/`,
+                returnUrl: `https://admin.shopify.com/store/${session.shop.split('.')[0]}/apps/neat-bundles/app/installation?thankYou=true`,
             });
 
             await userRepository.updateUser({ ...user, activeBillingPlan: 'PRO' });
@@ -98,7 +101,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             const res = await billing.request({
                 plan: PRO_PLAN_YEARLY,
                 isTest: true,
-                returnUrl: `https://admin.shopify.com/store/${session.shop.split('.')[0]}/apps/neat-bundles/app/`,
+                returnUrl: `https://admin.shopify.com/store/${session.shop.split('.')[0]}/apps/neat-bundles/app/installation?thankYou=true`,
             });
 
             await userRepository.updateUser({ ...user, activeBillingPlan: 'PRO' });
@@ -114,6 +117,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             );
         }
     }
+
+    if (isUpgrading) return redirect(`https://admin.shopify.com/store/${session.shop.split('.')[0]}/apps/neat-bundles/app/installation?thankYou=true`);
 
     return redirect('/app');
 };
