@@ -2,6 +2,7 @@ import { BlockStack, Box, Button, Card, Divider, Icon, InlineStack, Text } from 
 import { CheckSmallIcon } from '@shopify/polaris-icons';
 import { GapInsideSection } from '~/constants';
 import { PricingInterval } from './route';
+import styles from './pricingPlan.module.css';
 
 export default function Index({
     subscriptionIdentifier,
@@ -10,11 +11,13 @@ export default function Index({
     monthlyPricing,
     yearlyPricing,
     pricingInterval,
+    activePlan,
     handleSubscription,
 }: {
-    subscriptionIdentifier: string;
+    subscriptionIdentifier: { yearly: string; monthly: string };
     title: string;
     features: string[];
+    activePlan: boolean;
     pricingInterval: PricingInterval;
     monthlyPricing: string;
     yearlyPricing: string;
@@ -22,51 +25,59 @@ export default function Index({
 }) {
     return (
         <Card padding={'600'}>
-            <div style={{ height: '280px', width: '300px', display: 'flex', justifyItems: 'space-between', flexDirection: 'column', backgroundColor: 'red' }}>
-                <div style={{ backgroundColor: 'blue' }}>
-                    <BlockStack gap={GapInsideSection}>
-                        {/* Plan title */}
-                        <Text as="h2" variant="headingLg" alignment="center">
-                            {title}
-                        </Text>
+            <div className={styles.pricingPlanWrapper}>
+                <BlockStack gap={GapInsideSection}>
+                    {/* Plan title */}
+                    <Text as="h2" variant="headingLg" alignment="center">
+                        {title}
+                    </Text>
 
-                        <Divider />
+                    <Divider />
 
-                        {/* Plan features */}
-                        <BlockStack gap={'100'} align="start">
-                            {features.map((feature) => {
-                                return (
-                                    <InlineStack key={feature} align="start">
-                                        <Box>
-                                            <Icon source={CheckSmallIcon} />
-                                        </Box>
-                                        <Box>
-                                            <Text as="p">{feature}</Text>
-                                        </Box>
-                                    </InlineStack>
-                                );
-                            })}
-                        </BlockStack>
+                    {/* Plan features */}
+                    <BlockStack gap={'100'} align="start">
+                        {features.map((feature) => {
+                            return (
+                                <InlineStack key={feature} align="start">
+                                    <Box>
+                                        <Icon source={CheckSmallIcon} />
+                                    </Box>
+                                    <Box>
+                                        <Text as="p">{feature}</Text>
+                                    </Box>
+                                </InlineStack>
+                            );
+                        })}
                     </BlockStack>
-                </div>
+                </BlockStack>
 
-                <div style={{ backgroundColor: 'green' }}>
-                    <BlockStack gap={GapInsideSection}>
-                        {/* Plan price */}
-                        <Text as="h2" variant="headingLg" alignment="center">
-                            {pricingInterval === 'MONTHLY' ? monthlyPricing : yearlyPricing}
-                        </Text>
+                <BlockStack gap={GapInsideSection}>
+                    {/* Plan price */}
+                    <Text as="h2" variant="headingLg" alignment="center">
+                        {pricingInterval === 'MONTHLY' ? monthlyPricing : yearlyPricing}
+                    </Text>
 
-                        {/* Select button */}
+                    {/* Select button */}
+                    {activePlan === true ? (
                         <Button
                             variant="primary"
+                            disabled={activePlan}
                             onClick={() => {
-                                handleSubscription(subscriptionIdentifier);
+                                handleSubscription(pricingInterval === 'MONTHLY' ? subscriptionIdentifier.monthly : subscriptionIdentifier.yearly);
+                            }}>
+                            Current plan
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="primary"
+                            disabled={activePlan}
+                            onClick={() => {
+                                handleSubscription(pricingInterval === 'MONTHLY' ? subscriptionIdentifier.monthly : subscriptionIdentifier.yearly);
                             }}>
                             Select plan
                         </Button>
-                    </BlockStack>
-                </div>
+                    )}
+                </BlockStack>
             </div>
         </Card>
     );

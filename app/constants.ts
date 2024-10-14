@@ -1,6 +1,7 @@
 //Styling constants
 export const GapInsideSection = '300';
 export const GapBetweenSections = '300';
+export const LargeGapBetweenSections = '500';
 export const GapBetweenTitleAndContent = '200';
 export const HorizontalGap = '300';
 export const BigGapBetweenSections = '1200';
@@ -14,5 +15,8 @@ export const bundlePageType = 'number_integer';
 export const bundlePageNamespace = 'neat_bundles_app';
 export const bundlePagePreviewKey = 'neatBundlePreview';
 
-export const BASIC_MONTHLY_PLAN = 'Monthly subscription (Basic plan)';
-export const BASIC_ANNUAL_PLAN = 'Annual subscription (Basic plan)';
+export const BASIC_PLAN = 'Basic plan';
+export const PRO_PLAN_YEARLY = 'Pro (yearly subscription)';
+export const PRO_PLAN_MONTHLY = 'Pro (monthly subscription)';
+
+// export const PREMIUM = 'Annual subscription (Basic plan)';

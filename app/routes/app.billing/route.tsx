@@ -1,15 +1,17 @@
-import { useNavigation, json, useLoaderData, Link, useNavigate } from '@remix-run/react';
+import { useNavigation, json, useLoaderData, Link, useNavigate, redirect } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, InlineStack, Button } from '@shopify/polaris';
+import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, InlineStack, Button, Banner, Spinner } from '@shopify/polaris';
 import { authenticate } from '../../shopify.server';
-import { BASIC_ANNUAL_PLAN, BASIC_MONTHLY_PLAN } from '../../constants';
+import { BASIC_PLAN, LargeGapBetweenSections, PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY } from '../../constants';
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
 import PricingPlan from './pricingPlan';
-import { BigGapBetweenSections, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '~/constants';
+import { GapBetweenSections, GapInsideSection } from '~/constants';
 import { useState } from 'react';
 import ToggleSwitch from './toogleSwitch';
+import userRepository from '~/adminBackend/repository/impl/UserRepository';
+import styles from './route.module.css';
 
 export type PricingInterval = 'MONTHLY' | 'YEARLY';
 
@@ -17,11 +19,21 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin, billing } = await authenticate.admin(request);
 
     const { hasActivePayment, appSubscriptions } = await billing.check({
-        plans: [BASIC_MONTHLY_PLAN, BASIC_ANNUAL_PLAN],
+        plans: [PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY],
         isTest: false,
     });
     console.log(hasActivePayment);
     console.log(appSubscriptions);
+
+    const user = await userRepository.getUserByStoreUrl(session.shop);
+
+    if (!user) return redirect('/app');
+
+    if (user.activeBillingPlan === 'NONE') return 'NONE';
+
+    if (user.activeBillingPlan === 'BASIC') return BASIC_PLAN;
+
+    if (user.activeBillingPlan === 'PRO') return appSubscriptions[0].name;
 
     return null;
 };
@@ -30,32 +42,42 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const { admin, session, billing } = await authenticate.admin(request);
 
     const { hasActivePayment, appSubscriptions } = await billing.check({
-        plans: [BASIC_MONTHLY_PLAN, BASIC_ANNUAL_PLAN],
+        plans: [PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY],
         isTest: false,
     });
 
     const formData = await request.formData();
     const action = formData.get('action');
 
-    switch (action) {
-        case BASIC_MONTHLY_PLAN: {
-            const res = await billing.require({
-                plans: [BASIC_MONTHLY_PLAN],
-                isTest: true,
-                onFailure: async () => billing.request({ plan: BASIC_MONTHLY_PLAN }),
-            });
+    const user = await userRepository.getUserByStoreUrl(session.shop);
 
-            console.log(res);
+    if (!user) return redirect('/app');
+
+    switch (action) {
+        case BASIC_PLAN: {
+            userRepository.updateUser({ ...user, activeBillingPlan: 'BASIC' });
             break;
         }
-        case BASIC_ANNUAL_PLAN: {
-            const res = await billing.require({
-                plans: [BASIC_ANNUAL_PLAN],
+        case PRO_PLAN_MONTHLY: {
+            const res = await billing.request({
+                plan: PRO_PLAN_MONTHLY,
                 isTest: true,
-                onFailure: async () => billing.request({ plan: BASIC_ANNUAL_PLAN }),
+                returnUrl: `https://admin.shopify.com/store/${user.storeName}/apps/neat-bundles/app/`,
             });
 
             console.log(res);
+            userRepository.updateUser({ ...user, activeBillingPlan: 'PRO' });
+            break;
+        }
+        case PRO_PLAN_YEARLY: {
+            const res = await billing.request({
+                plan: PRO_PLAN_YEARLY,
+                isTest: true,
+                returnUrl: `https://admin.shopify.com/store/${user.storeName}/apps/neat-bundles/app/`,
+            });
+
+            console.log(res);
+            userRepository.updateUser({ ...user, activeBillingPlan: 'PRO' });
             break;
         }
 
@@ -68,6 +90,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             );
         }
     }
+
+    return redirect('/app');
 };
 
 export default function Index() {
@@ -78,7 +102,7 @@ export default function Index() {
 
     const navigate = useNavigate();
 
-    const loaderResponse = useLoaderData<typeof loader>();
+    const activeSubscription = useLoaderData<typeof loader>();
 
     const [pricingInterval, setPricingInterval] = useState<PricingInterval>('MONTHLY');
 
@@ -90,10 +114,13 @@ export default function Index() {
         });
     };
 
-    const handleSubscription = (subscriptionIdentifier: string) => {};
+    const handleSubscription = (subscriptionIdentifier: string) => {
+        asyncSubmit.submit(subscriptionIdentifier, '/app/billing');
+    };
 
     return (
         <>
+            {/* prettier-ignore */}
             {isLoading ? (
                 <SkeletonPage primaryAction>
                     <BlockStack gap="500">
@@ -127,45 +154,61 @@ export default function Index() {
                                 navigate(-1);
                             },
                         }}>
-                        <BlockStack align="center" gap={BigGapBetweenSections}>
-                            {/* Monthly/Yearly toogle */}
-                            <InlineStack gap={GapInsideSection} align="center" blockAlign="center">
-                                <Text as="h2" variant="headingLg">
-                                    Monthly
-                                </Text>
-                                <ToggleSwitch label="Biling frequency" labelHidden={true} onChange={() => handlePricingIntervalToogle()} />
-                                <Text as="h2" variant="headingLg">
-                                    Yearly (15% off)
-                                </Text>
-                            </InlineStack>
+                        <div id={styles.tableWrapper}>
+                            <div className={asyncSubmit.state != 'idle' ? styles.loadingTable : styles.hide}>
+                                <Spinner accessibilityLabel="Spinner example" size="large" />
+                            </div>
+                            <BlockStack align="center" gap={LargeGapBetweenSections}>
+                                <Banner onDismiss={() => {}}>
+                                    <Text as="p">
+                                        Select the plan that best suits your needs. If you wish to cancel a subscription, just uninstall the Neat bundles app. Note: All of your
+                                        bundles will be lost if you uninstall the app.
+                                    </Text>
+                                </Banner>
 
-                            {/* Pricing plans */}
-                            <InlineStack gap={GapBetweenSections} align="center">
-                                <PricingPlan
-                                    subscriptionIdentifier={BASIC_MONTHLY_PLAN}
-                                    handleSubscription={handleSubscription}
-                                    title="Basic"
-                                    monthlyPricing={'Free'}
-                                    yearlyPricing={'Free'}
-                                    pricingInterval={pricingInterval}
-                                    features={['Create up to 5 bundles', 'Create product steps', 'Customize colors', 'Customer support']}
-                                />
-                                <PricingPlan
-                                    subscriptionIdentifier={BASIC_ANNUAL_PLAN}
-                                    handleSubscription={handleSubscription}
-                                    title="Pro"
-                                    monthlyPricing={'$4.99'}
-                                    yearlyPricing={'$49.99'}
-                                    pricingInterval={pricingInterval}
-                                    features={['Create unlimited bundles', 'Create product steps', 'Colect images and text on steps', 'Customize colors', 'Priority support']}
-                                />
-                            </InlineStack>
+                                {/* Monthly/Yearly toogle */}
+                                <InlineStack gap={GapInsideSection} align="center" blockAlign="center">
+                                    <Text as="h2" variant="headingLg">
+                                        Monthly
+                                    </Text>
+                                    <ToggleSwitch label="Biling frequency" labelHidden={true} onChange={() => handlePricingIntervalToogle()} />
+                                    <Text as="h2" variant="headingLg">
+                                        Yearly (15% off)
+                                    </Text>
+                                </InlineStack>
 
-                            <Text as="p">
-                                Note: The plans displayed reflect current pricing. If you previously signed up at a different price, you will continue to be charged your original
-                                price until you change your plan.
-                            </Text>
-                        </BlockStack>
+                                {/* Pricing plans */}
+                                <InlineStack gap={GapBetweenSections} align="center">
+                                    <PricingPlan
+                                        activePlan={activeSubscription === BASIC_PLAN}
+                                        subscriptionIdentifier={{ yearly: BASIC_PLAN, monthly: BASIC_PLAN }}
+                                        handleSubscription={handleSubscription}
+                                        title="Basic"
+                                        monthlyPricing={'Free'}
+                                        yearlyPricing={'Free'}
+                                        pricingInterval={pricingInterval}
+                                        features={['Create up to 5 bundles', 'Create product steps', 'Customize colors', 'Customer support']}
+                                    />
+                                    <PricingPlan
+                                        activePlan={activeSubscription === PRO_PLAN_MONTHLY || activeSubscription === PRO_PLAN_YEARLY}
+                                        subscriptionIdentifier={{ yearly: PRO_PLAN_YEARLY, monthly: PRO_PLAN_MONTHLY }}
+                                        handleSubscription={handleSubscription}
+                                        title="Pro"
+                                        monthlyPricing={'$4.99'}
+                                        yearlyPricing={'$49.99'}
+                                        pricingInterval={pricingInterval}
+                                        features={['Create unlimited bundles', 'Create product steps', 'Colect images and text on steps', 'Customize colors', 'Priority support']}
+                                    />
+                                </InlineStack>
+
+                                <Text as="p">
+                                    Note: The plans displayed reflect current pricing. If you previously signed up at a different price, you will continue to be charged your
+                                    original price until you change your plan.
+                                </Text>
+
+                                <Divider />
+                            </BlockStack>
+                        </div>
                     </Page>
                 </>
             )}

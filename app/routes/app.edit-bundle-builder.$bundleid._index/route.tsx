@@ -75,7 +75,9 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         });
     }
 
-    const user = await userRepository.getUserByStoreUrl(admin, session.shop);
+    const user = await userRepository.getUserByStoreUrl(session.shop);
+
+    if (!user) return redirect('/app');
 
     //Url of the bundle page
     const bundleBuilderPageUrl = `${user.primaryDomain}/pages/${bundleBuilder.bundleBuilderPageHandle}`;

@@ -3,7 +3,7 @@ import { ApiVersion, AppDistribution, BillingInterval, BillingReplacementBehavio
 import { RedisSessionStorage } from '@shopify/shopify-app-session-storage-redis';
 import { restResources } from '@shopify/shopify-api/rest/admin/2024-10';
 import { createClient } from 'redis';
-import { BASIC_MONTHLY_PLAN, BASIC_ANNUAL_PLAN } from './constants';
+import { PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY } from './constants';
 
 const shopify = shopifyApp({
     apiKey: process.env.SHOPIFY_API_KEY,
@@ -16,42 +16,19 @@ const shopify = shopifyApp({
     distribution: AppDistribution.AppStore,
     restResources,
     billing: {
-        [BASIC_MONTHLY_PLAN]: {
+        [PRO_PLAN_MONTHLY]: {
             replacementBehavior: BillingReplacementBehavior.ApplyOnNextBillingCycle,
             lineItems: [
                 {
-                    discount: {
-                        durationLimitInIntervals: 1,
-                        value: {
-                            amount: 1.99,
-                        },
-                    },
-
                     amount: 7.99,
                     currencyCode: 'USD',
                     interval: BillingInterval.Every30Days,
-                },
-                {
-                    amount: 49.99,
-                    currencyCode: 'USD',
-                    interval: BillingInterval.Annual,
                 },
             ],
         },
-        [BASIC_ANNUAL_PLAN]: {
+        [PRO_PLAN_YEARLY]: {
             replacementBehavior: BillingReplacementBehavior.ApplyOnNextBillingCycle,
             lineItems: [
-                {
-                    discount: {
-                        durationLimitInIntervals: 1,
-                        value: {
-                            amount: 1.99,
-                        },
-                    },
-                    amount: 7.99,
-                    currencyCode: 'USD',
-                    interval: BillingInterval.Every30Days,
-                },
                 {
                     amount: 49.99,
                     currencyCode: 'USD',

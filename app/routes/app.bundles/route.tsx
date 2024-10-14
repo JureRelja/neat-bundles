@@ -1,4 +1,4 @@
-import { useNavigation, json, useLoaderData, Link, Outlet } from '@remix-run/react';
+import { useNavigation, json, useLoaderData, Link, Outlet, redirect } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import {
     Page,
@@ -36,7 +36,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
 
     const [user, bundleBuildersWithoutPageUrl] = await Promise.all([
-        userRepository.getUserByStoreUrl(admin, session.shop),
+        userRepository.getUserByStoreUrl(session.shop),
 
         db.bundleBuilder.findMany({
             where: {
@@ -51,6 +51,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             },
         }),
     ]);
+
+    if (!user) return redirect('/app');
 
     const bundleBuildersWithPageUrl = bundleBuildersWithoutPageUrl.map((bundleBuilder) => {
         return {

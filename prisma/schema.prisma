@@ -10,10 +10,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum PricingPlan {
+  NONE
+  BASIC
+  PRO
+}
+
 //Admin side storage
 model User {
   id                       Int             @id @default(autoincrement())
   hasAppInstalled          Boolean         @default(true)
+  activeBillingPlan        PricingPlan     @default(NONE)
   ownerName                String          @default("")
   storeName                String
   storeUrl                 String          @unique
@@ -24,23 +31,23 @@ model User {
 }
 
 model BundleBuilder {
-  id                       Int                @id @default(autoincrement())
-  deleted                  Boolean            @default(false)
-  shopifyProductId         String             @unique //GraphQL GID format
-  shopifyPageId            String             @unique //Normal BigInt number, but stored as a string for easier manipulation
-  title                    String
-  published                Boolean            @default(false)
-  createdAt                DateTime           @default(now())
-  steps                    BundleStep[]
-  pricing                  BundlePricing
-  priceAmount              Float?
-  discountType             BundleDiscountType
-  discountValue            Float
-  bundleSettings           BundleSettings?
-  bundleBuilderPageHandle  String
-  storeUrl                 String
-  user                     User               @relation(fields: [storeUrl], references: [storeUrl], onDelete: Cascade)
-  createdBundles           CreatedBundle[]
+  id                      Int                @id @default(autoincrement())
+  deleted                 Boolean            @default(false)
+  shopifyProductId        String             @unique //GraphQL GID format
+  shopifyPageId           String             @unique //Normal BigInt number, but stored as a string for easier manipulation
+  title                   String
+  published               Boolean            @default(false)
+  createdAt               DateTime           @default(now())
+  steps                   BundleStep[]
+  pricing                 BundlePricing
+  priceAmount             Float?
+  discountType            BundleDiscountType
+  discountValue           Float
+  bundleSettings          BundleSettings?
+  bundleBuilderPageHandle String
+  storeUrl                String
+  user                    User               @relation(fields: [storeUrl], references: [storeUrl], onDelete: Cascade)
+  createdBundles          CreatedBundle[]
 }
 
 //Step models

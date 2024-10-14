@@ -1,7 +1,7 @@
 import { json, Navigate, redirect, useLoaderData, useNavigate } from '@remix-run/react';
 import type { LoaderFunctionArgs } from '@remix-run/node';
 import { authenticate } from '../../shopify.server';
-import { BASIC_ANNUAL_PLAN, BASIC_MONTHLY_PLAN } from '../../constants';
+import { PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY } from '../../constants';
 
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import { ShopifyCatalogRepository } from '~/adminBackend/repository/impl/ShopifyCatalogRepository';
@@ -13,7 +13,7 @@ import { BlockStack, Card, SkeletonBodyText, SkeletonPage } from '@shopify/polar
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { admin, session, billing } = await authenticate.admin(request);
 
-    const user = await userRepository.getUserByStoreUrl(admin, session.shop);
+    let user = await userRepository.getUserByStoreUrl(session.shop);
 
     if (!user) {
         const response = await admin.graphql(
@@ -42,31 +42,37 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             );
         }
 
-        await userRepository.createUser(admin, session.shop, data.email, data.name, data.primaryDomain.url, onlineStorePublicationId);
+        user = await userRepository.createUser(session.shop, data.email, data.name, data.primaryDomain.url, onlineStorePublicationId);
     }
 
-    const { hasActivePayment, appSubscriptions } = await billing.check({
-        plans: [BASIC_MONTHLY_PLAN, BASIC_ANNUAL_PLAN],
-        isTest: false,
-    });
-
-    if (!hasActivePayment) {
-        return json(
-            {
-                ...new JsonData(true, 'success', "Customer doesn't have an active subscription.", [], { redirect: '/app/billing' }),
-            },
-            { status: 500 },
-        );
+    if (!user.hasAppInstalled) {
+        const userUpdated = await userRepository.updateUser({ ...user, hasAppInstalled: true });
     }
 
-    if (!user) {
-        return json(
-            {
-                ...new JsonData(true, 'success', 'Customer freshly installed the app.', [], { redirect: '/app/installation' }),
-            },
-            { status: 500 },
-        );
+    if (user.activeBillingPlan === 'NONE') {
+        const { hasActivePayment, appSubscriptions } = await billing.check({
+            plans: [PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY],
+            isTest: false,
+        });
+
+        if (!hasActivePayment) {
+            return json(
+                {
+                    ...new JsonData(true, 'success', "Customer doesn't have an active subscription.", [], { redirect: '/app/billing' }),
+                },
+                { status: 500 },
+            );
+        }
     }
+
+    // if (!user) {
+    //     return json(
+    //         {
+    //             ...new JsonData(true, 'success', 'Customer freshly installed the app.', [], { redirect: '/app/installation' }),
+    //         },
+    //         { status: 500 },
+    //     );
+    // }
 
     return json(
         {

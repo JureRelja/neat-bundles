@@ -3,28 +3,17 @@ import db from '../../../db.server';
 import { User } from '@prisma/client';
 
 class UserRepository {
-    public async getUserByStoreUrl(admin: AdminApiContext, storeUrl: string): Promise<User> {
+    public async getUserByStoreUrl(storeUrl: string): Promise<User | null> {
         const user = await db.user.findUnique({
             where: {
                 storeUrl: storeUrl,
             },
         });
 
-        if (!user) {
-            throw new Error(`User with store url ${storeUrl} not found`);
-        }
-
         return user;
     }
 
-    public async createUser(
-        admin: AdminApiContext,
-        storeUrl: string,
-        storeEmail: string,
-        storeName: string,
-        primaryDomain: string,
-        onlineStorePublicationId: string,
-    ): Promise<User> {
+    public async createUser(storeUrl: string, storeEmail: string, storeName: string, primaryDomain: string, onlineStorePublicationId: string): Promise<User> {
         const user = await db.user.create({
             data: {
                 ownerName: '',
@@ -41,6 +30,21 @@ class UserRepository {
         }
 
         return user;
+    }
+
+    public async updateUser(newUser: User): Promise<boolean> {
+        const updatedUser = await db.user.update({
+            where: {
+                id: newUser.id,
+            },
+            data: newUser,
+        });
+
+        if (!updatedUser) {
+            return false;
+        }
+
+        return true;
     }
 }
 

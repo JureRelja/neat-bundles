@@ -1,6 +1,6 @@
 import { useNavigation, json, useLoaderData, Link } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Page, Card, BlockStack, SkeletonPage, SkeletonBodyText, Divider } from '@shopify/polaris';
+import { Page, Card, BlockStack, SkeletonPage, SkeletonBodyText, Divider, FooterHelp } from '@shopify/polaris';
 import { authenticate } from '~/shopify.server';
 import { JsonData } from '@adminBackend/service/dto/jsonData';
 import { useAsyncSubmit } from '~/hooks/useAsyncSubmit';
@@ -72,6 +72,12 @@ export default function Index() {
                         <BlockStack gap="500">
                             <Divider borderColor="transparent" />
                         </BlockStack>
+
+                        <FooterHelp>
+                            View the <Link to="https://help.shopify.com/manual/orders/fulfill-orders">help docs</Link>,
+                            <Link to="https://help.shopify.com/manual/orders/fulfill-orders">suggest new features</Link>, or
+                            <Link to="https://help.shopify.com/manual/orders/fulfill-orders">contact us</Link> for support.
+                        </FooterHelp>
                     </Page>
                 </>
             )}
