@@ -21,6 +21,7 @@ model User {
   id                       Int             @id @default(autoincrement())
   hasAppInstalled          Boolean         @default(true)
   activeBillingPlan        PricingPlan     @default(NONE)
+  completedInstallation    Boolean         @default(false)
   ownerName                String          @default("")
   storeName                String
   storeUrl                 String          @unique

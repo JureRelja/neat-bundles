@@ -12,11 +12,13 @@ export default function Index({
     yearlyPricing,
     pricingInterval,
     activePlan,
+    planDisabled,
     handleSubscription,
 }: {
     subscriptionIdentifier: { yearly: string; monthly: string };
-    title: string;
+    title: { yearly: string; monthly: string };
     features: string[];
+    planDisabled?: boolean;
     activePlan: boolean;
     pricingInterval: PricingInterval;
     monthlyPricing: string;
@@ -29,7 +31,7 @@ export default function Index({
                 <BlockStack gap={GapInsideSection}>
                     {/* Plan title */}
                     <Text as="h2" variant="headingLg" alignment="center">
-                        {title}
+                        {pricingInterval === 'MONTHLY' ? title.monthly : title.yearly}
                     </Text>
 
                     <Divider />
@@ -58,25 +60,15 @@ export default function Index({
                     </Text>
 
                     {/* Select button */}
-                    {activePlan === true ? (
-                        <Button
-                            variant="primary"
-                            disabled={activePlan}
-                            onClick={() => {
-                                handleSubscription(pricingInterval === 'MONTHLY' ? subscriptionIdentifier.monthly : subscriptionIdentifier.yearly);
-                            }}>
-                            Current plan
-                        </Button>
-                    ) : (
-                        <Button
-                            variant="primary"
-                            disabled={activePlan}
-                            onClick={() => {
-                                handleSubscription(pricingInterval === 'MONTHLY' ? subscriptionIdentifier.monthly : subscriptionIdentifier.yearly);
-                            }}>
-                            Select plan
-                        </Button>
-                    )}
+
+                    <Button
+                        variant="primary"
+                        disabled={activePlan || planDisabled}
+                        onClick={() => {
+                            handleSubscription(pricingInterval === 'MONTHLY' ? subscriptionIdentifier.monthly : subscriptionIdentifier.yearly);
+                        }}>
+                        {activePlan === true ? 'Current plan' : 'Select plan'}
+                    </Button>
                 </BlockStack>
             </div>
         </Card>

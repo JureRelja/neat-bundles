@@ -1,14 +1,13 @@
-import { json, Navigate, redirect, useLoaderData, useNavigate } from '@remix-run/react';
+import { json, useLoaderData, useNavigate } from '@remix-run/react';
 import type { LoaderFunctionArgs } from '@remix-run/node';
 import { authenticate } from '../../shopify.server';
-import { PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY } from '../../constants';
-
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import { ShopifyCatalogRepository } from '~/adminBackend/repository/impl/ShopifyCatalogRepository';
 import userRepository from '~/adminBackend/repository/impl/UserRepository';
 import { Shop } from '@shopifyGraphql/graphql';
 import { useEffect } from 'react';
 import { BlockStack, Card, SkeletonBodyText, SkeletonPage } from '@shopify/polaris';
+import { PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY } from '~/constants';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { admin, session, billing } = await authenticate.admin(request);
@@ -43,16 +42,19 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         }
 
         user = await userRepository.createUser(session.shop, data.email, data.name, data.primaryDomain.url, onlineStorePublicationId);
+
+        //welcome emails
+        //etc.
     }
 
     if (!user.hasAppInstalled) {
-        const userUpdated = await userRepository.updateUser({ ...user, hasAppInstalled: true });
+        await userRepository.updateUser({ ...user, hasAppInstalled: true });
     }
 
     if (user.activeBillingPlan === 'NONE') {
         const { hasActivePayment, appSubscriptions } = await billing.check({
             plans: [PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY],
-            isTest: false,
+            isTest: true,
         });
 
         if (!hasActivePayment) {
@@ -65,14 +67,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         }
     }
 
-    // if (!user) {
-    //     return json(
-    //         {
-    //             ...new JsonData(true, 'success', 'Customer freshly installed the app.', [], { redirect: '/app/installation' }),
-    //         },
-    //         { status: 500 },
-    //     );
-    // }
+    if (!user.completedInstallation) {
+        return json(
+            {
+                ...new JsonData(true, 'success', 'Customer freshly installed the app.', [], { redirect: '/app/installation' }),
+            },
+            { status: 500 },
+        );
+    }
 
     return json(
         {

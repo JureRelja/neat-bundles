@@ -26,6 +26,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     },
                     data: {
                         hasAppInstalled: false,
+                        activeBillingPlan: 'NONE',
                     },
                 });
             }
