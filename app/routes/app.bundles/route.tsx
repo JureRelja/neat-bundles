@@ -32,6 +32,11 @@ import { useState } from 'react';
 import { Modal, TitleBar } from '@shopify/app-bridge-react';
 import { bundlePagePreviewKey } from '~/constants';
 import userRepository from '@adminBackend/repository/impl/UserRepository';
+import { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
+import { shopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
+import { ShopifyRedirectRepository } from '~/adminBackend/repository/impl/ShopifyRedirectRepository';
+import { ShopifyBundleBuilderPageRepository } from '~/adminBackend/repository/ShopifyBundleBuilderPageRepository';
+import shopifyBundleBuilderPageGraphql from '@adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
@@ -63,7 +68,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     });
 
     const url = new URL(request.url);
-    const thankYouBanner = url.searchParams.get('installSuccess');
+    const installSuccessBanner = url.searchParams.get('installSuccess');
 
     return json(
         {
@@ -80,8 +85,41 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const action = formData.get('action');
 
     switch (action) {
-        case 'dismissHomePageBanner': {
-            break;
+        case 'createBundle': {
+            try {
+                const user = await userRepository.getUserByStoreUrl(session.shop);
+
+                if (!user) return redirect('/app');
+
+                const maxBundleId = await BundleBuilderRepository.getMaxBundleBuilderId(session.shop);
+
+                const defaultBundleTitle = `New bundle ${maxBundleId ? maxBundleId : ''}`;
+
+                const shopifyBundleBuilderPageRepository: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageGraphql;
+
+                //Create a new product that will be used as a bundle wrapper
+                const [bundleProductId, bundlePage] = await Promise.all([
+                    shopifyBundleBuilderProductRepository.createBundleProduct(admin, defaultBundleTitle, session.shop),
+                    shopifyBundleBuilderPageRepository.createPage(admin, session, defaultBundleTitle),
+                ]);
+
+                if (!bundleProductId || !bundlePage) {
+                    return;
+                }
+
+                const [urlRedirectRes, bundleBuilder] = await Promise.all([
+                    //Create redirect
+                    ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundlePage.handle as string, bundleProductId),
+                    //Create new bundle
+                    BundleBuilderRepository.createNewBundleBuilder(session.shop, defaultBundleTitle, bundleProductId, bundlePage.id, bundlePage.handle),
+                ]);
+
+                await shopifyBundleBuilderPageRepository.setPageMetafields(bundleBuilder.id, bundlePage.id, session, admin);
+
+                return redirect(`/app/bundles/edit-bundle-builder/${bundleBuilder.id}`);
+            } catch (error) {
+                console.log(error);
+            }
         }
         default: {
             return json(
@@ -106,7 +144,7 @@ export default function Index() {
     const bundleBuilders: BundleAndStepsBasicClient[] = loaderResponse.data;
 
     const createBundle = () => {
-        navigateSubmit('createBundle', '/app/edit-bundle-builder');
+        navigateSubmit('createBundle', '/app/bundles');
     };
 
     //Client state
@@ -188,7 +226,7 @@ export default function Index() {
                                                     </Text>,
 
                                                     //
-                                                    <Link to={`/app/bundleBuilder/${bundleBuilder.id}`}>
+                                                    <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
                                                         <Text as="p" tone="base">
                                                             {bundleBuilder.title}
                                                         </Text>

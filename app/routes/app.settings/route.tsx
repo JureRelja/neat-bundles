@@ -48,7 +48,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     //     });
     // }
 
-    // const user = await userRepository.getUserByStoreUrl(admin, session.shop);
+    // const user = await userRepository.getUserByStoreUrl(session.shop);
 
     // //Url of the bundle page
     // const bundleBuilderPageUrl = `${user.primaryDomain}/pages/${bundleBuilder.bundleBuilderPageHandle}`;

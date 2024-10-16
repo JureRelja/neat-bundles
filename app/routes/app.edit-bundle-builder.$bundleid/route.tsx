@@ -37,6 +37,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const formData = await request.formData();
     const action = formData.get('action');
 
+    switch (action) {
+    }
+
     return json(
         {
             ...new JsonData(true, 'success', "This is the default action that doesn't do anything."),

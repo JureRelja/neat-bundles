@@ -57,7 +57,6 @@ import shopifyBundleBuilderPageRepositoryGraphql from '~/adminBackend/repository
 import { ShopifyBundleBuilderPageRepository } from '~/adminBackend/repository/ShopifyBundleBuilderPageRepository';
 import { BundleBuilderRepository } from '@adminBackend/repository/impl/BundleBuilderRepository';
 import userRepository from '~/adminBackend/repository/impl/UserRepository';
-import { ShopifyRedirectRepository } from '~/adminBackend/repository/impl/ShopifyRedirectRepository';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -95,43 +94,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const action = formData.get('action');
 
     switch (action) {
-        case 'createBundle': {
-            try {
-                const user = await userRepository.getUserByStoreUrl(session.shop);
-
-                if (!user) return redirect('/app');
-
-                const maxBundleId = await BundleBuilderRepository.getMaxBundleBuilderId(session.shop);
-
-                const defaultBundleTitle = `New bundle ${maxBundleId ? maxBundleId : ''}`;
-
-                const shopifyBundleBuilderPageRepository: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
-
-                //Create a new product that will be used as a bundle wrapper
-                const [bundleProductId, bundlePage] = await Promise.all([
-                    shopifyBundleBuilderProductRepository.createBundleProduct(admin, defaultBundleTitle, session.shop),
-                    shopifyBundleBuilderPageRepository.createPage(admin, session, defaultBundleTitle),
-                ]);
-
-                if (!bundleProductId || !bundlePage) {
-                    return;
-                }
-
-                const [urlRedirectRes, bundleBuilder] = await Promise.all([
-                    //Create redirect
-                    ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundlePage.handle as string, bundleProductId),
-                    //Create new bundle
-                    BundleBuilderRepository.createNewBundleBuilder(session.shop, defaultBundleTitle, bundleProductId, bundlePage.id, bundlePage.handle),
-                ]);
-
-                await shopifyBundleBuilderPageRepository.setPageMetafields(bundleBuilder.id, bundlePage.id, session, admin);
-
-                return redirect(`/app/edit-bundle-builder/${bundleBuilder.id}`);
-            } catch (error) {
-                console.log(error);
-            }
-        }
-
         case 'deleteBundle': {
             try {
                 //Delete the bundle along with its steps, contentInputs, bundleSettings?, bundleColors, and bundleLabels

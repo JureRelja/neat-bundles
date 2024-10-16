@@ -58,6 +58,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         });
 
         if (!hasActivePayment) {
+            await userRepository.updateUser({ ...user, activeBillingPlan: 'NONE' });
+
             return json(
                 {
                     ...new JsonData(true, 'success', "Customer doesn't have an active subscription.", [], { redirect: '/app/billing' }),
@@ -65,6 +67,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
                 { status: 500 },
             );
         }
+
+        user.activeBillingPlan = appSubscriptions[0].name === PRO_PLAN_MONTHLY || appSubscriptions[0].name === PRO_PLAN_YEARLY ? 'PRO' : 'BASIC';
+        userRepository.updateUser(user);
     }
 
     if (!user.completedInstallation) {
