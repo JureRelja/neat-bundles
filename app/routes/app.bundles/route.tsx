@@ -62,6 +62,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         };
     });
 
+    const url = new URL(request.url);
+    const thankYouBanner = url.searchParams.get('installSuccess');
+
     return json(
         {
             ...new JsonData(true, 'success', 'Bundles were succesfully returned', [], bundleBuildersWithPageUrl),

@@ -139,13 +139,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
                     await userRepository.updateUser(user);
 
-                    console.log("I'm not broken");
-
-                    return redirect('/app');
+                    return redirect('/app?installSuccess=true');
                 }
             } catch (err) {
                 console.log(err);
-                console.log("I'm broken");
 
                 return json(
                     {
