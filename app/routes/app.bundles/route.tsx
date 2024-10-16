@@ -116,7 +116,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
                 await shopifyBundleBuilderPageRepository.setPageMetafields(bundleBuilder.id, bundlePage.id, session, admin);
 
-                return redirect(`/app/bundles/edit-bundle-builder/${bundleBuilder.id}`);
+                return redirect(`/app/edit-bundle-builder/${bundleBuilder.id}`);
             } catch (error) {
                 console.log(error);
             }

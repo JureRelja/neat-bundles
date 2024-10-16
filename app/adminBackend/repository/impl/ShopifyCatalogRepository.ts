@@ -40,7 +40,9 @@ export class ShopifyCatalogRepository {
      * @return     True if the product was published successfully, false otherwise
      */
     public static async publishProductToOnlineStore(admin: AdminApiContext, productId: string, storeUrl: string): Promise<boolean> {
-        const onlineStorePublicationId = (await userRepository.getUserByStoreUrl(admin, storeUrl)).onlineStorePublicationId;
+        const user = await userRepository.getUserByStoreUrl(storeUrl);
+        if (!user) throw Error('No user');
+        const onlineStorePublicationId = user.onlineStorePublicationId;
 
         const response = await admin.graphql(
             `#graphql
