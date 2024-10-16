@@ -5,7 +5,7 @@
         "build": "remix vite:build",
         "dev": "sudo shopify app dev --theme-app-extension-port=3000",
         "dev-ngrok": "sudo shopify app dev --theme-app-extension-port=3000 --tunnel-url='https://purely-decent-pup.ngrok-free.app:80'",
-        "dev-theme": "sudo shopify app dev --theme-app-extension-port=4334 --theme=171255595326",
+        "dev-theme": "sudo shopify app dev --theme-app-extension-port=4321 --theme=171255595326",
         "debug": "NODE_OPTIONS='--inspect-brk' npm run dev",
         "config:link": "shopify app config link",
         "generate": "shopify app generate",

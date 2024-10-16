@@ -1,4 +1,4 @@
-import { useNavigation, json, useLoaderData, Link, useNavigate, redirect, useActionData } from '@remix-run/react';
+import { useNavigation, json, useLoaderData, Link, useNavigate, redirect, useActionData, useFetcher, Form } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import {
     Page,
@@ -132,7 +132,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                         user.completedInstallation = false;
 
                         await userRepository.updateUser(user);
-
                         throw Error('App not activated.');
                     }
 
@@ -140,17 +139,20 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
                     await userRepository.updateUser(user);
 
+                    console.log("I'm not broken");
+
                     return redirect('/app');
                 }
             } catch (err) {
                 console.log(err);
-            } finally {
+                console.log("I'm broken");
+
                 return json(
                     {
                         ...new JsonData(
                             false,
                             'error',
-                            "Neat Bundels hasn't been properly activated. If you've already activated it, please try deactivating it and activating it again. If the errror continues, feel free to reach us as support@neatmerchant.com",
+                            "Neat Bundels hasn't been properly activated. If you've already activated it, please try deactivating it and activating it again. If the errror continues, feel free to reach us as support@neatmerchant.com.",
                         ),
                     },
                     { status: 200 },
@@ -173,6 +175,7 @@ export default function Index() {
     const isLoading = nav.state !== 'idle';
     const asyncSubmit = useAsyncSubmit(); //Function for doing the submit action where the only data is action and url
     const navigateSubmit = useNavigateSubmit(); //Function for doing the submit action as if form was submitted
+    const fetcher = useFetcher();
 
     const loaderResponse = useLoaderData<typeof loader>();
     const actionResponse = useActionData<typeof action>();
@@ -181,14 +184,10 @@ export default function Index() {
 
     const navigate = useNavigate();
 
-    const handleFinishInstalation = () => {
-        asyncSubmit.submit('FINISH_INSTALL', '/app/installation');
-    };
-
     //Navigating to the first error
     useEffect(() => {
         scrollTo(0, 0);
-    }, [asyncSubmit]);
+    }, [actionResponse]);
 
     return (
         <>
@@ -225,183 +224,181 @@ export default function Index() {
                                 navigate(-1);
                             },
                         }}>
-                        <div id={styles.tableWrapper}>
-                            <div className={asyncSubmit.state !== 'idle' ? styles.loadingTable : styles.hide}>
-                                <Spinner accessibilityLabel="Spinner example" size="large" />
-                            </div>
-                            <BlockStack gap={LargeGapBetweenSections} id="top">
-                                {data.displayThankYouBaner && (
-                                    <>
-                                        <Banner title="Thank you for choosing a plan!" tone="success" onDismiss={() => {}}>
-                                            <BlockStack gap={GapInsideSection}>
-                                                <Text as={'p'} variant="headingMd">
-                                                    You will be using Neat bundles to let your customer create bundles they love in no time.
-                                                </Text>
+                        <BlockStack gap={LargeGapBetweenSections} id="top">
+                            {data.displayThankYouBaner && (
+                                <>
+                                    <Banner title="Thank you for choosing a plan!" tone="success" onDismiss={() => {}}>
+                                        <BlockStack gap={GapInsideSection}>
+                                            <Text as={'p'} variant="headingMd">
+                                                You will be using Neat bundles to let your customer create bundles they love in no time.
+                                            </Text>
 
-                                                <Text as={'p'}>
-                                                    Just before you get there, you just need to quickly go through instalation to get Neat bundles app properly connected to your
-                                                    store.
-                                                </Text>
-                                            </BlockStack>
-                                        </Banner>
-                                        <Divider />
-                                    </>
-                                )}
-
-                                {actionResponse && (
-                                    <>
-                                        <Banner title="App wasn't detected in your theme." tone="critical" onDismiss={() => {}}>
-                                            <BlockStack gap={GapInsideSection}>
-                                                <Text as={'p'}>{loaderResponse.message}</Text>
-                                            </BlockStack>
-                                        </Banner>
-                                        <Divider />
-                                    </>
-                                )}
-
-                                {/* Video tutorial */}
-                                <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
-                                    <Box as="section">
-                                        <BlockStack gap="400">
-                                            <Text as="h3" variant="headingMd">
-                                                Video tutorial
+                                            <Text as={'p'}>
+                                                Just before you get there, you just need to quickly go through instalation to get Neat bundles app properly connected to your store.
                                             </Text>
                                         </BlockStack>
-                                    </Box>
-                                    <MediaCard
-                                        title="Watch a short tutorial to get quickly started"
-                                        primaryAction={{
-                                            content: 'Watch tutorial',
-                                            icon: ExternalIcon,
-                                            url: 'https://help.shopify.com',
-                                            target: '_blank',
-                                        }}
-                                        size="small"
-                                        description="We recommend watching this short tutorial to get quickly started instalation and creating bundles."
-                                        popoverActions={[{ content: 'Dismiss', onAction: () => {} }]}>
-                                        <VideoThumbnail
-                                            videoLength={80}
-                                            thumbnailUrl="https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850"
-                                            onClick={() => console.log('clicked')}
-                                        />
-                                    </MediaCard>
-                                </InlineGrid>
+                                    </Banner>
+                                    <Divider />
+                                </>
+                            )}
 
-                                <Divider />
-
-                                {/* Activating app embed */}
-                                <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
-                                    <Box as="section">
-                                        <BlockStack gap="400">
-                                            <Text as="h3" variant="headingXl">
-                                                App activation
-                                            </Text>
-                                            <Text as="p" variant="bodyMd">
-                                                Follow these 3 steps to active the Neat bundles app.
-                                            </Text>
+                            {actionResponse && actionResponse !== '/app' && !actionResponse.ok && actionResponse.message ? (
+                                <>
+                                    <Banner title="App wasn't detected in your theme." tone="critical" onDismiss={() => {}}>
+                                        <BlockStack gap={GapInsideSection}>
+                                            <Text as={'p'}>{actionResponse.message}</Text>
                                         </BlockStack>
-                                    </Box>
-                                    <Card>
-                                        <InlineStack gap={GapInsideSection} align="center" blockAlign="start">
-                                            <BlockStack gap={GapBetweenSections} align="end">
-                                                <BlockStack>
-                                                    <Text as="p">
-                                                        1. Click the "<b>Activate app</b>" button
-                                                    </Text>
-                                                    <Text as="p">
-                                                        2. Click "<b>Save</b>" in Shopify theme editor
-                                                    </Text>
-                                                    <Text as="p">3. You're all done</Text>
-                                                </BlockStack>
-                                                <Box>
-                                                    <InlineStack align="end">
-                                                        <Button
-                                                            variant="primary"
-                                                            target="_blank"
-                                                            url={`https://${data.storeUrl}/admin/themes/current/editor?context=apps&activateAppId=${data.appId}/${'embed_block'}`}>
-                                                            Activate app
-                                                        </Button>
-                                                    </InlineStack>
-                                                </Box>
-                                            </BlockStack>
-                                            <video src={ActivateVideo} autoPlay width={370} loop></video>
-                                        </InlineStack>
-                                    </Card>
-                                </InlineGrid>
+                                    </Banner>
+                                    <Divider />
+                                </>
+                            ) : (
+                                <></>
+                            )}
 
-                                <Divider />
-
-                                {/* Theme compatibility */}
-                                <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
-                                    <Box as="section">
-                                        <BlockStack gap="400">
-                                            <Text as="h3" variant="headingMd">
-                                                Theme compatibility
-                                            </Text>
-                                            <Text as="p" variant="bodyMd">
-                                                Neat bundles is compatible with all{' '}
-                                                <Link to="https://www.shopify.com/partners/blog/shopify-online-store" target="_blank">
-                                                    Online store 2.0
-                                                </Link>{' '}
-                                                themes.
-                                            </Text>
-                                        </BlockStack>
-                                    </Box>
-                                    <Card>
-                                        <BlockStack>
-                                            {data.activeTheme.compatible ? (
-                                                <InlineStack gap={GapBetweenSections}>
-                                                    <InlineStack gap={GapInsideSection}>
-                                                        <Text as="h3">
-                                                            Your active theme <b>{data.activeTheme.name}</b> is compatible with Neat Bundles.
-                                                        </Text>
-                                                        <Badge tone="success" icon={CheckIcon}>
-                                                            Theme compatible
-                                                        </Badge>
-                                                    </InlineStack>
-
-                                                    <Text as="p" fontWeight="bold">
-                                                        If you change your theme, make sure to come back here and check if Neat Bundles supports your new theme.
-                                                    </Text>
-                                                    <Text as="p">
-                                                        If you have trouble activating the app, send us an email at{' '}
-                                                        <Link to="mailto:support@neatmerchantcom">support@neatmerchant.com</Link> and we will help you with the activation.
-                                                    </Text>
-                                                </InlineStack>
-                                            ) : (
-                                                <InlineStack gap={GapInsideSection}>
-                                                    <InlineStack gap={GapInsideSection}>
-                                                        <Text as="h3">
-                                                            Your theme <b>{data.activeTheme.name}</b> is unfortunately not compatible with Neat Bundles.
-                                                        </Text>
-
-                                                        <Badge tone="critical" icon={XSmallIcon}>
-                                                            Theme not compatible
-                                                        </Badge>
-                                                    </InlineStack>
-
-                                                    <Text as="p">You are either using a custom theme or Online store 1.0 theme. </Text>
-                                                    <Text as="p">
-                                                        Send us an email at <Link to="mailto:support@neatmerchantcom">support@neatmerchant.com</Link> and we can help you integrate
-                                                        our app with your theme. Exept in some extreme cases (very old or poorly designed theme){' '}
-                                                        <b>integration will be free of charge.</b>
-                                                    </Text>
-                                                </InlineStack>
-                                            )}
-                                        </BlockStack>
-                                    </Card>
-                                </InlineGrid>
-
-                                <Box width="full">
-                                    <BlockStack inlineAlign="end">
-                                        <Button variant="primary" onClick={handleFinishInstalation}>
-                                            Finish installation
-                                        </Button>
+                            {/* Video tutorial */}
+                            <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                                <Box as="section">
+                                    <BlockStack gap="400">
+                                        <Text as="h3" variant="headingMd">
+                                            Video tutorial
+                                        </Text>
                                     </BlockStack>
                                 </Box>
-                                <Divider borderColor="transparent" />
-                            </BlockStack>
-                        </div>
+                                <MediaCard
+                                    title="Watch a short tutorial to get quickly started"
+                                    primaryAction={{
+                                        content: 'Watch tutorial',
+                                        icon: ExternalIcon,
+                                        url: 'https://help.shopify.com',
+                                        target: '_blank',
+                                    }}
+                                    size="small"
+                                    description="We recommend watching this short tutorial to get quickly started instalation and creating bundles."
+                                    popoverActions={[{ content: 'Dismiss', onAction: () => {} }]}>
+                                    <VideoThumbnail
+                                        videoLength={80}
+                                        thumbnailUrl="https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850"
+                                        onClick={() => console.log('clicked')}
+                                    />
+                                </MediaCard>
+                            </InlineGrid>
+
+                            <Divider />
+
+                            {/* Activating app embed */}
+                            <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                                <Box as="section">
+                                    <BlockStack gap="400">
+                                        <Text as="h3" variant="headingXl">
+                                            App activation
+                                        </Text>
+                                        <Text as="p" variant="bodyMd">
+                                            Follow these 3 steps to active the Neat bundles app.
+                                        </Text>
+                                    </BlockStack>
+                                </Box>
+                                <Card>
+                                    <InlineStack gap={GapInsideSection} align="center" blockAlign="start">
+                                        <BlockStack gap={GapBetweenSections} align="end">
+                                            <BlockStack>
+                                                <Text as="p">
+                                                    1. Click the "<b>Activate app</b>" button
+                                                </Text>
+                                                <Text as="p">
+                                                    2. Click "<b>Save</b>" in Shopify theme editor
+                                                </Text>
+                                                <Text as="p">3. You're all done</Text>
+                                            </BlockStack>
+                                            <Box>
+                                                <InlineStack align="end">
+                                                    <Button
+                                                        variant="primary"
+                                                        target="_blank"
+                                                        url={`https://${data.storeUrl}/admin/themes/current/editor?context=apps&activateAppId=${data.appId}/${'embed_block'}`}>
+                                                        Activate app
+                                                    </Button>
+                                                </InlineStack>
+                                            </Box>
+                                        </BlockStack>
+                                        <video src={ActivateVideo} autoPlay width={370} loop></video>
+                                    </InlineStack>
+                                </Card>
+                            </InlineGrid>
+
+                            <Divider />
+
+                            {/* Theme compatibility */}
+                            <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                                <Box as="section">
+                                    <BlockStack gap="400">
+                                        <Text as="h3" variant="headingMd">
+                                            Theme compatibility
+                                        </Text>
+                                        <Text as="p" variant="bodyMd">
+                                            Neat bundles is compatible with all{' '}
+                                            <Link to="https://www.shopify.com/partners/blog/shopify-online-store" target="_blank">
+                                                Online store 2.0
+                                            </Link>{' '}
+                                            themes.
+                                        </Text>
+                                    </BlockStack>
+                                </Box>
+                                <Card>
+                                    <BlockStack>
+                                        {data.activeTheme.compatible ? (
+                                            <InlineStack gap={GapBetweenSections}>
+                                                <InlineStack gap={GapInsideSection}>
+                                                    <Text as="h3">
+                                                        Your active theme <b>{data.activeTheme.name}</b> is compatible with Neat Bundles.
+                                                    </Text>
+                                                    <Badge tone="success" icon={CheckIcon}>
+                                                        Theme compatible
+                                                    </Badge>
+                                                </InlineStack>
+
+                                                <Text as="p" fontWeight="bold">
+                                                    If you change your theme, make sure to come back here and check if Neat Bundles supports your new theme.
+                                                </Text>
+                                                <Text as="p">
+                                                    If you have trouble activating the app, send us an email at{' '}
+                                                    <Link to="mailto:support@neatmerchantcom">support@neatmerchant.com</Link> and we will help you with the activation.
+                                                </Text>
+                                            </InlineStack>
+                                        ) : (
+                                            <InlineStack gap={GapInsideSection}>
+                                                <InlineStack gap={GapInsideSection}>
+                                                    <Text as="h3">
+                                                        Your theme <b>{data.activeTheme.name}</b> is unfortunately not compatible with Neat Bundles.
+                                                    </Text>
+
+                                                    <Badge tone="critical" icon={XSmallIcon}>
+                                                        Theme not compatible
+                                                    </Badge>
+                                                </InlineStack>
+
+                                                <Text as="p">You are either using a custom theme or Online store 1.0 theme. </Text>
+                                                <Text as="p">
+                                                    Send us an email at <Link to="mailto:support@neatmerchantcom">support@neatmerchant.com</Link> and we can help you integrate our
+                                                    app with your theme. Exept in some extreme cases (very old or poorly designed theme) <b>integration will be free of charge.</b>
+                                                </Text>
+                                            </InlineStack>
+                                        )}
+                                    </BlockStack>
+                                </Card>
+                            </InlineGrid>
+
+                            <Box width="full">
+                                <BlockStack inlineAlign="end">
+                                    <Form method="post">
+                                        <input type="text" name="action" value="FINISH_INSTALL" hidden />
+                                        <Button variant="primary" submit>
+                                            Finish installation
+                                        </Button>
+                                    </Form>
+                                </BlockStack>
+                            </Box>
+                            <Divider borderColor="transparent" />
+                        </BlockStack>
                     </Page>
                 </>
             )}

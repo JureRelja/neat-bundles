@@ -90,7 +90,7 @@ export default function Index() {
 
     useEffect(() => {
         navigate(loaderResponse.data.redirect);
-    }, []);
+    }, [loaderResponse]);
 
     return (
         <SkeletonPage primaryAction>
