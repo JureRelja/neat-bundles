@@ -18,7 +18,7 @@ import { shopifyBundleBuilderProductRepository } from '~/adminBackend/repository
 import { unauthenticated } from '~/shopify.server';
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-    const res = await checkPublicAuth(request); //Public auth check
+    const res = await checkPublicAuth(request, true); //Public auth check
 
     if (!res.ok)
         return json(res, {
@@ -32,13 +32,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const url = new URL(request.url);
     const shop = url.searchParams.get('shop') as string;
     const bundleBuilderId = url.searchParams.get('bundleId');
-    const isBundleInPreview = url.searchParams.get(bundlePagePreviewKey);
 
     const { admin } = await unauthenticated.admin(shop);
-
-    if (isBundleInPreview === 'true') {
-        return json(new JsonData(true, 'success', "You can't create a bundle.", []));
-    }
 
     try {
         const formData = await request.formData();

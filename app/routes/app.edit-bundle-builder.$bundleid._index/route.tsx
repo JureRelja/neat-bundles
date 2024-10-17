@@ -220,15 +220,7 @@ export default function Index() {
                                 variant="primary"
                                 tone="critical"
                                 onClick={() => {
-                                    // const form = new FormData();
-                                    // form.append('action', 'deleteBundle');
-
-                                    // fetcher.submit(form, {
-                                    //     method: 'post',
-                                    //     action: `/app/edit-bundle-builder/${params.bundleid}`,
-                                    // });
                                     navigateSubmit('deleteBundle', `/app/edit-bundle-builder/${params.bundleid}?redirect=true`);
-
                                     setShowDeleteModal(false);
                                 }}>
                                 Delete
@@ -284,7 +276,7 @@ export default function Index() {
                         subtitle="Edit bundle details and steps"
                         compactTitle>
                         <Outlet />
-                        <Form method="POST" data-discard-confirmation data-save-bar>
+                        <Form method="POST" data-discard-confirmation data-save-bar action={`/app/edit-bundle-builder/${serverBundle.id}`}>
                             <BlockStack gap={GapBetweenSections}>
                                 <Layout>
                                     <Layout.Section>
@@ -658,6 +650,9 @@ export default function Index() {
                                             </Button>
                                             <Button variant="primary" submit>
                                                 Save
+                                            </Button>
+                                            <Button variant="primary" id="saveAndNavigateBack" submit>
+                                                Save and go back
                                             </Button>
                                         </ButtonGroup>
                                     </BlockStack>

@@ -144,7 +144,7 @@ export default function Index() {
                                                 <Button
                                                     variant="primary"
                                                     target="_blank"
-                                                    url={`https://${data.user.storeUrl}/admin/themes/current/editor?context=apps&previewPath=/pages/${data.bundleBuilderHandle}&appEmbed=${data.appId}/${'embed_block'}`}>
+                                                    url={`https://${data.user.storeUrl}/admin/themes/current/editor?context=apps&previewPath=/pages/${data.bundleBuilderHandle}?neatBundlePreview=true&appEmbed=${data.appId}/${'embed_block'}`}>
                                                     Edit styles
                                                 </Button>
                                             </BlockStack>
