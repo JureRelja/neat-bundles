@@ -83,7 +83,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     return json(
         {
-            ...new JsonData(true, 'success', 'Customer freshly installed the app.', [], { redirect: '/app/bundles' }),
+            ...new JsonData(true, 'success', 'Customer freshly installed the app.', [], { redirect: `/app/users/${user.id}/bundles` }),
         },
         { status: 500 },
     );

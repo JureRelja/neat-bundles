@@ -20,6 +20,8 @@ import {
     Divider,
     InlineGrid,
     CalloutCard,
+    FooterHelp,
+    InlineStack,
 } from '@shopify/polaris';
 import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from '@shopify/polaris-icons';
 import { authenticate } from '../../shopify.server';
@@ -68,12 +70,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         };
     });
 
-    const url = new URL(request.url);
-    const installSuccessBanner = url.searchParams.get('installSuccess');
-
     return json(
         {
-            ...new JsonData(true, 'success', `${installSuccessBanner === 'true' ? 'Succesful app install.' : 'Bundles succesfuly retrieved.'}`, [], bundleBuildersWithPageUrl),
+            ...new JsonData(true, 'success', 'Bundles succesfuly retrieved.', [], bundleBuildersWithPageUrl),
         },
         { status: 200 },
     );
@@ -122,13 +121,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 console.log(error);
             }
         }
-        case 'hideTutorial': {
-            const user = await userRepository.getUserByStoreUrl(session.shop);
 
-            if (!user) return redirect('/app');
-
-            await userRepository.updateUser({ ...user });
-        }
         default: {
             return json(
                 {
@@ -154,10 +147,6 @@ export default function Index() {
     const createBundle = () => {
         navigateSubmit('createBundle', '/app/bundles');
     };
-
-    //Client state
-    // const [showBanner, setShowBanner] = useState(true);
-    const [showTutorial, setShowTutorial] = useState(true);
 
     const [bundleForDelete, setBundleForDelete] = useState<BundleAndStepsBasicClient | null>(null);
     const [showBundleDeleteConfirmModal, setShowBundleDeleteConfirmModal] = useState(false);
@@ -210,7 +199,17 @@ export default function Index() {
                         </TitleBar>
                     </Modal>
 
-                    <Page
+                    <BlockStack gap={GapBetweenSections}>
+                        <InlineStack align="space-between">
+                            <Text as="h3" variant="headingLg">
+                                Bundles
+                            </Text>
+                            <Button icon={PlusIcon} variant="primary" onClick={createBundle}>
+                                Create bundle
+                            </Button>
+                        </InlineStack>
+
+                        {/* <Page
                         title="Bundles"
                         primaryAction={
                             <Button icon={PlusIcon} variant="primary" onClick={createBundle}>
@@ -218,8 +217,8 @@ export default function Index() {
                             </Button>
                         }>
                         <BlockStack gap={'800'}>
-                            <BlockStack gap={GapBetweenSections}>
-                                {loaderResponse.message === 'Succesful app install.' && (
+                            <BlockStack gap={GapBetweenSections}> */}
+                        {/* {loaderResponse.message === 'Succesful app install.' && (
                                     <>
                                         <Banner title="Installation successfull, congradulation!" tone="success" onDismiss={() => {}}>
                                             <BlockStack gap={GapInsideSection}>
@@ -231,49 +230,49 @@ export default function Index() {
                                         </Banner>
                                         <Divider />
                                     </>
-                                )}
+                                )} */}
 
-                                <div id={styles.tableWrapper}>
-                                    <div className={tableLoading ? styles.loadingTable : styles.hide}>
-                                        <Spinner accessibilityLabel="Spinner example" size="large" />
-                                    </div>
-                                    <Card>
-                                        {bundleBuilders.length > 0 ? (
-                                            <DataTable
-                                                columnContentTypes={['text', 'text', 'text', 'text', 'text', 'text']}
-                                                headings={['Bundle ID', 'Name', 'Steps', 'Status', 'Actions', 'Settings', 'Preview']}
-                                                rows={bundleBuilders.map((bundleBuilder: BundleAndStepsBasicClient) => {
-                                                    return [
-                                                        <Text as="p" tone="base">
-                                                            {bundleBuilder.id}
-                                                        </Text>,
+                        <div id={styles.tableWrapper}>
+                            <div className={tableLoading ? styles.loadingTable : styles.hide}>
+                                <Spinner accessibilityLabel="Spinner example" size="large" />
+                            </div>
+                            <Card>
+                                {bundleBuilders.length > 0 ? (
+                                    <DataTable
+                                        columnContentTypes={['text', 'text', 'text', 'text', 'text', 'text']}
+                                        headings={['Bundle ID', 'Name', 'Steps', 'Status', 'Actions', 'Settings', 'Preview']}
+                                        rows={bundleBuilders.map((bundleBuilder: BundleAndStepsBasicClient) => {
+                                            return [
+                                                <Text as="p" tone="base">
+                                                    {bundleBuilder.id}
+                                                </Text>,
 
-                                                        //
-                                                        <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
-                                                            <Text as="p" tone="base">
-                                                                {bundleBuilder.title}
-                                                            </Text>
-                                                        </Link>,
-                                                        //
-                                                        bundleBuilder.steps.length,
-                                                        //
-                                                        <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
-                                                            {bundleBuilder.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
-                                                        </Link>,
-                                                        //
-                                                        <ButtonGroup>
-                                                            <Button
-                                                                icon={DeleteIcon}
-                                                                variant="secondary"
-                                                                tone="critical"
-                                                                onClick={() => {
-                                                                    setBundleForDelete(bundleBuilder);
-                                                                    setShowBundleDeleteConfirmModal(true);
-                                                                }}>
-                                                                Delete
-                                                            </Button>
+                                                //
+                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
+                                                    <Text as="p" tone="base">
+                                                        {bundleBuilder.title}
+                                                    </Text>
+                                                </Link>,
+                                                //
+                                                bundleBuilder.steps.length,
+                                                //
+                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
+                                                    {bundleBuilder.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
+                                                </Link>,
+                                                //
+                                                <ButtonGroup>
+                                                    <Button
+                                                        icon={DeleteIcon}
+                                                        variant="secondary"
+                                                        tone="critical"
+                                                        onClick={() => {
+                                                            setBundleForDelete(bundleBuilder);
+                                                            setShowBundleDeleteConfirmModal(true);
+                                                        }}>
+                                                        Delete
+                                                    </Button>
 
-                                                            {/* <Button
+                                                    {/* <Button
                                                         icon={PageAddIcon}
                                                         variant="secondary"
                                                         onClick={() => {
@@ -287,49 +286,49 @@ export default function Index() {
                                                         Duplicate
                                                         </Button> */}
 
-                                                            <Button icon={EditIcon} variant="primary" url={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
-                                                                Edit
-                                                            </Button>
-                                                        </ButtonGroup>,
-                                                        //
-                                                        <Button
-                                                            icon={SettingsIcon}
-                                                            variant="secondary"
-                                                            tone="success"
-                                                            url={`/app/edit-bundle-builder/${bundleBuilder.id}/settings/?redirect=/app/edit-bundle-builder`}>
-                                                            Settings
-                                                        </Button>,
-                                                        <Button
-                                                            icon={ExternalIcon}
-                                                            variant="secondary"
-                                                            tone="success"
-                                                            url={`${bundleBuilder.bundleBuilderPageUrl}?${bundlePagePreviewKey}=true`}
-                                                            target="_blank">
-                                                            Preview
-                                                        </Button>,
-                                                    ];
-                                                })}></DataTable>
-                                        ) : (
-                                            <EmptyState
-                                                heading="Let’s create the first custom bundle for your customers!"
-                                                action={{
-                                                    content: 'Create bundle',
-                                                    icon: PlusIcon,
-                                                    onAction: createBundle,
-                                                }}
-                                                fullWidth
-                                                image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png">
-                                                <p>Your customers will be able to use the custom bundles you create to create and buy their own custom bundles.</p>
-                                            </EmptyState>
-                                        )}
-                                    </Card>
-                                </div>
-                            </BlockStack>
+                                                    <Button icon={EditIcon} variant="primary" url={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
+                                                        Edit
+                                                    </Button>
+                                                </ButtonGroup>,
+                                                //
+                                                <Button
+                                                    icon={SettingsIcon}
+                                                    variant="secondary"
+                                                    tone="success"
+                                                    url={`/app/edit-bundle-builder/${bundleBuilder.id}/settings/?redirect=/app/edit-bundle-builder`}>
+                                                    Settings
+                                                </Button>,
+                                                <Button
+                                                    icon={ExternalIcon}
+                                                    variant="secondary"
+                                                    tone="success"
+                                                    url={`${bundleBuilder.bundleBuilderPageUrl}?${bundlePagePreviewKey}=true`}
+                                                    target="_blank">
+                                                    Preview
+                                                </Button>,
+                                            ];
+                                        })}></DataTable>
+                                ) : (
+                                    <EmptyState
+                                        heading="Let’s create the first custom bundle for your customers!"
+                                        action={{
+                                            content: 'Create bundle',
+                                            icon: PlusIcon,
+                                            onAction: createBundle,
+                                        }}
+                                        fullWidth
+                                        image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png">
+                                        <p>Your customers will be able to use the custom bundles you create to create and buy their own custom bundles.</p>
+                                    </EmptyState>
+                                )}
+                            </Card>
+                        </div>
+                    </BlockStack>
 
-                            <Divider />
+                    {/* <Divider />
 
                             <BlockStack gap={GapBetweenSections}>
-                                {/* Video tutorial on how to use the app */}
+
                                 {showTutorial && (
                                     <MediaCard
                                         title="Watch a short tutorial to get quickly started"
@@ -346,7 +345,7 @@ export default function Index() {
                                             {
                                                 content: 'Dismiss',
                                                 onAction: () => {
-                                                    setShowTutorial(false);
+                                                    navigateSubmit('hideTutorial', `/app/users/${params.userid}`);
                                                 },
                                             },
                                         ]}>
@@ -358,7 +357,7 @@ export default function Index() {
                                     </MediaCard>
                                 )}
 
-                                {/* How it works */}
+
                                 <CalloutCard
                                     title={
                                         <Text as="h3" variant="headingMd">
@@ -377,7 +376,7 @@ export default function Index() {
 
                                 <Divider />
 
-                                {/* Banner for encuraging users to rate the app */}
+
                                 <Banner title="Enjoying the app?" tone="success">
                                     <BlockStack gap="200">
                                         <Box>
@@ -391,9 +390,14 @@ export default function Index() {
                                 </Banner>
 
                                 <Divider borderColor="transparent" />
+                                <FooterHelp>
+                                    View the <Link to="https://help.shopify.com/manual/orders/fulfill-orders">help docs</Link>,
+                                    <Link to="https://help.shopify.com/manual/orders/fulfill-orders">suggest new features</Link>, or
+                                    <Link to="https://help.shopify.com/manual/orders/fulfill-orders">contact us</Link> for support.
+                                </FooterHelp>
                             </BlockStack>
                         </BlockStack>
-                    </Page>
+                    </Page> */}
                 </>
             )}
         </>

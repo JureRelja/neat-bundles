@@ -270,8 +270,7 @@ export default function Index() {
                                         target: '_blank',
                                     }}
                                     size="small"
-                                    description="We recommend watching this short tutorial to get quickly started instalation and creating bundles."
-                                    popoverActions={[{ content: 'Dismiss', onAction: () => {} }]}>
+                                    description="We recommend watching this short tutorial to get quickly started instalation and creating bundles.">
                                     <VideoThumbnail
                                         videoLength={80}
                                         thumbnailUrl="https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850"
