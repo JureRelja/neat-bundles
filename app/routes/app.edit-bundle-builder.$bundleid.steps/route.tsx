@@ -1,9 +1,9 @@
-import { BlockStack, Divider, SkeletonPage, Page, Badge, SkeletonBodyText, Card } from '@shopify/polaris';
+import { BlockStack, Divider, SkeletonPage, Page, Badge, SkeletonBodyText, Card, FooterHelp } from '@shopify/polaris';
 import { GapBetweenSections } from '../../constants';
 import { StepType } from '@prisma/client';
 import { json, redirect } from '@remix-run/node';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { useNavigation, useLoaderData, useNavigate, Outlet, useParams, useRevalidator } from '@remix-run/react';
+import { useNavigation, useLoaderData, useNavigate, Outlet, useParams, useRevalidator, Link } from '@remix-run/react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
 import db from '../../db.server';
@@ -461,6 +461,13 @@ export default function Index({}) {
                         {/* </Layout> */}
                         <Outlet />
                         <Divider borderColor="transparent" />
+                        <FooterHelp>
+                            View the <Link to="/app/featureRequest">help docs</Link>, <Link to="/app/featureRequest">suggest new features</Link>, or{' '}
+                            <Link to="mailto:contact@neatmerchant.com" target="_blank">
+                                contact us
+                            </Link>{' '}
+                            for support.
+                        </FooterHelp>
                     </BlockStack>
                 </Page>
             )}

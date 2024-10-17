@@ -204,9 +204,11 @@ export default function Index() {
                                 <Divider borderColor="transparent" />
 
                                 <FooterHelp>
-                                    View the <Link to="https://help.shopify.com/manual/orders/fulfill-orders">help docs</Link>,
-                                    <Link to="https://help.shopify.com/manual/orders/fulfill-orders">suggest new features</Link>, or
-                                    <Link to="https://help.shopify.com/manual/orders/fulfill-orders">contact us</Link> for support.
+                                    View the <Link to="/app/featureRequest">help docs</Link>, <Link to="/app/featureRequest">suggest new features</Link>, or{' '}
+                                    <Link to="mailto:contact@neatmerchant.com" target="_blank">
+                                        contact us
+                                    </Link>{' '}
+                                    for support.
                                 </FooterHelp>
                             </BlockStack>
                         </BlockStack>

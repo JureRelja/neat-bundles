@@ -24,6 +24,7 @@ import {
     Spinner,
     Divider,
     Layout,
+    FooterHelp,
 } from '@shopify/polaris';
 import {
     DeleteIcon,
@@ -662,6 +663,13 @@ export default function Index() {
                                     </BlockStack>
                                 </Box>
                                 <Divider borderColor="transparent" />
+                                <FooterHelp>
+                                    View the <Link to="/app/featureRequest">help docs</Link>, <Link to="/app/featureRequest">suggest new features</Link>, or{' '}
+                                    <Link to="mailto:contact@neatmerchant.com" target="_blank">
+                                        contact us
+                                    </Link>{' '}
+                                    for support.
+                                </FooterHelp>
                             </BlockStack>
                         </Form>
                     </Page>

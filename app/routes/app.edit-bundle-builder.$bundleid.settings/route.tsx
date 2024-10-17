@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import { useLoaderData, useNavigation, useNavigate, Form } from '@remix-run/react';
+import { useLoaderData, useNavigation, useNavigate, Form, Link } from '@remix-run/react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
 import db from '../../db.server';
@@ -8,7 +8,6 @@ import {
     Card,
     BlockStack,
     Text,
-    RangeSlider,
     Divider,
     InlineGrid,
     ChoiceList,
@@ -21,9 +20,8 @@ import {
     Icon,
     InlineStack,
     FooterHelp,
-    Link,
 } from '@shopify/polaris';
-import { BigGapBetweenSections, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '../../constants';
+import { BigGapBetweenSections, GapBetweenSections } from '../../constants';
 import { SettingsWithAllResources, settingsIncludeAll } from '../../adminBackend/service/dto/BundleSettings';
 import { QuestionCircleIcon } from '@shopify/polaris-icons';
 import { useState } from 'react';
@@ -228,9 +226,7 @@ export default function Index() {
                                     />
                                 </Card>
                             </InlineGrid>
-
                             <Divider />
-
                             <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
                                 <Box as="section">
                                     <BlockStack gap="400">
@@ -303,9 +299,7 @@ export default function Index() {
                                     />
                                 </Card>
                             </InlineGrid>
-
                             <Divider />
-
                             <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
                                 <Box as="section">
                                     <BlockStack gap="400">
@@ -349,7 +343,6 @@ export default function Index() {
                                     />
                                 </Card>
                             </InlineGrid>
-
                             <BlockStack gap={GapBetweenSections}>
                                 {/* Save action */}
                                 <BlockStack inlineAlign="end">
@@ -359,10 +352,16 @@ export default function Index() {
                                 </BlockStack>
 
                                 <FooterHelp>
-                                    This settings only apply to this bundle. Edit <Link url="/app/settings">global settings</Link> to apply changes to all bundles.
+                                    This settings only apply to this bundle. Edit <Link to="/app/settings">global settings</Link> to apply changes to all bundles.
                                 </FooterHelp>
                             </BlockStack>
-                            <Divider borderColor="transparent" />
+                            {/* <FooterHelp>
+                                View the <Link to="/app/featureRequest">help docs</Link>, <Link to="/app/featureRequest">suggest new features</Link>, or{' '}
+                                <Link to="mailto:contact@neatmerchant.com" target="_blank">
+                                    contact us
+                                </Link>{' '}
+                                for support.
+                            </FooterHelp> */}
                         </BlockStack>
                     </Form>
                 </Page>

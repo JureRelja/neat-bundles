@@ -1,5 +1,5 @@
 import { json, redirect } from '@remix-run/node';
-import { useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams } from '@remix-run/react';
+import { useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Link } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import {
     Page,
@@ -22,6 +22,7 @@ import {
     Icon,
     InlineGrid,
     Divider,
+    FooterHelp,
 } from '@shopify/polaris';
 import { DeleteIcon, PlusIcon, ArrowDownIcon, ArrowUpIcon, PageAddIcon, EditIcon, QuestionCircleIcon, ExternalIcon, SettingsIcon, RefreshIcon } from '@shopify/polaris-icons';
 import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';
@@ -169,6 +170,14 @@ export default function Index() {
                                         />
                                     </Card>
                                 </InlineGrid>
+                                <Divider borderColor="transparent" />
+                                <FooterHelp>
+                                    View the <Link to="/app/featureRequest">help docs</Link>, <Link to="/app/featureRequest">suggest new features</Link>, or{' '}
+                                    <Link to="mailto:contact@neatmerchant.com" target="_blank">
+                                        contact us
+                                    </Link>{' '}
+                                    for support.
+                                </FooterHelp>
                             </BlockStack>
                             {/* Labels settings, commented for now */}
                             {/* <InlineGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="400">
