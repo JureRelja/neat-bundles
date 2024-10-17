@@ -1,38 +1,15 @@
 import { json, redirect } from '@remix-run/node';
 import { useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Link } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import {
-    Page,
-    Card,
-    Button,
-    BlockStack,
-    Text,
-    Box,
-    SkeletonPage,
-    ChoiceList,
-    SkeletonBodyText,
-    SkeletonDisplayText,
-    ButtonGroup,
-    DataTable,
-    EmptyState,
-    InlineStack,
-    Badge,
-    Select,
-    Tooltip,
-    Icon,
-    InlineGrid,
-    Divider,
-    FooterHelp,
-} from '@shopify/polaris';
-import { DeleteIcon, PlusIcon, ArrowDownIcon, ArrowUpIcon, PageAddIcon, EditIcon, QuestionCircleIcon, ExternalIcon, SettingsIcon, RefreshIcon } from '@shopify/polaris-icons';
-import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';
+import { Page, Card, Button, BlockStack, Text, Box, SkeletonPage, SkeletonBodyText, InlineGrid, Divider, FooterHelp, Banner } from '@shopify/polaris';
+import { useAppBridge } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
-import { BigGapBetweenSections } from '../../constants';
+import { BigGapBetweenSections, GapInsideSection } from '../../constants';
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
-import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '../../hooks/useNavigateSubmit';
 import globalSettingsRepository from '~/adminBackend/repository/impl/GlobalSettingsRepository';
 import userRepository from '~/adminBackend/repository/impl/UserRepository';
+import bundleBuilderRepository, { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -41,7 +18,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     if (!globalSettings || !user) return redirect('/app');
 
-    return json(new JsonData(true, 'success', 'Global settings retrieved', [], { user, globalSettings }));
+    const bundleBuilder = await bundleBuilderRepository.getFirstActiveBundleBuilder(session.shop);
+
+    return json(
+        new JsonData(true, 'success', 'Global settings retrieved', [], {
+            user,
+            appId: process.env.SHOPIFY_BUNDLE_UI_ID,
+            bundleBuilderHandle: bundleBuilder?.bundleBuilderPageHandle,
+            globalSettings: globalSettings,
+        }),
+    );
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -121,8 +107,54 @@ export default function Index() {
                         compactTitle>
                         <Form method="POST" data-discard-confirmation data-save-bar>
                             <BlockStack gap={BigGapBetweenSections}>
-                                {/* Show/hide out of stock products */}
-                                <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                                {!data.bundleBuilderHandle ? (
+                                    <Banner title="Uups, there are no bundles created." tone="warning" onDismiss={() => {}}>
+                                        <BlockStack gap={GapInsideSection}>
+                                            <Text as={'p'} variant="headingMd">
+                                                Please create your first bundle, and then come back here to edit settings.
+                                            </Text>
+                                            <Box>
+                                                <Button variant="primary" url="/app">
+                                                    Create bundle
+                                                </Button>
+                                            </Box>
+                                        </BlockStack>
+                                    </Banner>
+                                ) : (
+                                    /* Edit settings, if there is at least one bundle created */
+
+                                    // Edit styles
+                                    <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                                        <Box as="section">
+                                            <BlockStack gap="400">
+                                                <Text as="h3" variant="headingMd">
+                                                    Styles
+                                                </Text>
+                                                <Text as={'p'}>Edit styles and other visual settings of your bundles.</Text>
+                                            </BlockStack>
+                                        </Box>
+                                        <Card>
+                                            <BlockStack gap={GapInsideSection}>
+                                                <Text as="p">All styling changes are doing using the Shopify's native theme editor.</Text>
+                                                <Text as="p">
+                                                    When you click 'Edit styles', a new tab with open up where you'll be able to edit how your bundle looks. The editing process is
+                                                    the same as if you were editing your theme.
+                                                </Text>
+
+                                                <Button
+                                                    variant="primary"
+                                                    target="_blank"
+                                                    url={`https://${data.user.storeUrl}/admin/themes/current/editor?context=apps&previewPath=/pages/${data.bundleBuilderHandle}&appEmbed=${data.appId}/${'embed_block'}`}>
+                                                    Edit styles
+                                                </Button>
+                                            </BlockStack>
+                                        </Card>
+                                    </InlineGrid>
+
+                                    /* Show/hide out of stock products */
+                                    /* 
+                                  <Divider />
+                                  <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
                                     <Box as="section">
                                         <BlockStack gap="400">
                                             <Text as="h3" variant="headingMd">
@@ -157,31 +189,8 @@ export default function Index() {
                                             onChange={(value) => {}}
                                         />
                                     </Card>
-                                </InlineGrid>
-
-                                <Divider />
-
-                                {/* Show/hide out of stock products */}
-                                <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
-                                    <Box as="section">
-                                        <BlockStack gap="400">
-                                            <Text as="h3" variant="headingMd">
-                                                Styles
-                                            </Text>
-                                            <Text as="p" variant="bodyMd">
-                                                Edit colors and other styling options.
-                                            </Text>
-                                        </BlockStack>
-                                    </Box>
-                                    <Card>
-                                        <Button
-                                            variant="primary"
-                                            target="_blank"
-                                            url={`https://${data.user.storeUrl}/admin/themes/current/editor?context=apps&activateAppId=${data.user.storeUrl}/${'embed_block'}`}>
-                                            Activate app
-                                        </Button>
-                                    </Card>
-                                </InlineGrid>
+                                </InlineGrid> */
+                                )}
 
                                 <Divider borderColor="transparent" />
 

@@ -140,7 +140,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
                     await userRepository.updateUser(user);
 
-                    return redirect('/app/bundles?installSuccess=true');
+                    return redirect(`/app/users/${user.id}/bundles?installSuccess=true`);
                 }
             } catch (err) {
                 console.log(err);

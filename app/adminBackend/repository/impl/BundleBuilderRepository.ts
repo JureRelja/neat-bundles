@@ -1,5 +1,6 @@
 import { Page } from '@shopifyGraphql/graphql';
 import db from '../../../db.server';
+import { BundleBuilder } from '@prisma/client';
 
 export class BundleBuilderRepository {
     public static async createNewBundleBuilder(shop: string, bundleTitle: string, bundleProductId: string, bundlePageId: string, bundleBuilderPageHandle: string) {
@@ -129,6 +130,24 @@ export class BundleBuilderRepository {
         return bundle;
     }
 
+    public async getAllActiveBundleBuilders(storeUrl: string): Promise<BundleBuilder[] | null> {
+        return db.bundleBuilder.findMany({
+            where: {
+                storeUrl: storeUrl,
+                deleted: false,
+            },
+        });
+    }
+
+    public async getFirstActiveBundleBuilder(storeUrl: string): Promise<BundleBuilder | null> {
+        return db.bundleBuilder.findFirst({
+            where: {
+                storeUrl: storeUrl,
+                deleted: false,
+            },
+        });
+    }
+
     public static async getBundleBuilderById(bundleBuilderId: number) {
         return db.bundleBuilder.findUnique({
             where: {
@@ -173,3 +192,7 @@ export class BundleBuilderRepository {
         return _max.id;
     }
 }
+
+const bundleBuilderRepository = new BundleBuilderRepository();
+
+export default bundleBuilderRepository;
