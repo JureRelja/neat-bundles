@@ -1,6 +1,5 @@
 import { Prisma, BundleBuilder } from '@prisma/client';
 import { bundleStepBasic } from '@adminBackend/service/dto/BundleStep';
-import { settingsIncludeAll, SettingsWithAllResources } from '@adminBackend/service/dto/BundleSettings';
 
 //Defining basic bundle resources
 export const bundleAndSteps = {
@@ -77,10 +76,7 @@ export type BundleBasic = BundleBasic_temp & {
 //Bundle payload with all resources (used for duplicating bundles)
 export const bundleAllResources = {
     bundleSettings: {
-        include: {
-            bundleColors: true,
-            bundleLabels: true,
-        },
+        include: {},
     },
     steps: {
         include: {
@@ -101,7 +97,7 @@ export type BundleAllResources = Prisma.BundleBuilderGetPayload<{
 export const bundleBasicAndSettings = {
     ...bundleAndSteps,
     bundleSettings: {
-        include: settingsIncludeAll,
+        include: {},
     },
 } satisfies Prisma.BundleBuilderSelect;
 

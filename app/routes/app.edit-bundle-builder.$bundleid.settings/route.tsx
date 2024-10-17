@@ -22,7 +22,6 @@ import {
     FooterHelp,
 } from '@shopify/polaris';
 import { BigGapBetweenSections, GapBetweenSections } from '../../constants';
-import { SettingsWithAllResources, settingsIncludeAll } from '../../adminBackend/service/dto/BundleSettings';
 import { QuestionCircleIcon } from '@shopify/polaris-icons';
 import { useState } from 'react';
 import { JsonData } from '~/adminBackend/service/dto/jsonData';
@@ -33,11 +32,10 @@ import { BundleSettings } from '@prisma/client';
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
 
-    const bundleSettings: SettingsWithAllResources | null = await db.bundleSettings.findUnique({
+    const bundleSettings: BundleSettings | null = await db.bundleSettings.findUnique({
         where: {
             bundleBuilderId: Number(params.bundleid),
         },
-        include: settingsIncludeAll,
     });
 
     if (!bundleSettings) {
@@ -58,14 +56,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
     const formData = await request.formData();
 
-    const bundleSettings: SettingsWithAllResources = JSON.parse(formData.get('bundleSettings') as string);
-
-    if (!bundleSettings || !bundleSettings.bundleColors || !bundleSettings.bundleLabels) {
-        throw new Response(null, {
-            status: 400,
-            statusText: 'Bad Request',
-        });
-    }
+    const bundleSettings: BundleSettings = JSON.parse(formData.get('bundleSettings') as string);
 
     try {
         const result: BundleSettings | null = await db.bundleSettings.update({
@@ -77,30 +68,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 skipTheCart: bundleSettings.skipTheCart,
                 allowBackNavigation: bundleSettings.allowBackNavigation,
                 showOutOfStockProducts: bundleSettings.showOutOfStockProducts,
-                bundleColors: {
-                    update: {
-                        addToBundleBtn: bundleSettings.bundleColors.addToBundleBtn,
-                        addToBundleText: bundleSettings.bundleColors.addToBundleText,
-                        nextStepBtn: bundleSettings.bundleColors.nextStepBtn,
-                        nextStepBtnText: bundleSettings.bundleColors.nextStepBtnText,
-                        viewProductBtn: bundleSettings.bundleColors.viewProductBtn,
-                        viewProductBtnText: bundleSettings.bundleColors.viewProductBtnText,
-                        removeProductsBtn: bundleSettings.bundleColors.removeProductsBtn,
-                        removeProductsBtnText: bundleSettings.bundleColors.removeProductsBtnText,
-                        prevStepBtn: bundleSettings.bundleColors.prevStepBtn,
-                        prevStepBtnText: bundleSettings.bundleColors.prevStepBtnText,
-                        stepsIcon: bundleSettings.bundleColors.stepsIcon,
-                        titleAndDESC: bundleSettings.bundleColors.titleAndDESC,
-                    },
-                },
-                bundleLabels: {
-                    update: {
-                        addToBundleBtn: bundleSettings.bundleLabels.addToBundleBtn,
-                        nextStepBtn: bundleSettings.bundleLabels.nextStepBtn,
-                        viewProductBtn: bundleSettings.bundleLabels.viewProductBtn,
-                        prevStepBtn: bundleSettings.bundleLabels.prevStepBtn,
-                    },
-                },
             },
         });
 
@@ -136,9 +103,9 @@ export default function Index() {
     const shopify = useAppBridge();
     const isLoading: boolean = nav.state != 'idle';
 
-    const serverSettings: SettingsWithAllResources = useLoaderData<typeof loader>().data;
+    const serverSettings: BundleSettings = useLoaderData<typeof loader>().data;
 
-    const [settingsState, setSetttingsState] = useState<SettingsWithAllResources>(serverSettings);
+    const [settingsState, setSetttingsState] = useState<BundleSettings>(serverSettings);
 
     return (
         <>
@@ -216,7 +183,7 @@ export default function Index() {
                                         ]}
                                         selected={settingsState.hidePricingSummary ? ['true'] : []}
                                         onChange={(value) => {
-                                            setSetttingsState((prevSettings: SettingsWithAllResources) => {
+                                            setSetttingsState((prevSettings: BundleSettings) => {
                                                 return {
                                                     ...prevSettings,
                                                     hidePricingSummary: value[0] === 'true',
@@ -260,7 +227,7 @@ export default function Index() {
                                         ]}
                                         selected={settingsState.allowBackNavigation ? ['true'] : []}
                                         onChange={(value) => {
-                                            setSetttingsState((prevSettings: SettingsWithAllResources) => {
+                                            setSetttingsState((prevSettings: BundleSettings) => {
                                                 return {
                                                     ...prevSettings,
                                                     allowBackNavigation: value[0] === 'true',
@@ -289,7 +256,7 @@ export default function Index() {
                                         ]}
                                         selected={settingsState.skipTheCart ? ['true'] : []}
                                         onChange={(value) => {
-                                            setSetttingsState((prevSettings: SettingsWithAllResources) => {
+                                            setSetttingsState((prevSettings: BundleSettings) => {
                                                 return {
                                                     ...prevSettings,
                                                     skipTheCart: value[0] === 'true',
@@ -333,7 +300,7 @@ export default function Index() {
                                         ]}
                                         selected={settingsState.showOutOfStockProducts ? ['true'] : []}
                                         onChange={(value) => {
-                                            setSetttingsState((prevSettings: SettingsWithAllResources) => {
+                                            setSetttingsState((prevSettings: BundleSettings) => {
                                                 return {
                                                     ...prevSettings,
                                                     showOutOfStockProducts: value[0] === 'true',

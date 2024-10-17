@@ -31,32 +31,17 @@ import { BigGapBetweenSections } from '../../constants';
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '../../hooks/useNavigateSubmit';
+import globalSettingsRepository from '~/adminBackend/repository/impl/GlobalSettingsRepository';
+import userRepository from '~/adminBackend/repository/impl/UserRepository';
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
-    // const bundleBuilder = await db.bundleBuilder.findUnique({
-    //     where: {
-    //         id: Number(params.bundleid),
-    //     },
-    //     include: inclBundleFullStepsBasic,
-    // });
+    const [globalSettings, user] = await Promise.all([globalSettingsRepository.getSettingsByStoreUrl(session.shop), userRepository.getUserByStoreUrl(session.shop)]);
 
-    // if (!bundleBuilder) {
-    //     throw new Response(null, {
-    //         status: 404,
-    //         statusText: 'Not Found',
-    //     });
-    // }
+    if (!globalSettings || !user) return redirect('/app');
 
-    // const user = await userRepository.getUserByStoreUrl(session.shop);
-
-    // //Url of the bundle page
-    // const bundleBuilderPageUrl = `${user.primaryDomain}/pages/${bundleBuilder.bundleBuilderPageHandle}`;
-
-    // const bundleBuilderWithPageUrl: BundleFullStepBasicServer = { ...bundleBuilder, bundleBuilderPageUrl };
-
-    return json(new JsonData(true, 'success', 'Bundle succesfuly retrieved', [], null), { status: 200 });
+    return json(new JsonData(true, 'success', 'Global settings retrieved', [], { user, globalSettings }));
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -90,7 +75,9 @@ export default function Index() {
     const navigateSubmit = useNavigateSubmit(); //Function for doing the submit with a navigation (the same if you were to use a From with a submit button)
     const actionData = useActionData<typeof action>();
 
-    const asyncSubmit = useAsyncSubmit(); //Function for doing the submit action where the only data is action and url
+    const loaderData = useLoaderData<typeof loader>();
+
+    const data = loaderData.data;
 
     return (
         <>
@@ -134,6 +121,7 @@ export default function Index() {
                         compactTitle>
                         <Form method="POST" data-discard-confirmation data-save-bar>
                             <BlockStack gap={BigGapBetweenSections}>
+                                {/* Show/hide out of stock products */}
                                 <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
                                     <Box as="section">
                                         <BlockStack gap="400">
@@ -170,7 +158,33 @@ export default function Index() {
                                         />
                                     </Card>
                                 </InlineGrid>
+
+                                <Divider />
+
+                                {/* Show/hide out of stock products */}
+                                <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                                    <Box as="section">
+                                        <BlockStack gap="400">
+                                            <Text as="h3" variant="headingMd">
+                                                Styles
+                                            </Text>
+                                            <Text as="p" variant="bodyMd">
+                                                Edit colors and other styling options.
+                                            </Text>
+                                        </BlockStack>
+                                    </Box>
+                                    <Card>
+                                        <Button
+                                            variant="primary"
+                                            target="_blank"
+                                            url={`https://${data.user.storeUrl}/admin/themes/current/editor?context=apps&activateAppId=${data.user.storeUrl}/${'embed_block'}`}>
+                                            Activate app
+                                        </Button>
+                                    </Card>
+                                </InlineGrid>
+
                                 <Divider borderColor="transparent" />
+
                                 <FooterHelp>
                                     View the <Link to="/app/featureRequest">help docs</Link>, <Link to="/app/featureRequest">suggest new features</Link>, or{' '}
                                     <Link to="mailto:contact@neatmerchant.com" target="_blank">
@@ -179,122 +193,6 @@ export default function Index() {
                                     for support.
                                 </FooterHelp>
                             </BlockStack>
-                            {/* Labels settings, commented for now */}
-                            {/* <InlineGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="400">
-                <Box as="section">
-                  <BlockStack gap="400">
-                    <Text as="h3" variant="headingMd">
-                      Dimensions
-                    </Text>
-                    <Text as="p" variant="bodyMd">
-                      Interjambs are the rounded protruding bits of your puzzlie
-                      piece
-                    </Text>
-                  </BlockStack>
-                </Box>
-                <Card>
-                  <BlockStack gap={GapInsideSection}>
-                    <Text as="p">Labels</Text>
-                    <InlineGrid columns={2} gap={HorizontalGap}>
-                      <BlockStack gap={GapInsideSection} inlineAlign="start">
-                        <TextField
-                          label='"Add to bundle" btn label'
-                          name={`addToBundleBtn`}
-                          value={settingsState.bundleLabels?.addToBundleBtn}
-                          autoComplete="off"
-                          onChange={(newLabel: string) => {
-                            setSetttingsState(
-                              (prevSettings: SettingsWithAllResources) => {
-                                if (!prevSettings.bundleLabels)
-                                  return prevSettings;
-
-                                return {
-                                  ...prevSettings,
-                                  bundleLabels: {
-                                    ...prevSettings.bundleLabels,
-                                    addToBundleBtn: newLabel,
-                                  },
-                                };
-                              },
-                            );
-                          }}
-                        />
-                        <TextField
-                          label='"Next" button label'
-                          name={`nextStepBtn`}
-                          value={settingsState.bundleLabels?.nextStepBtn}
-                          type="text"
-                          autoComplete="off"
-                          onChange={(newLabel: string) => {
-                            setSetttingsState(
-                              (prevSettings: SettingsWithAllResources) => {
-                                if (!prevSettings.bundleLabels)
-                                  return prevSettings;
-
-                                return {
-                                  ...prevSettings,
-                                  bundleLabels: {
-                                    ...prevSettings.bundleLabels,
-                                    addToBundleBtn: newLabel,
-                                  },
-                                };
-                              },
-                            );
-                          }}
-                        />
-                      </BlockStack>
-                      <BlockStack gap={GapInsideSection}>
-                        <TextField
-                          label='"View product" btn label'
-                          name={`viewProductBtn`}
-                          value={settingsState.bundleLabels?.viewProductBtn}
-                          type="text"
-                          autoComplete="off"
-                          onChange={(newLabel: string) => {
-                            setSetttingsState(
-                              (prevSettings: SettingsWithAllResources) => {
-                                if (!prevSettings.bundleLabels)
-                                  return prevSettings;
-
-                                return {
-                                  ...prevSettings,
-                                  bundleLabels: {
-                                    ...prevSettings.bundleLabels,
-                                    addToBundleBtn: newLabel,
-                                  },
-                                };
-                              },
-                            );
-                          }}
-                        />
-                        <TextField
-                          label='"Previous" button label'
-                          value={settingsState.bundleLabels?.prevStepBtn}
-                          type="text"
-                          name={`prevStepBtn`}
-                          autoComplete="off"
-                          onChange={(newLabel: string) => {
-                            setSetttingsState(
-                              (prevSettings: SettingsWithAllResources) => {
-                                if (!prevSettings.bundleLabels)
-                                  return prevSettings;
-
-                                return {
-                                  ...prevSettings,
-                                  bundleLabels: {
-                                    ...prevSettings.bundleLabels,
-                                    addToBundleBtn: newLabel,
-                                  },
-                                };
-                              },
-                            );
-                          }}
-                        />
-                      </BlockStack>
-                    </InlineGrid>
-                  </BlockStack>
-                </Card>
-              </InlineGrid> */}
                         </Form>
                     </Page>
                 </>

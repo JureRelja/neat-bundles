@@ -4,8 +4,8 @@ import db from '~/db.server';
 import { JsonData } from '~/adminBackend/service/dto/jsonData';
 import { checkPublicAuth } from '~/adminBackend/service/utils/publicApi.auth';
 import { ApiCacheService } from '../../adminBackend/service/utils/ApiCacheService';
-import { settingsIncludeAll, SettingsWithAllResources } from '~/adminBackend/service/dto/BundleSettings';
 import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
+import { BundleSettings } from '@prisma/client';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const res = await checkPublicAuth(request); //Public auth check
@@ -40,11 +40,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         });
     } else {
         try {
-            let bundleSettings: SettingsWithAllResources | null = await db.bundleSettings.findUnique({
+            let bundleSettings: BundleSettings | null = await db.bundleSettings.findUnique({
                 where: {
                     bundleBuilderId: Number(bundleBuilderId),
                 },
-                include: settingsIncludeAll,
             });
 
             if (!bundleSettings) {

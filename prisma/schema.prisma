@@ -16,7 +16,7 @@ enum PricingPlan {
   PRO
 }
 
-//Admin side storage
+//Admin user
 model User {
   id                       Int             @id @default(autoincrement())
   hasAppInstalled          Boolean         @default(true)
@@ -30,8 +30,10 @@ model User {
   email                    String
   onlineStorePublicationId String //GraphQL GID format
   bundleBuilders           BundleBuilder[]
+  globalSettings           GlobalSettings?
 }
 
+//BundleBuilder
 model BundleBuilder {
   id                      Int                @id @default(autoincrement())
   deleted                 Boolean            @default(false)
@@ -52,7 +54,7 @@ model BundleBuilder {
   createdBundles          CreatedBundle[]
 }
 
-//Step models
+//BundleBuilder step
 model BundleStep {
   id              Int            @id @default(autoincrement())
   bundleBuilderId Int
@@ -65,6 +67,13 @@ model BundleStep {
   contentInputs   ContentInput[] //Data if the step is of type CONTENT
 }
 
+//Step type
+enum StepType {
+  PRODUCT
+  CONTENT
+}
+
+// PRODUCT step input
 model ProductInput {
   id                     Int        @id @default(autoincrement())
   bundleStepId           Int        @unique
@@ -76,12 +85,14 @@ model ProductInput {
   showProductPrice       Boolean
 }
 
+//Individual shopify product
 model Product {
   shopifyProductId     String         @id //GraphQL GID format
   productInput         ProductInput[]
   shopifyProductHandle String
 }
 
+//CONTENT step input
 model ContentInput {
   id           Int        @id @default(autoincrement())
   bundleStepId Int
@@ -92,11 +103,7 @@ model ContentInput {
   required     Boolean
 }
 
-enum StepType {
-  PRODUCT
-  CONTENT
-}
-
+// Content input type
 enum InputType {
   TEXT
   IMAGE
@@ -104,6 +111,7 @@ enum InputType {
   NONE
 }
 
+//Bundle builder settings
 model BundleSettings {
   id                     Int           @id @default(autoincrement())
   bundleBuilder          BundleBuilder @relation(fields: [bundleBuilderId], references: [id], onDelete: Cascade)
@@ -112,8 +120,6 @@ model BundleSettings {
   skipTheCart            Boolean
   allowBackNavigation    Boolean
   showOutOfStockProducts Boolean
-  bundleColors           BundleColors?
-  bundleLabels           BundleLabels?
 }
 
 //Fixed pricing means the bundle price is fixed (e.g. $100 no mater what products are choosen) and calculated pricing means that the total price is the sum of the prices of the products in the bundle
@@ -128,10 +134,19 @@ enum BundleDiscountType {
   NO_DISCOUNT
 }
 
+model GlobalSettings {
+  id           Int           @id @default(autoincrement())
+  user         User          @relation(fields: [storeUrl], references: [storeUrl], onDelete: Cascade)
+  storeUrl     String        @unique
+  bundleColors BundleColors?
+  bundleLabels BundleLabels?
+}
+
+// Global colors
 model BundleColors {
   id                    Int            @id @default(autoincrement())
-  bundleSettings        BundleSettings @relation(fields: [bundleSettingsId], references: [id], onDelete: Cascade)
-  bundleSettingsId      Int            @unique
+  globalSettings        GlobalSettings @relation(fields: [globalSettingsId], references: [id], onDelete: Cascade)
+  globalSettingsId      Int            @unique
   stepsIcon             String
   addToBundleBtn        String
   addToBundleText       String
@@ -146,17 +161,18 @@ model BundleColors {
   prevStepBtnText       String
 }
 
+// Global labels used accross all bundle builders
 model BundleLabels {
   id               Int            @id @default(autoincrement())
-  bundleSettings   BundleSettings @relation(fields: [bundleSettingsId], references: [id], onDelete: Cascade)
-  bundleSettingsId Int            @unique
+  globalSettings   GlobalSettings @relation(fields: [globalSettingsId], references: [id], onDelete: Cascade)
+  globalSettingsId Int            @unique
   addToBundleBtn   String
   nextStepBtn      String
   prevStepBtn      String
   viewProductBtn   String
 }
 
-//Customer side storage
+//Bundle created using BundleBuilder
 model CreatedBundle {
   id                   Int                   @id @default(autoincrement())
   bundleBuilderId      Int
@@ -169,6 +185,7 @@ model CreatedBundle {
   createdAt            DateTime              @default(now())
 }
 
+//Individual product variants that were aded to created bundles
 model AddedProductVariant {
   id              Int           @id @default(autoincrement())
   productVariant  String //GraphQL GID format
@@ -177,6 +194,7 @@ model AddedProductVariant {
   createdBundleId Int
 }
 
+//Individual content inputs that were entered for created bundles
 model AddedContent {
   id              Int           @id @default(autoincrement())
   contentType     InputType
