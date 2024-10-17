@@ -50,12 +50,6 @@ import { JsonData, error } from '../../adminBackend/service/dto/jsonData';
 import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '../../hooks/useNavigateSubmit';
 import styles from './route.module.css';
-import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
-import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
-import { shopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
-import shopifyBundleBuilderPageRepositoryGraphql from '~/adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql';
-import { ShopifyBundleBuilderPageRepository } from '~/adminBackend/repository/ShopifyBundleBuilderPageRepository';
-import { BundleBuilderRepository } from '@adminBackend/repository/impl/BundleBuilderRepository';
 import userRepository from '~/adminBackend/repository/impl/UserRepository';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
@@ -93,361 +87,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const formData = await request.formData();
     const action = formData.get('action');
 
-    switch (action) {
-        case 'deleteBundle': {
-            try {
-                //Delete the bundle along with its steps, contentInputs, bundleSettings?, bundleColors, and bundleLabels
-                const bundleBuilderToDelete = await db.bundleBuilder.update({
-                    where: {
-                        id: Number(params.bundleid),
-                    },
-                    data: {
-                        deleted: true,
-                    },
-                    select: {
-                        shopifyProductId: true,
-                        shopifyPageId: true,
-                    },
-                });
-
-                if (!bundleBuilderToDelete)
-                    return json(
-                        {
-                            ...new JsonData(false, 'error', 'There was an error with your request', [
-                                {
-                                    fieldId: 'bundleId',
-                                    field: 'Bundle ID',
-                                    message: "Bundle with the provided id doesn't exist.",
-                                },
-                            ]),
-                        },
-                        { status: 400 },
-                    );
-
-                const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
-
-                await Promise.all([
-                    //Deleting a associated bundle page
-                    shopifyBundleBuilderPage.deletePage(admin, session, bundleBuilderToDelete.shopifyPageId),
-
-                    //Deleting a associated bundle product
-                    shopifyBundleBuilderProductRepository.deleteBundleBuilderProduct(admin, bundleBuilderToDelete.shopifyProductId),
-                ]);
-            } catch (error) {
-                console.log(error, 'Either the bundle product or the bundle page was already deleted.');
-            } finally {
-                const url: URL = new URL(request.url);
-
-                if (url.searchParams.get('redirect') === 'true') {
-                    return redirect('/app');
-                }
-
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-                ApiCacheKeyService;
-                await ApiCacheService.multiKeyDelete(await cacheKeyService.getAllBundleKeys(params.bundleid as string));
-
-                return json({ ...new JsonData(true, 'success', 'Bundle deleted') }, { status: 200 });
-            }
-        }
-
-        //Update the bundle
-        case 'updateBundle':
-            const bundleData: BundleFullStepBasicClient = JSON.parse(formData.get('bundle') as string);
-
-            const errors: error[] = [];
-
-            if (!bundleData.title) {
-                errors.push({
-                    fieldId: 'bundleTitle',
-                    field: 'Bundle title',
-                    message: 'Please enter a bundle title.',
-                });
-            } else if (bundleData.pricing === BundlePricing.FIXED && (!bundleData.priceAmount || bundleData.priceAmount < 0)) {
-                errors.push({
-                    fieldId: 'priceAmount',
-                    field: 'Price amount',
-                    message: 'Please enter a valid price for Fixed bundle.',
-                });
-            } else if (bundleData.discountType != 'NO_DISCOUNT' && bundleData.discountValue <= 0) {
-                errors.push({
-                    fieldId: 'discountValue',
-                    field: 'Discount value',
-                    message: 'Please enter a desired discount.',
-                });
-            } else if (bundleData.discountType === 'FIXED' && bundleData.pricing === 'FIXED' && bundleData.discountValue > (bundleData.priceAmount || 0)) {
-                errors.push({
-                    fieldId: 'discountValue',
-                    field: 'Discount value',
-                    message: "Discount amount can't be heigher that the bundle price.",
-                });
-            }
-
-            if (errors.length > 0)
-                return json({
-                    ...new JsonData(false, 'error', 'There was an error while trying to update the bundle.', errors, bundleData),
-                });
-
-            //Repository for creating a new page
-            const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
-
-            try {
-                await Promise.all([
-                    db.bundleBuilder.update({
-                        where: {
-                            id: Number(bundleData.id),
-                        },
-                        data: {
-                            title: bundleData.title,
-                            published: bundleData.published,
-                            priceAmount: bundleData.priceAmount,
-                            pricing: bundleData.pricing,
-                            discountType: bundleData.discountType,
-                            discountValue: bundleData.discountValue,
-                        },
-                    }),
-                    shopifyBundleBuilderProductRepository.updateBundleProductTitle(admin, bundleData.shopifyProductId, bundleData.title),
-                    shopifyBundleBuilderPage.updateBundleBuilderPageTitle(admin, session, bundleData.shopifyPageId, bundleData.title),
-                ]);
-
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
-
-                return json({ ...new JsonData(true, 'success', 'Bundle updated') }, { status: 200 });
-                //return redirect(`/app`);
-            } catch (error) {
-                console.log(error);
-
-                return json({
-                    ...new JsonData(false, 'error', 'There was an error while trying to update the bundle.', [
-                        {
-                            fieldId: 'Bundle',
-                            field: 'Bundle',
-                            message: 'Error updating the bundle',
-                        },
-                    ]),
-                });
-            }
-
-        case 'recreateBundleBuilder': {
-            //Repository for creating a new page
-            const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
-
-            const bundleBuilder = await db.bundleBuilder.findUnique({
-                where: {
-                    id: Number(params.bundleid),
-                },
-                include: inclBundleFullStepsBasic,
-            });
-
-            if (!bundleBuilder) {
-                return json(
-                    {
-                        ...new JsonData(false, 'error', 'There was an error with your request', [
-                            {
-                                fieldId: 'bundleId',
-                                field: 'Bundle ID',
-                                message: "Bundle with the provided id doesn't exist.",
-                            },
-                        ]),
-                    },
-                    { status: 400 },
-                );
-            }
-
-            await Promise.all([
-                new Promise(async (res, rej) => {
-                    //Check if the bundle builder product exists (it may have been deleted by the user on accident)
-                    const doesBundleBuilderProductExist = await shopifyBundleBuilderProductRepository.checkIfProductExists(admin, bundleBuilder.shopifyProductId);
-
-                    if (!doesBundleBuilderProductExist) {
-                        //create new product
-                        const newBundleBuilderProductId = await shopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilder.title, session.shop);
-
-                        //set bundle product to new product
-                        await BundleBuilderRepository.updateBundleBuilderProductId(Number(params.bundleid), newBundleBuilderProductId);
-                    }
-                    res(null);
-                }),
-
-                new Promise(async (res, rej) => {
-                    //Check if the page exists
-                    const doesBundleBuilderPageExist = await shopifyBundleBuilderPage.checkIfPageExists(admin, bundleBuilder.shopifyPageId);
-
-                    if (!doesBundleBuilderPageExist) {
-                        //create new page
-                        const newBundleBuilderPage = await shopifyBundleBuilderPage.createPageWithMetafields(admin, session, bundleBuilder.title, Number(params.bundleid));
-
-                        //set bundle page to new page
-                        await BundleBuilderRepository.updateBundleBuilderPage(Number(params.bundleid), newBundleBuilderPage);
-                    }
-                    res(null);
-                }),
-            ]);
-
-            return json({ ...new JsonData(true, 'success', 'Bundle builder refreshed') }, { status: 200 });
-        }
-
-        // case "duplicateBundle":
-        //   const bundleToDuplicate: BundleAllResources | null =
-        //     await db.bundle.findUnique({
-        //       where: {
-        //         id: Number(params.bundleid),
-        //       },
-        //       include: bundleAllResources,
-        //     });
-
-        //   if (!bundleToDuplicate) {
-        //     return json(
-        //       {
-        //         ...new JsonData(
-        //           false,
-        //           "error",
-        //           "There was an error with your request",
-        //           "The bundle you are trying to duplicate does not exist",
-        //         ),
-        //       },
-        //       { status: 400 },
-        //     );
-        //   }
-
-        //   try {
-        //     //Create a new product that will be used as a bundle wrapper
-        //     const { _max }: { _max: { id: number | null } } =
-        //       await db.bundle.aggregate({
-        //         _max: {
-        //           id: true,
-        //         },
-        //         where: {
-        //           storeUrl: session.shop,
-        //         },
-        //       });
-
-        //     //Create a new product that will be used as a bundle wrapper
-        //     const response = await admin.graphql(
-        //       `#graphql
-        //     mutation productCreate($productInput: ProductInput!) {
-        //       productCreate(input: $productInput) {
-        //         product {
-        //           id
-        //         }
-        //       }
-        //     }`,
-        //       {
-        //         variables: {
-        //           productInput: {
-        //             title: `Neat Bundle ${_max.id ? _max.id : ""}`,
-        //             productType: "Neat Bundle",
-        //             vendor: "Neat Bundles",
-        //             published: true,
-        //             tags: [bundleTagIndentifier],
-        //           },
-        //         },
-        //       },
-        //     );
-
-        //     const data = await response.json();
-
-        //     await db.bundle.create({
-        //       data: {
-        //         storeUrl: bundleToDuplicate.storeUrl,
-        //         title: `${bundleToDuplicate.title} - Copy`,
-        //         shopifyProductId: data.data.productCreate.product.id,
-        //         pricing: bundleToDuplicate.pricing,
-        //         priceAmount: bundleToDuplicate.priceAmount,
-        //         discountType: bundleToDuplicate.discountType,
-        //         discountValue: bundleToDuplicate.discountValue,
-        //         bundleSettings: {
-        //           create: {
-        //             displayDiscountBanner:
-        //               bundleToDuplicate.bundleSettings?.displayDiscountBanner,
-        //             skipTheCart: bundleToDuplicate.bundleSettings?.skipTheCart,
-        //             showOutOfStockProducts:
-        //               bundleToDuplicate.bundleSettings?.showOutOfStockProducts,
-        //             numOfProductColumns:
-        //               bundleToDuplicate.bundleSettings?.numOfProductColumns,
-
-        //             bundleColors: {
-        //               create: {
-        //                 stepsIcon:
-        //                   bundleToDuplicate.bundleSettings?.bundleColors.stepsIcon,
-        //               },
-        //             },
-        //             bundleLabels: {
-        //               create: {},
-        //             },
-        //           },
-        //         },
-        //         steps: {
-        //           create: [
-        //             {
-        //               stepNumber: 1,
-        //               title: "Step 1",
-        //               stepType: "PRODUCT",
-        //               productsData: {
-        //                 create: {},
-        //               },
-        //               contentInputs: {
-        //                 create: [{}, {}],
-        //               },
-        //             },
-        //             {
-        //               stepNumber: 2,
-        //               title: "Step 2",
-        //               stepType: "PRODUCT",
-        //               productsData: {
-        //                 create: {},
-        //               },
-        //               contentInputs: {
-        //                 create: [{}, {}],
-        //               },
-        //             },
-        //             {
-        //               stepNumber: 3,
-        //               title: "Step 3",
-        //               stepType: "PRODUCT",
-        //               productsData: {
-        //                 create: {},
-        //               },
-        //               contentInputs: {
-        //                 create: [{}, {}],
-        //               },
-        //             },
-        //           ],
-        //         },
-        //       },
-        //     });
-        //   } catch (error) {
-        //     console.log(error);
-        //     return json(
-        //       {
-        //         ...new JsonData(
-        //           false,
-        //           "error",
-        //           "There was an error with your request",
-        //           "The bundle you are trying to duplicate does not exist",
-        //         ),
-        //       },
-        //       { status: 400 },
-        //     );
-        //   }
-
-        //   return json(
-        //     { ...new JsonData(true, "success", "Bundle duplicated") },
-        //     { status: 200 },
-        //   );
-
-        default: {
-            return json(
-                {
-                    ...new JsonData(true, 'success', "This is the default action that doesn't do anything."),
-                },
-                { status: 200 },
-            );
-        }
-    }
+    return json(
+        {
+            ...new JsonData(true, 'success', "This is the default action that doesn't do anything."),
+        },
+        { status: 200 },
+    );
 };
 
 export default function Index() {
@@ -497,10 +142,14 @@ export default function Index() {
         asyncSubmit.submit('duplicateStep', `/app/edit-bundle-builder/${params.bundleid}/steps/${stepNumber}`);
     };
 
+    const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+
     //Deleting the bundle
     const deleteBundleHandler = async (): Promise<void> => {
         await shopify.saveBar.leaveConfirmation();
-        navigateSubmit('deleteBundle', `/app/edit-bundle-builder/${params.bundleid}?redirect=true`);
+
+        setShowDeleteModal(true);
+        // navigateSubmit('deleteBundle', `/app/edit-bundle-builder/${params.bundleid}?redirect=true`);
     };
 
     const handleNavigationOnUnsavedChanges = async (navPath: string): Promise<void> => {
@@ -559,6 +208,33 @@ export default function Index() {
                 </SkeletonPage>
             ) : (
                 <>
+                    {/* Modal for users to confirm that they want to delete the bundle. */}
+                    <Modal id="delete-confirm-modal" open={showDeleteModal}>
+                        <Box padding="300">
+                            <Text as="p">If you delete this bundle, everything will be lost forever.</Text>
+                        </Box>
+                        <TitleBar title="Are you sure you want to delete this bundle?">
+                            <button onClick={() => setShowDeleteModal(false)}>Close</button>
+                            <button
+                                variant="primary"
+                                tone="critical"
+                                onClick={() => {
+                                    // const form = new FormData();
+                                    // form.append('action', 'deleteBundle');
+
+                                    // fetcher.submit(form, {
+                                    //     method: 'post',
+                                    //     action: `/app/edit-bundle-builder/${params.bundleid}`,
+                                    // });
+                                    navigateSubmit('deleteBundle', `/app/edit-bundle-builder/${params.bundleid}?redirect=true`);
+
+                                    setShowDeleteModal(false);
+                                }}>
+                                Delete
+                            </button>
+                        </TitleBar>
+                    </Modal>
+
                     {/* Modal to alert the user that he can't have more tha 5 steps in one bundle. */}
                     <Modal id="no-more-steps-modal">
                         <Box padding="300">

@@ -108,7 +108,15 @@ export default function Index() {
                 </SkeletonPage>
             ) : (
                 <>
-                    <Page title="Neat Bundles">
+                    <Page
+                        title="Neat Bundles"
+                        // backAction={{
+                        //     content: 'Back',
+                        //     onAction: async () => {
+                        //         navigate(-1);
+                        //     },
+                        // }}
+                    >
                         <BlockStack gap={'800'}>
                             <BlockStack gap={GapBetweenSections}>
                                 {data.installSuccessBanner && (

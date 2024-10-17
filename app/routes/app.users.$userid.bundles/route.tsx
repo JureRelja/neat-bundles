@@ -1,4 +1,4 @@
-import { useNavigation, json, useLoaderData, Link, Outlet, redirect } from '@remix-run/react';
+import { useNavigation, json, useLoaderData, Link, Outlet, redirect, useParams, useSubmit, useFetcher } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import {
     Page,
@@ -136,8 +136,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function Index() {
     const nav = useNavigation();
     const isLoading = nav.state !== 'idle';
+    const params = useParams();
     const asyncSubmit = useAsyncSubmit(); //Function for doing the submit action where the only data is action and url
     const navigateSubmit = useNavigateSubmit(); //Function for doing the submit action as if form was submitted
+    const fetcher = useFetcher();
     const tableLoading: boolean = asyncSubmit.state !== 'idle'; //Table loading state
 
     const loaderResponse: JsonData<BundleAndStepsBasicClient[]> = useLoaderData<typeof loader>();
@@ -145,7 +147,7 @@ export default function Index() {
     const bundleBuilders: BundleAndStepsBasicClient[] = loaderResponse.data;
 
     const createBundle = () => {
-        navigateSubmit('createBundle', '/app/bundles');
+        navigateSubmit('createBundle', `/app/users/${params.userid}/bundles`);
     };
 
     const [bundleForDelete, setBundleForDelete] = useState<BundleAndStepsBasicClient | null>(null);
@@ -191,7 +193,14 @@ export default function Index() {
                                 onClick={() => {
                                     if (!bundleForDelete) return;
 
-                                    asyncSubmit.submit('deleteBundle', `/app/edit-bundle-builder/${bundleForDelete.id}`);
+                                    const form = new FormData();
+                                    form.append('action', 'deleteBundle');
+
+                                    fetcher.submit(form, {
+                                        method: 'post',
+                                        action: `/app/edit-bundle-builder/${bundleForDelete.id}`,
+                                    });
+
                                     setShowBundleDeleteConfirmModal(false);
                                 }}>
                                 Delete
@@ -202,38 +211,15 @@ export default function Index() {
                     <BlockStack gap={GapBetweenSections}>
                         <InlineStack align="space-between">
                             <Text as="h3" variant="headingLg">
-                                Bundles
+                                My Bundles
                             </Text>
                             <Button icon={PlusIcon} variant="primary" onClick={createBundle}>
                                 Create bundle
                             </Button>
                         </InlineStack>
 
-                        {/* <Page
-                        title="Bundles"
-                        primaryAction={
-                            <Button icon={PlusIcon} variant="primary" onClick={createBundle}>
-                                Create bundle
-                            </Button>
-                        }>
-                        <BlockStack gap={'800'}>
-                            <BlockStack gap={GapBetweenSections}> */}
-                        {/* {loaderResponse.message === 'Succesful app install.' && (
-                                    <>
-                                        <Banner title="Installation successfull, congradulation!" tone="success" onDismiss={() => {}}>
-                                            <BlockStack gap={GapInsideSection}>
-                                                <Text as={'p'}>
-                                                    Congradulation on succesfully installing our app. Let's now start creating the first bundle for your customers. The whole
-                                                    process should take less than 5 minutes.
-                                                </Text>
-                                            </BlockStack>
-                                        </Banner>
-                                        <Divider />
-                                    </>
-                                )} */}
-
                         <div id={styles.tableWrapper}>
-                            <div className={tableLoading ? styles.loadingTable : styles.hide}>
+                            <div className={fetcher.state !== 'idle' ? styles.loadingTable : styles.hide}>
                                 <Spinner accessibilityLabel="Spinner example" size="large" />
                             </div>
                             <Card>
@@ -324,80 +310,6 @@ export default function Index() {
                             </Card>
                         </div>
                     </BlockStack>
-
-                    {/* <Divider />
-
-                            <BlockStack gap={GapBetweenSections}>
-
-                                {showTutorial && (
-                                    <MediaCard
-                                        title="Watch a short tutorial to get quickly started"
-                                        primaryAction={{
-                                            content: 'Watch tutorial',
-                                            onAction: () => {},
-                                            icon: ExternalIcon,
-                                            url: 'https://help.shopify.com',
-                                            target: '_blank',
-                                        }}
-                                        size="small"
-                                        description="We recommend watching this short tutorial to get started with creating Neat Bundle Builder"
-                                        popoverActions={[
-                                            {
-                                                content: 'Dismiss',
-                                                onAction: () => {
-                                                    navigateSubmit('hideTutorial', `/app/users/${params.userid}`);
-                                                },
-                                            },
-                                        ]}>
-                                        <VideoThumbnail
-                                            videoLength={80}
-                                            thumbnailUrl="https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850"
-                                            onClick={() => console.log('clicked')}
-                                        />
-                                    </MediaCard>
-                                )}
-
-
-                                <CalloutCard
-                                    title={
-                                        <Text as="h3" variant="headingMd">
-                                            How does Neat Bundles work?
-                                        </Text>
-                                    }
-                                    illustration="https://cdn.shopify.com/s/assets/admin/checkout/settings-customizecart-705f57c725ac05be5a34ec20c05b94298cb8afd10aac7bd9c7ad02030f48cfa0.svg"
-                                    primaryAction={{
-                                        content: 'See how it works',
-                                        url: '',
-                                    }}>
-                                    <Text as="p" variant="bodyMd">
-                                        Check out how Neat Bundles works underneath the hood. Note: This is optional and is not necessary to use our app.
-                                    </Text>
-                                </CalloutCard>
-
-                                <Divider />
-
-
-                                <Banner title="Enjoying the app?" tone="success">
-                                    <BlockStack gap="200">
-                                        <Box>
-                                            <p>We'd highly appreciate getting a review!</p>
-                                        </Box>
-
-                                        <Box>
-                                            <Button>⭐ Leave a review</Button>
-                                        </Box>
-                                    </BlockStack>
-                                </Banner>
-
-                                <Divider borderColor="transparent" />
-                                <FooterHelp>
-                                    View the <Link to="https://help.shopify.com/manual/orders/fulfill-orders">help docs</Link>,
-                                    <Link to="https://help.shopify.com/manual/orders/fulfill-orders">suggest new features</Link>, or
-                                    <Link to="https://help.shopify.com/manual/orders/fulfill-orders">contact us</Link> for support.
-                                </FooterHelp>
-                            </BlockStack>
-                        </BlockStack>
-                    </Page> */}
                 </>
             )}
         </>
