@@ -19,6 +19,7 @@ import {
     Spinner,
     Divider,
     InlineGrid,
+    CalloutCard,
 } from '@shopify/polaris';
 import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from '@shopify/polaris-icons';
 import { authenticate } from '../../shopify.server';
@@ -30,7 +31,7 @@ import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
 import styles from './route.module.css';
 import { useState } from 'react';
 import { Modal, TitleBar } from '@shopify/app-bridge-react';
-import { bundlePagePreviewKey } from '~/constants';
+import { BigGapBetweenSections, bundlePagePreviewKey, GapBetweenSections, GapInsideSection, LargeGapBetweenSections } from '~/constants';
 import userRepository from '@adminBackend/repository/impl/UserRepository';
 import { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
 import { shopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
@@ -72,7 +73,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     return json(
         {
-            ...new JsonData(true, 'success', 'Bundles were succesfully returned', [], bundleBuildersWithPageUrl),
+            ...new JsonData(true, 'success', `${installSuccessBanner === 'true' ? 'Succesful app install.' : 'Bundles succesfuly retrieved.'}`, [], bundleBuildersWithPageUrl),
         },
         { status: 200 },
     );
@@ -121,6 +122,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 console.log(error);
             }
         }
+        case 'hideTutorial': {
+            const user = await userRepository.getUserByStoreUrl(session.shop);
+
+            if (!user) return redirect('/app');
+
+            await userRepository.updateUser({ ...user });
+        }
         default: {
             return json(
                 {
@@ -148,7 +156,7 @@ export default function Index() {
     };
 
     //Client state
-    const [showBanner, setShowBanner] = useState(true);
+    // const [showBanner, setShowBanner] = useState(true);
     const [showTutorial, setShowTutorial] = useState(true);
 
     const [bundleForDelete, setBundleForDelete] = useState<BundleAndStepsBasicClient | null>(null);
@@ -209,48 +217,63 @@ export default function Index() {
                                 Create bundle
                             </Button>
                         }>
-                        <BlockStack gap="500">
-                            <div id={styles.tableWrapper}>
-                                <div className={tableLoading ? styles.loadingTable : styles.hide}>
-                                    <Spinner accessibilityLabel="Spinner example" size="large" />
-                                </div>
-                                <Card>
-                                    {bundleBuilders.length > 0 ? (
-                                        <DataTable
-                                            columnContentTypes={['text', 'text', 'text', 'text', 'text', 'text']}
-                                            headings={['Bundle ID', 'Name', 'Steps', 'Status', 'Actions', 'Settings', 'Preview']}
-                                            rows={bundleBuilders.map((bundleBuilder: BundleAndStepsBasicClient) => {
-                                                return [
-                                                    <Text as="p" tone="base">
-                                                        {bundleBuilder.id}
-                                                    </Text>,
+                        <BlockStack gap={'800'}>
+                            <BlockStack gap={GapBetweenSections}>
+                                {loaderResponse.message === 'Succesful app install.' && (
+                                    <>
+                                        <Banner title="Installation successfull, congradulation!" tone="success" onDismiss={() => {}}>
+                                            <BlockStack gap={GapInsideSection}>
+                                                <Text as={'p'}>
+                                                    Congradulation on succesfully installing our app. Let's now start creating the first bundle for your customers. The whole
+                                                    process should take less than 5 minutes.
+                                                </Text>
+                                            </BlockStack>
+                                        </Banner>
+                                        <Divider />
+                                    </>
+                                )}
 
-                                                    //
-                                                    <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
+                                <div id={styles.tableWrapper}>
+                                    <div className={tableLoading ? styles.loadingTable : styles.hide}>
+                                        <Spinner accessibilityLabel="Spinner example" size="large" />
+                                    </div>
+                                    <Card>
+                                        {bundleBuilders.length > 0 ? (
+                                            <DataTable
+                                                columnContentTypes={['text', 'text', 'text', 'text', 'text', 'text']}
+                                                headings={['Bundle ID', 'Name', 'Steps', 'Status', 'Actions', 'Settings', 'Preview']}
+                                                rows={bundleBuilders.map((bundleBuilder: BundleAndStepsBasicClient) => {
+                                                    return [
                                                         <Text as="p" tone="base">
-                                                            {bundleBuilder.title}
-                                                        </Text>
-                                                    </Link>,
-                                                    //
-                                                    bundleBuilder.steps.length,
-                                                    //
-                                                    <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
-                                                        {bundleBuilder.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
-                                                    </Link>,
-                                                    //
-                                                    <ButtonGroup>
-                                                        <Button
-                                                            icon={DeleteIcon}
-                                                            variant="secondary"
-                                                            tone="critical"
-                                                            onClick={() => {
-                                                                setBundleForDelete(bundleBuilder);
-                                                                setShowBundleDeleteConfirmModal(true);
-                                                            }}>
-                                                            Delete
-                                                        </Button>
+                                                            {bundleBuilder.id}
+                                                        </Text>,
 
-                                                        {/* <Button
+                                                        //
+                                                        <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
+                                                            <Text as="p" tone="base">
+                                                                {bundleBuilder.title}
+                                                            </Text>
+                                                        </Link>,
+                                                        //
+                                                        bundleBuilder.steps.length,
+                                                        //
+                                                        <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
+                                                            {bundleBuilder.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
+                                                        </Link>,
+                                                        //
+                                                        <ButtonGroup>
+                                                            <Button
+                                                                icon={DeleteIcon}
+                                                                variant="secondary"
+                                                                tone="critical"
+                                                                onClick={() => {
+                                                                    setBundleForDelete(bundleBuilder);
+                                                                    setShowBundleDeleteConfirmModal(true);
+                                                                }}>
+                                                                Delete
+                                                            </Button>
+
+                                                            {/* <Button
                                                         icon={PageAddIcon}
                                                         variant="secondary"
                                                         onClick={() => {
@@ -264,97 +287,98 @@ export default function Index() {
                                                         Duplicate
                                                         </Button> */}
 
-                                                        <Button icon={EditIcon} variant="primary" url={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
-                                                            Edit
-                                                        </Button>
-                                                    </ButtonGroup>,
-                                                    //
-                                                    <Button
-                                                        icon={SettingsIcon}
-                                                        variant="secondary"
-                                                        tone="success"
-                                                        url={`/app/edit-bundle-builder/${bundleBuilder.id}/settings/?redirect=/app/edit-bundle-builder`}>
-                                                        Settings
-                                                    </Button>,
-                                                    <Button
-                                                        icon={ExternalIcon}
-                                                        variant="secondary"
-                                                        tone="success"
-                                                        url={`${bundleBuilder.bundleBuilderPageUrl}?${bundlePagePreviewKey}=true`}
-                                                        target="_blank">
-                                                        Preview
-                                                    </Button>,
-                                                ];
-                                            })}></DataTable>
-                                    ) : (
-                                        <EmptyState
-                                            heading="Let’s create the first custom bundle for your customers!"
-                                            action={{
-                                                content: 'Create bundle',
-                                                icon: PlusIcon,
-                                                onAction: createBundle,
-                                            }}
-                                            fullWidth
-                                            image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png">
-                                            <p>Your customers will be able to use the custom bundles you create to create and buy their own custom bundles.</p>
-                                        </EmptyState>
-                                    )}
-                                </Card>
-                            </div>
+                                                            <Button icon={EditIcon} variant="primary" url={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
+                                                                Edit
+                                                            </Button>
+                                                        </ButtonGroup>,
+                                                        //
+                                                        <Button
+                                                            icon={SettingsIcon}
+                                                            variant="secondary"
+                                                            tone="success"
+                                                            url={`/app/edit-bundle-builder/${bundleBuilder.id}/settings/?redirect=/app/edit-bundle-builder`}>
+                                                            Settings
+                                                        </Button>,
+                                                        <Button
+                                                            icon={ExternalIcon}
+                                                            variant="secondary"
+                                                            tone="success"
+                                                            url={`${bundleBuilder.bundleBuilderPageUrl}?${bundlePagePreviewKey}=true`}
+                                                            target="_blank">
+                                                            Preview
+                                                        </Button>,
+                                                    ];
+                                                })}></DataTable>
+                                        ) : (
+                                            <EmptyState
+                                                heading="Let’s create the first custom bundle for your customers!"
+                                                action={{
+                                                    content: 'Create bundle',
+                                                    icon: PlusIcon,
+                                                    onAction: createBundle,
+                                                }}
+                                                fullWidth
+                                                image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png">
+                                                <p>Your customers will be able to use the custom bundles you create to create and buy their own custom bundles.</p>
+                                            </EmptyState>
+                                        )}
+                                    </Card>
+                                </div>
+                            </BlockStack>
 
                             <Divider />
 
-                            {/* Video tutorial on how to use the app */}
-                            {showTutorial && (
-                                <MediaCard
-                                    title="Watch a short tutorial to get quickly started"
-                                    primaryAction={{
-                                        content: 'Watch tutorial',
-                                        onAction: () => {},
-                                        icon: ExternalIcon,
-                                        url: 'https://help.shopify.com',
-                                        target: '_blank',
-                                    }}
-                                    size="small"
-                                    description="We recommend watching this short tutorial to get started with creating Neat Bundle Builder"
-                                    onDismiss={() => {
-                                        setShowTutorial(false);
-                                    }}
-                                    popoverActions={[{ content: 'Dismiss', onAction: () => {} }]}>
-                                    <VideoThumbnail
-                                        videoLength={80}
-                                        thumbnailUrl="https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850"
-                                        onClick={() => console.log('clicked')}
-                                    />
-                                </MediaCard>
-                            )}
+                            <BlockStack gap={GapBetweenSections}>
+                                {/* Video tutorial on how to use the app */}
+                                {showTutorial && (
+                                    <MediaCard
+                                        title="Watch a short tutorial to get quickly started"
+                                        primaryAction={{
+                                            content: 'Watch tutorial',
+                                            onAction: () => {},
+                                            icon: ExternalIcon,
+                                            url: 'https://help.shopify.com',
+                                            target: '_blank',
+                                        }}
+                                        size="small"
+                                        description="We recommend watching this short tutorial to get started with creating Neat Bundle Builder"
+                                        popoverActions={[
+                                            {
+                                                content: 'Dismiss',
+                                                onAction: () => {
+                                                    setShowTutorial(false);
+                                                },
+                                            },
+                                        ]}>
+                                        <VideoThumbnail
+                                            videoLength={80}
+                                            thumbnailUrl="https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850"
+                                            onClick={() => console.log('clicked')}
+                                        />
+                                    </MediaCard>
+                                )}
 
-                            {/* How it works */}
-                            <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
-                                <Box as="section">
-                                    <BlockStack gap="400">
+                                {/* How it works */}
+                                <CalloutCard
+                                    title={
                                         <Text as="h3" variant="headingMd">
-                                            How it works
+                                            How does Neat Bundles work?
                                         </Text>
-                                        <Text as="p" variant="bodyMd">
-                                            Neat bundles is built by geeks who know their stuff and like to know how everything works. If you're one of us, read this section.
-                                        </Text>
-                                    </BlockStack>
-                                </Box>
-                                <Card>
-                                    <Text as="p" children={undefined}></Text>
-                                </Card>
-                            </InlineGrid>
-
-                            <Divider />
-
-                            {/* Banner for encuraging users to rate the app */}
-                            {showBanner && (
-                                <Banner
-                                    title="Enjoying the app?"
-                                    onDismiss={() => {
-                                        setShowBanner(false);
+                                    }
+                                    illustration="https://cdn.shopify.com/s/assets/admin/checkout/settings-customizecart-705f57c725ac05be5a34ec20c05b94298cb8afd10aac7bd9c7ad02030f48cfa0.svg"
+                                    primaryAction={{
+                                        content: 'See how it works',
+                                        url: '',
                                     }}>
+                                    <Text as="p" variant="bodyMd">
+                                        Check out how Neat Bundles works underneath the hood. Note: This is optional and is not necessary to use our app.
+                                    </Text>
+                                </CalloutCard>
+
+                                <Divider />
+
+                                {/* Banner for encuraging users to rate the app */}
+                                <Banner title="Enjoying the app?" tone="success">
                                     <BlockStack gap="200">
                                         <Box>
                                             <p>We'd highly appreciate getting a review!</p>
@@ -365,8 +389,9 @@ export default function Index() {
                                         </Box>
                                     </BlockStack>
                                 </Banner>
-                            )}
-                            <Divider borderColor="transparent" />
+
+                                <Divider borderColor="transparent" />
+                            </BlockStack>
                         </BlockStack>
                     </Page>
                 </>
