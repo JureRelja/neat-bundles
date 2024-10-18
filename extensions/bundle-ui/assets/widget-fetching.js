@@ -1,6 +1,5 @@
 const fetchActiveStepData = async (bundleId, activeStepNumber, isBundleInPreview) => {
-    console.log(isBundleInPreview.toString);
-    const response = await fetch(`${APP_URL}/bundleData/step?bundleId=${bundleId}&stepNum=${activeStepNumber}&neatBundlePreview=${isBundleInPreview.toString()}`, { mode: 'cors' });
+    const response = await fetch(`${APP_URL}/bundleData/step?bundleId=${bundleId}&stepNum=${activeStepNumber}&neatBundlePreview=${isBundleInPreview}`, { mode: 'cors' });
 
     const data = await response.json();
 
