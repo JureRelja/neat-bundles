@@ -575,8 +575,8 @@ export default function Index() {
                                     </Layout.Section>
                                     <Layout.Section variant="oneThird">
                                         <BlockStack gap={GapBetweenSections}>
-                                            <input type="hidden" name="action" value="updateBundle" />
-                                            <input type="hidden" name="bundle" value={JSON.stringify(bundleState)} />
+                                            <input type="hidden" name="action" defaultValue="updateBundle" />
+                                            <input type="hidden" name="bundle" defaultValue={JSON.stringify(bundleState)} />
                                             <BlockStack gap={GapBetweenSections}>
                                                 {/* Bundle title */}
 

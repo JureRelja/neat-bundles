@@ -145,8 +145,8 @@ export default function Index() {
                         subtitle="Edit the behaviour of all bundles"
                         compactTitle>
                         <Form method="POST" data-discard-confirmation data-save-bar>
-                            <input type="hidden" name="action" value="updateSettings" />
-                            <input type="hidden" name="globalSettings" value={JSON.stringify(globalSettingsState)} />
+                            <input type="hidden" name="action" defaultValue="updateSettings" />
+                            <input type="hidden" name="globalSettings" defaultValue={JSON.stringify(globalSettingsState) || ''} />
                             <BlockStack gap={BigGapBetweenSections}>
                                 {!data.bundleBuilderHandle ? (
                                     <Banner title="Uups, there are no bundles created." tone="warning" onDismiss={() => {}}>

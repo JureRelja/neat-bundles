@@ -536,8 +536,8 @@ export default function Index() {
                 <SkeletonPage primaryAction fullWidth></SkeletonPage>
             ) : (
                 <Form method="POST" data-discard-confirmation data-save-bar>
-                    <input type="hidden" name="action" value="updateStep" />
-                    <input type="hidden" name="stepData" value={JSON.stringify(stepData)} />
+                    <input type="hidden" name="action" defaultValue="updateStep" />
+                    <input type="hidden" name="stepData" defaultValue={JSON.stringify(stepData)} />
                     <BlockStack gap={GapBetweenSections}>
                         <Layout>
                             <Layout.Section>
