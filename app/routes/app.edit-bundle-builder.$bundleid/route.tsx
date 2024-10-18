@@ -44,12 +44,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const formData = await request.formData();
     const action = formData.get('action');
 
-    console.log("I'm here");
-
     switch (action) {
         case 'deleteBundle': {
             try {
-                console.log("I'm here");
                 //Delete the bundle along with its steps, contentInputs, bundleSettings?, bundleColors, and bundleLabels
                 const bundleBuilderToDelete = await db.bundleBuilder.update({
                     where: {
@@ -168,6 +165,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 const cacheKeyService = new ApiCacheKeyService(session.shop);
 
                 await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
+
+                const saveBtn = formData.get('submitBtn');
+
+                if (saveBtn === 'saveAndExitBtn') {
+                    return redirect('/app');
+                }
 
                 return json({ ...new JsonData(true, 'success', 'Bundle updated') }, { status: 200 });
 

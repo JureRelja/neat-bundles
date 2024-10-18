@@ -1,5 +1,5 @@
 import { json, redirect } from '@remix-run/node';
-import { Link, useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Outlet } from '@remix-run/react';
+import { Link, useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Outlet, useSubmit } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import {
     Page,
@@ -26,22 +26,10 @@ import {
     Layout,
     FooterHelp,
 } from '@shopify/polaris';
-import {
-    DeleteIcon,
-    PlusIcon,
-    ArrowDownIcon,
-    ArrowUpIcon,
-    PageAddIcon,
-    EditIcon,
-    QuestionCircleIcon,
-    ExternalIcon,
-    SettingsIcon,
-    ClipboardIcon,
-    RefreshIcon,
-} from '@shopify/polaris-icons';
+import { DeleteIcon, PlusIcon, ArrowDownIcon, ArrowUpIcon, PageAddIcon, EditIcon, QuestionCircleIcon, ExternalIcon, SettingsIcon, RefreshIcon } from '@shopify/polaris-icons';
 import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { bundlePagePreviewKey, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '../../constants';
 import db from '../../db.server';
 import { StepType, BundlePricing, BundleDiscountType } from '@prisma/client';
@@ -103,11 +91,13 @@ export default function Index() {
     const isLoading: boolean = nav.state === 'loading';
     const isSubmitting: boolean = nav.state === 'submitting';
     const params = useParams();
+    const submit = useSubmit();
     const navigateSubmit = useNavigateSubmit(); //Function for doing the submit with a navigation (the same if you were to use a From with a submit button)
     const actionData = useActionData<typeof action>();
 
     const asyncSubmit = useAsyncSubmit(); //Function for doing the submit action where the only data is action and url
     const tableLoading: boolean = asyncSubmit.state !== 'idle'; //Table loading state
+    const form = useRef<HTMLFormElement>(null);
 
     //Errors from action
     const errors = actionData?.errors;
@@ -153,6 +143,14 @@ export default function Index() {
         // navigateSubmit('deleteBundle', `/app/edit-bundle-builder/${params.bundleid}?redirect=true`);
     };
 
+    const handleSaveAndExit = async (): Promise<void> => {
+        if (!form.current || !form.current.action) return;
+        await shopify.saveBar.leaveConfirmation();
+        console.log(form.current.action);
+        form.current.action = form.current.action + `?redirect=true`;
+        form.current.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    };
+
     const handleNavigationOnUnsavedChanges = async (navPath: string): Promise<void> => {
         await shopify.saveBar.leaveConfirmation();
 
@@ -178,7 +176,9 @@ export default function Index() {
         });
     };
 
-    const refreshBundleBuilderHandler = () => {
+    const refreshBundleBuilderHandler = async () => {
+        await shopify.saveBar.leaveConfirmation();
+
         navigateSubmit('recreateBundleBuilder', `/app/edit-bundle-builder/${params.bundleid}`);
     };
 
@@ -276,7 +276,7 @@ export default function Index() {
                         subtitle="Edit bundle details and steps"
                         compactTitle>
                         <Outlet />
-                        <Form method="POST" data-discard-confirmation data-save-bar action={`/app/edit-bundle-builder/${serverBundle.id}`}>
+                        <Form method="POST" data-discard-confirmation data-save-bar action={`/app/edit-bundle-builder/2`} ref={form}>
                             <BlockStack gap={GapBetweenSections}>
                                 <Layout>
                                     <Layout.Section>
@@ -648,12 +648,22 @@ export default function Index() {
                                             <Button variant="primary" tone="critical" onClick={deleteBundleHandler}>
                                                 Delete
                                             </Button>
-                                            <Button variant="primary" submit>
-                                                Save
-                                            </Button>
-                                            <Button variant="primary" id="saveAndNavigateBack" submit>
-                                                Save and go back
-                                            </Button>
+                                            <button
+                                                className="Polaris-Button Polaris-Button--pressable Polaris-Button--variantSecondary Polaris-Button--sizeMedium Polaris-Button--textAlignCenter"
+                                                name="submitBtn"
+                                                value="saveBtn"
+                                                type="submit">
+                                                <span className="Polaris-Text--root Polaris-Text--bodySm Polaris-Text--medium">Save</span>
+                                            </button>
+                                            {/* <button variant="primary">Save</button> */}
+
+                                            <button
+                                                className="Polaris-Button Polaris-Button--pressable Polaris-Button--variantPrimary Polaris-Button--sizeMedium Polaris-Button--textAlignCenter"
+                                                name="submitBtn"
+                                                value="saveAndExitBtn"
+                                                type="submit">
+                                                <span className="Polaris-Text--root Polaris-Text--bodySm Polaris-Text--medium">Save and return</span>
+                                            </button>
                                         </ButtonGroup>
                                     </BlockStack>
                                 </Box>
