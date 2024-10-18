@@ -3,6 +3,7 @@ import { ApiVersion, AppDistribution, BillingInterval, BillingReplacementBehavio
 import { RedisSessionStorage } from '@shopify/shopify-app-session-storage-redis';
 import { restResources } from '@shopify/shopify-api/rest/admin/2024-10';
 import { createClient } from 'redis';
+// import { Redis } from '@upstash/redis';
 import { BASIC_PLAN, PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY } from './constants';
 
 const shopify = shopifyApp({
