@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "Neat bundles"
 handle = "neat-bundles"
-application_url = "https://align-recovered-jerry-alex.trycloudflare.com"
+application_url = "https://purely-decent-pup.ngrok-free.app"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "read_themes,write_content,write_online_store_navigation,write_products
 
 [auth]
 redirect_urls = [
-  "https://align-recovered-jerry-alex.trycloudflare.com/auth/callback",
-  "https://align-recovered-jerry-alex.trycloudflare.com/auth/shopify/callback",
-  "https://align-recovered-jerry-alex.trycloudflare.com/api/auth/callback"
+  "https://purely-decent-pup.ngrok-free.app/auth/callback",
+  "https://purely-decent-pup.ngrok-free.app/auth/shopify/callback",
+  "https://purely-decent-pup.ngrok-free.app/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-10"
 
 [app_proxy]
-url = "https://align-recovered-jerry-alex.trycloudflare.com"
+url = "https://purely-decent-pup.ngrok-free.app"
 subpath = "nb"
 prefix = "apps"
 
