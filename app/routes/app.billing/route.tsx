@@ -103,13 +103,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             break;
         }
         case PRO_PLAN_YEARLY: {
+            await userRepository.updateUser({ ...user, activeBillingPlan: 'PRO' });
+
             const res = await billing.request({
                 plan: PRO_PLAN_YEARLY,
                 isTest: true,
                 returnUrl: `https://admin.shopify.com/store/${session.shop.split('.')[0]}/apps/neat-bundles/app/installation?thankYou=true`,
             });
 
-            await userRepository.updateUser({ ...user, activeBillingPlan: 'PRO' });
             break;
         }
 

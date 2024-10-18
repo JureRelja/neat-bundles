@@ -51,15 +51,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         await userRepository.updateUser({ ...user, hasAppInstalled: true });
     }
 
-    if (user.activeBillingPlan === 'NONE') {
-        const { hasActivePayment, appSubscriptions } = await billing.check({
-            plans: [PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY],
-            isTest: true,
-        });
+    const { hasActivePayment, appSubscriptions } = await billing.check({
+        plans: [PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY],
+        isTest: true,
+    });
 
-        if (!hasActivePayment) {
+    //if the user doesn't have an active payment
+    if (!hasActivePayment) {
+        //if it says in the database that the user has an active billing plan that is not BASIC
+        //this can happend if the user had an active payment and then canceled it or the payment failed
+        if (user.activeBillingPlan !== 'BASIC') {
             await userRepository.updateUser({ ...user, activeBillingPlan: 'NONE' });
-
             return json(
                 {
                     ...new JsonData(true, 'success', "Customer doesn't have an active subscription.", [], { redirect: '/app/billing' }),
@@ -67,11 +69,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
                 { status: 500 },
             );
         }
-
-        user.activeBillingPlan = appSubscriptions[0].name === PRO_PLAN_MONTHLY || appSubscriptions[0].name === PRO_PLAN_YEARLY ? 'PRO' : 'BASIC';
-        userRepository.updateUser(user);
+    }
+    //if the user has an active payment
+    else {
+        if (user.activeBillingPlan === 'NONE') {
+            user.activeBillingPlan = appSubscriptions[0].name === PRO_PLAN_MONTHLY || appSubscriptions[0].name === PRO_PLAN_YEARLY ? 'PRO' : 'BASIC';
+            await userRepository.updateUser(user);
+        }
     }
 
+    //if the user hasn't completed the installation redirect to installation page
     if (!user.completedInstallation) {
         return json(
             {
