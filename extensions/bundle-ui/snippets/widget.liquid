@@ -6,7 +6,6 @@
 <script src="{{ 'widget-utils.js' | asset_url }}" async></script>
 
 <style>
-
   body.modal-open {
     overflow: hidden;
   }
@@ -83,7 +82,7 @@
           x-init="$nextTick(() => { fetchDataForStep()})"
           x-show="!showSkeleton">
 
-          <p x-show="!isBundleInPreview">Your are viewing the bundle in
+          <p x-show="isBundleInPreview">Your are viewing the bundle in
             <u>preview</u>
             mode.</p>
 
@@ -91,9 +90,9 @@
           {% comment %} Step heading {% endcomment %}
           <div class="steps-heading-container">
             <template x-for="step in bundleData.steps">
-
               {% comment %} Passed steps icon {% endcomment %}
               <div>
+                {% comment %} Passed step icon {% endcomment %}
                 <div
                   class="step-heading-container"
                   @click="setActiveStep(step.stepNumber)"
@@ -106,7 +105,6 @@
                     class="step-title step_title_color"
                     x-bind:class="activeStep < reachedStep ? 'active-step' : ''"></span>
                 </div>
-
 
                 {% comment %} Current step icon {% endcomment %}
                 <div
@@ -430,7 +428,6 @@
                 x-bind:disabled="!stepInputsFulfiled()"
                 x-show="activeStep < bundleData.steps.length"
                 x-ref="nextStepBtn">Next step
-
                 <svg
                   width="11"
                   height="8"
@@ -444,7 +441,6 @@
                     stroke-linecap="round"
                     stroke-linejoin="round" />
                 </svg>
-
               </button>
 
               <button
@@ -453,8 +449,6 @@
                 x-bind:disabled="!stepInputsFulfiled()"
                 x-show="activeStep == bundleData.steps.length"
                 x-ref="finishBtn">Finish</button>
-
-
             </div>
 
             {% comment %} Tooltip to indicate how many products a customer needs to select on all steps except final step{% endcomment %}
@@ -711,7 +705,7 @@
         
         //Add bundle to cart
         async addBundleToCart(){
-          if (!this.isBundleInPreview) {
+          if (this.isBundleInPreview) {
             alert("This bundle is in preview mode. You can't add it to cart.");
             return;
           }

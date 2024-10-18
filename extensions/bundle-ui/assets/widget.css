@@ -39,6 +39,7 @@ p {
     width: 100%;
     align-items: flex-start;
     justify-content: center;
+    gap: 15px;
 }
 
 .step-heading-container {
@@ -78,6 +79,7 @@ p {
 .step-title {
     font-weight: bold;
     font-size: 20px;
+    text-align: center;
 }
 
 .passed-step {
@@ -136,6 +138,7 @@ p {
 @media (max-width: 768px) {
     .steps-heading-container {
         justify-content: space-between;
+        gap: 10px;
     }
 
     .step-heading-container {
@@ -631,6 +634,16 @@ p {
 
 .tooltip-border {
     border: 1px solid #a4a2a2;
+}
+
+@media (max-width: 768px) {
+    .nav-wrapper {
+        position: fixed;
+        bottom: 0;
+        background-color: #fff;
+        z-index: 5;
+        padding: 10px;
+    }
 }
 
 /* Bundle pricing */

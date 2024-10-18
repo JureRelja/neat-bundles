@@ -57,7 +57,7 @@
           {% comment %} Render a placeholder widget if the user is in theme editor {% endcomment %}
           {% if request.design_mode == true %}
             {% render 'widget'
-              , bundleId: 2
+              , bundleId: 1
               , settings: block.settings
               , widgetSkeleton: widgetSkeleton
               , stepSkeleton: stepSkeleton %}

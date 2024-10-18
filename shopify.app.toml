@@ -3,7 +3,7 @@
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
 name = "Neat bundles"
 handle = "neat-bundles"
-application_url = "https://summaries-ordering-approximately-wool.trycloudflare.com"
+application_url = "https://need-panels-room-transport.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "read_themes,write_content,write_online_store_navigation,write_products
 
 [auth]
 redirect_urls = [
-  "https://summaries-ordering-approximately-wool.trycloudflare.com/auth/callback",
-  "https://summaries-ordering-approximately-wool.trycloudflare.com/auth/shopify/callback",
-  "https://summaries-ordering-approximately-wool.trycloudflare.com/api/auth/callback"
+  "https://need-panels-room-transport.trycloudflare.com/auth/callback",
+  "https://need-panels-room-transport.trycloudflare.com/auth/shopify/callback",
+  "https://need-panels-room-transport.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-10"
 
 [app_proxy]
-url = "https://summaries-ordering-approximately-wool.trycloudflare.com"
+url = "https://need-panels-room-transport.trycloudflare.com"
 subpath = "nb"
 prefix = "apps"
 
