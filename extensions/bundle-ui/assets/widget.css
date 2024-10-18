@@ -636,16 +636,6 @@ p {
     border: 1px solid #a4a2a2;
 }
 
-@media (max-width: 768px) {
-    .nav-wrapper {
-        position: fixed;
-        bottom: 0;
-        background-color: #fff;
-        z-index: 5;
-        padding: 10px;
-    }
-}
-
 /* Bundle pricing */
 .bundle-pricing-container {
     width: 100%;

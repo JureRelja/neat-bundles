@@ -4,6 +4,7 @@ export enum ApiEndpoint {
     BundleData = 'bundleData',
     BundleSettings = 'bundleData/settings',
     BundleStep = 'bundleData/step',
+    GlobalSettings = 'globalSettings',
 }
 
 export class ApiCacheKeyService {
@@ -83,5 +84,9 @@ export class ApiCacheKeyService {
         keys.push(...(await this.getAllStepsKeys(bundleBuilderId)));
 
         return keys;
+    }
+
+    public getGlobalSettingsKey(): string {
+        return `api-${this.shop}-${ApiEndpoint.GlobalSettings}`;
     }
 }

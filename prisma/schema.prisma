@@ -135,11 +135,12 @@ enum BundleDiscountType {
 }
 
 model GlobalSettings {
-  id           Int           @id @default(autoincrement())
-  user         User          @relation(fields: [storeUrl], references: [storeUrl], onDelete: Cascade)
-  storeUrl     String        @unique
-  bundleColors BundleColors?
-  bundleLabels BundleLabels?
+  id                          Int           @id @default(autoincrement())
+  user                        User          @relation(fields: [storeUrl], references: [storeUrl], onDelete: Cascade)
+  storeUrl                    String        @unique
+  displayMobileStepNavigation Boolean       @default(true)
+  bundleColors                BundleColors?
+  bundleLabels                BundleLabels?
 }
 
 // Global colors

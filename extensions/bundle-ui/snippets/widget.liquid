@@ -63,6 +63,17 @@
     background-color: {{ settings.next_step_bg_color }};
   }
 
+  /* Global settings */
+  @media (max-width: 768px) {
+    .nav-wrapper-mobile {
+      position: fixed;
+      bottom: 0;
+      background-color: #fff;
+      z-index: 5;
+      padding: 10px;
+    }
+  }
+
 </style>
 
 {% comment %} Widget body start {% endcomment %}
@@ -399,7 +410,7 @@
           </template>
 
           {% comment %}  Step navigation {% endcomment %}
-          <div class="nav-wrapper">
+          <div class="nav-wrapper" x-bind:class="globalSettings.displayMobileStepNavigation ? 'nav-wrapper-mobile' : ''">
             <div class="nav-buttons" x-show="!stepLoading">
               <button
                 class="nav-button prev-step-btn prev_step_text_bg_color bundle_border_radius_small"
@@ -538,8 +549,16 @@
               this.bundleData = data.data;
               this.bundleSettings = data.data.bundleSettings;
               this.activeStepData = data.data.steps[0];
-
               this.initialLoading = false;
+
+              const globalSettingsResponse = await fetch(`${APP_URL}/globalSettings?neatBundlePreview=${isNeatBundlePreview}`, {mode: 'cors'})
+
+              const globalResponseData = await globalSettingsResponse.json();
+
+              console.log(globalResponseData);
+              if (globalResponseData.ok) {
+                this.globalSettings = globalResponseData.data;
+              }
 
             }
             else {
@@ -563,6 +582,7 @@
         finalLoading: false, // Final loading state
         bundleData: {}, // Bundle settings data
         bundleSettings: {}, // Bundle settings
+        globalSettings: {}, // Global app settings
   
         //Current bundle selects and inputs 
         stepInputs: [], //Inputs on steps in format [{stepNumber: 1, stepType: "PRODUCT", inputs: [{id: id, quantity: quantity, price: productPrice }]}, {stepNumber: 2, stepType: "CONTENT" inputs: [{type: text, value: value}]}]

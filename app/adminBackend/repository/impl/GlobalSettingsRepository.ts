@@ -12,8 +12,8 @@ class GlobalSettingsRepository {
         return globalSettings;
     }
 
-    public async updateUser(newGlobalSettings: GlobalSettings): Promise<boolean> {
-        const updatedSettings = await db.user.update({
+    public async updateGlobalSettings(newGlobalSettings: GlobalSettings): Promise<boolean> {
+        const updatedSettings = await db.globalSettings.update({
             where: {
                 id: newGlobalSettings.id,
             },
