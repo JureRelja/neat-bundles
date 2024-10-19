@@ -1,5 +1,5 @@
 import { json, redirect } from '@remix-run/node';
-import { useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Link } from '@remix-run/react';
+import { useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Link, useSubmit } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import {
     Page,
@@ -19,19 +19,24 @@ import {
     Icon,
     InlineStack,
 } from '@shopify/polaris';
-import { useAppBridge } from '@shopify/app-bridge-react';
+import { SaveBar, useAppBridge } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
-import { BigGapBetweenSections, GapInsideSection } from '../../constants';
+import { BigGapBetweenSections, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, LargeGapBetweenSections } from '../../constants';
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import { useNavigateSubmit } from '../../hooks/useNavigateSubmit';
 import globalSettingsRepository from '~/adminBackend/repository/impl/GlobalSettingsRepository';
 import userRepository from '~/adminBackend/repository/impl/UserRepository';
 import bundleBuilderRepository from '~/adminBackend/repository/impl/BundleBuilderRepository';
-import { GlobalSettings } from '@prisma/client';
-import { useState } from 'react';
+import { GlobalSettings, StepNavigationType } from '@prisma/client';
+import { useEffect, useState } from 'react';
 import { QuestionCircleIcon } from '@shopify/polaris-icons';
 import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
 import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
+import navMobile from '../../assets/nav-mobile.png';
+import navDesktop from '../../assets/nav-desktop.png';
+import styles from './route.module.css';
+import RadioInput from './radioInput';
+import { D } from 'node_modules/@upstash/redis/zmscore-Dc6Llqgr';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -92,6 +97,7 @@ export default function Index() {
     const isLoading: boolean = nav.state === 'loading';
     const isSubmitting: boolean = nav.state === 'submitting';
     const params = useParams();
+    const submit = useSubmit();
     const navigateSubmit = useNavigateSubmit(); //Function for doing the submit with a navigation (the same if you were to use a From with a submit button)
     const actionData = useActionData<typeof action>();
 
@@ -103,6 +109,31 @@ export default function Index() {
 
     //Using 'old' bundle data if there were errors when submitting the form. Otherwise, use the data from the loader.
     const [globalSettingsState, setGlobalSettingsState] = useState<GlobalSettings>(serverGlobalSettings);
+
+    const saveGlobalSettingsHandler = async () => {
+        const form = new FormData();
+        form.append('action', 'updateSettings');
+        form.append('globalSettings', JSON.stringify(globalSettingsState));
+
+        //Submit the form
+        submit(form, { method: 'POST', navigate: true });
+    };
+
+    const updateHandler = (attributeKey: string, value: string) => {
+        console.log(attributeKey, value);
+        setGlobalSettingsState((prev) => ({
+            ...prev,
+            [attributeKey]: value,
+        }));
+    };
+
+    useEffect(() => {
+        JSON.stringify(globalSettingsState) !== JSON.stringify(serverGlobalSettings) && shopify.saveBar.show('my-save-bar');
+
+        return () => {
+            //Cleanup
+        };
+    }, [globalSettingsState, serverGlobalSettings]);
 
     return (
         <>
@@ -131,6 +162,10 @@ export default function Index() {
                 </SkeletonPage>
             ) : (
                 <>
+                    <SaveBar id="my-save-bar">
+                        <button variant="primary" onClick={saveGlobalSettingsHandler}></button>
+                        <button onClick={() => shopify.saveBar.hide('my-save-bar')}></button>
+                    </SaveBar>
                     {/* Edit global settings page */}
                     <Page
                         backAction={{
@@ -142,11 +177,10 @@ export default function Index() {
                             },
                         }}
                         title="Global settings"
-                        subtitle="Edit the behaviour of all bundles"
-                        compactTitle>
+                        subtitle="Edit the behaviour of all bundles">
                         <Form method="POST" data-discard-confirmation data-save-bar>
                             <input type="hidden" name="action" defaultValue="updateSettings" />
-                            <input type="hidden" name="globalSettings" defaultValue={JSON.stringify(globalSettingsState) || ''} />
+                            <input type="hidden" name="globalSettings" defaultValue={JSON.stringify(globalSettingsState)} />
                             <BlockStack gap={BigGapBetweenSections}>
                                 {!data.bundleBuilderHandle ? (
                                     <Banner title="Uups, there are no bundles created." tone="warning" onDismiss={() => {}}>
@@ -165,23 +199,20 @@ export default function Index() {
                                     /* Edit settings, if there is at least one bundle created */
 
                                     // Edit styles
-                                    <BlockStack gap={BigGapBetweenSections}>
+                                    <BlockStack gap={LargeGapBetweenSections}>
                                         <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
                                             <Box as="section">
                                                 <BlockStack gap="400">
-                                                    <Text as="h3" variant="headingMd">
-                                                        Styles
+                                                    <Text as="h3" variant="headingLg">
+                                                        Colors
                                                     </Text>
-                                                    <Text as={'p'}>Edit styles and other visual settings of your bundles.</Text>
+                                                    <Text as={'p'}>Edit colors to match your brand.</Text>
                                                 </BlockStack>
                                             </Box>
                                             <Card>
                                                 <BlockStack gap={GapInsideSection}>
                                                     <Text as="p">All styling changes are doing using the Shopify's native theme editor.</Text>
-                                                    <Text as="p">
-                                                        When you click 'Edit styles', a new tab with open up where you'll be able to edit how your bundle looks. The editing process
-                                                        is the same as if you were editing your theme.
-                                                    </Text>
+                                                    <Text as="p">Just click 'Edit styles'. The editing process is the same as if you were editing your theme.</Text>
 
                                                     <Button
                                                         variant="primary"
@@ -196,7 +227,7 @@ export default function Index() {
                                         <Divider />
 
                                         {/* Show/hide out of stock products  */}
-                                        <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                                        {/* <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
                                             <Box as="section">
                                                 <BlockStack gap="400">
                                                     <Text as="h3" variant="headingMd">
@@ -237,27 +268,127 @@ export default function Index() {
                                                     }}
                                                 />
                                             </Card>
+                                        </InlineGrid> */}
+
+                                        {/* Mobile settings  */}
+                                        <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                                            <Box as="section">
+                                                <BlockStack gap="400">
+                                                    <Text as="h3" variant="headingLg">
+                                                        Mobile settings
+                                                    </Text>
+                                                    <Text as="p" variant="bodyMd">
+                                                        Edit how your bundle builder looks on mobile and other small devices.{' '}
+                                                    </Text>
+                                                </BlockStack>
+                                            </Box>
+                                            <Card>
+                                                <BlockStack gap={LargeGapBetweenSections}>
+                                                    <BlockStack gap={GapBetweenSections}>
+                                                        <BlockStack gap={GapBetweenTitleAndContent}>
+                                                            <Text as="p" variant="headingLg">
+                                                                Step navigation
+                                                            </Text>
+                                                            <Text as="p">
+                                                                Navigation can be sticky or normal. Sticky navigation will be always visible on the screen, while normal navigation
+                                                                is only visible when the user scrolls down.
+                                                            </Text>
+                                                        </BlockStack>
+
+                                                        <InlineStack gap={GapInsideSection} align="space-between">
+                                                            <RadioInput
+                                                                imgSrc={navMobile}
+                                                                label="Sticky navigation"
+                                                                attributeKey="stepNavigationTypeMobile"
+                                                                selectedValue={globalSettingsState.stepNavigationTypeMobile}
+                                                                value={'STICKY'}
+                                                                updateHandler={updateHandler}
+                                                            />
+                                                            <RadioInput
+                                                                imgSrc={navDesktop}
+                                                                label="Normal navigation"
+                                                                attributeKey="stepNavigationTypeMobile"
+                                                                selectedValue={globalSettingsState.stepNavigationTypeMobile}
+                                                                value={'NORMAL'}
+                                                                updateHandler={updateHandler}
+                                                            />
+                                                        </InlineStack>
+                                                    </BlockStack>
+                                                    {/* <Divider /> */}
+                                                </BlockStack>
+                                            </Card>
+                                        </InlineGrid>
+
+                                        <Divider />
+
+                                        {/* Desktop settings  */}
+                                        <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                                            <Box as="section">
+                                                <BlockStack gap="400">
+                                                    <Text as="h3" variant="headingLg">
+                                                        Desktop settings
+                                                    </Text>
+                                                    <Text as="p" variant="bodyMd">
+                                                        Edit how your bundle builder looks on desktop and other large devices.
+                                                    </Text>
+                                                </BlockStack>
+                                            </Box>
+                                            <Card>
+                                                <BlockStack gap={LargeGapBetweenSections}>
+                                                    <BlockStack gap={GapBetweenSections}>
+                                                        <BlockStack gap={GapBetweenTitleAndContent}>
+                                                            <Text as="p" variant="headingLg">
+                                                                Step navigation
+                                                            </Text>
+                                                            <Text as="p">
+                                                                Navigation can be sticky or normal. Sticky navigation will be always visible on the screen, while normal navigation
+                                                                is only visible when the user scrolls down.
+                                                            </Text>
+                                                        </BlockStack>
+                                                        <InlineStack gap={GapInsideSection} align="space-between">
+                                                            <RadioInput
+                                                                label="Sticky navigation"
+                                                                imgSrc={navMobile}
+                                                                attributeKey="stepNavigationTypeDesktop"
+                                                                selectedValue={globalSettingsState.stepNavigationTypeDesktop}
+                                                                value={'STICKY'}
+                                                                updateHandler={updateHandler}
+                                                            />
+                                                            <RadioInput
+                                                                imgSrc={navDesktop}
+                                                                label="Normal navigation"
+                                                                attributeKey="stepNavigationTypeDesktop"
+                                                                selectedValue={globalSettingsState.stepNavigationTypeDesktop}
+                                                                value={'NORMAL'}
+                                                                updateHandler={updateHandler}
+                                                            />
+                                                        </InlineStack>
+                                                    </BlockStack>
+
+                                                    {/* <Divider /> */}
+                                                </BlockStack>
+                                            </Card>
                                         </InlineGrid>
                                     </BlockStack>
                                 )}
 
                                 <Box width="full">
+                                    {/* Save button */}
                                     <BlockStack inlineAlign="end">
                                         <Button variant="primary" submit>
                                             Save
                                         </Button>
                                     </BlockStack>
+
+                                    {/* Footer help */}
+                                    <FooterHelp>
+                                        View the <Link to="/app/featureRequest">help docs</Link>, <Link to="/app/featureRequest">suggest new features</Link>, or{' '}
+                                        <Link to="mailto:contact@neatmerchant.com" target="_blank">
+                                            contact us
+                                        </Link>{' '}
+                                        for support.
+                                    </FooterHelp>
                                 </Box>
-
-                                <Divider borderColor="transparent" />
-
-                                <FooterHelp>
-                                    View the <Link to="/app/featureRequest">help docs</Link>, <Link to="/app/featureRequest">suggest new features</Link>, or{' '}
-                                    <Link to="mailto:contact@neatmerchant.com" target="_blank">
-                                        contact us
-                                    </Link>{' '}
-                                    for support.
-                                </FooterHelp>
                             </BlockStack>
                         </Form>
                     </Page>
