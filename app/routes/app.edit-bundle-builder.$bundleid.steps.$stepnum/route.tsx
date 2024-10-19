@@ -1,6 +1,6 @@
 import { json, redirect } from '@remix-run/node';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Form, useNavigation, useLoaderData, useParams, useActionData } from '@remix-run/react';
+import { Form, useNavigation, useLoaderData, useParams, useActionData, useSubmit } from '@remix-run/react';
 import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
 import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, InlineGrid, ButtonGroup, ChoiceList, Divider, InlineError, Layout } from '@shopify/polaris';
 
@@ -453,6 +453,42 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 );
             }
         }
+        case 'updateSelectedProducts': {
+            const selectedProducts: { stepId: number; selectedProducts: Product[] } = JSON.parse(formData.get('selectedProducts') as string);
+            console.log(selectedProducts);
+            await db.bundleStep.update({
+                where: {
+                    id: selectedProducts.stepId,
+                },
+                data: {
+                    productInput: {
+                        update: {
+                            products: {
+                                set: [],
+                                connectOrCreate: selectedProducts.selectedProducts.map((product: Product) => {
+                                    return {
+                                        where: {
+                                            shopifyProductId: product.shopifyProductId,
+                                        },
+                                        create: {
+                                            shopifyProductId: product.shopifyProductId,
+                                            shopifyProductHandle: product.shopifyProductHandle,
+                                        },
+                                    };
+                                }),
+                            },
+                        },
+                    },
+                },
+            });
+
+            // Clear the cache for the step
+            const cacheKeyService = new ApiCacheKeyService(session.shop);
+
+            ApiCacheService.singleKeyDelete(cacheKeyService.getStepKey(params.stepnum as string, params.bundleid as string));
+
+            return json(new JsonData(true, 'success', 'Selected products were updated'));
+        }
 
         default:
             return json(
@@ -469,6 +505,7 @@ export default function Index() {
     const isLoading = nav.state === 'loading';
     const isSubmitting = nav.state === 'submitting';
     const navigateSubmit = useNavigateSubmit();
+
     const params = useParams();
     const actionData = useActionData<typeof action>();
 
@@ -494,6 +531,7 @@ export default function Index() {
                 },
             };
         });
+
         updateFieldErrorHandler('products');
     };
 
@@ -537,7 +575,7 @@ export default function Index() {
             ) : (
                 <Form method="POST" data-discard-confirmation data-save-bar>
                     <input type="hidden" name="action" defaultValue="updateStep" />
-                    <input type="hidden" name="stepData" defaultValue={JSON.stringify(stepData)} />
+                    <input type="hidden" name="stepData" value={JSON.stringify(stepData)} />
                     <BlockStack gap={GapBetweenSections}>
                         <Layout>
                             <Layout.Section>
@@ -621,8 +659,13 @@ export default function Index() {
                                                     }
                                                     updateSelectedResources={updateSelectedResources}
                                                     />*/}
-
+                                                        <input
+                                                            name="products[]"
+                                                            type="hidden"
+                                                            value={stepData.productInput?.products.map((product: Product) => product.shopifyProductId).join(',')}
+                                                        />
                                                         <ResourcePicker
+                                                            stepId={stepData.id}
                                                             selectedProducts={stepData.productInput?.products as Product[]}
                                                             updateSelectedProducts={updateSelectedProducts}
                                                         />

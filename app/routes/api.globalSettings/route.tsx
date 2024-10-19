@@ -34,7 +34,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     //Get query params
     if (cacheData) {
-        return json(new JsonData(true, 'success', 'Bundle succesfuly retirieved.', [], cacheData, true), {
+        return json(new JsonData(true, 'success', 'Global settings succesfuly retirieved.', [], cacheData, true), {
             headers: {
                 'Access-Control-Allow-Origin': '*',
             },

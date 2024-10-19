@@ -25,7 +25,7 @@ export default function App() {
                 <Link to="/app" rel="home">
                     Home
                 </Link>
-                <Link to="/app/settings" rel="settings">
+                <Link to="/app/global-settings" rel="globalSettings">
                     Global settings
                 </Link>
                 <Link to="/app/installation" rel="installation">

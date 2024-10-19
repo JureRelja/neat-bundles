@@ -12,8 +12,6 @@ export async function checkPublicAuth(request: Request, strict?: boolean): Promi
     const bundleId = url.searchParams.get('bundleId');
     const isBundleInPreview = url.searchParams.get(bundlePagePreviewKey);
 
-    console.log(isBundleInPreview);
-
     //Veryfing digital signature
     const signatureValidator = new SignatureValidator(url.searchParams);
 
@@ -48,8 +46,6 @@ export async function checkPublicAuth(request: Request, strict?: boolean): Promi
             storeUrl: true,
         },
     });
-
-    console.log(isBundleInPreview);
 
     if (isBundleInPreview === 'true' && !strict) {
         return new JsonData(true, 'success', 'Bundle is in preview mode.');
