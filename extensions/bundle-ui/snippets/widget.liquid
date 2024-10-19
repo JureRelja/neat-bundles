@@ -65,7 +65,18 @@
 
   /* Global settings */
   @media (max-width: 768px) {
-    .nav-wrapper-mobile {
+    .nav-wrapper-sticky-mobile {
+      position: fixed;
+      bottom: 0;
+      background-color: #fff;
+      z-index: 5;
+      padding: 10px;
+      border-top: 1px solid #9e9999;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .nav-wrapper-sticky-desktop {
       position: fixed;
       bottom: 0;
       background-color: #fff;
@@ -411,7 +422,7 @@
           </template>
 
           {% comment %}  Step navigation {% endcomment %}
-          <div class="nav-wrapper" x-bind:class="globalSettings.displayMobileStepNavigation ? 'nav-wrapper-mobile' : ''">
+          <div class="nav-wrapper" x-bind:class="`${globalSettings.stepNavigationTypeDesktop === 'STICKY' ? 'nav-wrapper-sticky-desktop' : ''} ${globalSettings.stepNavigationTypeMobile === 'STICKY' ? 'nav-wrapper-sticky-mobile' : ''}`">
             <div class="nav-buttons" x-show="!stepLoading">
               <button
                 class="nav-button prev-step-btn prev_step_text_bg_color bundle_border_radius_small"
@@ -556,7 +567,7 @@
 
               const globalResponseData = await globalSettingsResponse.json();
 
-              console.log(globalResponseData);
+              // console.log(globalResponseData);
               if (globalResponseData.ok) {
                 this.globalSettings = globalResponseData.data;
               }

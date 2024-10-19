@@ -32,11 +32,9 @@ import { useEffect, useState } from 'react';
 import { QuestionCircleIcon } from '@shopify/polaris-icons';
 import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
 import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
-import navMobile from '../../assets/nav-mobile.png';
-import navDesktop from '../../assets/nav-desktop.png';
-import styles from './route.module.css';
+import stickyNav from '../../assets/nav-sticky.png';
+import normalNav from '../../assets/nav-normal.png';
 import RadioInput from './radioInput';
-import { D } from 'node_modules/@upstash/redis/zmscore-Dc6Llqgr';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -297,19 +295,19 @@ export default function Index() {
 
                                                         <InlineStack gap={GapInsideSection} align="space-between">
                                                             <RadioInput
-                                                                imgSrc={navMobile}
-                                                                label="Sticky navigation"
-                                                                attributeKey="stepNavigationTypeMobile"
-                                                                selectedValue={globalSettingsState.stepNavigationTypeMobile}
-                                                                value={'STICKY'}
-                                                                updateHandler={updateHandler}
-                                                            />
-                                                            <RadioInput
-                                                                imgSrc={navDesktop}
+                                                                imgSrc={normalNav}
                                                                 label="Normal navigation"
                                                                 attributeKey="stepNavigationTypeMobile"
                                                                 selectedValue={globalSettingsState.stepNavigationTypeMobile}
                                                                 value={'NORMAL'}
+                                                                updateHandler={updateHandler}
+                                                            />
+                                                            <RadioInput
+                                                                imgSrc={stickyNav}
+                                                                label="Sticky navigation"
+                                                                attributeKey="stepNavigationTypeMobile"
+                                                                selectedValue={globalSettingsState.stepNavigationTypeMobile}
+                                                                value={'STICKY'}
                                                                 updateHandler={updateHandler}
                                                             />
                                                         </InlineStack>
@@ -347,19 +345,19 @@ export default function Index() {
                                                         </BlockStack>
                                                         <InlineStack gap={GapInsideSection} align="space-between">
                                                             <RadioInput
-                                                                label="Sticky navigation"
-                                                                imgSrc={navMobile}
-                                                                attributeKey="stepNavigationTypeDesktop"
-                                                                selectedValue={globalSettingsState.stepNavigationTypeDesktop}
-                                                                value={'STICKY'}
-                                                                updateHandler={updateHandler}
-                                                            />
-                                                            <RadioInput
-                                                                imgSrc={navDesktop}
                                                                 label="Normal navigation"
+                                                                imgSrc={normalNav}
                                                                 attributeKey="stepNavigationTypeDesktop"
                                                                 selectedValue={globalSettingsState.stepNavigationTypeDesktop}
                                                                 value={'NORMAL'}
+                                                                updateHandler={updateHandler}
+                                                            />
+                                                            <RadioInput
+                                                                imgSrc={stickyNav}
+                                                                label="Sticky navigation"
+                                                                attributeKey="stepNavigationTypeDesktop"
+                                                                selectedValue={globalSettingsState.stepNavigationTypeDesktop}
+                                                                value={'STICKY'}
                                                                 updateHandler={updateHandler}
                                                             />
                                                         </InlineStack>
