@@ -13,6 +13,8 @@ import { bundleStepBasic, BundleStepBasicResources } from '@adminBackend/service
 import { useEffect, useRef, useState } from 'react';
 import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
 import { ApiCacheKeyService } from '@adminBackend/service/utils/ApiCacheKeyService';
+import userRepository from '~/adminBackend/repository/impl/UserRepository';
+import bundleBuilderRepository from '~/adminBackend/repository/impl/BundleBuilderRepository';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
@@ -53,6 +55,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const formData = await request.formData();
     const action = formData.get('action') as string;
 
+    const user = await userRepository.getUserByStoreUrl(session.shop);
+
+    if (!user) return redirect('/app');
+
     switch (action) {
         //Adding a new step to the bundle
         case 'addStep': {
@@ -78,6 +84,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     },
                     { status: 400 },
                 );
+
+            // Ceck if the user has reached the limit of steps for the basic plan
+            if (user.activeBillingPlan === 'BASIC') {
+                if (numOfSteps._max.stepNumber && numOfSteps._max.stepNumber >= 2) {
+                    return json(new JsonData(false, 'error', 'You have reached the limit of 2 steps for one bundle for the basic plan.'), { status: 400 });
+                }
+            }
 
             try {
                 const newStep: BundleStep = await db.bundleStep.create({

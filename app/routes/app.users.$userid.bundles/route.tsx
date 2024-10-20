@@ -33,9 +33,9 @@ import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
 import styles from './route.module.css';
 import { useState } from 'react';
 import { Modal, TitleBar } from '@shopify/app-bridge-react';
-import { BigGapBetweenSections, bundlePagePreviewKey, GapBetweenSections, GapInsideSection, LargeGapBetweenSections } from '~/constants';
+import { bundlePagePreviewKey, GapBetweenSections } from '~/constants';
 import userRepository from '@adminBackend/repository/impl/UserRepository';
-import { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
+import bundleBuilderRepository, { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
 import { shopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
 import { ShopifyRedirectRepository } from '~/adminBackend/repository/impl/ShopifyRedirectRepository';
 import { ShopifyBundleBuilderPageRepository } from '~/adminBackend/repository/ShopifyBundleBuilderPageRepository';
@@ -72,7 +72,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     return json(
         {
-            ...new JsonData(true, 'success', 'Bundles succesfuly retrieved.', [], bundleBuildersWithPageUrl),
+            ...new JsonData(true, 'success', 'Bundles succesfuly retrieved.', [], { bundleBuildersWithPageUrl, user }),
         },
         { status: 200 },
     );
@@ -90,6 +90,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 const user = await userRepository.getUserByStoreUrl(session.shop);
 
                 if (!user) return redirect('/app');
+
+                if (user.activeBillingPlan === 'BASIC') {
+                    const bundleBuilderCount = await bundleBuilderRepository.getBundleBuilderCountByStoreUrl(session.shop);
+
+                    if (bundleBuilderCount >= 2) {
+                        return json(new JsonData(false, 'error', 'You have reached the limit of 2 bundles for the basic plan.'), { status: 400 });
+                    }
+                }
 
                 const maxBundleId = await BundleBuilderRepository.getMaxBundleBuilderId(session.shop);
 
@@ -142,11 +150,24 @@ export default function Index() {
     const fetcher = useFetcher();
     const tableLoading: boolean = asyncSubmit.state !== 'idle'; //Table loading state
 
-    const loaderResponse: JsonData<BundleAndStepsBasicClient[]> = useLoaderData<typeof loader>();
+    const loaderResponse = useLoaderData<typeof loader>();
 
-    const bundleBuilders: BundleAndStepsBasicClient[] = loaderResponse.data;
+    const bundleBuilders: BundleAndStepsBasicClient[] = loaderResponse.data.bundleBuildersWithPageUrl;
+
+    const user = loaderResponse.data.user;
+
+    const checkBundleCount = (): boolean => {
+        if (user.activeBillingPlan === 'BASIC' && bundleBuilders.length >= 2) {
+            shopify.modal.show('bundle-limit-modal');
+            return false;
+        }
+
+        return true;
+    };
 
     const createBundle = () => {
+        if (!checkBundleCount()) return;
+
         navigateSubmit('createBundle', `/app/users/${params.userid}/bundles`);
     };
 
@@ -204,6 +225,23 @@ export default function Index() {
                                     setShowBundleDeleteConfirmModal(false);
                                 }}>
                                 Delete
+                            </button>
+                        </TitleBar>
+                    </Modal>
+
+                    {/* Modal to show the customer that they've reacheda  limit and should upgrade */}
+                    <Modal id="bundle-limit-modal">
+                        <Box padding="300">
+                            <BlockStack gap={GapBetweenSections}>
+                                <Text as="p">You are on the 'Basic' plan which only allows you to have up to 2 bundles at one time.</Text>
+                                <Text as="p" variant="headingSm">
+                                    If you want to create more bundles, go to <Link to={'/app/billing'}>billing</Link> and upgrade to paid plan.
+                                </Text>
+                            </BlockStack>
+                        </Box>
+                        <TitleBar title="Maximum bundles reached">
+                            <button variant="primary" onClick={() => shopify.modal.hide('bundle-limit-modal')}>
+                                Close
                             </button>
                         </TitleBar>
                     </Modal>

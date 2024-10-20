@@ -191,6 +191,14 @@ export class BundleBuilderRepository {
 
         return _max.id;
     }
+
+    public async getBundleBuilderCountByStoreUrl(storeUrl: string): Promise<number> {
+        return db.bundleBuilder.count({
+            where: {
+                storeUrl: storeUrl,
+            },
+        });
+    }
 }
 
 const bundleBuilderRepository = new BundleBuilderRepository();

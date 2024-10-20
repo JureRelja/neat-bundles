@@ -67,7 +67,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 
     const bundleBuilderWithPageUrl: BundleFullStepBasicServer = { ...bundleBuilder, bundleBuilderPageUrl };
 
-    return json(new JsonData(true, 'success', 'Bundle succesfuly retrieved', [], bundleBuilderWithPageUrl), { status: 200 });
+    return json(new JsonData(true, 'success', 'Bundle succesfuly retrieved', [], { bundleBuilderWithPageUrl, user }), { status: 200 });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -105,31 +105,41 @@ export default function Index() {
     const submittedBundle: BundleFullStepBasicClient = actionData?.data as BundleFullStepBasicClient;
 
     //Data from the loader
-    const serverBundle = useLoaderData<typeof loader>().data;
+    const serverBundle = useLoaderData<typeof loader>().data.bundleBuilderWithPageUrl;
+
+    //user data from the loader
+    const user = useLoaderData<typeof loader>().data.user;
 
     //Using 'old' bundle data if there were errors when submitting the form. Otherwise, use the data from the loader.
     const [bundleState, setBundleState] = useState<BundleFullStepBasicClient>(errors?.length === 0 || !errors ? serverBundle : submittedBundle);
 
     const bundleSteps: BundleStepBasicResources[] = serverBundle.steps.sort((a: BundleStepBasicResources, b: BundleStepBasicResources): number => a.stepNumber - b.stepNumber);
 
-    //Function for adding the step if there are less than 5 steps total
-    const addStep = async (): Promise<void> => {
-        await shopify.saveBar.leaveConfirmation();
-
+    const checkStepCount = (): boolean => {
         if (serverBundle.steps.length >= 5) {
             shopify.modal.show('no-more-steps-modal');
-            return;
+            return false;
         }
+
+        if (user.activeBillingPlan === 'BASIC' && serverBundle.steps.length >= 2) {
+            shopify.modal.show('step-limit-modal');
+            return false;
+        }
+
+        return true;
+    };
+
+    //Function for adding the step if there are less than 5 steps total
+    const addStep = async (): Promise<void> => {
+        if (!checkStepCount()) return;
 
         navigateSubmit('addStep', `/app/edit-bundle-builder/${params.bundleid}/steps`);
     };
 
     //Duplicating the step
     const duplicateStep = async (stepNumber: number): Promise<void> => {
-        if (serverBundle.steps.length >= 5) {
-            shopify.modal.show('no-more-steps-modal');
-            return;
-        }
+        if (!checkStepCount()) return;
+
         asyncSubmit.submit('duplicateStep', `/app/edit-bundle-builder/${params.bundleid}/steps/${stepNumber}`);
     };
 
@@ -141,14 +151,6 @@ export default function Index() {
 
         setShowDeleteModal(true);
         // navigateSubmit('deleteBundle', `/app/edit-bundle-builder/${params.bundleid}?redirect=true`);
-    };
-
-    const handleSaveAndExit = async (): Promise<void> => {
-        if (!form.current || !form.current.action) return;
-        await shopify.saveBar.leaveConfirmation();
-        console.log(form.current.action);
-        form.current.action = form.current.action + `?redirect=true`;
-        form.current.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
     };
 
     const handleNavigationOnUnsavedChanges = async (navPath: string): Promise<void> => {
@@ -224,6 +226,23 @@ export default function Index() {
                                     setShowDeleteModal(false);
                                 }}>
                                 Delete
+                            </button>
+                        </TitleBar>
+                    </Modal>
+
+                    {/* Modal to show the customer that they've reacheda  limit and should upgrade */}
+                    <Modal id="step-limit-modal">
+                        <Box padding="300">
+                            <BlockStack gap={GapBetweenSections}>
+                                <Text as="p">You are on the 'Basic' plan which only allows you to create up to 2 steps for each bundle.</Text>
+                                <Text as="p" variant="headingSm">
+                                    If you want to create more steps, go to <Link to={'/app/billing'}>billing</Link> and upgrade to paid plan.
+                                </Text>
+                            </BlockStack>
+                        </Box>
+                        <TitleBar title="Maximum steps reached">
+                            <button variant="primary" onClick={() => shopify.modal.hide('step-limit-modal')}>
+                                Close
                             </button>
                         </TitleBar>
                     </Modal>

@@ -247,7 +247,13 @@ export default function Index() {
                                         monthlyPricing={'Free'}
                                         yearlyPricing={'Free'}
                                         pricingInterval={pricingInterval}
-                                        features={['Create up to 5 bundles', 'Create product steps', 'Customize colors', 'Customer support']}
+                                        features={[
+                                            'Create up to 2 bundles',
+                                            'Create up to 3 two steps in one bundle',
+                                            'Create product steps',
+                                            'Customize colors',
+                                            'Customer support',
+                                        ]}
                                     />
                                     <PricingPlan
                                         activePlan={activeSubscription === PRO_PLAN_MONTHLY || activeSubscription === PRO_PLAN_YEARLY}
@@ -257,7 +263,15 @@ export default function Index() {
                                         monthlyPricing={'$4.99'}
                                         yearlyPricing={'$49.99'}
                                         pricingInterval={pricingInterval}
-                                        features={['Create unlimited bundles', 'Create product steps', 'Colect images and text on steps', 'Customize colors', 'Priority support']}
+                                        features={[
+                                            'Create unlimited bundles',
+                                            'Create up to 5 steps on all bundles',
+                                            'Create product steps',
+                                            'Colect images or text on steps',
+                                            'Remove Neat bundles branding',
+                                            'Customize colors',
+                                            'Priority support',
+                                        ]}
                                     />
                                 </InlineStack>
 
