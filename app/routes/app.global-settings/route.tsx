@@ -27,14 +27,18 @@ import { useNavigateSubmit } from '../../hooks/useNavigateSubmit';
 import globalSettingsRepository from '~/adminBackend/repository/impl/GlobalSettingsRepository';
 import userRepository from '~/adminBackend/repository/impl/UserRepository';
 import bundleBuilderRepository from '~/adminBackend/repository/impl/BundleBuilderRepository';
-import { GlobalSettings, StepNavigationType } from '@prisma/client';
-import { useEffect, useState } from 'react';
-import { QuestionCircleIcon } from '@shopify/polaris-icons';
+import { GlobalSettings } from '@prisma/client';
+import { useEffect, useRef, useState } from 'react';
+import { QuestionCircleIcon, DesktopIcon, MobileIcon, ArrowDownIcon } from '@shopify/polaris-icons';
 import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
 import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
-import stickyNav from '../../assets/nav-sticky.png';
-import normalNav from '../../assets/nav-normal.png';
+import stickyNavMobile from '../../assets/navStickyMobile.png';
+import normalNavMobile from '../../assets/navNormalMobile.png';
+import normalNavDesktop from '../../assets/navNormalDesktop.png';
+import stickyNavDesktop from '../../assets/navStickyDesktop.png';
 import RadioInput from './radioInput';
+import styles from './route.module.css';
+import { access } from 'fs';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -107,8 +111,11 @@ export default function Index() {
 
     //Using 'old' bundle data if there were errors when submitting the form. Otherwise, use the data from the loader.
     const [globalSettingsState, setGlobalSettingsState] = useState<GlobalSettings>(serverGlobalSettings);
+    const [activeMode, setActiveMode] = useState<'desktop' | 'mobile'>('desktop');
 
     const saveGlobalSettingsHandler = async () => {
+        await shopify.saveBar.hide('my-save-bar');
+
         const form = new FormData();
         form.append('action', 'updateSettings');
         form.append('globalSettings', JSON.stringify(globalSettingsState));
@@ -129,9 +136,40 @@ export default function Index() {
         JSON.stringify(globalSettingsState) !== JSON.stringify(serverGlobalSettings) && shopify.saveBar.show('my-save-bar');
 
         return () => {
-            //Cleanup
+            shopify.saveBar.hide('my-save-bar');
         };
     }, [globalSettingsState, serverGlobalSettings]);
+
+    //
+    // Sticky header on scroll
+    //
+    const [sticky, setSticky] = useState({ isSticky: false, offset: 0 });
+    const deviceToogleRef = useRef<HTMLDivElement>(null);
+
+    // handle scroll event
+    const handleScroll = (elTopOffset: number, elHeight: number) => {
+        if (window.scrollY >= elTopOffset) {
+            setSticky({ isSticky: true, offset: elHeight });
+        } else {
+            setSticky({ isSticky: false, offset: 0 });
+        }
+    };
+
+    // add/remove scroll event listener
+    useEffect(() => {
+        let previewBox = deviceToogleRef.current?.getBoundingClientRect();
+        const handleScrollEvent = () => {
+            handleScroll(previewBox?.top || 0, previewBox?.height || 0);
+        };
+
+        window.addEventListener('scroll', handleScrollEvent);
+
+        return () => {
+            window.removeEventListener('scroll', handleScrollEvent);
+        };
+    }, []);
+
+    const [activeEditorTab, setActiveEditorTab] = useState<'stepNavigation' | 'nav'>();
 
     return (
         <>
@@ -161,11 +199,12 @@ export default function Index() {
             ) : (
                 <>
                     <SaveBar id="my-save-bar">
-                        <button variant="primary" onClick={saveGlobalSettingsHandler}></button>
+                        <button variant={'primary'} onClick={saveGlobalSettingsHandler}></button>
                         <button onClick={() => shopify.saveBar.hide('my-save-bar')}></button>
                     </SaveBar>
                     {/* Edit global settings page */}
                     <Page
+                        fullWidth
                         backAction={{
                             content: 'back',
                             onAction: async () => {
@@ -187,18 +226,16 @@ export default function Index() {
                                                 Please create your first bundle, and then come back here to edit settings.
                                             </Text>
                                             <Box>
-                                                <Button variant="primary" url="/app">
+                                                <Button variant="secondary" url="/app">
                                                     Create bundle
                                                 </Button>
                                             </Box>
                                         </BlockStack>
                                     </Banner>
                                 ) : (
-                                    /* Edit settings, if there is at least one bundle created */
-
-                                    // Edit styles
+                                    // Edit colors
                                     <BlockStack gap={LargeGapBetweenSections}>
-                                        <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                                        <InlineGrid columns={{ xs: '1fr', md: '3fr 4fr' }} gap="400">
                                             <Box as="section">
                                                 <BlockStack gap="400">
                                                     <Text as="h3" variant="headingLg">
@@ -216,94 +253,248 @@ export default function Index() {
                                                         variant="primary"
                                                         target="_blank"
                                                         url={`https://${data.user.storeUrl}/admin/themes/current/editor?context=apps&previewPath=/pages/${data.bundleBuilderHandle}?neatBundlePreview=true&appEmbed=${data.appId}/${'embed_block'}`}>
-                                                        Edit styles
+                                                        Edit colors
                                                     </Button>
                                                 </BlockStack>
                                             </Card>
                                         </InlineGrid>
 
+                                        <Divider borderColor="border-inverse" />
+
+                                        {/* Sticky header for separate mobile and desktop editing */}
+                                        <BlockStack gap={GapBetweenSections}>
+                                            <InlineStack align="center">
+                                                <Text as="h3" variant="headingLg">
+                                                    <InlineStack>
+                                                        <Icon source={ArrowDownIcon} />
+                                                        Settings below apply separately for desktop and mobile
+                                                        <Icon source={ArrowDownIcon} />
+                                                    </InlineStack>
+                                                </Text>
+                                            </InlineStack>
+                                            <div ref={deviceToogleRef} className={`${sticky.isSticky ? styles.sticky : ''}`}>
+                                                <Card padding={'200'}>
+                                                    <InlineStack gap={GapBetweenTitleAndContent} align="space-between">
+                                                        <Text as="h3" variant="headingLg">
+                                                            You are currently editing settings for: <u>{activeMode === 'desktop' ? 'Desktop' : 'Mobile'}</u>
+                                                        </Text>
+
+                                                        <InlineStack gap={GapInsideSection}>
+                                                            <Tooltip content="Desktop">
+                                                                <Button
+                                                                    variant="secondary"
+                                                                    icon={DesktopIcon}
+                                                                    disabled={activeMode === 'desktop'}
+                                                                    onClick={() => {
+                                                                        setActiveMode('desktop');
+                                                                    }}></Button>
+                                                            </Tooltip>
+
+                                                            <Tooltip content="Mobile">
+                                                                <Button
+                                                                    variant="secondary"
+                                                                    icon={MobileIcon}
+                                                                    disabled={activeMode === 'mobile'}
+                                                                    onClick={() => {
+                                                                        setActiveMode('mobile');
+                                                                    }}></Button>
+                                                            </Tooltip>
+                                                        </InlineStack>
+                                                    </InlineStack>
+                                                </Card>
+                                            </div>
+                                        </BlockStack>
+
                                         <Divider />
 
-                                        {/* Show/hide out of stock products  */}
-                                        {/* <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
-                                            <Box as="section">
-                                                <BlockStack gap="400">
-                                                    <Text as="h3" variant="headingMd">
-                                                        Bundle builder
-                                                    </Text>
-                                                    <Text as="p" variant="bodyMd">
-                                                        Edit the behaviour of the bundle builder. That's the part that your customers see when they are creating a bundle.
-                                                    </Text>
-                                                </BlockStack>
-                                            </Box>
+                                        {/* Settings  */}
+
+                                        {/* Editor beta */}
+                                        {/* It's currently hidden, but will become active once there are a little more settings to customize */}
+                                        {/* <InlineGrid columns={{ xs: '1fr', md: '1fr 6fr' }} gap="400">
                                             <Card>
-                                                <ChoiceList
-                                                    title="Mobile step navigation"
-                                                    allowMultiple
-                                                    name={`displayMobileStepNavigation`}
-                                                    choices={[
-                                                        {
-                                                            label: (
-                                                                <InlineStack>
-                                                                    <Text as={'p'}>Stick step navigation to the bottom on small screens</Text>
-                                                                    <Tooltip
-                                                                        width="wide"
-                                                                        content="By default step navigation will be floating on the botom of the customer's screen on small devices. If you disable this, the navigation will look the same on big and small screens.">
-                                                                        <Icon source={QuestionCircleIcon}></Icon>
-                                                                    </Tooltip>
-                                                                </InlineStack>
-                                                            ),
-                                                            value: 'displayMobileStepNavigation',
-                                                        },
-                                                    ]}
-                                                    selected={[globalSettingsState.displayMobileStepNavigation ? 'displayMobileStepNavigation' : '']}
-                                                    onChange={(selectedValue) => {
-                                                        console.log(selectedValue);
-                                                        setGlobalSettingsState((prev) => ({
-                                                            ...prev,
-                                                            displayMobileStepNavigation: selectedValue.includes('displayMobileStepNavigation'),
-                                                        }));
-                                                    }}
-                                                />
+                                                <Box as="section">
+                                                    <BlockStack>
+                                                        <p
+                                                            className={`${styles.editorTab} ${activeEditorTab === 'stepNavigation' && styles.activeEditorTab}`}
+                                                            onClick={() => setActiveEditorTab('stepNavigation')}>
+                                                            Step navigation
+                                                        </p>
+                                                        <p
+                                                            className={`${styles.editorTab} ${activeEditorTab === 'nav' && styles.activeEditorTab}`}
+                                                            onClick={() => setActiveEditorTab('nav')}>
+                                                            Step nav
+                                                        </p>
+                                                    </BlockStack>
+                                                </Box>
                                             </Card>
+
+                                            {activeEditorTab === 'stepNavigation' && (
+                                                <Card>
+                                                    <BlockStack gap={GapBetweenSections}>
+                                                        <Text as="p" variant="bodyMd">
+                                                            Navigation can be 'sticky' or 'normal'. 'Sticky' navigation will be always visible on the screen, while 'normal'
+                                                            navigation is only visible when the user scrolls down.
+                                                        </Text>
+                                                        {activeMode === 'desktop' ? (
+                                                            <InlineStack gap={GapInsideSection} align="center" blockAlign="center">
+                                                                <RadioInput
+                                                                    label="Normal navigation"
+                                                                    imgSrc={normalNavDesktop}
+                                                                    attributeKey="stepNavigationTypeDesktop"
+                                                                    selectedValue={globalSettingsState.stepNavigationTypeDesktop}
+                                                                    value={'NORMAL'}
+                                                                    updateHandler={updateHandler}
+                                                                    horizontal
+                                                                />
+                                                                <Text as="p" alignment="center">
+                                                                    OR
+                                                                </Text>
+                                                                <RadioInput
+                                                                    imgSrc={stickyNavDesktop}
+                                                                    label="Sticky navigation"
+                                                                    attributeKey="stepNavigationTypeDesktop"
+                                                                    selectedValue={globalSettingsState.stepNavigationTypeDesktop}
+                                                                    value={'STICKY'}
+                                                                    updateHandler={updateHandler}
+                                                                    horizontal
+                                                                />
+                                                            </InlineStack>
+                                                        ) : (
+                                                            <InlineStack gap={GapInsideSection} align="center" blockAlign="center">
+                                                                <RadioInput
+                                                                    label="Normal navigation"
+                                                                    imgSrc={normalNavMobile}
+                                                                    attributeKey="stepNavigationTypeMobile"
+                                                                    selectedValue={globalSettingsState.stepNavigationTypeMobile}
+                                                                    value={'NORMAL'}
+                                                                    updateHandler={updateHandler}
+                                                                />
+                                                                <Text as="p" alignment="center">
+                                                                    OR
+                                                                </Text>
+                                                                <RadioInput
+                                                                    imgSrc={stickyNavMobile}
+                                                                    label="Sticky navigation"
+                                                                    attributeKey="stepNavigationTypeMobile"
+                                                                    selectedValue={globalSettingsState.stepNavigationTypeMobile}
+                                                                    value={'STICKY'}
+                                                                    updateHandler={updateHandler}
+                                                                />
+                                                            </InlineStack>
+                                                        )}
+                                                    </BlockStack>
+                                                </Card>
+                                            )}
+
+                                            {activeEditorTab === 'nav' && (
+                                                <Card>
+                                                    <BlockStack gap={GapBetweenSections}>
+                                                        <Text as="p" variant="bodyMd">
+                                                            Navigation can be 'sticky' or 'normal'. 'Sticky' navigation will be always visible on the screen, while 'normal'
+                                                            navigation is only visible when the user scrolls down.
+                                                        </Text>
+                                                        {activeMode === 'desktop' ? (
+                                                            <InlineStack gap={GapInsideSection} align="center" blockAlign="center">
+                                                                <RadioInput
+                                                                    label="Normal navigation"
+                                                                    imgSrc={normalNavDesktop}
+                                                                    attributeKey="stepNavigationTypeDesktop"
+                                                                    selectedValue={globalSettingsState.stepNavigationTypeDesktop}
+                                                                    value={'NORMAL'}
+                                                                    updateHandler={updateHandler}
+                                                                    horizontal
+                                                                />
+                                                                <Text as="p" alignment="center">
+                                                                    OR
+                                                                </Text>
+                                                                <RadioInput
+                                                                    imgSrc={stickyNavDesktop}
+                                                                    label="Sticky navigation"
+                                                                    attributeKey="stepNavigationTypeDesktop"
+                                                                    selectedValue={globalSettingsState.stepNavigationTypeDesktop}
+                                                                    value={'STICKY'}
+                                                                    updateHandler={updateHandler}
+                                                                    horizontal
+                                                                />
+                                                            </InlineStack>
+                                                        ) : (
+                                                            <InlineStack gap={GapInsideSection} align="center" blockAlign="center">
+                                                                <RadioInput
+                                                                    label="Normal navigation"
+                                                                    imgSrc={normalNavMobile}
+                                                                    attributeKey="stepNavigationTypeMobile"
+                                                                    selectedValue={globalSettingsState.stepNavigationTypeMobile}
+                                                                    value={'NORMAL'}
+                                                                    updateHandler={updateHandler}
+                                                                />
+                                                                <Text as="p" alignment="center">
+                                                                    OR
+                                                                </Text>
+                                                                <RadioInput
+                                                                    imgSrc={stickyNavMobile}
+                                                                    label="Sticky navigation"
+                                                                    attributeKey="stepNavigationTypeMobile"
+                                                                    selectedValue={globalSettingsState.stepNavigationTypeMobile}
+                                                                    value={'STICKY'}
+                                                                    updateHandler={updateHandler}
+                                                                />
+                                                            </InlineStack>
+                                                        )}
+                                                    </BlockStack>
+                                                </Card>
+                                            )}
                                         </InlineGrid> */}
 
-                                        {/* Mobile settings  */}
-                                        <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                                        <InlineGrid columns={{ xs: '1fr', md: `${activeMode === 'desktop' ? '2fr 5fr' : '3fr 4fr'}` }} gap="400">
                                             <Box as="section">
                                                 <BlockStack gap="400">
                                                     <Text as="h3" variant="headingLg">
-                                                        Mobile settings
+                                                        Step navigation
                                                     </Text>
                                                     <Text as="p" variant="bodyMd">
-                                                        Edit how your bundle builder looks on mobile and other small devices.{' '}
+                                                        Navigation can be sticky or normal. Sticky navigation will be always visible on the screen, while normal navigation is only
+                                                        visible when the user scrolls down.
                                                     </Text>
                                                 </BlockStack>
                                             </Box>
                                             <Card>
-                                                <BlockStack gap={LargeGapBetweenSections}>
+                                                {activeMode === 'desktop' ? (
                                                     <BlockStack gap={GapBetweenSections}>
-                                                        <BlockStack gap={GapBetweenTitleAndContent}>
-                                                            <Text as="p" variant="headingLg">
-                                                                Step navigation
-                                                            </Text>
-                                                            <Text as="p">
-                                                                Navigation can be sticky or normal. Sticky navigation will be always visible on the screen, while normal navigation
-                                                                is only visible when the user scrolls down.
-                                                            </Text>
-                                                        </BlockStack>
-
-                                                        <InlineStack gap={GapInsideSection} align="space-between">
+                                                        <InlineStack gap={GapInsideSection} align="center" blockAlign="center">
                                                             <RadioInput
-                                                                imgSrc={normalNav}
                                                                 label="Normal navigation"
+                                                                imgSrc={normalNavDesktop}
+                                                                attributeKey="stepNavigationTypeDesktop"
+                                                                selectedValue={globalSettingsState.stepNavigationTypeDesktop}
+                                                                value={'NORMAL'}
+                                                                updateHandler={updateHandler}
+                                                                horizontal
+                                                            />
+                                                            <RadioInput
+                                                                imgSrc={stickyNavDesktop}
+                                                                label="Sticky navigation"
+                                                                attributeKey="stepNavigationTypeDesktop"
+                                                                selectedValue={globalSettingsState.stepNavigationTypeDesktop}
+                                                                value={'STICKY'}
+                                                                updateHandler={updateHandler}
+                                                                horizontal
+                                                            />
+                                                        </InlineStack>
+                                                    </BlockStack>
+                                                ) : (
+                                                    <BlockStack gap={GapBetweenSections}>
+                                                        <InlineStack gap={GapInsideSection} align="center" blockAlign="center">
+                                                            <RadioInput
+                                                                label="Normal navigation"
+                                                                imgSrc={normalNavMobile}
                                                                 attributeKey="stepNavigationTypeMobile"
                                                                 selectedValue={globalSettingsState.stepNavigationTypeMobile}
                                                                 value={'NORMAL'}
                                                                 updateHandler={updateHandler}
                                                             />
                                                             <RadioInput
-                                                                imgSrc={stickyNav}
+                                                                imgSrc={stickyNavMobile}
                                                                 label="Sticky navigation"
                                                                 attributeKey="stepNavigationTypeMobile"
                                                                 selectedValue={globalSettingsState.stepNavigationTypeMobile}
@@ -312,59 +503,7 @@ export default function Index() {
                                                             />
                                                         </InlineStack>
                                                     </BlockStack>
-                                                    {/* <Divider /> */}
-                                                </BlockStack>
-                                            </Card>
-                                        </InlineGrid>
-
-                                        <Divider />
-
-                                        {/* Desktop settings  */}
-                                        <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
-                                            <Box as="section">
-                                                <BlockStack gap="400">
-                                                    <Text as="h3" variant="headingLg">
-                                                        Desktop settings
-                                                    </Text>
-                                                    <Text as="p" variant="bodyMd">
-                                                        Edit how your bundle builder looks on desktop and other large devices.
-                                                    </Text>
-                                                </BlockStack>
-                                            </Box>
-                                            <Card>
-                                                <BlockStack gap={LargeGapBetweenSections}>
-                                                    <BlockStack gap={GapBetweenSections}>
-                                                        <BlockStack gap={GapBetweenTitleAndContent}>
-                                                            <Text as="p" variant="headingLg">
-                                                                Step navigation
-                                                            </Text>
-                                                            <Text as="p">
-                                                                Navigation can be sticky or normal. Sticky navigation will be always visible on the screen, while normal navigation
-                                                                is only visible when the user scrolls down.
-                                                            </Text>
-                                                        </BlockStack>
-                                                        <InlineStack gap={GapInsideSection} align="space-between">
-                                                            <RadioInput
-                                                                label="Normal navigation"
-                                                                imgSrc={normalNav}
-                                                                attributeKey="stepNavigationTypeDesktop"
-                                                                selectedValue={globalSettingsState.stepNavigationTypeDesktop}
-                                                                value={'NORMAL'}
-                                                                updateHandler={updateHandler}
-                                                            />
-                                                            <RadioInput
-                                                                imgSrc={stickyNav}
-                                                                label="Sticky navigation"
-                                                                attributeKey="stepNavigationTypeDesktop"
-                                                                selectedValue={globalSettingsState.stepNavigationTypeDesktop}
-                                                                value={'STICKY'}
-                                                                updateHandler={updateHandler}
-                                                            />
-                                                        </InlineStack>
-                                                    </BlockStack>
-
-                                                    {/* <Divider /> */}
-                                                </BlockStack>
+                                                )}
                                             </Card>
                                         </InlineGrid>
                                     </BlockStack>

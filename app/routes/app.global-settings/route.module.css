@@ -7,3 +7,36 @@
     text-align: center;
     gap: 10px;
 }
+
+.sticky {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    /* transition: all 0.1s ease; */
+    z-index: 5;
+}
+
+/* @media (max-width: 768px) {
+    .sticky {
+        width: 100%;
+    }
+} */
+
+.editorTab {
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.editorTab:hover {
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+.activeEditorTab {
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
