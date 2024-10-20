@@ -1,5 +1,5 @@
 import { json, redirect } from '@remix-run/node';
-import { Link, useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Outlet, useSubmit } from '@remix-run/react';
+import { Link, useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Outlet, useSubmit, useRevalidator, useFetcher } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import {
     Page,
@@ -93,9 +93,9 @@ export default function Index() {
     const params = useParams();
     const navigateSubmit = useNavigateSubmit(); //Function for doing the submit with a navigation (the same if you were to use a From with a submit button)
     const actionData = useActionData<typeof action>();
+    const fetcher = useFetcher();
 
-    const asyncSubmit = useAsyncSubmit(); //Function for doing the submit action where the only data is action and url
-    const tableLoading: boolean = asyncSubmit.state !== 'idle'; //Table loading state
+    const tableLoading: boolean = fetcher.state !== 'idle'; //Table loading state
 
     //Errors from action
     const errors = actionData?.errors;
@@ -138,7 +138,28 @@ export default function Index() {
     const duplicateStep = async (stepNumber: number): Promise<void> => {
         if (!checkStepCount()) return;
 
-        asyncSubmit.submit('duplicateStep', `/app/edit-bundle-builder/${params.bundleid}/steps/${stepNumber}`);
+        const form = new FormData();
+        form.append('action', 'duplicateStep');
+
+        fetcher.submit(form, { method: 'POST', action: `/app/edit-bundle-builder/${params.bundleid}/steps/${stepNumber}` });
+    };
+
+    const handeleStepDelete = async (stepNumber: number): Promise<void> => {
+        if (!checkStepCount()) return;
+
+        const form = new FormData();
+        form.append('action', 'deleteStep');
+
+        fetcher.submit(form, { method: 'POST', action: `/app/edit-bundle-builder/${params.bundleid}/steps/${stepNumber}` });
+    };
+
+    //Rearanging the steps
+    const handleStepRearange = async (stepId: number, direction: 'moveStepUp' | 'moveStepDown'): Promise<void> => {
+        const form = new FormData();
+        form.append('action', direction);
+        form.append('stepId', stepId.toString());
+
+        fetcher.submit(form, { method: 'POST', action: `/app/edit-bundle-builder/${params.bundleid}/steps` });
     };
 
     const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
@@ -326,9 +347,11 @@ export default function Index() {
                                                                                 `/app/edit-bundle-builder/${params.bundleid}/steps/${step.stepNumber}`,
                                                                             )}
                                                                             to={'#'}>
-                                                                            <Text as="p" tone="base">
-                                                                                {step.title}
-                                                                            </Text>
+                                                                            <div className={styles.stepTitleContainer}>
+                                                                                <Text as="p" tone="base">
+                                                                                    {step.title}
+                                                                                </Text>
+                                                                            </div>
                                                                         </Link>,
                                                                         step.stepType === StepType.PRODUCT ? (
                                                                             <Badge tone="warning">Product step</Badge>
@@ -342,9 +365,7 @@ export default function Index() {
                                                                                         icon={ArrowDownIcon}
                                                                                         size="slim"
                                                                                         variant="plain"
-                                                                                        onClick={() => {
-                                                                                            asyncSubmit.submit('moveStepDown', `steps`, Number(step.id));
-                                                                                        }}
+                                                                                        onClick={handleStepRearange.bind(null, step.id, 'moveStepDown')}
                                                                                     />
                                                                                 ) : (
                                                                                     <div className={styles.dummyIconPlaceholder}> </div>
@@ -354,9 +375,7 @@ export default function Index() {
                                                                                         icon={ArrowUpIcon}
                                                                                         size="slim"
                                                                                         variant="plain"
-                                                                                        onClick={() => {
-                                                                                            asyncSubmit.submit('moveStepUp', `steps/`, Number(step.id));
-                                                                                        }}
+                                                                                        onClick={handleStepRearange.bind(null, step.id, 'moveStepUp')}
                                                                                     />
                                                                                 )}
                                                                             </InlineStack>
@@ -366,12 +385,7 @@ export default function Index() {
                                                                                 icon={DeleteIcon}
                                                                                 variant="secondary"
                                                                                 tone="critical"
-                                                                                onClick={() => {
-                                                                                    asyncSubmit.submit(
-                                                                                        'deleteStep',
-                                                                                        `/app/edit-bundle-builder/${params.bundleid}/steps/${step.stepNumber}`,
-                                                                                    );
-                                                                                }}></Button>
+                                                                                onClick={handeleStepDelete.bind(null, step.stepNumber)}></Button>
 
                                                                             <Button
                                                                                 icon={PageAddIcon}

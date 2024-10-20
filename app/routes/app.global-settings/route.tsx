@@ -136,36 +136,7 @@ export default function Index() {
         JSON.stringify(globalSettingsState) !== JSON.stringify(serverGlobalSettings) && shopify.saveBar.show('my-save-bar');
     }, [globalSettingsState, serverGlobalSettings]);
 
-    //
-    // Sticky header on scroll
-    //
-    // const [sticky, setSticky] = useState({ isSticky: false, offset: 0 });
-    // const deviceToogleRef = useRef<HTMLDivElement>(null);
-
-    // // handle scroll event
-    // const handleScroll = (elTopOffset: number, elHeight: number) => {
-    //     if (window.scrollY >= elTopOffset) {
-    //         setSticky({ isSticky: true, offset: elHeight });
-    //     } else {
-    //         setSticky({ isSticky: false, offset: 0 });
-    //     }
-    // };
-
-    // // add/remove scroll event listener
-    // useEffect(() => {
-    //     let previewBox = deviceToogleRef.current?.getBoundingClientRect();
-    //     const handleScrollEvent = () => {
-    //         handleScroll(previewBox?.top || 0, previewBox?.height || 0);
-    //     };
-
-    //     window.addEventListener('scroll', handleScrollEvent);
-
-    //     return () => {
-    //         window.removeEventListener('scroll', handleScrollEvent);
-    //     };
-    // }, []);
-
-    const [activeEditorTab, setActiveEditorTab] = useState<'stepNavigation' | 'nav'>();
+    // const [activeEditorTab, setActiveEditorTab] = useState<'stepNavigation' | 'nav'>();
 
     return (
         <>

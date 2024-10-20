@@ -1,4 +1,4 @@
-import { useNavigation, json, useLoaderData, Link, redirect, useParams, useFetcher, useNavigate } from '@remix-run/react';
+import { useNavigation, json, useLoaderData, Link, redirect, useParams, useFetcher, useNavigate, useRevalidator } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { Card, Button, BlockStack, EmptyState, Text, Box, SkeletonPage, SkeletonBodyText, DataTable, ButtonGroup, Badge, Spinner, InlineStack } from '@shopify/polaris';
 import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from '@shopify/polaris-icons';
@@ -163,8 +163,6 @@ export default function Index() {
     const navigate = useNavigate();
 
     const loaderResponse = useLoaderData<typeof loader>();
-
-    const actionResponse = useLoaderData<typeof action>();
 
     const bundleBuilders: BundleAndStepsBasicClient[] = loaderResponse.data.bundleBuildersWithPageUrl;
 

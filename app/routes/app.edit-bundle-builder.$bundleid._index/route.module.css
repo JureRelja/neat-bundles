@@ -31,3 +31,10 @@
     justify-content: flex-start;
     align-self: flex-start;
 }
+
+.stepTitleContainer {
+    max-width: 140px;
+    height: fit-content;
+    word-break: break-all;
+    white-space: normal;
+}

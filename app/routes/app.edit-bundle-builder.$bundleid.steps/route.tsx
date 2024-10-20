@@ -153,7 +153,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         //Moving the step up
         case 'moveStepDown': {
             try {
-                const stepId: string = formData.get('id') as string;
+                const stepId: string = formData.get('stepId') as string;
 
                 let step: BundleStep | null = await db.bundleStep.findUnique({
                     where: {
@@ -257,7 +257,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         //Moving the step down
         case 'moveStepUp': {
             try {
-                const stepId: string = formData.get('id') as string;
+                const stepId: string = formData.get('stepId') as string;
 
                 let step: BundleStep | null = await db.bundleStep.findUnique({
                     where: {
@@ -365,37 +365,8 @@ export default function Index({}) {
     const shopify = useAppBridge();
     const isLoading = nav.state != 'idle';
     const params = useParams();
-    const revalidator = useRevalidator();
 
     const stepData: BundleStepBasicResources = useLoaderData<typeof loader>().data;
-
-    //Sticky preview box logic
-    const [sticky, setSticky] = useState({ isSticky: false, offset: 0 });
-    const previewBoxRef = useRef<HTMLDivElement>(null);
-
-    // handle scroll event
-    const handleScroll = (elTopOffset: number, elHeight: number) => {
-        if (window.scrollY > elTopOffset + 30) {
-            setSticky({ isSticky: true, offset: elHeight });
-        } else {
-            setSticky({ isSticky: false, offset: 0 });
-        }
-    };
-
-    // add/remove scroll event listener
-    useEffect(() => {
-        if (window.innerWidth < 1040) return;
-        let previewBox = previewBoxRef.current?.getBoundingClientRect();
-        const handleScrollEvent = () => {
-            handleScroll(previewBox?.top || 0, previewBox?.height || 0);
-        };
-
-        window.addEventListener('scroll', handleScrollEvent);
-
-        return () => {
-            window.removeEventListener('scroll', handleScrollEvent);
-        };
-    }, []);
 
     return (
         <>
@@ -435,43 +406,6 @@ export default function Index({}) {
                     }}
                     title={`Edit step: ${stepData.stepNumber}`}>
                     <BlockStack gap={GapBetweenSections}>
-                        {/* <Layout> */}
-                        {/* <Layout.Section> 
-                                <div ref={previewBoxRef} className={`${sticky.isSticky ? styles.sticky : ''}`}>
-                                    <BlockStack gap={GapBetweenSections}>
-                                        <BundlePreview /> 
-                                        <BundlePreview />
-
-                                         Navigation between steps  
-                                        <InlineStack align="space-between">
-                                            <Button
-                                                disabled={stepData.stepNumber === 1}
-                                                onClick={() => {
-                                                    revalidator.revalidate();
-                                                    navigate(`/app/edit-bundle-builder/${params.bundleid}/steps/${stepData.stepNumber - 1}`);
-                                                }}>
-                                                ← Step {stepData.stepNumber !== 1 ? (stepData.stepNumber - 1).toString() : '1'}
-                                            </Button>
-
-                                            <Button
-                                                disabled={stepData.stepNumber === 3}
-                                                onClick={() => {
-                                                    revalidator.revalidate();
-                                                    navigate(`/app/edit-bundle-builder/${params.bundleid}/steps/${stepData.stepNumber + 1}`);
-                                                }}>
-                                                Step {stepData.stepNumber !== 3 ? (stepData.stepNumber + 1).toString() : '3'} →
-                                            </Button>
-                                        </InlineStack>
-                                        <Divider borderColor="transparent" />
-                                    </BlockStack>
-                                </div>
-                            </Layout.Section>
-
-                            <Layout.Section variant="oneThird">
-                                <Outlet />
-                            </Layout.Section> */}
-
-                        {/* </Layout> */}
                         <Outlet />
                         <Divider borderColor="transparent" />
                         <FooterHelp>
