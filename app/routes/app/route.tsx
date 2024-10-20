@@ -34,7 +34,7 @@ export default function App() {
                 <Link to="/app/billing" rel="billing">
                     Billing
                 </Link>
-                <Link to="/app/featureRequest" rel="featureRequest">
+                <Link to="/app/feature-request" rel="featureRequest">
                     Request a feature
                 </Link>
                 <Link to="/app/help" rel="help">

@@ -319,16 +319,12 @@ export default function Index() {
                                 </BlockStack>
 
                                 <FooterHelp>
-                                    This settings only apply to this bundle. Edit <Link to="/app/settings">global settings</Link> to apply changes to all bundles.
+                                    This settings only apply to this bundle. Edit <Link to="/app/global-settings">global settings</Link> to apply changes to all bundles.
                                 </FooterHelp>
                             </BlockStack>
-                            {/* <FooterHelp>
-                                View the <Link to="/app/featureRequest">help docs</Link>, <Link to="/app/featureRequest">suggest new features</Link>, or{' '}
-                                <Link to="mailto:contact@neatmerchant.com" target="_blank">
-                                    contact us
-                                </Link>{' '}
-                                for support.
-                            </FooterHelp> */}
+                            {/*   <FooterHelp>
+                                    You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
+                                </FooterHelp> */}
                         </BlockStack>
                     </Form>
                 </Page>

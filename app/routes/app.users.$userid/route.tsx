@@ -170,7 +170,7 @@ export default function Index() {
                                 )}
 
                                 {/* How it works */}
-                                <CalloutCard
+                                {/* <CalloutCard
                                     title={
                                         <Text as="h3" variant="headingMd">
                                             How does Neat Bundles work?
@@ -186,7 +186,7 @@ export default function Index() {
                                     </Text>
                                 </CalloutCard>
 
-                                <Divider />
+                                <Divider /> */}
 
                                 {/* Banner for encuraging users to rate the app */}
                                 <Banner title="Enjoying the app?" tone="success">
@@ -204,11 +204,7 @@ export default function Index() {
                                 <Divider borderColor="transparent" />
 
                                 <FooterHelp>
-                                    View the <Link to="/app/featureRequest">help docs</Link>, <Link to="/app/featureRequest">suggest new features</Link>, or{' '}
-                                    <Link to="mailto:contact@neatmerchant.com" target="_blank">
-                                        contact us
-                                    </Link>{' '}
-                                    for support.
+                                    You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
                                 </FooterHelp>
                             </BlockStack>
                         </BlockStack>

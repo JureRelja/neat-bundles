@@ -5,6 +5,7 @@ import { authenticate } from '~/shopify.server';
 import { JsonData } from '@adminBackend/service/dto/jsonData';
 import { useAsyncSubmit } from '~/hooks/useAsyncSubmit';
 import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
+import { GapBetweenSections } from '~/constants';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
@@ -70,24 +71,43 @@ export default function Index() {
             ) : (
                 <>
                     <Page
-                        title="Bundles"
+                        title="Want to request a feature?"
                         backAction={{
                             content: 'Back',
                             onAction: async () => {
                                 navigate(-1);
                             },
                         }}>
-                        <BlockStack gap="500">
-                            <Divider borderColor="transparent" />
+                        <BlockStack gap={GapBetweenSections}>
+                            <Text as="p">
+                                My team and I have been working hard to make Neat Bundles into a product you love and want to share with others, but we understand that there is
+                                always space for improvement.
+                            </Text>
+
+                            <Text as="p">
+                                If you have a feature request or a suggestion, we'd love to hear it! Feel free to send us an email describing the feature that you would like Neat
+                                Bundles to have. We will do our best to implement that feature as soon as possible.
+                            </Text>
+
+                            <Text as="p">
+                                Send your feature requests to{' '}
+                                <Link to="mailto:contact@neatmerchant.com" target="_blank">
+                                    contact@neatmerchant.com
+                                </Link>
+                                , and we will get back to you as soon as possible. Every feature request will be personally reviewed by me and my team and considered for
+                                implementation.
+                            </Text>
+
+                            <Text as="p">Thank you for your continued support and for helping us make Neat Bundles even better!</Text>
+
+                            <Text as="p" alignment="end">
+                                Jure Reljanovic, the creator of Neat Merchant and Neat Bundles
+                            </Text>
                         </BlockStack>
 
-                        <FooterHelp>
-                            View the <Link to="/app/featureRequest">help docs</Link>, <Link to="/app/featureRequest">suggest new features</Link>, or{' '}
-                            <Link to="mailto:contact@neatmerchant.com" target="_blank">
-                                contact us
-                            </Link>{' '}
-                            for support.
-                        </FooterHelp>
+                        {/*   <FooterHelp>
+                                    You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
+                                </FooterHelp> */}
                     </Page>
                 </>
             )}
