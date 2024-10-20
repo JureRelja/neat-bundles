@@ -71,8 +71,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function Index() {
     const nav = useNavigation();
-    const isLoading = nav.state !== 'idle';
-    const asyncSubmit = useAsyncSubmit(); //Function for doing the submit action where the only data is action and url
+    const isLoading = nav.state === 'loading';
     const navigateSubmit = useNavigateSubmit(); //Function for doing the submit action as if form was submitted
     const params = useParams();
 

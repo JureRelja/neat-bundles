@@ -1,6 +1,6 @@
-import { useNavigation, json, useLoaderData, Link, redirect, useParams, useFetcher, useNavigate, useRevalidator } from '@remix-run/react';
+import { useNavigation, json, useLoaderData, Link, redirect, useParams, useFetcher, useNavigate, useRevalidator, useSubmit } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Card, Button, BlockStack, EmptyState, Text, Box, SkeletonPage, SkeletonBodyText, DataTable, ButtonGroup, Badge, Spinner, InlineStack } from '@shopify/polaris';
+import { Card, Button, BlockStack, EmptyState, Text, Box, SkeletonPage, SkeletonBodyText, DataTable, ButtonGroup, Badge, Spinner, InlineStack, TextField } from '@shopify/polaris';
 import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from '@shopify/polaris-icons';
 import { authenticate } from '../../shopify.server';
 import db from '../../db.server';
@@ -10,13 +10,14 @@ import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
 import styles from './route.module.css';
 import { useState } from 'react';
 import { Modal, TitleBar } from '@shopify/app-bridge-react';
-import { bundlePagePreviewKey, GapBetweenSections } from '~/constants';
+import { bundlePagePreviewKey, GapBetweenSections, GapInsideSection } from '~/constants';
 import userRepository from '@adminBackend/repository/impl/UserRepository';
 import bundleBuilderRepository, { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
 import { shopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
 import { ShopifyRedirectRepository } from '~/adminBackend/repository/impl/ShopifyRedirectRepository';
 import { ShopifyBundleBuilderPageRepository } from '~/adminBackend/repository/ShopifyBundleBuilderPageRepository';
 import shopifyBundleBuilderPageGraphql from '@adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql';
+import { T } from 'node_modules/@upstash/redis/zmscore-Dc6Llqgr';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
@@ -108,7 +109,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                     await shopifyBundleBuilderPageRepository.setPageMetafields(bundleBuilder.id, bundlePage.id, session, admin);
 
-                    return redirect(`/app/create-bundle-builder/${bundleBuilder.id}`);
+                    return redirect(`/app/create-bundle-builder/${bundleBuilder.id}/step-1`);
 
                     // if the user is not onboarding, create a new bundle with all the data and redirect to the edit bundle page
                 } else {
@@ -156,11 +157,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
 export default function Index() {
     const nav = useNavigation();
-    const isLoading = nav.state !== 'idle';
-    const params = useParams();
-    const navigateSubmit = useNavigateSubmit(); //Function for doing the submit action as if form was submitted
+    const isLoading = nav.state === 'loading';
+    const isSubmitting = nav.state === 'submitting';
     const fetcher = useFetcher();
-    const navigate = useNavigate();
+    const submit = useSubmit();
 
     const loaderResponse = useLoaderData<typeof loader>();
 
@@ -177,15 +177,25 @@ export default function Index() {
         return true;
     };
 
+    const [newBundleTitle, setNewBundleTitle] = useState<string>();
+
+    const createBundleBtnHandler = () => {
+        shopify.modal.show('new-bundle-builder-modal');
+    };
+
     const createBundle = () => {
         if (!canCreateNewBundle()) return;
 
-        if (bundleBuilders.length === 0) {
-            navigate('/app/create-bundle-builder');
+        if (!newBundleTitle) {
+            setNewBundleTitle('');
             return;
         }
 
-        navigateSubmit('createBundle', `/app/users/${params.userid}/bundles`);
+        const form = new FormData();
+        form.append('bundleTitle', newBundleTitle as string);
+        form.append('action', 'createBundle');
+
+        submit(form, { method: 'POST', action: `/app/users/${user.id}/bundles${bundleBuilders.length === 0 ? '?onboarding=true' : ''}`, navigate: true });
     };
 
     const [bundleForDelete, setBundleForDelete] = useState<BundleAndStepsBasicClient | null>(null);
@@ -216,8 +226,48 @@ export default function Index() {
                         </Card>
                     </BlockStack>
                 </SkeletonPage>
+            ) : isSubmitting ? (
+                <Card>
+                    <InlineStack blockAlign="center" align="center" gap={GapInsideSection}>
+                        <Text as="p" fontWeight="bold" variant="headingLg">
+                            Your new bundle is being created...
+                        </Text>
+
+                        <Spinner accessibilityLabel="Spinner example" size="large" />
+                    </InlineStack>
+                </Card>
             ) : (
                 <>
+                    {/* Title modal */}
+                    <Modal id="new-bundle-builder-modal">
+                        <Box padding="300">
+                            <BlockStack gap={GapBetweenSections}>
+                                <Text as="p" variant="headingSm">
+                                    Enter the title of your bundle.
+                                </Text>
+                                <TextField
+                                    label="Title"
+                                    labelHidden
+                                    autoComplete="off"
+                                    inputMode="text"
+                                    name="bundleTitle"
+                                    helpText="This title will be displayed to your customers on bundle page, in checkout and in cart."
+                                    value={newBundleTitle}
+                                    error={newBundleTitle === '' ? 'Please enter a title' : undefined}
+                                    onChange={(newTitile) => {
+                                        setNewBundleTitle(newTitile);
+                                    }}
+                                    type="text"
+                                />
+                            </BlockStack>
+                        </Box>
+                        <TitleBar title="Bundle title">
+                            <button variant="primary" onClick={createBundle} disabled={fetcher.state !== 'idle'}>
+                                Next
+                            </button>
+                        </TitleBar>
+                    </Modal>
+
                     {/* Modal for users to confirm that they want to delete the bundle. */}
                     <Modal id="delete-confirm-modal" open={showBundleDeleteConfirmModal}>
                         <Box padding="300">
@@ -268,7 +318,7 @@ export default function Index() {
                             <Text as="h3" variant="headingLg">
                                 My Bundles
                             </Text>
-                            <Button icon={PlusIcon} variant="primary" onClick={createBundle}>
+                            <Button icon={PlusIcon} variant="primary" onClick={createBundleBtnHandler}>
                                 Create bundle
                             </Button>
                         </InlineStack>
@@ -355,7 +405,7 @@ export default function Index() {
                                         action={{
                                             content: 'Create bundle',
                                             icon: PlusIcon,
-                                            onAction: createBundle,
+                                            onAction: createBundleBtnHandler,
                                         }}
                                         fullWidth
                                         image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png">

@@ -1,5 +1,5 @@
 import { json, redirect } from '@remix-run/node';
-import { Outlet, useActionData, useFetcher, useLoaderData, useNavigate, useNavigation, useParams, useSubmit } from '@remix-run/react';
+import { useActionData, useFetcher, useLoaderData, useNavigate, useNavigation, useParams, useSubmit } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { Page, Card, BlockStack, TextField, Text, Box, SkeletonPage, SkeletonBodyText, Spinner } from '@shopify/polaris';
 import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';
@@ -90,12 +90,9 @@ export default function Index() {
                     </BlockStack>
                 </SkeletonPage>
             ) : (
-                <Page title={bundleBuilder.title}>
-                    <Card>
-                        <Text as={'p'}>Bundle Builder</Text>
-                    </Card>
-                    <Outlet />
-                </Page>
+                <Card>
+                    <Text as={'p'}>Bundle Builder</Text>
+                </Card>
             )}
         </>
     );
