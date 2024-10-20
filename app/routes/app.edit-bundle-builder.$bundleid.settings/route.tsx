@@ -150,7 +150,7 @@ export default function Index() {
 
                         <BlockStack gap={BigGapBetweenSections}>
                             {/* Checkbox settings */}
-                            <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                            <InlineGrid columns={{ xs: '1fr', md: '3fr 4fr' }} gap="400">
                                 <Box as="section">
                                     <BlockStack gap="400">
                                         <Text as="h3" variant="headingMd">
@@ -194,7 +194,7 @@ export default function Index() {
                                 </Card>
                             </InlineGrid>
                             <Divider />
-                            <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                            <InlineGrid columns={{ xs: '1fr', md: '3fr 4fr' }} gap="400">
                                 <Box as="section">
                                     <BlockStack gap="400">
                                         <Text as="h3" variant="headingMd">
@@ -267,7 +267,7 @@ export default function Index() {
                                 </Card>
                             </InlineGrid>
                             <Divider />
-                            <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                            <InlineGrid columns={{ xs: '1fr', md: '3fr 4fr' }} gap="400">
                                 <Box as="section">
                                     <BlockStack gap="400">
                                         <Text as="h3" variant="headingMd">

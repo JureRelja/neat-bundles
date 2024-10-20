@@ -292,7 +292,6 @@ export default function Index() {
                         title={`${serverBundle.title}`}
                         subtitle="Edit bundle details and steps"
                         compactTitle>
-                        <Outlet />
                         <Form method="POST" data-discard-confirmation data-save-bar action={`/app/edit-bundle-builder/2`}>
                             <BlockStack gap={GapBetweenSections}>
                                 <Layout>

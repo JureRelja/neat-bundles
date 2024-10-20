@@ -1,9 +1,7 @@
 .sticky {
-    position: fixed;
+    position: sticky;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    overflow: visible;
     width: 100%;
-    /* transition: all 0.1s ease; */
     z-index: 5;
 }

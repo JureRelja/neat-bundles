@@ -445,21 +445,26 @@ export default function Index() {
                     </BlockStack>
                 </SkeletonPage>
             ) : (
-                <>
-                    <Divider borderWidth="100" borderColor="transparent" />
-
+                <div>
                     <div className={styles.sticky}>
                         <Card padding={'300'}>
                             <InlineStack gap={GapBetweenTitleAndContent} align="center">
-                                <Text variant="headingLg" as="h1">
-                                    {serverBundle.title} | Bundle ID: {serverBundle.id}
+                                <Text variant="headingMd" as="h1">
+                                    <InlineStack gap={'100'} align="center">
+                                        <Text as="p">
+                                            <u>Editing: </u>
+                                        </Text>
+                                        <Text as="p" fontWeight="bold">
+                                            {serverBundle.title} | Bundle ID: {serverBundle.id}
+                                        </Text>
+                                    </InlineStack>
                                 </Text>
                                 {serverBundle.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
                             </InlineStack>
                         </Card>
                     </div>
                     <Outlet />
-                </>
+                </div>
             )}
         </>
     );
