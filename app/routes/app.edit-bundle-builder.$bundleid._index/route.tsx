@@ -29,7 +29,7 @@ import {
 import { DeleteIcon, PlusIcon, ArrowDownIcon, ArrowUpIcon, PageAddIcon, EditIcon, QuestionCircleIcon, ExternalIcon, SettingsIcon, RefreshIcon } from '@shopify/polaris-icons';
 import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { bundlePagePreviewKey, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '../../constants';
 import db from '../../db.server';
 import { StepType, BundlePricing, BundleDiscountType } from '@prisma/client';
@@ -91,13 +91,11 @@ export default function Index() {
     const isLoading: boolean = nav.state === 'loading';
     const isSubmitting: boolean = nav.state === 'submitting';
     const params = useParams();
-    const submit = useSubmit();
     const navigateSubmit = useNavigateSubmit(); //Function for doing the submit with a navigation (the same if you were to use a From with a submit button)
     const actionData = useActionData<typeof action>();
 
     const asyncSubmit = useAsyncSubmit(); //Function for doing the submit action where the only data is action and url
     const tableLoading: boolean = asyncSubmit.state !== 'idle'; //Table loading state
-    const form = useRef<HTMLFormElement>(null);
 
     //Errors from action
     const errors = actionData?.errors;
@@ -295,7 +293,7 @@ export default function Index() {
                         subtitle="Edit bundle details and steps"
                         compactTitle>
                         <Outlet />
-                        <Form method="POST" data-discard-confirmation data-save-bar action={`/app/edit-bundle-builder/2`} ref={form}>
+                        <Form method="POST" data-discard-confirmation data-save-bar action={`/app/edit-bundle-builder/2`}>
                             <BlockStack gap={GapBetweenSections}>
                                 <Layout>
                                     <Layout.Section>

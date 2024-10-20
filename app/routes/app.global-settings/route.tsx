@@ -134,40 +134,36 @@ export default function Index() {
 
     useEffect(() => {
         JSON.stringify(globalSettingsState) !== JSON.stringify(serverGlobalSettings) && shopify.saveBar.show('my-save-bar');
-
-        return () => {
-            shopify.saveBar.hide('my-save-bar');
-        };
     }, [globalSettingsState, serverGlobalSettings]);
 
     //
     // Sticky header on scroll
     //
-    const [sticky, setSticky] = useState({ isSticky: false, offset: 0 });
-    const deviceToogleRef = useRef<HTMLDivElement>(null);
+    // const [sticky, setSticky] = useState({ isSticky: false, offset: 0 });
+    // const deviceToogleRef = useRef<HTMLDivElement>(null);
 
-    // handle scroll event
-    const handleScroll = (elTopOffset: number, elHeight: number) => {
-        if (window.scrollY >= elTopOffset) {
-            setSticky({ isSticky: true, offset: elHeight });
-        } else {
-            setSticky({ isSticky: false, offset: 0 });
-        }
-    };
+    // // handle scroll event
+    // const handleScroll = (elTopOffset: number, elHeight: number) => {
+    //     if (window.scrollY >= elTopOffset) {
+    //         setSticky({ isSticky: true, offset: elHeight });
+    //     } else {
+    //         setSticky({ isSticky: false, offset: 0 });
+    //     }
+    // };
 
-    // add/remove scroll event listener
-    useEffect(() => {
-        let previewBox = deviceToogleRef.current?.getBoundingClientRect();
-        const handleScrollEvent = () => {
-            handleScroll(previewBox?.top || 0, previewBox?.height || 0);
-        };
+    // // add/remove scroll event listener
+    // useEffect(() => {
+    //     let previewBox = deviceToogleRef.current?.getBoundingClientRect();
+    //     const handleScrollEvent = () => {
+    //         handleScroll(previewBox?.top || 0, previewBox?.height || 0);
+    //     };
 
-        window.addEventListener('scroll', handleScrollEvent);
+    //     window.addEventListener('scroll', handleScrollEvent);
 
-        return () => {
-            window.removeEventListener('scroll', handleScrollEvent);
-        };
-    }, []);
+    //     return () => {
+    //         window.removeEventListener('scroll', handleScrollEvent);
+    //     };
+    // }, []);
 
     const [activeEditorTab, setActiveEditorTab] = useState<'stepNavigation' | 'nav'>();
 
@@ -218,22 +214,23 @@ export default function Index() {
                         <Form method="POST" data-discard-confirmation data-save-bar>
                             <input type="hidden" name="action" defaultValue="updateSettings" />
                             <input type="hidden" name="globalSettings" defaultValue={JSON.stringify(globalSettingsState)} />
-                            <BlockStack gap={BigGapBetweenSections}>
-                                {!data.bundleBuilderHandle ? (
-                                    <Banner title="Uups, there are no bundles created." tone="warning" onDismiss={() => {}}>
-                                        <BlockStack gap={GapInsideSection}>
-                                            <Text as={'p'} variant="headingMd">
-                                                Please create your first bundle, and then come back here to edit settings.
-                                            </Text>
-                                            <Box>
-                                                <Button variant="secondary" url="/app">
-                                                    Create bundle
-                                                </Button>
-                                            </Box>
-                                        </BlockStack>
-                                    </Banner>
-                                ) : (
-                                    // Edit colors
+
+                            {!data.bundleBuilderHandle ? (
+                                <Banner title="Uups, there are no bundles created." tone="warning" onDismiss={() => {}}>
+                                    <BlockStack gap={GapInsideSection}>
+                                        <Text as={'p'} variant="headingMd">
+                                            Please create your first bundle, and then come back here to edit settings.
+                                        </Text>
+                                        <Box>
+                                            <Button variant="secondary" url="/app">
+                                                Create bundle
+                                            </Button>
+                                        </Box>
+                                    </BlockStack>
+                                </Banner>
+                            ) : (
+                                <BlockStack gap={BigGapBetweenSections}>
+                                    {/* Edit colors */}
                                     <BlockStack gap={LargeGapBetweenSections}>
                                         <InlineGrid columns={{ xs: '1fr', md: '3fr 4fr' }} gap="400">
                                             <Box as="section">
@@ -259,51 +256,50 @@ export default function Index() {
                                             </Card>
                                         </InlineGrid>
 
-                                        <Divider borderColor="border-inverse" />
+                                        <Divider />
 
                                         {/* Sticky header for separate mobile and desktop editing */}
-                                        <BlockStack gap={GapBetweenSections}>
-                                            <InlineStack align="center">
-                                                <Text as="h3" variant="headingLg">
-                                                    <InlineStack>
-                                                        <Icon source={ArrowDownIcon} />
-                                                        Settings below apply separately for desktop and mobile
-                                                        <Icon source={ArrowDownIcon} />
-                                                    </InlineStack>
-                                                </Text>
-                                            </InlineStack>
-                                            <div ref={deviceToogleRef} className={`${sticky.isSticky ? styles.sticky : ''}`}>
-                                                <Card padding={'200'}>
-                                                    <InlineStack gap={GapBetweenTitleAndContent} align="space-between">
-                                                        <Text as="h3" variant="headingLg">
-                                                            You are currently editing settings for: <u>{activeMode === 'desktop' ? 'Desktop' : 'Mobile'}</u>
-                                                        </Text>
 
-                                                        <InlineStack gap={GapInsideSection}>
-                                                            <Tooltip content="Desktop">
-                                                                <Button
-                                                                    variant="secondary"
-                                                                    icon={DesktopIcon}
-                                                                    disabled={activeMode === 'desktop'}
-                                                                    onClick={() => {
-                                                                        setActiveMode('desktop');
-                                                                    }}></Button>
-                                                            </Tooltip>
+                                        <InlineStack align="center">
+                                            <Text as="h3" variant="headingLg">
+                                                <InlineStack>
+                                                    <Icon source={ArrowDownIcon} />
+                                                    Settings below apply separately for desktop and mobile
+                                                    <Icon source={ArrowDownIcon} />
+                                                </InlineStack>
+                                            </Text>
+                                        </InlineStack>
+                                        <div className={styles.sticky}>
+                                            <Card padding={'200'}>
+                                                <InlineStack gap={GapBetweenTitleAndContent} align="space-between" blockAlign="center">
+                                                    <Text as="h3" variant="headingMd">
+                                                        You are currently editing settings for: <u>{activeMode === 'desktop' ? 'Desktop' : 'Mobile'}</u>
+                                                    </Text>
 
-                                                            <Tooltip content="Mobile">
-                                                                <Button
-                                                                    variant="secondary"
-                                                                    icon={MobileIcon}
-                                                                    disabled={activeMode === 'mobile'}
-                                                                    onClick={() => {
-                                                                        setActiveMode('mobile');
-                                                                    }}></Button>
-                                                            </Tooltip>
-                                                        </InlineStack>
+                                                    <InlineStack gap={GapInsideSection}>
+                                                        <Tooltip content="Desktop">
+                                                            <Button
+                                                                variant="secondary"
+                                                                icon={DesktopIcon}
+                                                                disabled={activeMode === 'desktop'}
+                                                                onClick={() => {
+                                                                    setActiveMode('desktop');
+                                                                }}></Button>
+                                                        </Tooltip>
+
+                                                        <Tooltip content="Mobile">
+                                                            <Button
+                                                                variant="secondary"
+                                                                icon={MobileIcon}
+                                                                disabled={activeMode === 'mobile'}
+                                                                onClick={() => {
+                                                                    setActiveMode('mobile');
+                                                                }}></Button>
+                                                        </Tooltip>
                                                     </InlineStack>
-                                                </Card>
-                                            </div>
-                                        </BlockStack>
+                                                </InlineStack>
+                                            </Card>
+                                        </div>
 
                                         <Divider />
 
@@ -507,22 +503,22 @@ export default function Index() {
                                             </Card>
                                         </InlineGrid>
                                     </BlockStack>
-                                )}
 
-                                <Box width="full">
-                                    {/* Save button */}
-                                    <BlockStack inlineAlign="end">
-                                        <Button variant="primary" submit>
-                                            Save
-                                        </Button>
-                                    </BlockStack>
+                                    <Box width="full">
+                                        {/* Save button */}
+                                        <BlockStack inlineAlign="end">
+                                            <Button variant="primary" submit>
+                                                Save
+                                            </Button>
+                                        </BlockStack>
 
-                                    {/* Footer help */}
-                                    <FooterHelp>
-                                        You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
-                                    </FooterHelp>
-                                </Box>
-                            </BlockStack>
+                                        {/* Footer help */}
+                                        <FooterHelp>
+                                            You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
+                                        </FooterHelp>
+                                    </Box>
+                                </BlockStack>
+                            )}
                         </Form>
                     </Page>
                 </>

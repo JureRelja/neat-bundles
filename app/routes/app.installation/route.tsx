@@ -387,7 +387,7 @@ export default function Index() {
                             <Box width="full">
                                 <BlockStack inlineAlign="end">
                                     <Form method="post">
-                                        <input type="text" name="action" value="FINISH_INSTALL" hidden />
+                                        <input type="text" name="action" defaultValue="FINISH_INSTALL" hidden />
                                         <Button variant="primary" submit>
                                             Finish installation
                                         </Button>

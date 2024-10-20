@@ -9,13 +9,14 @@
 }
 
 .sticky {
-    position: fixed;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    position: sticky;
     width: 100%;
-    /* transition: all 0.1s ease; */
+    top: 0;
     z-index: 5;
+}
+
+.overflow {
+    overflow: visible;
 }
 
 /* @media (max-width: 768px) {

@@ -109,13 +109,13 @@ export default function Index() {
             ) : (
                 <>
                     <Page
-                        title="Neat Bundles"
-                        // backAction={{
-                        //     content: 'Back',
-                        //     onAction: async () => {
-                        //         navigate(-1);
-                        //     },
-                        // }}
+
+                    // backAction={{
+                    //     content: 'Back',
+                    //     onAction: async () => {
+                    //         navigate(-1);
+                    //     },
+                    // }}
                     >
                         <BlockStack gap={'800'}>
                             <BlockStack gap={GapBetweenSections}>

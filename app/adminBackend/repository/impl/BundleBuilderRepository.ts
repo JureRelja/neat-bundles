@@ -130,6 +130,37 @@ export class BundleBuilderRepository {
         return bundle;
     }
 
+    public static async createNewEmptyBundleBuilder(shop: string, bundleTitle: string, bundleProductId: string, bundlePageId: string, bundleBuilderPageHandle: string) {
+        //Create a new bundle in the database
+        const bundleBuilder = await db.bundleBuilder.create({
+            data: {
+                user: {
+                    connect: {
+                        storeUrl: shop,
+                    },
+                },
+                title: bundleTitle,
+                published: true,
+                shopifyProductId: bundleProductId,
+                shopifyPageId: bundlePageId,
+                bundleBuilderPageHandle: bundleBuilderPageHandle,
+                pricing: 'CALCULATED',
+                discountType: 'PERCENTAGE',
+                discountValue: 10,
+                bundleSettings: {
+                    create: {
+                        hidePricingSummary: false,
+                        skipTheCart: false,
+                        allowBackNavigation: true,
+                        showOutOfStockProducts: false,
+                    },
+                },
+            },
+        });
+
+        return bundleBuilder;
+    }
+
     public async getAllActiveBundleBuilders(storeUrl: string): Promise<BundleBuilder[] | null> {
         return db.bundleBuilder.findMany({
             where: {
@@ -196,6 +227,7 @@ export class BundleBuilderRepository {
         return db.bundleBuilder.count({
             where: {
                 storeUrl: storeUrl,
+                deleted: false,
             },
         });
     }

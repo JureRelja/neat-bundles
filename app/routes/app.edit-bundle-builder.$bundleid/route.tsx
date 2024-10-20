@@ -15,6 +15,7 @@ import { ShopifyBundleBuilderPageRepository } from '~/adminBackend/repository/Sh
 import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
 import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
 import shopifyBundleBuilderPageRepositoryGraphql from '@adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql';
+import styles from './route.module.css';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -447,14 +448,16 @@ export default function Index() {
                 <>
                     <Divider borderWidth="100" borderColor="transparent" />
 
-                    <Card padding={'300'}>
-                        <InlineStack gap={GapBetweenTitleAndContent} align="center">
-                            <Text variant="headingLg" as="h1">
-                                {serverBundle.title} | Bundle ID: {serverBundle.id}
-                            </Text>
-                            {serverBundle.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
-                        </InlineStack>
-                    </Card>
+                    <div className={styles.sticky}>
+                        <Card padding={'300'}>
+                            <InlineStack gap={GapBetweenTitleAndContent} align="center">
+                                <Text variant="headingLg" as="h1">
+                                    {serverBundle.title} | Bundle ID: {serverBundle.id}
+                                </Text>
+                                {serverBundle.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
+                            </InlineStack>
+                        </Card>
+                    </div>
                     <Outlet />
                 </>
             )}
