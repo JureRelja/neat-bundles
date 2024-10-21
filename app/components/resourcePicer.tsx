@@ -1,6 +1,6 @@
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { Button } from '@shopify/polaris';
-import { bundleTagIndentifier } from '../../constants';
+import { bundleTagIndentifier } from '../constants';
 import { Resource } from '@shopify/app-bridge-types';
 import { Product } from '@prisma/client';
 import { useSubmit } from '@remix-run/react';
@@ -9,10 +9,12 @@ export default function Index({
     updateSelectedProducts,
     selectedProducts,
     stepId,
+    onBoarding,
 }: {
     updateSelectedProducts: (productResource: Product[]) => void;
     selectedProducts: Product[];
-    stepId: number;
+    stepId: number | undefined;
+    onBoarding?: boolean;
 }) {
     const shopify = useAppBridge();
     const submit = useSubmit();
@@ -53,13 +55,18 @@ export default function Index({
             };
         });
 
-        const form = new FormData();
-        form.append('action', 'updateSelectedProducts');
-        form.append('selectedProducts', JSON.stringify({ stepId: stepId, selectedProducts: newSelectedProducts }));
+        if (!onBoarding) {
+            if (!stepId) {
+                throw new Error('Step id is required');
+            }
+            const form = new FormData();
+            form.append('action', 'updateSelectedProducts');
+            form.append('selectedProducts', JSON.stringify({ stepId: stepId, selectedProducts: newSelectedProducts }));
 
-        submit(form, { method: 'POST', navigate: true });
-
-        // updateSelectedProducts(newSelectedProducts);
+            submit(form, { method: 'POST', navigate: true });
+        } else {
+            updateSelectedProducts(newSelectedProducts);
+        }
     };
 
     return (

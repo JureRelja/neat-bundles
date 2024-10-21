@@ -1,7 +1,7 @@
 import { json, redirect } from '@remix-run/node';
 import { Link, Outlet, useFetcher, useLoaderData, useNavigate, useNavigation, useParams, useSubmit } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Page, Card, BlockStack, SkeletonPage, SkeletonBodyText, FooterHelp, Divider } from '@shopify/polaris';
+import { Page, Card, BlockStack, SkeletonPage, SkeletonBodyText, FooterHelp, Divider, Spinner } from '@shopify/polaris';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
@@ -64,7 +64,10 @@ export default function Index() {
             <div className={styles.cardWrapper}>
                 <Card padding={'600'}>
                     <BlockStack gap={GapBetweenSections}>
-                        <div className={styles.fadeIn}>
+                        <div id={styles.tableWrapper}>
+                            <div className={isLoading ? styles.loadingTable : styles.hide}>
+                                <Spinner accessibilityLabel="Spinner example" size="large" />
+                            </div>
                             <Outlet />
                         </div>
 

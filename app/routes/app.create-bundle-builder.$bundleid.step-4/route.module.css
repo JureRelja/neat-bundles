@@ -18,3 +18,18 @@
 .hide {
     display: none;
 }
+
+.fadeIn {
+    animation: animateright 0.4s;
+}
+
+@keyframes animateright {
+    from {
+        right: -150px;
+        opacity: 0;
+    }
+    to {
+        right: 0;
+        opacity: 1;
+    }
+}

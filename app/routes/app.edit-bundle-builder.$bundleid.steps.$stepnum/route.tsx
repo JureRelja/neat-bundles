@@ -1,9 +1,8 @@
 import { json, redirect } from '@remix-run/node';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Form, useNavigation, useLoaderData, useParams, useActionData, useSubmit } from '@remix-run/react';
+import { Form, useNavigation, useLoaderData, useParams, useActionData } from '@remix-run/react';
 import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
 import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, InlineGrid, ButtonGroup, ChoiceList, Divider, InlineError, Layout } from '@shopify/polaris';
-
 import { authenticate } from '../../shopify.server';
 import { useEffect, useState } from 'react';
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, HorizontalGap } from '../../constants';
@@ -11,8 +10,8 @@ import db from '../../db.server';
 import { StepType, ContentInput, Product } from '@prisma/client';
 import { BundleStepAllResources, bundleStepFull } from '~/adminBackend/service/dto/BundleStep';
 import { error, JsonData } from '../../adminBackend/service/dto/jsonData';
-import ContentStepInputs from './content-step-inputs';
-import ResourcePicker from './resource-picker';
+import ContentStepInputs from '~/components/contentStepInputs';
+import ResourcePicker from '~/components/resourcePicer';
 import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
 import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
 

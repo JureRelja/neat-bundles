@@ -12,6 +12,7 @@ import { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBu
 import { BundleBuilder } from '@prisma/client';
 import { BigGapBetweenSections, GapBetweenSections, LargeGapBetweenSections } from '~/constants';
 import { useState } from 'react';
+import WideButton from '~/components/wideButton';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -76,52 +77,24 @@ export default function Index() {
     };
 
     return (
-        <>
-            {isLoading ? (
-                <SkeletonPage primaryAction>
-                    <BlockStack gap="500">
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                    </BlockStack>
-                </SkeletonPage>
-            ) : (
-                <>
-                    <BlockStack gap={'1200'} inlineAlign="center">
-                        <Text as={'p'} variant="headingLg" alignment="center">
-                            How many steps do you want your bundle builder to have?
-                        </Text>
+        <div className={styles.fadeIn}>
+            <BlockStack gap={'1200'} inlineAlign="center">
+                <Text as={'p'} variant="headingLg" alignment="center">
+                    How many steps do you want your bundle builder to have?
+                </Text>
 
-                        <ButtonGroup variant="segmented">
-                            <Button pressed={activeButtonIndex === 0} size="large" onClick={() => handleButtonClick(0)}>
-                                One step
-                            </Button>
-                            <Button pressed={activeButtonIndex === 1} size="large" onClick={() => handleButtonClick(1)}>
-                                Multiple steps
-                            </Button>
-                        </ButtonGroup>
+                <ButtonGroup variant="segmented">
+                    <Button pressed={activeButtonIndex === 0} size="large" onClick={() => handleButtonClick(0)}>
+                        One step
+                    </Button>
+                    <Button pressed={activeButtonIndex === 1} size="large" onClick={() => handleButtonClick(1)}>
+                        Multiple steps
+                    </Button>
+                </ButtonGroup>
 
-                        {/*  */}
-                        <div style={{ width: '150px' }}>
-                            {/* Save button */}
-                            <Button
-                                fullWidth
-                                variant="primary"
-                                onClick={() => {
-                                    handleNextBtnHandler;
-                                }}>
-                                Next
-                            </Button>
-                        </div>
-                    </BlockStack>
-                </>
-            )}
-        </>
+                {/*  */}
+                <WideButton onClick={handleNextBtnHandler} />
+            </BlockStack>
+        </div>
     );
 }

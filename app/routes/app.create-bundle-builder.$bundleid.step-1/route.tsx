@@ -1,17 +1,15 @@
 import { json, redirect } from '@remix-run/node';
-import { useActionData, useFetcher, useLoaderData, useNavigate, useNavigation, useParams, useSubmit } from '@remix-run/react';
+import { useNavigate, useNavigation, useParams } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Page, Card, BlockStack, TextField, Text, Box, SkeletonPage, SkeletonBodyText, Spinner, InlineStack, Button, Tabs, ButtonGroup } from '@shopify/polaris';
-import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';
+import { BlockStack, Text, Button, ButtonGroup } from '@shopify/polaris';
 import { authenticate } from '../../shopify.server';
-
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import styles from './route.module.css';
 import userRepository from '~/adminBackend/repository/impl/UserRepository';
 import { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
 import { BundleBuilder } from '@prisma/client';
-import { BigGapBetweenSections, GapBetweenSections, LargeGapBetweenSections } from '~/constants';
 import { useState } from 'react';
+import WideButton from '~/components/wideButton';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -67,50 +65,24 @@ export default function Index() {
     };
 
     return (
-        <>
-            {isLoading ? (
-                <SkeletonPage primaryAction>
-                    <BlockStack gap="500">
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                    </BlockStack>
-                </SkeletonPage>
-            ) : (
-                <>
-                    <BlockStack gap={'1200'} inlineAlign="center">
-                        <Text as={'p'} variant="headingLg" alignment="center">
-                            How many steps do you want your bundle builder to have?
-                        </Text>
+        <div className={styles.fadeIn}>
+            <BlockStack gap={'1200'} inlineAlign="center">
+                <Text as={'p'} variant="headingLg" alignment="center">
+                    How many steps do you want your bundle builder to have?
+                </Text>
 
-                        <ButtonGroup variant="segmented">
-                            <Button pressed={activeBtnOption === 'singleStep'} size="large" onClick={() => setActiveBtnOption('singleStep')}>
-                                One step
-                            </Button>
-                            <Button pressed={activeBtnOption === 'multiStep'} size="large" onClick={() => setActiveBtnOption('multiStep')}>
-                                Multiple steps
-                            </Button>
-                        </ButtonGroup>
+                <ButtonGroup variant="segmented">
+                    <Button pressed={activeBtnOption === 'singleStep'} size="large" onClick={() => setActiveBtnOption('singleStep')}>
+                        One step
+                    </Button>
+                    <Button pressed={activeBtnOption === 'multiStep'} size="large" onClick={() => setActiveBtnOption('multiStep')}>
+                        Multiple steps
+                    </Button>
+                </ButtonGroup>
 
-                        {/*  */}
-                        <div style={{ width: '150px' }}>
-                            {/* Save button */}
-                            <Button
-                                fullWidth
-                                variant="primary"
-                                loading={isSubmitting}
-                                onClick={() => {
-                                    handleNextBtnHandler();
-                                }}>
-                                Next
-                            </Button>
-                        </div>
-                    </BlockStack>
-                </>
-            )}
-        </>
+                {/*  */}
+                <WideButton onClick={handleNextBtnHandler} />
+            </BlockStack>
+        </div>
     );
 }
