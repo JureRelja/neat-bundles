@@ -200,8 +200,6 @@ export default function Index() {
                                     </BlockStack>
                                 </Banner>
 
-                                <Divider borderColor="transparent" />
-
                                 <FooterHelp>
                                     You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
                                 </FooterHelp>

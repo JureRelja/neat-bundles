@@ -26,7 +26,15 @@ export default function Index({
                     <Text as="p" fontWeight="bold" variant="headingMd">
                         {label}
                     </Text>
-                    <img src={imgSrc} alt="Sticky navigation" width={!horizontal ? 220 : 370} />
+                    <img
+                        src={imgSrc}
+                        alt="Sticky navigation"
+                        width={!horizontal ? 220 : 370}
+                        onClick={() => {
+                            updateHandler(attributeKey, value);
+                        }}
+                        className={`${styles.image} ${selectedValue === value ? styles.active : ''}`}
+                    />
                     <Button
                         variant="primary"
                         disabled={selectedValue === value}

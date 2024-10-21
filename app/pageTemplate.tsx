@@ -1,6 +1,6 @@
 import { useNavigation, json, useLoaderData, Link, useNavigate } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, FooterHelp } from '@shopify/polaris';
+import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, FooterHelp, Box, Button } from '@shopify/polaris';
 import { authenticate } from '~/shopify.server';
 import { JsonData } from '@adminBackend/service/dto/jsonData';
 import { useAsyncSubmit } from '~/hooks/useAsyncSubmit';
@@ -78,11 +78,19 @@ export default function Index() {
                             },
                         }}>
                         <BlockStack gap="500">
-                            <Divider borderColor="transparent" />
+                            <Box width="full">
+                                {/* Save button */}
+                                <BlockStack inlineAlign="end">
+                                    <Button variant="primary" submit>
+                                        Save
+                                    </Button>
+                                </BlockStack>
 
-                            <FooterHelp>
-                                You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
-                            </FooterHelp>
+                                {/* Footer help */}
+                                <FooterHelp>
+                                    You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
+                                </FooterHelp>
+                            </Box>
                         </BlockStack>
                     </Page>
                 </>

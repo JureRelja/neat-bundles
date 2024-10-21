@@ -1,15 +1,17 @@
 import { json, redirect } from '@remix-run/node';
-import { Link, Outlet, useFetcher, useLoaderData, useNavigate, useNavigation, useParams, useSubmit } from '@remix-run/react';
+import { useActionData, useFetcher, useLoaderData, useNavigate, useNavigation, useParams, useSubmit } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Page, Card, BlockStack, SkeletonPage, SkeletonBodyText, FooterHelp, Divider } from '@shopify/polaris';
-import { useAppBridge } from '@shopify/app-bridge-react';
+import { Page, Card, BlockStack, TextField, Text, Box, SkeletonPage, SkeletonBodyText, Spinner, InlineStack, Button, Tabs, ButtonGroup } from '@shopify/polaris';
+import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
+
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
 import styles from './route.module.css';
 import userRepository from '~/adminBackend/repository/impl/UserRepository';
 import { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
 import { BundleBuilder } from '@prisma/client';
-import { GapBetweenSections } from '~/constants';
+import { BigGapBetweenSections, GapBetweenSections, LargeGapBetweenSections } from '~/constants';
+import { useState } from 'react';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -53,11 +55,25 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
 export default function Index() {
     const nav = useNavigation();
+    const navigate = useNavigate();
+    const shopify = useAppBridge();
     const isLoading: boolean = nav.state === 'loading';
-    const loaderData = useLoaderData<typeof loader>();
+    const isSubmitting: boolean = nav.state === 'submitting';
     const params = useParams();
+    const fetcher = useFetcher();
+    const loaderData = useLoaderData<typeof loader>();
 
     const bundleBuilder = loaderData.data;
+
+    const [activeButtonIndex, setActiveButtonIndex] = useState(0);
+
+    const handleButtonClick = (index: number) => {
+        setActiveButtonIndex(index);
+    };
+
+    const handleNextBtnHandler = () => {
+        navigate(`/app/create-bundle-builder/${params.bundleid}/step-2`);
+    };
 
     return (
         <>
@@ -85,24 +101,35 @@ export default function Index() {
                     </BlockStack>
                 </SkeletonPage>
             ) : (
-                <Page title={bundleBuilder.title}>
-                    <div className={styles.cardWrapper}>
-                        <Card padding={'600'}>
-                            <BlockStack gap={GapBetweenSections}>
-                                <Outlet />
+                <>
+                    <BlockStack gap={'1200'} inlineAlign="center">
+                        <Text as={'p'} variant="headingLg" alignment="center">
+                            How many steps do you want your bundle builder to have?
+                        </Text>
 
-                                <Divider borderColor="transparent" />
-                                <div className={styles.progressBar} style={{ width: `${(100 / 5) * 1}%` }}>
-                                    &nbsp;
-                                </div>
-                            </BlockStack>
-                        </Card>
-                    </div>
+                        <ButtonGroup variant="segmented">
+                            <Button pressed={activeButtonIndex === 0} size="large" onClick={() => handleButtonClick(0)}>
+                                One step
+                            </Button>
+                            <Button pressed={activeButtonIndex === 1} size="large" onClick={() => handleButtonClick(1)}>
+                                Multiple steps
+                            </Button>
+                        </ButtonGroup>
 
-                    <FooterHelp>
-                        You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
-                    </FooterHelp>
-                </Page>
+                        {/*  */}
+                        <div style={{ width: '150px' }}>
+                            {/* Save button */}
+                            <Button
+                                fullWidth
+                                variant="primary"
+                                onClick={() => {
+                                    handleNextBtnHandler;
+                                }}>
+                                Next
+                            </Button>
+                        </div>
+                    </BlockStack>
+                </>
             )}
         </>
     );

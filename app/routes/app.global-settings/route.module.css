@@ -19,12 +19,6 @@
     overflow: visible;
 }
 
-/* @media (max-width: 768px) {
-    .sticky {
-        width: 100%;
-    }
-} */
-
 .editorTab {
     padding: 5px 10px;
     border-radius: 5px;
@@ -40,4 +34,14 @@
 .activeEditorTab {
     background-color: #f0f0f0;
     border-radius: 5px;
+}
+
+.image {
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.active {
+    border: 2px solid #615c5c;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
 }

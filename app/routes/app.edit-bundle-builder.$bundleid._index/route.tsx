@@ -697,7 +697,7 @@ export default function Index() {
                                         </ButtonGroup>
                                     </BlockStack>
                                 </Box>
-                                <Divider borderColor="transparent" />
+
                                 <FooterHelp>
                                     You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
                                 </FooterHelp>

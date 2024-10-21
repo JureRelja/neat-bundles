@@ -28,17 +28,16 @@ import globalSettingsRepository from '~/adminBackend/repository/impl/GlobalSetti
 import userRepository from '~/adminBackend/repository/impl/UserRepository';
 import bundleBuilderRepository from '~/adminBackend/repository/impl/BundleBuilderRepository';
 import { GlobalSettings } from '@prisma/client';
-import { useEffect, useRef, useState } from 'react';
-import { QuestionCircleIcon, DesktopIcon, MobileIcon, ArrowDownIcon } from '@shopify/polaris-icons';
+import { useEffect, useState } from 'react';
+import { DesktopIcon, MobileIcon } from '@shopify/polaris-icons';
 import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
 import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
 import stickyNavMobile from '../../assets/navStickyMobile.png';
 import normalNavMobile from '../../assets/navNormalMobile.png';
 import normalNavDesktop from '../../assets/navNormalDesktop.png';
 import stickyNavDesktop from '../../assets/navStickyDesktop.png';
-import RadioInput from './radioInput';
+import RadioInput from './imageRadioInput';
 import styles from './route.module.css';
-import { access } from 'fs';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -234,9 +233,9 @@ export default function Index() {
                                         <InlineStack align="center">
                                             <Text as="h3" variant="headingLg">
                                                 <InlineStack>
-                                                    <Icon source={ArrowDownIcon} />
+                                                    {/* <Icon source={ArrowDownIcon} /> */}
                                                     Settings below apply separately for desktop and mobile
-                                                    <Icon source={ArrowDownIcon} />
+                                                    {/* <Icon source={ArrowDownIcon} /> */}
                                                 </InlineStack>
                                             </Text>
                                         </InlineStack>

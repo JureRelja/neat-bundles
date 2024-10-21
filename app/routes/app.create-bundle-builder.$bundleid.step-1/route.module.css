@@ -18,3 +18,51 @@
 .hide {
     display: none;
 }
+
+.divWithFlexCenterContent {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    text-align: center;
+    gap: 10px;
+}
+
+.sticky {
+    position: sticky;
+    width: 100%;
+    top: 0;
+    z-index: 5;
+}
+
+.overflow {
+    overflow: visible;
+}
+
+.editorTab {
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.editorTab:hover {
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+.activeEditorTab {
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+.image {
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.active {
+    border: 2px solid #615c5c;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+}

@@ -6,9 +6,8 @@ import { authenticate } from '../../shopify.server';
 import db from '../../db.server';
 import { BundleAndStepsBasicClient, bundleAndSteps } from '../../adminBackend/service/dto/Bundle';
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
-import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
 import styles from './route.module.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Modal, TitleBar } from '@shopify/app-bridge-react';
 import { bundlePagePreviewKey, GapBetweenSections, GapInsideSection } from '~/constants';
 import userRepository from '@adminBackend/repository/impl/UserRepository';
@@ -17,7 +16,6 @@ import { shopifyBundleBuilderProductRepository } from '~/adminBackend/repository
 import { ShopifyRedirectRepository } from '~/adminBackend/repository/impl/ShopifyRedirectRepository';
 import { ShopifyBundleBuilderPageRepository } from '~/adminBackend/repository/ShopifyBundleBuilderPageRepository';
 import shopifyBundleBuilderPageGraphql from '@adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql';
-import { T } from 'node_modules/@upstash/redis/zmscore-Dc6Llqgr';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
@@ -84,59 +82,33 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                 const shopifyBundleBuilderPageRepository: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageGraphql;
 
-                console.log('isOnboarding', isOnboarding);
+                const bundleBuilderTitle = formData.get('bundleTitle') as string;
 
-                //If the user is onboarding, create a new bundle with no data and return the json
+                //Create a new product that will be used as a bundle wrapper
+                const [bundleProductId, bundlePage] = await Promise.all([
+                    shopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilderTitle, session.shop),
+                    shopifyBundleBuilderPageRepository.createPage(admin, session, bundleBuilderTitle),
+                ]);
+
+                if (!bundleProductId || !bundlePage) {
+                    return;
+                }
+
+                const [urlRedirectRes, bundleBuilder] = await Promise.all([
+                    //Create redirect
+                    ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundlePage.handle as string, bundleProductId),
+                    //Create new bundle
+                    BundleBuilderRepository.createNewEmptyBundleBuilder(session.shop, bundleBuilderTitle, bundleProductId, bundlePage.id, bundlePage.handle),
+                ]);
+
+                await shopifyBundleBuilderPageRepository.setPageMetafields(bundleBuilder.id, bundlePage.id, session, admin);
+
+                //If the user is onboarding, redirect to onboarding flow
                 if (isOnboarding) {
-                    const bundleTitle = formData.get('bundleTitle') as string;
-
-                    //Create a new product that will be used as a bundle wrapper
-                    const [bundleProductId, bundlePage] = await Promise.all([
-                        shopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleTitle, session.shop),
-                        shopifyBundleBuilderPageRepository.createPage(admin, session, bundleTitle),
-                    ]);
-
-                    if (!bundleProductId || !bundlePage) {
-                        return;
-                    }
-
-                    const [urlRedirectRes, bundleBuilder] = await Promise.all([
-                        //Create redirect
-                        ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundlePage.handle as string, bundleProductId),
-                        //Create new bundle
-                        BundleBuilderRepository.createNewEmptyBundleBuilder(session.shop, bundleTitle, bundleProductId, bundlePage.id, bundlePage.handle),
-                    ]);
-
-                    await shopifyBundleBuilderPageRepository.setPageMetafields(bundleBuilder.id, bundlePage.id, session, admin);
-
                     return redirect(`/app/create-bundle-builder/${bundleBuilder.id}/step-1`);
-
-                    // if the user is not onboarding, create a new bundle with all the data and redirect to the edit bundle page
-                } else {
-                    //If the user is not onboarding, create a new bundle
-                    const maxBundleId = await BundleBuilderRepository.getMaxBundleBuilderId(session.shop);
-
-                    const defaultBundleTitle = `New bundle ${maxBundleId ? maxBundleId : ''}`;
-
-                    //Create a new product that will be used as a bundle wrapper
-                    const [bundleProductId, bundlePage] = await Promise.all([
-                        shopifyBundleBuilderProductRepository.createBundleProduct(admin, defaultBundleTitle, session.shop),
-                        shopifyBundleBuilderPageRepository.createPage(admin, session, defaultBundleTitle),
-                    ]);
-
-                    if (!bundleProductId || !bundlePage) {
-                        return;
-                    }
-
-                    const [urlRedirectRes, bundleBuilder] = await Promise.all([
-                        //Create redirect
-                        ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundlePage.handle as string, bundleProductId),
-                        //Create new bundle
-                        BundleBuilderRepository.createNewBundleBuilder(session.shop, defaultBundleTitle, bundleProductId, bundlePage.id, bundlePage.handle),
-                    ]);
-
-                    await shopifyBundleBuilderPageRepository.setPageMetafields(bundleBuilder.id, bundlePage.id, session, admin);
-
+                }
+                // if the user is not onboarding, redirect to edit bundle imidiately
+                else {
                     return redirect(`/app/edit-bundle-builder/${bundleBuilder.id}`);
                 }
             } catch (error) {
@@ -161,6 +133,7 @@ export default function Index() {
     const isSubmitting = nav.state === 'submitting';
     const fetcher = useFetcher();
     const submit = useSubmit();
+    const revalidator = useRevalidator();
 
     const loaderResponse = useLoaderData<typeof loader>();
 
@@ -200,6 +173,11 @@ export default function Index() {
 
     const [bundleForDelete, setBundleForDelete] = useState<BundleAndStepsBasicClient | null>(null);
     const [showBundleDeleteConfirmModal, setShowBundleDeleteConfirmModal] = useState(false);
+
+    useEffect(() => {
+        revalidator.revalidate();
+        if (bundleForDelete) setShowBundleDeleteConfirmModal(true);
+    }, [bundleForDelete]);
 
     return (
         <>
@@ -289,6 +267,7 @@ export default function Index() {
                                         action: `/app/edit-bundle-builder/${bundleForDelete.id}`,
                                     });
 
+                                    setBundleForDelete(null);
                                     setShowBundleDeleteConfirmModal(false);
                                 }}>
                                 Delete
@@ -358,7 +337,6 @@ export default function Index() {
                                                         tone="critical"
                                                         onClick={() => {
                                                             setBundleForDelete(bundleBuilder);
-                                                            setShowBundleDeleteConfirmModal(true);
                                                         }}>
                                                         Delete
                                                     </Button>

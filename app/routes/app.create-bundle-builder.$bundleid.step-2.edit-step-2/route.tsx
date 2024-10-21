@@ -1,7 +1,7 @@
 import { json, redirect } from '@remix-run/node';
 import { useActionData, useFetcher, useLoaderData, useNavigate, useNavigation, useParams, useSubmit } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Page, Card, BlockStack, TextField, Text, Box, SkeletonPage, SkeletonBodyText, Spinner } from '@shopify/polaris';
+import { Page, Card, BlockStack, TextField, Text, Box, SkeletonPage, SkeletonBodyText, Spinner, InlineStack, Button, Tabs, ButtonGroup } from '@shopify/polaris';
 import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
 
@@ -10,6 +10,8 @@ import styles from './route.module.css';
 import userRepository from '~/adminBackend/repository/impl/UserRepository';
 import { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
 import { BundleBuilder } from '@prisma/client';
+import { BigGapBetweenSections, GapBetweenSections, LargeGapBetweenSections } from '~/constants';
+import { useState } from 'react';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -58,11 +60,20 @@ export default function Index() {
     const isLoading: boolean = nav.state === 'loading';
     const isSubmitting: boolean = nav.state === 'submitting';
     const params = useParams();
-    const submit = useSubmit();
     const fetcher = useFetcher();
     const loaderData = useLoaderData<typeof loader>();
 
     const bundleBuilder = loaderData.data;
+
+    const [activeButtonIndex, setActiveButtonIndex] = useState(0);
+
+    const handleButtonClick = (index: number) => {
+        setActiveButtonIndex(index);
+    };
+
+    const handleNextBtnHandler = () => {
+        navigate(`/app/create-bundle-builder/${params.bundleid}/step-2`);
+    };
 
     return (
         <>
@@ -90,9 +101,35 @@ export default function Index() {
                     </BlockStack>
                 </SkeletonPage>
             ) : (
-                <Card>
-                    <Text as={'p'}>Bundle Builder</Text>
-                </Card>
+                <>
+                    <BlockStack gap={'1200'} inlineAlign="center">
+                        <Text as={'p'} variant="headingLg" alignment="center">
+                            How many steps do you want your bundle builder to have?
+                        </Text>
+
+                        <ButtonGroup variant="segmented">
+                            <Button pressed={activeButtonIndex === 0} size="large" onClick={() => handleButtonClick(0)}>
+                                One step
+                            </Button>
+                            <Button pressed={activeButtonIndex === 1} size="large" onClick={() => handleButtonClick(1)}>
+                                Multiple steps
+                            </Button>
+                        </ButtonGroup>
+
+                        {/*  */}
+                        <div style={{ width: '150px' }}>
+                            {/* Save button */}
+                            <Button
+                                fullWidth
+                                variant="primary"
+                                onClick={() => {
+                                    handleNextBtnHandler;
+                                }}>
+                                Next
+                            </Button>
+                        </div>
+                    </BlockStack>
+                </>
             )}
         </>
     );
