@@ -89,15 +89,6 @@ export default function Index() {
                         <Card>
                             <SkeletonBodyText />
                         </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
                     </BlockStack>
                 </SkeletonPage>
             ) : (

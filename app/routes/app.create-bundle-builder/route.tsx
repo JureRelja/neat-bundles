@@ -60,50 +60,25 @@ export default function Index() {
     const bundleBuilder = loaderData.data;
 
     return (
-        <>
-            {isLoading ? (
-                <SkeletonPage primaryAction>
-                    <BlockStack gap="500">
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
+        <Page title={bundleBuilder.title}>
+            <div className={styles.cardWrapper}>
+                <Card padding={'600'}>
+                    <BlockStack gap={GapBetweenSections}>
+                        <div className={styles.fadeIn}>
+                            <Outlet />
+                        </div>
+
+                        <Divider borderColor="transparent" />
+                        <div className={styles.progressBar} style={{ width: `${(100 / 6) * 1}%` }}>
+                            &nbsp;
+                        </div>
                     </BlockStack>
-                </SkeletonPage>
-            ) : (
-                <Page title={bundleBuilder.title}>
-                    <div className={styles.cardWrapper}>
-                        <Card padding={'600'}>
-                            <BlockStack gap={GapBetweenSections}>
-                                <Outlet />
+                </Card>
+            </div>
 
-                                <Divider borderColor="transparent" />
-                                <div className={styles.progressBar} style={{ width: `${(100 / 5) * 1}%` }}>
-                                    &nbsp;
-                                </div>
-                            </BlockStack>
-                        </Card>
-                    </div>
-
-                    <FooterHelp>
-                        You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
-                    </FooterHelp>
-                </Page>
-            )}
-        </>
+            <FooterHelp>
+                You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
+            </FooterHelp>
+        </Page>
     );
 }

@@ -10,7 +10,6 @@ import styles from './route.module.css';
 import userRepository from '~/adminBackend/repository/impl/UserRepository';
 import { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
 import { BundleBuilder } from '@prisma/client';
-import { BigGapBetweenSections, GapBetweenSections, LargeGapBetweenSections } from '~/constants';
 import { useState } from 'react';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
@@ -60,7 +59,7 @@ export default function Index() {
     const isLoading: boolean = nav.state === 'loading';
     const isSubmitting: boolean = nav.state === 'submitting';
     const params = useParams();
-    const fetcher = useFetcher();
+
     const loaderData = useLoaderData<typeof loader>();
 
     const bundleBuilder = loaderData.data;
@@ -80,18 +79,6 @@ export default function Index() {
             {isLoading ? (
                 <SkeletonPage primaryAction>
                     <BlockStack gap="500">
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
                         <Card>
                             <SkeletonBodyText />
                         </Card>

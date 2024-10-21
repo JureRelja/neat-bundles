@@ -109,6 +109,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 }
                 // if the user is not onboarding, redirect to edit bundle imidiately
                 else {
+                    return redirect(`/app/create-bundle-builder/${bundleBuilder.id}/step-1`);
                     return redirect(`/app/edit-bundle-builder/${bundleBuilder.id}`);
                 }
             } catch (error) {

@@ -57,13 +57,13 @@ export default function Index() {
     const nav = useNavigation();
     const navigate = useNavigate();
     const isLoading: boolean = nav.state === 'loading';
+    const isSubmitting: boolean = nav.state === 'submitting';
     const params = useParams();
-    const loaderData = useLoaderData<typeof loader>();
 
     const [activeBtnOption, setActiveBtnOption] = useState<'singleStep' | 'multiStep'>('multiStep');
 
     const handleNextBtnHandler = () => {
-        navigate(`/app/create-bundle-builder/${params.bundleid}/step-2/edit-step-1?multiStep=${activeBtnOption === 'multiStep' ? 'true' : 'false'}`);
+        navigate(`/app/create-bundle-builder/${params.bundleid}/step-2?multiStep=${activeBtnOption === 'multiStep' ? 'true' : 'false'}`);
     };
 
     return (
@@ -71,18 +71,6 @@ export default function Index() {
             {isLoading ? (
                 <SkeletonPage primaryAction>
                     <BlockStack gap="500">
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
-                        <Card>
-                            <SkeletonBodyText />
-                        </Card>
                         <Card>
                             <SkeletonBodyText />
                         </Card>
@@ -113,6 +101,7 @@ export default function Index() {
                             <Button
                                 fullWidth
                                 variant="primary"
+                                loading={isSubmitting}
                                 onClick={() => {
                                     handleNextBtnHandler();
                                 }}>
