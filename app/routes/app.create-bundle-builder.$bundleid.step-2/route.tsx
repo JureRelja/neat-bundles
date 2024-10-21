@@ -71,16 +71,23 @@ export default function Index() {
     const bundleBuilder = loaderData.data.bundleBuilder;
 
     const handleNextBtnHandler = () => {
+        if (stepProducts.length === 0 || stepProducts.length < minProducts) {
+            setProductSelectionActivated(true);
+
+            return;
+        }
         navigate(`/app/create-bundle-builder/${params.bundleid}/step-3`);
     };
 
     //step data
-
+    const [productSelectionActivated, setProductSelectionActivated] = useState<boolean>(false);
     const [stepProducts, setStepProducts] = useState<Product[]>([]);
     const [minProducts, setMinProducts] = useState<number>(1);
     const [maxProducts, setMaxProducts] = useState<number>(3);
 
     const updateSelectedProducts = (products: Product[]) => {
+        setProductSelectionActivated(true);
+
         setStepProducts(products);
     };
 
@@ -105,7 +112,14 @@ export default function Index() {
 
                     <BlockStack gap={GapInsideSection}>
                         <ResourcePicker onBoarding stepId={undefined} selectedProducts={stepProducts} updateSelectedProducts={updateSelectedProducts} />
-                        <InlineError message={stepProducts.length === 0 ? `Please select between ${minProducts} and ${maxProducts} ` : ''} fieldID="products" />
+                        <InlineError
+                            message={
+                                (stepProducts.length === 0 || stepProducts.length < minProducts) && productSelectionActivated
+                                    ? `Please select between ${minProducts} and ${maxProducts} products`
+                                    : ''
+                            }
+                            fieldID="products"
+                        />
                         <BlockStack gap={GapInsideSection}>
                             <Text as="h2" variant="headingSm">
                                 Product rules
