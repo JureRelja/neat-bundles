@@ -223,23 +223,6 @@ export default function Index() {
                             },
                         }}>
                         <BlockStack gap={LargeGapBetweenSections} id="top">
-                            {data.displayThankYouBaner && (
-                                <>
-                                    <Banner title="Thank you for choosing a plan!" tone="success" onDismiss={() => {}}>
-                                        <BlockStack gap={GapInsideSection}>
-                                            <Text as={'p'} variant="headingMd">
-                                                You will be using Neat bundles to let your customer create bundles they love in no time.
-                                            </Text>
-
-                                            <Text as={'p'}>
-                                                Just before you get there, you just need to quickly go through instalation to get Neat bundles app properly connected to your store.
-                                            </Text>
-                                        </BlockStack>
-                                    </Banner>
-                                    <Divider />
-                                </>
-                            )}
-
                             {actionResponse && actionResponse !== '/app' && !actionResponse.ok && actionResponse.message ? (
                                 <>
                                     <Banner title="App wasn't detected in your theme." tone="critical" onDismiss={() => {}}>
@@ -249,9 +232,7 @@ export default function Index() {
                                     </Banner>
                                     <Divider />
                                 </>
-                            ) : (
-                                <></>
-                            )}
+                            ) : null}
 
                             {/* Video tutorial */}
                             <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">

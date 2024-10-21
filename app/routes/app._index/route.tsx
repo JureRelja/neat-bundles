@@ -7,7 +7,7 @@ import userRepository from '~/adminBackend/repository/impl/UserRepository';
 import { Shop } from '@shopifyGraphql/graphql';
 import { useEffect } from 'react';
 import { BlockStack, Card, SkeletonBodyText, SkeletonPage } from '@shopify/polaris';
-import { PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY } from '~/constants';
+import { BillingPlanIdentifiers } from '~/constants';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { admin, session, billing } = await authenticate.admin(request);
@@ -52,7 +52,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     }
 
     const { hasActivePayment, appSubscriptions } = await billing.check({
-        plans: [PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY],
+        plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY],
         isTest: true,
     });
 
@@ -73,7 +73,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     //if the user has an active payment
     else {
         if (user.activeBillingPlan === 'NONE') {
-            user.activeBillingPlan = appSubscriptions[0].name === PRO_PLAN_MONTHLY || appSubscriptions[0].name === PRO_PLAN_YEARLY ? 'PRO' : 'BASIC';
+            user.activeBillingPlan =
+                appSubscriptions[0].name === BillingPlanIdentifiers.PRO_MONTHLY || appSubscriptions[0].name === BillingPlanIdentifiers.PRO_YEARLY ? 'PRO' : 'BASIC';
             await userRepository.updateUser(user);
         }
     }

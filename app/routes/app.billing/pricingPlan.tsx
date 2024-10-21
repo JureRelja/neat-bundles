@@ -1,7 +1,7 @@
 import { BlockStack, Box, Button, Card, Divider, Icon, InlineStack, Text } from '@shopify/polaris';
 import { CheckSmallIcon } from '@shopify/polaris-icons';
 import { GapInsideSection } from '~/constants';
-import { PricingInterval } from './route';
+import { BillingPlan, PricingInterval } from './route';
 import styles from './pricingPlan.module.css';
 
 export default function Index({
@@ -15,7 +15,7 @@ export default function Index({
     planDisabled,
     handleSubscription,
 }: {
-    subscriptionIdentifier: { yearly: string; monthly: string };
+    subscriptionIdentifier: { yearly: { planName: string; planId: string }; monthly: { planName: string; planId: string } };
     title: { yearly: string; monthly: string };
     features: string[];
     planDisabled?: boolean;
@@ -23,7 +23,7 @@ export default function Index({
     pricingInterval: PricingInterval;
     monthlyPricing: string;
     yearlyPricing: string;
-    handleSubscription: (subscriptionIdentifier: string) => void;
+    handleSubscription: (plan: BillingPlan) => void;
 }) {
     return (
         <Card padding={'600'}>

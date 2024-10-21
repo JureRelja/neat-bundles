@@ -1,20 +1,24 @@
-import { useNavigation, json, useLoaderData, Link, useNavigate, redirect } from '@remix-run/react';
+import { useNavigation, json, useLoaderData, useNavigate, redirect, useFetcher } from '@remix-run/react';
+import { useState } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, InlineStack, Button, Banner, Spinner, Box } from '@shopify/polaris';
 import { authenticate } from '../../shopify.server';
-import { BASIC_PLAN, LargeGapBetweenSections, PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY } from '../../constants';
+import { LargeGapBetweenSections, BillingPlanIdentifiers } from '../../constants';
 import { JsonData } from '../../adminBackend/service/dto/jsonData';
-import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
-import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
-import PricingPlan from './pricingPlan';
+import PricingPlanComponent from './pricingPlan';
 import { GapBetweenSections, GapInsideSection } from '~/constants';
-import { useState } from 'react';
 import ToggleSwitch from './toogleSwitch';
 import userRepository from '~/adminBackend/repository/impl/UserRepository';
 import styles from './route.module.css';
 import { Modal, TitleBar } from '@shopify/app-bridge-react';
+import { PricingPlan } from '@prisma/client';
 
 export type PricingInterval = 'MONTHLY' | 'YEARLY';
+
+export type BillingPlan = {
+    planName: string;
+    planId: string;
+};
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin, billing } = await authenticate.admin(request);
@@ -24,15 +28,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     if (!user) return redirect('/app');
 
     const { hasActivePayment, appSubscriptions } = await billing.check({
-        plans: [PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY],
+        plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY],
         isTest: true,
     });
 
-    if (hasActivePayment) return appSubscriptions[0].name;
-
-    if (user.activeBillingPlan === 'BASIC') return BASIC_PLAN; //free plan
-
-    return 'NONE';
+    if (hasActivePayment) {
+        return json({ planName: user.activeBillingPlan, planId: appSubscriptions[0].name });
+    } else if (user.activeBillingPlan === 'BASIC') {
+        return json({ planName: user.activeBillingPlan, planId: BillingPlanIdentifiers.BASIC });
+    } else return json({ planName: user.activeBillingPlan, planId: 'NONE' });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -43,14 +47,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     if (!user) return redirect('/app');
 
     const { hasActivePayment, appSubscriptions } = await billing.check({
-        plans: [PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY],
+        plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY],
         isTest: true,
     });
 
     const formData = await request.formData();
     const action = formData.get('action');
 
-    let isUpgrading = true;
+    let state: 'upgrading' | 'downgrading' | 'none' = 'none';
+    console.log(action);
 
     switch (action) {
         case 'CANCEL': {
@@ -60,14 +65,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     isTest: true,
                     prorate: false,
                 });
-
-                isUpgrading = false;
             }
             await userRepository.updateUser({ ...user, activeBillingPlan: 'NONE' });
-            break;
+            return redirect('/app/billing');
         }
 
-        case BASIC_PLAN: {
+        case BillingPlanIdentifiers.BASIC: {
             if (hasActivePayment) {
                 const cancelledSubscription = await billing.cancel({
                     subscriptionId: appSubscriptions[0].id,
@@ -75,40 +78,45 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     prorate: false,
                 });
 
-                isUpgrading = false;
+                state = 'downgrading';
             }
 
             await userRepository.updateUser({ ...user, activeBillingPlan: 'BASIC' });
 
-            break;
+            if (state === 'downgrading') {
+                return redirect('/app/billing');
+            } else {
+                return redirect('/app/thank-you?variant=firstPlan');
+            }
         }
-        case PRO_PLAN_MONTHLY: {
-            // if (appSubscriptions[0].name === PROFESIONAL) {
-            //     isUpgrading = false;
-            // }
 
-            // const res1 = await billing.request({
-            //     plan: PRO_PLAN_MONTHLY,
-            //     isTest: true,
+        case BillingPlanIdentifiers.PRO_MONTHLY: {
+            if (user.activeBillingPlan === 'BASIC') state = 'upgrading';
 
-            // })
             await userRepository.updateUser({ ...user, activeBillingPlan: 'PRO' });
 
+            console.log("I'm here");
+
             const res = await billing.request({
-                plan: PRO_PLAN_MONTHLY,
+                plan: action,
                 isTest: true,
-                returnUrl: `https://admin.shopify.com/store/${session.shop.split('.')[0]}/apps/neat-bundles/app/installation?thankYou=true`,
+                returnUrl: `https://admin.shopify.com/store/${session.shop.split('.')[0]}/apps/neat-bundles/app/thank-you?variant=${state === 'upgrading' ? 'upgrade' : state === 'none' ? 'firstPlan' : ''}`,
             });
 
             break;
         }
-        case PRO_PLAN_YEARLY: {
+
+        case BillingPlanIdentifiers.PRO_YEARLY: {
+            if (user.activeBillingPlan === 'BASIC') state = 'upgrading';
+
             await userRepository.updateUser({ ...user, activeBillingPlan: 'PRO' });
 
+            console.log("I'm here");
+
             const res = await billing.request({
-                plan: PRO_PLAN_YEARLY,
+                plan: action,
                 isTest: true,
-                returnUrl: `https://admin.shopify.com/store/${session.shop.split('.')[0]}/apps/neat-bundles/app/installation?thankYou=true`,
+                returnUrl: `https://admin.shopify.com/store/${session.shop.split('.')[0]}/apps/neat-bundles/app/thank-you?variant=${state === 'upgrading' ? 'upgrade' : state === 'none' ? 'firstPlan' : ''}`,
             });
 
             break;
@@ -124,23 +132,20 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         }
     }
 
-    if (isUpgrading) return redirect(`https://admin.shopify.com/store/${session.shop.split('.')[0]}/apps/neat-bundles/app/installation?thankYou=true`);
-
     return redirect('/app');
 };
 
 export default function Index() {
     const nav = useNavigation();
     const isLoading = nav.state !== 'idle';
-    const asyncSubmit = useAsyncSubmit(); //Function for doing the submit action where the only data is action and url
-    const navigateSubmit = useNavigateSubmit(); //Function for doing the submit action as if form was submitted
-
+    const fetcher = useFetcher();
     const navigate = useNavigate();
 
-    const activeSubscription = useLoaderData<typeof loader>();
+    const activeSubscription: BillingPlan = useLoaderData<typeof loader>();
 
+    //
+    //pricing interval
     const [pricingInterval, setPricingInterval] = useState<PricingInterval>('MONTHLY');
-    const [showModal, setShowModal] = useState<boolean>(false);
 
     const handlePricingIntervalToogle = () => {
         setPricingInterval((state: PricingInterval) => {
@@ -150,12 +155,43 @@ export default function Index() {
         });
     };
 
-    const handleSubscription = (subscriptionIdentifier: string) => {
-        asyncSubmit.submit(subscriptionIdentifier, '/app/billing');
+    //
+    //cancel handler
+    const handleCanclePlan = async () => {
+        const form = new FormData();
+
+        form.append('action', 'CANCEL');
+        fetcher.submit(form, { method: 'POST', navigate: false });
     };
 
-    const handleCanclePlan = async () => {
-        setShowModal(true);
+    //
+    //downgrade handler
+    const [isDowngrading, setIsDowngrading] = useState<boolean>();
+
+    //
+    //subscription change
+    const [newSelectedSubscription, setNewSelectedSubscription] = useState<BillingPlan>();
+
+    const handleSubscription = (newPlan: BillingPlan) => {
+        //check if the person is downgrading
+        if (
+            newPlan.planId === BillingPlanIdentifiers.BASIC &&
+            (activeSubscription.planId === BillingPlanIdentifiers.PRO_MONTHLY || activeSubscription.planId === BillingPlanIdentifiers.PRO_YEARLY)
+        ) {
+            setNewSelectedSubscription(newPlan);
+            setIsDowngrading(true);
+            return;
+        }
+
+        chargeCustomer(newPlan);
+    };
+
+    //charge handler
+    const chargeCustomer = (newPlan: BillingPlan) => {
+        const form = new FormData();
+
+        form.append('action', newPlan.planId);
+        fetcher.submit(form, { method: 'POST', navigate: false });
     };
 
     return (
@@ -187,22 +223,42 @@ export default function Index() {
             ) : (
                 <>
                     {/* Modal for users to confirm that they want to cancel the subscription. */}
-                    <Modal id="cancel-subscription-modal" open={showModal}>
+                    <Modal id="cancel-subscription-modal">
                         <Box padding="300">
-                            <Text as="p">
-                                If you cancel the subscription, you'll need to choose another plan (free plan included) if you want to continue using Neat bundles app.
-                            </Text>
+                            <Text as="p">If you cancel the subscription, you won't be able to use Neat Bundles app. Are you sure that you want to to that?</Text>
                         </Box>
                         <TitleBar title="Cancel confirmation">
-                            <button onClick={() => setShowModal(false)}>Close</button>
+                            <button onClick={() => shopify.modal.hide('cancel-subscription-modal')}>Close</button>
                             <button
                                 variant="primary"
                                 tone="critical"
                                 onClick={() => {
-                                    asyncSubmit.submit('CANCEL', `/app/billing`);
-                                    setShowModal(false);
+                                    handleCanclePlan();
+                                    shopify.modal.hide('cancel-subscription-modal');
                                 }}>
                                 Cancel
+                            </button>
+                        </TitleBar>
+                    </Modal>
+
+                    {/* Modal for users to confirm downgrading */}
+                    <Modal id="downgrading-subscription-modal" open={isDowngrading}>
+                        <Box padding="300">
+                            <Text as="p">
+                                You are about to downgrade from the <b>{activeSubscription.planId}</b> plan to the <b>{newSelectedSubscription?.planId}</b> plan. You'll lose all
+                                the features from the <b>{activeSubscription.planId}</b> plan. Are you sure that you want to do that?
+                            </Text>
+                        </Box>
+                        <TitleBar title="Downgrade confirmation">
+                            <button onClick={() => setIsDowngrading(false)}>Close</button>
+                            <button
+                                variant="primary"
+                                tone="critical"
+                                onClick={() => {
+                                    chargeCustomer(newSelectedSubscription as BillingPlan);
+                                    setIsDowngrading(false);
+                                }}>
+                                Downgrade
                             </button>
                         </TitleBar>
                     </Modal>
@@ -215,14 +271,14 @@ export default function Index() {
                             },
                         }}>
                         <div id={styles.tableWrapper}>
-                            <div className={asyncSubmit.state != 'idle' ? styles.loadingTable : styles.hide}>
+                            <div className={fetcher.state !== 'idle' ? styles.loadingTable : styles.hide}>
                                 <Spinner accessibilityLabel="Spinner example" size="large" />
                             </div>
                             <BlockStack align="center" gap={LargeGapBetweenSections}>
                                 <Banner onDismiss={() => {}}>
                                     <Text as="p">
-                                        Select the plan that best suits your needs. <b>For a limited time we have a generous free plan</b> that should be enough to get your
-                                        customers started with custome bundles.
+                                        Select the plan that best suits your needs. <b>For a limited time, we have a generous free plan</b> that should be enough to get your
+                                        customers started with custom bundles.
                                     </Text>
                                 </Banner>
 
@@ -239,9 +295,12 @@ export default function Index() {
 
                                 {/* Pricing plans */}
                                 <InlineStack gap={GapBetweenSections} align="center">
-                                    <PricingPlan
-                                        activePlan={activeSubscription === BASIC_PLAN}
-                                        subscriptionIdentifier={{ yearly: BASIC_PLAN, monthly: BASIC_PLAN }}
+                                    <PricingPlanComponent
+                                        activePlan={activeSubscription.planId === BillingPlanIdentifiers.BASIC}
+                                        subscriptionIdentifier={{
+                                            yearly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.BASIC },
+                                            monthly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.BASIC },
+                                        }}
                                         handleSubscription={handleSubscription}
                                         title={{ yearly: 'Basic', monthly: 'Basic' }}
                                         monthlyPricing={'Free'}
@@ -249,15 +308,20 @@ export default function Index() {
                                         pricingInterval={pricingInterval}
                                         features={[
                                             'Create up to 2 bundles',
-                                            'Create up to 3 two steps in one bundle',
+                                            'Create up to 2 two steps in one bundle',
                                             'Create product steps',
                                             'Customize colors',
                                             'Customer support',
                                         ]}
                                     />
-                                    <PricingPlan
-                                        activePlan={activeSubscription === PRO_PLAN_MONTHLY || activeSubscription === PRO_PLAN_YEARLY}
-                                        subscriptionIdentifier={{ yearly: PRO_PLAN_YEARLY, monthly: PRO_PLAN_MONTHLY }}
+                                    <PricingPlanComponent
+                                        activePlan={
+                                            activeSubscription.planId === BillingPlanIdentifiers.PRO_MONTHLY || activeSubscription.planId === BillingPlanIdentifiers.PRO_YEARLY
+                                        }
+                                        subscriptionIdentifier={{
+                                            yearly: { planName: PricingPlan.PRO, planId: BillingPlanIdentifiers.PRO_YEARLY },
+                                            monthly: { planName: PricingPlan.PRO, planId: BillingPlanIdentifiers.PRO_MONTHLY },
+                                        }}
                                         handleSubscription={handleSubscription}
                                         title={{ yearly: 'Pro (yearly)', monthly: 'Pro (monthly)' }}
                                         monthlyPricing={'$4.99'}
@@ -267,7 +331,7 @@ export default function Index() {
                                             'Create unlimited bundles',
                                             'Create up to 5 steps on all bundles',
                                             'Create product steps',
-                                            'Colect images or text on steps',
+                                            'Collect images or text on steps',
                                             'Remove Neat bundles branding',
                                             'Customize colors',
                                             'Priority support',
@@ -278,20 +342,15 @@ export default function Index() {
                                 {/* Current plan */}
                                 <InlineStack gap={GapBetweenSections} align="center" blockAlign="center">
                                     <Text as="p">
-                                        <u>{activeSubscription === 'NONE' ? "You don't have an active plan." : `Your currently active plan is ${activeSubscription}.`}</u>
+                                        <u>
+                                            {activeSubscription.planId === 'NONE'
+                                                ? "You don't have an active plan."
+                                                : `Your currently active plan is ${activeSubscription.planId}.`}
+                                        </u>
                                     </Text>
 
-                                    {activeSubscription !== BASIC_PLAN && activeSubscription !== 'NONE' && (
-                                        <>
-                                            <Button onClick={() => handleCanclePlan()}>Cancel plan</Button>
-
-                                            <Banner onDismiss={() => {}} tone="warning">
-                                                <Text as="p">
-                                                    Note: If you cancel the current plan, you will have to choose on of the remaiming plans (including Free plan) to continue using
-                                                    Neat bundles app.
-                                                </Text>
-                                            </Banner>
-                                        </>
+                                    {activeSubscription.planId !== BillingPlanIdentifiers.BASIC && activeSubscription.planName !== 'NONE' && (
+                                        <Button onClick={() => shopify.modal.show('cancel-subscription-modal')}>Cancel plan</Button>
                                     )}
                                 </InlineStack>
 

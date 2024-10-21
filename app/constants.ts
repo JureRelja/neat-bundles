@@ -15,8 +15,8 @@ export const bundlePageType = 'number_integer';
 export const bundlePageNamespace = 'neat_bundles_app';
 export const bundlePagePreviewKey = 'neatBundlePreview';
 
-export const BASIC_PLAN = 'Basic plan';
-export const PRO_PLAN_YEARLY = 'Pro (yearly subscription)';
-export const PRO_PLAN_MONTHLY = 'Pro (monthly subscription)';
-
-// export const PREMIUM = 'Annual subscription (Basic plan)';
+export enum BillingPlanIdentifiers {
+    BASIC = 'Basic',
+    PRO_YEARLY = 'Pro (yearly subscription)',
+    PRO_MONTHLY = 'Pro (monthly subscription)',
+}

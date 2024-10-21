@@ -3,8 +3,7 @@ import { ApiVersion, AppDistribution, BillingInterval, BillingReplacementBehavio
 import { RedisSessionStorage } from '@shopify/shopify-app-session-storage-redis';
 import { restResources } from '@shopify/shopify-api/rest/admin/2024-10';
 import { createClient } from 'redis';
-// import { Redis } from '@upstash/redis';
-import { BASIC_PLAN, PRO_PLAN_MONTHLY, PRO_PLAN_YEARLY } from './constants';
+import { BillingPlanIdentifiers } from './constants';
 
 const shopify = shopifyApp({
     apiKey: process.env.SHOPIFY_API_KEY,
@@ -17,7 +16,7 @@ const shopify = shopifyApp({
     distribution: AppDistribution.AppStore,
     restResources,
     billing: {
-        [PRO_PLAN_MONTHLY]: {
+        [BillingPlanIdentifiers.PRO_MONTHLY]: {
             replacementBehavior: BillingReplacementBehavior.ApplyOnNextBillingCycle,
             lineItems: [
                 {
@@ -27,7 +26,7 @@ const shopify = shopifyApp({
                 },
             ],
         },
-        [PRO_PLAN_YEARLY]: {
+        [BillingPlanIdentifiers.PRO_YEARLY]: {
             replacementBehavior: BillingReplacementBehavior.ApplyOnNextBillingCycle,
             lineItems: [
                 {

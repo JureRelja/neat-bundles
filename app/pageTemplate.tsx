@@ -79,13 +79,11 @@ export default function Index() {
                         }}>
                         <BlockStack gap="500">
                             <Divider borderColor="transparent" />
-                        </BlockStack>
 
-                        <FooterHelp>
-                            View the <Link to="https://help.shopify.com/manual/orders/fulfill-orders">help docs</Link>,
-                            <Link to="https://help.shopify.com/manual/orders/fulfill-orders">suggest new features</Link>, or
-                            <Link to="https://help.shopify.com/manual/orders/fulfill-orders">contact us</Link> for support.
-                        </FooterHelp>
+                            <FooterHelp>
+                                You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
+                            </FooterHelp>
+                        </BlockStack>
                     </Page>
                 </>
             )}
