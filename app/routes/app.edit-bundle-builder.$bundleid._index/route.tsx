@@ -30,7 +30,7 @@ import { DeleteIcon, PlusIcon, ArrowDownIcon, ArrowUpIcon, PageAddIcon, EditIcon
 import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
 import { useEffect, useState } from 'react';
-import { bundlePagePreviewKey, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from '../../constants';
+import { BigGapBetweenSections, bundlePagePreviewKey, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, LargeGapBetweenSections } from '../../constants';
 import db from '../../db.server';
 import { StepType, BundlePricing, BundleDiscountType } from '@prisma/client';
 import { BundleStepBasicResources } from '../../adminBackend/service/dto/BundleStep';
@@ -128,10 +128,25 @@ export default function Index() {
     };
 
     //Function for adding the step if there are less than 5 steps total
+    const [newStepTitle, setNewStepTitle] = useState<string>();
+    const [activeBtnOption, setActiveBtnOption] = useState<'PRODUCT' | 'CONTENT'>('PRODUCT');
     const addStep = async (): Promise<void> => {
         if (!checkStepCount()) return;
 
-        navigateSubmit('addStep', `/app/edit-bundle-builder/${params.bundleid}/steps`);
+        shopify.modal.show('new-step-modal');
+    };
+
+    const addStepHandler = () => {
+        if (!newStepTitle) return;
+
+        const form = new FormData();
+        form.append('action', 'addStep');
+        form.append('stepType', activeBtnOption);
+        form.append('stepTitle', newStepTitle);
+
+        fetcher.submit(form, { method: 'POST', action: `/app/edit-bundle-builder/${params.bundleid}/steps` });
+
+        shopify.modal.hide('new-step-modal');
     };
 
     //Duplicating the step
@@ -156,6 +171,7 @@ export default function Index() {
     //Rearanging the steps
     const handleStepRearange = async (stepId: number, direction: 'moveStepUp' | 'moveStepDown'): Promise<void> => {
         const form = new FormData();
+
         form.append('action', direction);
         form.append('stepId', stepId.toString());
 
@@ -274,6 +290,59 @@ export default function Index() {
                         <TitleBar title="Maximum steps reached">
                             <button variant="primary" onClick={() => shopify.modal.hide('no-more-steps-modal')}>
                                 Close
+                            </button>
+                        </TitleBar>
+                    </Modal>
+
+                    {/* Title modal */}
+                    <Modal id="new-step-modal">
+                        <Box padding="300">
+                            <BlockStack gap={GapBetweenSections}>
+                                <BlockStack gap={GapBetweenSections}>
+                                    <Text as="p" variant="headingSm">
+                                        Enter the title of your new step
+                                    </Text>
+                                    <TextField
+                                        label="Title"
+                                        labelHidden
+                                        autoComplete="off"
+                                        inputMode="text"
+                                        name="bundleTitle"
+                                        helpText="Customer will see this title when they build a bundle."
+                                        value={newStepTitle}
+                                        error={newStepTitle === '' ? 'Please enter a title' : undefined}
+                                        onChange={(newTitile) => {
+                                            setNewStepTitle(newTitile);
+                                        }}
+                                        type="text"
+                                    />
+                                </BlockStack>
+
+                                <Divider />
+
+                                <BlockStack gap={GapBetweenSections} align="center" inlineAlign="center">
+                                    <Text as="p" variant="headingSm">
+                                        Select the type of step you want to create.
+                                    </Text>
+                                    <ButtonGroup variant="segmented">
+                                        <Button pressed={activeBtnOption === 'PRODUCT'} size="large" onClick={() => setActiveBtnOption('PRODUCT')}>
+                                            Product selection
+                                        </Button>
+                                        <Button pressed={activeBtnOption === 'CONTENT'} size="large" onClick={() => setActiveBtnOption('CONTENT')}>
+                                            Content input
+                                        </Button>
+                                    </ButtonGroup>
+                                    <Text as="p" variant="bodyMd">
+                                        {activeBtnOption === 'PRODUCT'
+                                            ? 'Customers will be able to select products on this step.'
+                                            : 'Customers will be able to add content on this step.'}
+                                    </Text>
+                                </BlockStack>
+                            </BlockStack>
+                        </Box>
+                        <TitleBar title="New step">
+                            <button variant="primary" onClick={addStepHandler} disabled={isLoading}>
+                                Create
                             </button>
                         </TitleBar>
                     </Modal>
