@@ -798,7 +798,7 @@ export default function Index() {
                                                 type="text"
                                                 name={`stepTitle`}
                                                 value={stepData.title}
-                                                helpText="This title will be displayed to the customer."
+                                                helpText="Customer will see this title when they build a bundle."
                                                 onChange={(newTitle: string) => {
                                                     setStepData((stepData: BundleStepAllResources) => {
                                                         return {

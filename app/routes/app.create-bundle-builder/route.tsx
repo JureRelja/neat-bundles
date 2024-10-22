@@ -53,7 +53,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
 export default function Index() {
     const nav = useNavigation();
-    const isLoading: boolean = nav.state === 'loading';
+    const isLoading: boolean = nav.state != 'idle';
     const loaderData = useLoaderData<typeof loader>();
     const params = useParams();
 

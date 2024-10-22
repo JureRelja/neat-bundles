@@ -1,7 +1,7 @@
 import { json, redirect } from '@remix-run/node';
-import { Form, useLoaderData, useNavigate, useNavigation, useParams } from '@remix-run/react';
+import { Form, useFetcher, useLoaderData, useNavigate, useNavigation, useParams } from '@remix-run/react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { BlockStack, Text, Button, InlineError, Box, InlineGrid, TextField } from '@shopify/polaris';
+import { BlockStack, Text, Button, InlineError, Box, InlineGrid, TextField, Divider } from '@shopify/polaris';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { authenticate } from '../../shopify.server';
 import { error, JsonData } from '../../adminBackend/service/dto/jsonData';
@@ -61,9 +61,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 export default function Index() {
     const nav = useNavigation();
     const navigate = useNavigate();
-    const shopify = useAppBridge();
     const isLoading: boolean = nav.state === 'loading';
     const isSubmitting: boolean = nav.state === 'submitting';
+    const fetcher = useFetcher();
     const params = useParams();
 
     const loaderData = useLoaderData<typeof loader>();
@@ -73,14 +73,33 @@ export default function Index() {
     const handleNextBtnHandler = () => {
         if (stepProducts.length === 0 || stepProducts.length < minProducts) {
             setProductSelectionActivated(true);
-
             return;
         }
-        navigate(`/app/create-bundle-builder/${params.bundleid}/step-3`);
+
+        if (minProducts < 1 || maxProducts < minProducts) {
+            setProductSelectionActivated(true);
+            return;
+        }
+
+        if (!stepTitle) {
+            setProductSelectionActivated(true);
+            return;
+        }
+
+        const form = new FormData();
+
+        form.append('action', 'addStep');
+        form.append('stepType', 'PRODUCT');
+        form.append('stepTitle', stepTitle);
+        form.append('minProducts', minProducts.toString());
+        form.append('maxProducts', maxProducts.toString());
+
+        fetcher.submit(form, { method: 'POST', action: `/app/edit-bundle-builder/${params.bundleid}/steps?onboardin=true&multiStep=true` });
     };
 
     //step data
     const [productSelectionActivated, setProductSelectionActivated] = useState<boolean>(false);
+    const [stepTitle, setStepTitle] = useState<string>();
     const [stepProducts, setStepProducts] = useState<Product[]>([]);
     const [minProducts, setMinProducts] = useState<number>(1);
     const [maxProducts, setMaxProducts] = useState<number>(3);
@@ -93,81 +112,95 @@ export default function Index() {
 
     return (
         <div className={styles.fadeIn}>
-            <Form method="POST" action={`/app/edit-bundle-builder/${bundleBuilder.id}/steps`}>
-                <BlockStack gap={'1200'} inlineAlign="center">
-                    <input name="action" type="hidden" defaultValue="addStep" />
-                    <input name="minProducts" type="hidden" defaultValue={minProducts} />
-                    <input name="maxProducts" type="hidden" defaultValue={maxProducts} />
-                    <input name="products[]" type="hidden" defaultValue={stepProducts.map((product: Product) => product.shopifyProductId).join(',')} />
-
+            <BlockStack gap={'1000'} inlineAlign="center">
+                {/*  */}
+                <BlockStack gap={GapInsideSection}>
                     {loaderData.data.multiStep ? (
                         <Text as={'p'} variant="headingLg" alignment="center">
-                            Select the products you want to display on the first step
+                            Enter the title for the first step
                         </Text>
                     ) : (
                         <Text as={'p'} variant="headingLg" alignment="center">
-                            Select the products you want to display on the bundle page
+                            Enter the title for this step
                         </Text>
                     )}
 
-                    <BlockStack gap={GapInsideSection}>
-                        <ResourcePicker onBoarding stepId={undefined} selectedProducts={stepProducts} updateSelectedProducts={updateSelectedProducts} />
-                        <InlineError
-                            message={
-                                (stepProducts.length === 0 || stepProducts.length < minProducts) && productSelectionActivated
-                                    ? `Please select between ${minProducts} and ${maxProducts} products`
-                                    : ''
-                            }
-                            fieldID="products"
-                        />
-                        <BlockStack gap={GapInsideSection}>
-                            <Text as="h2" variant="headingSm">
-                                Product rules
-                            </Text>
-
-                            <InlineGrid columns={2} gap={HorizontalGap}>
-                                <Box id="minProducts">
-                                    <TextField
-                                        label="Minimum products to select"
-                                        type="number"
-                                        helpText="Customers must select at least this number of products on this step."
-                                        autoComplete="off"
-                                        inputMode="numeric"
-                                        name={`minProductsToSelect`}
-                                        min={1}
-                                        max={maxProducts}
-                                        value={minProducts.toString()}
-                                        onChange={(value) => {
-                                            setMinProducts(Number(value));
-                                        }}
-                                        error={minProducts < 1 ? 'Min products must be greater than 0' : ''}
-                                    />
-                                </Box>
-
-                                <Box id="maxProducts">
-                                    <TextField
-                                        label="Maximum products to select"
-                                        helpText="Customers can select up to this number of products on this step."
-                                        type="number"
-                                        autoComplete="off"
-                                        inputMode="numeric"
-                                        name={`maxProductsToSelect`}
-                                        min={minProducts > 0 ? minProducts : 1}
-                                        value={maxProducts.toString()}
-                                        onChange={(value) => {
-                                            setMaxProducts(Number(value));
-                                        }}
-                                        error={maxProducts < minProducts ? 'Max products must be greater than or equal to min products' : ''}
-                                    />
-                                </Box>
-                            </InlineGrid>
-                        </BlockStack>
-                    </BlockStack>
-
-                    {/*  */}
-                    <WideButton onClick={handleNextBtnHandler} />
+                    <TextField
+                        label="Step title"
+                        labelHidden
+                        error={stepTitle === '' ? 'Step title is required' : ''}
+                        type="text"
+                        name={`stepTitle`}
+                        value={stepTitle}
+                        helpText="Customer will see this title when they build a bundle."
+                        onChange={(newTitle: string) => {
+                            setStepTitle(newTitle);
+                        }}
+                        autoComplete="off"
+                    />
                 </BlockStack>
-            </Form>
+
+                <Text as={'p'} variant="headingLg" alignment="center">
+                    Select the products you want to display
+                </Text>
+
+                <BlockStack gap={GapInsideSection}>
+                    <ResourcePicker onBoarding stepId={undefined} selectedProducts={stepProducts} updateSelectedProducts={updateSelectedProducts} />
+                    <InlineError
+                        message={
+                            (stepProducts.length === 0 || stepProducts.length < minProducts) && productSelectionActivated
+                                ? `Please select between ${minProducts} and ${maxProducts} products`
+                                : ''
+                        }
+                        fieldID="products"
+                    />
+                    <BlockStack gap={GapInsideSection}>
+                        <Text as="h2" variant="headingSm">
+                            Product rules
+                        </Text>
+
+                        <InlineGrid columns={2} gap={HorizontalGap}>
+                            <Box id="minProducts">
+                                <TextField
+                                    label="Minimum products to select"
+                                    type="number"
+                                    helpText="Customers must select at least this number of products on this step."
+                                    autoComplete="off"
+                                    inputMode="numeric"
+                                    name={`minProducts`}
+                                    min={1}
+                                    max={maxProducts}
+                                    value={minProducts.toString()}
+                                    onChange={(value) => {
+                                        setMinProducts(Number(value));
+                                    }}
+                                    error={minProducts < 1 ? 'Min products must be greater than 0' : ''}
+                                />
+                            </Box>
+
+                            <Box id="maxProducts">
+                                <TextField
+                                    label="Maximum products to select"
+                                    helpText="Customers can select up to this number of products on this step."
+                                    type="number"
+                                    autoComplete="off"
+                                    inputMode="numeric"
+                                    name={`maxProducts`}
+                                    min={minProducts > 0 ? minProducts : 1}
+                                    value={maxProducts.toString()}
+                                    onChange={(value) => {
+                                        setMaxProducts(Number(value));
+                                    }}
+                                    error={maxProducts < minProducts ? 'Max products must be greater than or equal to min products' : ''}
+                                />
+                            </Box>
+                        </InlineGrid>
+                    </BlockStack>
+                </BlockStack>
+
+                {/*  */}
+                <WideButton onClick={handleNextBtnHandler} />
+            </BlockStack>
         </div>
     );
 }

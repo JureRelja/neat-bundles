@@ -93,36 +93,60 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             }
 
             try {
+                // const newStep: BundleStep = await db.bundleStep.create({
+                //     data: {
+                //         bundleBuilderId: Number(params.bundleid),
+                //         stepNumber: numOfSteps._max.stepNumber ? numOfSteps._max.stepNumber + 1 : 1,
+                //         stepType: StepType.PRODUCT,
+                //         title: 'Step ' + (numOfSteps._max.stepNumber ? numOfSteps._max.stepNumber + 1 : 1),
+                //         description: `This is a description for Step ${numOfSteps._max.stepNumber}`,
+                //         productInput: {
+                //             create: {
+                //                 minProductsOnStep: 1,
+                //                 maxProductsOnStep: 3,
+                //                 allowProductDuplicates: false,
+                //                 showProductPrice: true,
+                //             },
+                //         },
+                //         contentInputs: {
+                //             create: [
+                //                 {
+                //                     inputType: 'TEXT',
+                //                     inputLabel: 'Enter text',
+                //                     maxChars: 50,
+                //                     required: true,
+                //                 },
+                //                 {
+                //                     inputLabel: '',
+                //                     maxChars: 0,
+                //                     required: false,
+                //                     inputType: 'NONE',
+                //                 },
+                //             ],
+                //         },
+                //     },
+                // });
+
+                const newStepType = formData.get('stepType') as string;
+                const newStepTitle = formData.get('stepTitle') as string;
+                const newStepDescription = formData.get('stepDescription') as string;
+                const minProducts = Number(formData.get('minProducts'));
+                const maxProducts = Number(formData.get('maxProducts'));
+
                 const newStep: BundleStep = await db.bundleStep.create({
                     data: {
                         bundleBuilderId: Number(params.bundleid),
                         stepNumber: numOfSteps._max.stepNumber ? numOfSteps._max.stepNumber + 1 : 1,
-                        stepType: StepType.PRODUCT,
-                        title: 'Step ' + (numOfSteps._max.stepNumber ? numOfSteps._max.stepNumber + 1 : 1),
-                        description: `This is a description for Step ${numOfSteps._max.stepNumber}`,
+                        stepType: newStepType === 'PRODUCT' ? StepType.PRODUCT : StepType.CONTENT,
+                        title: newStepTitle,
+                        description: 'This is the description for this step. Feel free to change it.',
                         productInput: {
                             create: {
-                                minProductsOnStep: 1,
-                                maxProductsOnStep: 3,
+                                maxProductsOnStep: minProducts,
                                 allowProductDuplicates: false,
                                 showProductPrice: true,
+                                minProductsOnStep: maxProducts,
                             },
-                        },
-                        contentInputs: {
-                            create: [
-                                {
-                                    inputType: 'TEXT',
-                                    inputLabel: 'Enter text',
-                                    maxChars: 50,
-                                    required: true,
-                                },
-                                {
-                                    inputLabel: '',
-                                    maxChars: 0,
-                                    required: false,
-                                    inputType: 'NONE',
-                                },
-                            ],
                         },
                     },
                 });
@@ -131,6 +155,15 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 const cacheKeyService = new ApiCacheKeyService(session.shop);
 
                 await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
+
+                const url = new URL(request.url);
+
+                if (url.searchParams.get('onboarding') === 'true') {
+                    if (url.searchParams.get('multiStep') === 'true') {
+                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-3`);
+                    }
+                    return redirect(`/app/create-bundle-builder/${params.bundleid}/step-4`);
+                }
 
                 return redirect(`/app/edit-bundle-builder/${params.bundleid}/steps/${newStep.stepNumber}`);
             } catch (error) {
