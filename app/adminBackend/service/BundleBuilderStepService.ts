@@ -1,5 +1,5 @@
-import { User } from '@prisma/client';
-import bundleBuilderStepRepository from '../repository/impl/BundleBuilderStepRepository';
+import { User } from "@prisma/client";
+import bundleBuilderStepRepository from "../repository/impl/BundleBuilderStepRepository";
 
 class BundleBuilderStepService {
     public async checkIfCanAddNewStep(bundleId: number) {
@@ -16,7 +16,7 @@ class BundleBuilderStepService {
         const numOfSteps = await bundleBuilderStepRepository.getNumberOfSteps(bundleId);
 
         // Ceck if the user has reached the limit of steps for the basic plan
-        if (user.activeBillingPlan === 'BASIC') {
+        if (user.activeBillingPlan === "BASIC") {
             if (numOfSteps >= 2) {
                 return false;
             }

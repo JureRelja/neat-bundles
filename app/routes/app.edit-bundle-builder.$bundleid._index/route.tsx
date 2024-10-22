@@ -1,6 +1,6 @@
-import { json, redirect } from '@remix-run/node';
-import { Link, useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Outlet, useSubmit, useRevalidator, useFetcher } from '@remix-run/react';
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
+import { json, redirect } from "@remix-run/node";
+import { Link, useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Outlet, useSubmit, useRevalidator, useFetcher } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
     Page,
     Card,
@@ -25,28 +25,28 @@ import {
     Divider,
     Layout,
     FooterHelp,
-} from '@shopify/polaris';
-import { DeleteIcon, PlusIcon, ArrowDownIcon, ArrowUpIcon, PageAddIcon, EditIcon, QuestionCircleIcon, ExternalIcon, SettingsIcon, RefreshIcon } from '@shopify/polaris-icons';
-import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';
-import { authenticate } from '../../shopify.server';
-import { useEffect, useState } from 'react';
-import { BigGapBetweenSections, bundlePagePreviewKey, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, LargeGapBetweenSections } from '../../constants';
-import db from '../../db.server';
-import { StepType, BundlePricing, BundleDiscountType } from '@prisma/client';
-import { BundleStepBasicResources } from '../../adminBackend/service/dto/BundleStep';
-import { BundleFullStepBasicClient, BundleFullStepBasicServer, inclBundleFullStepsBasic } from '../../adminBackend/service/dto/Bundle';
-import { JsonData, error } from '../../adminBackend/service/dto/jsonData';
-import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
-import { useNavigateSubmit } from '../../hooks/useNavigateSubmit';
-import styles from './route.module.css';
-import userRepository from '~/adminBackend/repository/impl/UserRepository';
+} from "@shopify/polaris";
+import { DeleteIcon, PlusIcon, ArrowDownIcon, ArrowUpIcon, PageAddIcon, EditIcon, QuestionCircleIcon, ExternalIcon, SettingsIcon, RefreshIcon } from "@shopify/polaris-icons";
+import { useAppBridge, Modal, TitleBar } from "@shopify/app-bridge-react";
+import { authenticate } from "../../shopify.server";
+import { useEffect, useState } from "react";
+import { BigGapBetweenSections, bundlePagePreviewKey, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, LargeGapBetweenSections } from "../../constants";
+import db from "../../db.server";
+import { StepType, BundlePricing, BundleDiscountType } from "@prisma/client";
+import { BundleStepBasicResources } from "../../adminBackend/service/dto/BundleStep";
+import { BundleFullStepBasicClient, BundleFullStepBasicServer, inclBundleFullStepsBasic } from "../../adminBackend/service/dto/Bundle";
+import { JsonData, error } from "../../adminBackend/service/dto/jsonData";
+import { useAsyncSubmit } from "../../hooks/useAsyncSubmit";
+import { useNavigateSubmit } from "../../hooks/useNavigateSubmit";
+import styles from "./route.module.css";
+import userRepository from "~/adminBackend/repository/impl/UserRepository";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
-    if (!user) return redirect('/app');
+    if (!user) return redirect("/app");
 
     const bundleBuilder = await db.bundleBuilder.findUnique({
         where: {
@@ -58,7 +58,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     if (!bundleBuilder) {
         throw new Response(null, {
             status: 404,
-            statusText: 'Not Found',
+            statusText: "Not Found",
         });
     }
 
@@ -67,18 +67,18 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 
     const bundleBuilderWithPageUrl: BundleFullStepBasicServer = { ...bundleBuilder, bundleBuilderPageUrl };
 
-    return json(new JsonData(true, 'success', 'Bundle succesfuly retrieved', [], { bundleBuilderWithPageUrl, user }), { status: 200 });
+    return json(new JsonData(true, "success", "Bundle succesfuly retrieved", [], { bundleBuilderWithPageUrl, user }), { status: 200 });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
     const formData = await request.formData();
-    const action = formData.get('action');
+    const action = formData.get("action");
 
     return json(
         {
-            ...new JsonData(true, 'success', "This is the default action that doesn't do anything."),
+            ...new JsonData(true, "success", "This is the default action that doesn't do anything."),
         },
         { status: 200 },
     );
@@ -88,14 +88,14 @@ export default function Index() {
     const nav = useNavigation();
     const navigate = useNavigate();
     const shopify = useAppBridge();
-    const isLoading: boolean = nav.state === 'loading';
-    const isSubmitting: boolean = nav.state === 'submitting';
+    const isLoading: boolean = nav.state === "loading";
+    const isSubmitting: boolean = nav.state === "submitting";
     const params = useParams();
     const navigateSubmit = useNavigateSubmit(); //Function for doing the submit with a navigation (the same if you were to use a From with a submit button)
     const actionData = useActionData<typeof action>();
     const fetcher = useFetcher();
 
-    const tableLoading: boolean = fetcher.state !== 'idle'; //Table loading state
+    const tableLoading: boolean = fetcher.state !== "idle"; //Table loading state
 
     //Errors from action
     const errors = actionData?.errors;
@@ -115,12 +115,12 @@ export default function Index() {
 
     const checkStepCount = (): boolean => {
         if (serverBundle.steps.length >= 5) {
-            shopify.modal.show('no-more-steps-modal');
+            shopify.modal.show("no-more-steps-modal");
             return false;
         }
 
-        if (user.activeBillingPlan === 'BASIC' && serverBundle.steps.length >= 2) {
-            shopify.modal.show('step-limit-modal');
+        if (user.activeBillingPlan === "BASIC" && serverBundle.steps.length >= 2) {
+            shopify.modal.show("step-limit-modal");
             return false;
         }
 
@@ -129,24 +129,24 @@ export default function Index() {
 
     //Function for adding the step if there are less than 5 steps total
     const [newStepTitle, setNewStepTitle] = useState<string>();
-    const [activeBtnOption, setActiveBtnOption] = useState<'PRODUCT' | 'CONTENT'>('PRODUCT');
+    const [activeBtnOption, setActiveBtnOption] = useState<"PRODUCT" | "CONTENT">("PRODUCT");
     const addStep = async (): Promise<void> => {
         if (!checkStepCount()) return;
 
-        shopify.modal.show('new-step-modal');
+        shopify.modal.show("new-step-modal");
     };
 
     const addStepHandler = () => {
         if (!newStepTitle) return;
 
         const form = new FormData();
-        form.append('action', 'addStep');
-        form.append('stepType', activeBtnOption);
-        form.append('stepTitle', newStepTitle);
+        form.append("action", "addEmptyStep");
+        form.append("stepType", activeBtnOption);
+        form.append("stepTitle", newStepTitle);
 
-        fetcher.submit(form, { method: 'POST', action: `/app/edit-bundle-builder/${params.bundleid}/steps` });
+        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps` });
 
-        shopify.modal.hide('new-step-modal');
+        shopify.modal.hide("new-step-modal");
     };
 
     //Duplicating the step
@@ -154,28 +154,28 @@ export default function Index() {
         if (!checkStepCount()) return;
 
         const form = new FormData();
-        form.append('action', 'duplicateStep');
+        form.append("action", "duplicateStep");
 
-        fetcher.submit(form, { method: 'POST', action: `/app/edit-bundle-builder/${params.bundleid}/steps/${stepNumber}` });
+        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps/${stepNumber}` });
     };
 
     const handeleStepDelete = async (stepNumber: number): Promise<void> => {
         if (!checkStepCount()) return;
 
         const form = new FormData();
-        form.append('action', 'deleteStep');
+        form.append("action", "deleteStep");
 
-        fetcher.submit(form, { method: 'POST', action: `/app/edit-bundle-builder/${params.bundleid}/steps/${stepNumber}` });
+        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps/${stepNumber}` });
     };
 
     //Rearanging the steps
-    const handleStepRearange = async (stepId: number, direction: 'moveStepUp' | 'moveStepDown'): Promise<void> => {
+    const handleStepRearange = async (stepId: number, direction: "moveStepUp" | "moveStepDown"): Promise<void> => {
         const form = new FormData();
 
-        form.append('action', direction);
-        form.append('stepId', stepId.toString());
+        form.append("action", direction);
+        form.append("stepId", stepId.toString());
 
-        fetcher.submit(form, { method: 'POST', action: `/app/edit-bundle-builder/${params.bundleid}/steps` });
+        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps` });
     };
 
     const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
@@ -208,7 +208,7 @@ export default function Index() {
     const updateFieldErrorHandler = (fieldId: string) => {
         errors?.forEach((err: error) => {
             if (err.fieldId === fieldId) {
-                err.message = '';
+                err.message = "";
             }
         });
     };
@@ -216,7 +216,7 @@ export default function Index() {
     const refreshBundleBuilderHandler = async () => {
         await shopify.saveBar.leaveConfirmation();
 
-        navigateSubmit('recreateBundleBuilder', `/app/edit-bundle-builder/${params.bundleid}`);
+        navigateSubmit("recreateBundleBuilder", `/app/edit-bundle-builder/${params.bundleid}`);
     };
 
     return (
@@ -257,7 +257,7 @@ export default function Index() {
                                 variant="primary"
                                 tone="critical"
                                 onClick={() => {
-                                    navigateSubmit('deleteBundle', `/app/edit-bundle-builder/${params.bundleid}?redirect=true`);
+                                    navigateSubmit("deleteBundle", `/app/edit-bundle-builder/${params.bundleid}?redirect=true`);
                                     setShowDeleteModal(false);
                                 }}>
                                 Delete
@@ -271,12 +271,12 @@ export default function Index() {
                             <BlockStack gap={GapBetweenSections}>
                                 <Text as="p">You are on the 'Basic' plan which only allows you to create up to 2 steps for each bundle.</Text>
                                 <Text as="p" variant="headingSm">
-                                    If you want to create more steps, go to <Link to={'/app/billing'}>billing</Link> and upgrade to paid plan.
+                                    If you want to create more steps, go to <Link to={"/app/billing"}>billing</Link> and upgrade to paid plan.
                                 </Text>
                             </BlockStack>
                         </Box>
                         <TitleBar title="Maximum steps reached">
-                            <button variant="primary" onClick={() => shopify.modal.hide('step-limit-modal')}>
+                            <button variant="primary" onClick={() => shopify.modal.hide("step-limit-modal")}>
                                 Close
                             </button>
                         </TitleBar>
@@ -288,7 +288,7 @@ export default function Index() {
                             <Text as="p">You can't add more than 5 steps for one bundle.</Text>
                         </Box>
                         <TitleBar title="Maximum steps reached">
-                            <button variant="primary" onClick={() => shopify.modal.hide('no-more-steps-modal')}>
+                            <button variant="primary" onClick={() => shopify.modal.hide("no-more-steps-modal")}>
                                 Close
                             </button>
                         </TitleBar>
@@ -310,7 +310,7 @@ export default function Index() {
                                         name="bundleTitle"
                                         helpText="Customer will see this title when they build a bundle."
                                         value={newStepTitle}
-                                        error={newStepTitle === '' ? 'Please enter a title' : undefined}
+                                        error={newStepTitle === "" ? "Please enter a title" : undefined}
                                         onChange={(newTitile) => {
                                             setNewStepTitle(newTitile);
                                         }}
@@ -325,17 +325,17 @@ export default function Index() {
                                         Select the type of step you want to create.
                                     </Text>
                                     <ButtonGroup variant="segmented">
-                                        <Button pressed={activeBtnOption === 'PRODUCT'} size="large" onClick={() => setActiveBtnOption('PRODUCT')}>
+                                        <Button pressed={activeBtnOption === "PRODUCT"} size="large" onClick={() => setActiveBtnOption("PRODUCT")}>
                                             Product selection
                                         </Button>
-                                        <Button pressed={activeBtnOption === 'CONTENT'} size="large" onClick={() => setActiveBtnOption('CONTENT')}>
+                                        <Button pressed={activeBtnOption === "CONTENT"} size="large" onClick={() => setActiveBtnOption("CONTENT")}>
                                             Content input
                                         </Button>
                                     </ButtonGroup>
                                     <Text as="p" variant="bodyMd">
-                                        {activeBtnOption === 'PRODUCT'
-                                            ? 'Customers will be able to select products on this step.'
-                                            : 'Customers will be able to add content on this step.'}
+                                        {activeBtnOption === "PRODUCT"
+                                            ? "Customers will be able to select products on this step."
+                                            : "Customers will be able to add content on this step."}
                                     </Text>
                                 </BlockStack>
                             </BlockStack>
@@ -351,32 +351,32 @@ export default function Index() {
                     <Page
                         secondaryActions={[
                             {
-                                content: 'Settings',
+                                content: "Settings",
                                 url: `settings/?redirect=/app/edit-bundle-builder/${serverBundle.id}`,
                                 icon: SettingsIcon,
                             },
                             {
-                                content: 'Preview',
-                                accessibilityLabel: 'Preview action label',
+                                content: "Preview",
+                                accessibilityLabel: "Preview action label",
                                 icon: ExternalIcon,
                                 url: `${serverBundle.bundleBuilderPageUrl}?${bundlePagePreviewKey}=true`,
-                                target: '_blank',
+                                target: "_blank",
                             },
                             {
                                 icon: RefreshIcon,
                                 onAction: refreshBundleBuilderHandler,
-                                content: 'Recreate bundle',
+                                content: "Recreate bundle",
                                 helpText:
-                                    'If you accidentally deleted the page where this bundle is displayed or you deleted the dummy product associated with this bundle, click this button to recreate them.',
+                                    "If you accidentally deleted the page where this bundle is displayed or you deleted the dummy product associated with this bundle, click this button to recreate them.",
                             },
                         ]}
                         titleMetadata={serverBundle.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
                         backAction={{
-                            content: 'Products',
+                            content: "Products",
                             onAction: async () => {
                                 // Save or discard the changes before leaving the page
                                 await shopify.saveBar.leaveConfirmation();
-                                navigate('/app');
+                                navigate("/app");
                             },
                         }}
                         title={`${serverBundle.title}`}
@@ -405,8 +405,8 @@ export default function Index() {
                                                         {bundleSteps.length > 0 ? (
                                                             <DataTable
                                                                 hoverable
-                                                                columnContentTypes={['text', 'text', 'text', 'text', 'text']}
-                                                                headings={['Step', 'Title', 'Type', 'Rearange', 'Actions']}
+                                                                columnContentTypes={["text", "text", "text", "text", "text"]}
+                                                                headings={["Step", "Title", "Type", "Rearange", "Actions"]}
                                                                 rows={bundleSteps.map((step: BundleStepBasicResources) => {
                                                                     return [
                                                                         step.stepNumber,
@@ -415,7 +415,7 @@ export default function Index() {
                                                                                 null,
                                                                                 `/app/edit-bundle-builder/${params.bundleid}/steps/${step.stepNumber}`,
                                                                             )}
-                                                                            to={'#'}>
+                                                                            to={"#"}>
                                                                             <div className={styles.stepTitleContainer}>
                                                                                 <Text as="p" tone="base">
                                                                                     {step.title}
@@ -434,7 +434,7 @@ export default function Index() {
                                                                                         icon={ArrowDownIcon}
                                                                                         size="slim"
                                                                                         variant="plain"
-                                                                                        onClick={handleStepRearange.bind(null, step.id, 'moveStepDown')}
+                                                                                        onClick={handleStepRearange.bind(null, step.id, "moveStepDown")}
                                                                                     />
                                                                                 ) : (
                                                                                     <div className={styles.dummyIconPlaceholder}> </div>
@@ -444,7 +444,7 @@ export default function Index() {
                                                                                         icon={ArrowUpIcon}
                                                                                         size="slim"
                                                                                         variant="plain"
-                                                                                        onClick={handleStepRearange.bind(null, step.id, 'moveStepUp')}
+                                                                                        onClick={handleStepRearange.bind(null, step.id, "moveStepUp")}
                                                                                     />
                                                                                 )}
                                                                             </InlineStack>
@@ -481,7 +481,7 @@ export default function Index() {
                                                             <EmptyState
                                                                 heading="Let’s create the first step for your customers to take!"
                                                                 action={{
-                                                                    content: 'Create step',
+                                                                    content: "Create step",
                                                                     icon: PlusIcon,
                                                                     onAction: addStep,
                                                                 }}
@@ -526,7 +526,7 @@ export default function Index() {
                                                     name="bundlePricing"
                                                     choices={[
                                                         {
-                                                            label: 'Calculated price ',
+                                                            label: "Calculated price ",
                                                             value: BundlePricing.CALCULATED,
                                                             helpText: (
                                                                 <Tooltip
@@ -549,7 +549,7 @@ export default function Index() {
                                                             ),
                                                         },
                                                         {
-                                                            label: 'Fixed price',
+                                                            label: "Fixed price",
                                                             value: BundlePricing.FIXED,
                                                             helpText: (
                                                                 <Tooltip
@@ -579,7 +579,7 @@ export default function Index() {
                                                                             inputMode="numeric"
                                                                             autoComplete="off"
                                                                             min={0}
-                                                                            error={errors?.find((err: error) => err.fieldId === 'priceAmount')?.message}
+                                                                            error={errors?.find((err: error) => err.fieldId === "priceAmount")?.message}
                                                                             value={bundleState.priceAmount?.toString()}
                                                                             prefix="$"
                                                                             onChange={(newPrice: string) => {
@@ -589,7 +589,7 @@ export default function Index() {
                                                                                         priceAmount: parseFloat(newPrice),
                                                                                     };
                                                                                 });
-                                                                                updateFieldErrorHandler('priceAmount');
+                                                                                updateFieldErrorHandler("priceAmount");
                                                                             }}
                                                                         />
                                                                     </Box>
@@ -621,16 +621,16 @@ export default function Index() {
                                                             name="bundleDiscountType"
                                                             options={[
                                                                 {
-                                                                    label: 'Percentage (e.g. 25% off)',
+                                                                    label: "Percentage (e.g. 25% off)",
                                                                     value: BundleDiscountType.PERCENTAGE,
                                                                 },
                                                                 {
-                                                                    label: 'Fixed (e.g. 10$ off)',
+                                                                    label: "Fixed (e.g. 10$ off)",
                                                                     value: BundleDiscountType.FIXED,
                                                                 },
 
                                                                 {
-                                                                    label: 'No discount',
+                                                                    label: "No discount",
                                                                     value: BundleDiscountType.NO_DISCOUNT,
                                                                 },
                                                             ]}
@@ -652,11 +652,11 @@ export default function Index() {
                                                             inputMode="numeric"
                                                             disabled={bundleState.discountType === BundleDiscountType.NO_DISCOUNT}
                                                             name={`discountValue`}
-                                                            prefix={bundleState.discountType === BundleDiscountType.PERCENTAGE ? '%' : '$'}
+                                                            prefix={bundleState.discountType === BundleDiscountType.PERCENTAGE ? "%" : "$"}
                                                             min={0}
                                                             max={100}
                                                             value={bundleState.discountValue.toString()}
-                                                            error={errors?.find((err: error) => err.fieldId === 'discountValue')?.message}
+                                                            error={errors?.find((err: error) => err.fieldId === "discountValue")?.message}
                                                             onChange={(newDiscountValue) => {
                                                                 setBundleState((prevBundle: BundleFullStepBasicClient) => {
                                                                     return {
@@ -664,7 +664,7 @@ export default function Index() {
                                                                         discountValue: parseInt(newDiscountValue),
                                                                     };
                                                                 });
-                                                                updateFieldErrorHandler('discountValue');
+                                                                updateFieldErrorHandler("discountValue");
                                                             }}
                                                         />
                                                     </BlockStack>
@@ -693,13 +693,13 @@ export default function Index() {
                                                                 inputMode="text"
                                                                 name="bundleTitle"
                                                                 helpText="This title will be displayed to your customers on bundle page, in checkout and in cart."
-                                                                error={errors?.find((err: error) => err.fieldId === 'bundleTitle')?.message}
+                                                                error={errors?.find((err: error) => err.fieldId === "bundleTitle")?.message}
                                                                 value={bundleState.title}
                                                                 onChange={(newTitile) => {
                                                                     setBundleState((prevBundle: BundleFullStepBasicClient) => {
                                                                         return { ...prevBundle, title: newTitile };
                                                                     });
-                                                                    updateFieldErrorHandler('bundleTitle');
+                                                                    updateFieldErrorHandler("bundleTitle");
                                                                 }}
                                                                 type="text"
                                                             />
@@ -719,16 +719,16 @@ export default function Index() {
                                                             name="bundleVisibility"
                                                             labelHidden
                                                             options={[
-                                                                { label: 'Active', value: 'true' },
-                                                                { label: 'Draft', value: 'false' },
+                                                                { label: "Active", value: "true" },
+                                                                { label: "Draft", value: "false" },
                                                             ]}
                                                             helpText="Bundles set to 'ACTIVE' are visible to anyone browsing your store"
-                                                            value={bundleState.published ? 'true' : 'false'}
+                                                            value={bundleState.published ? "true" : "false"}
                                                             onChange={(newSelection: string) => {
                                                                 setBundleState((prevBundle: BundleFullStepBasicClient) => {
                                                                     return {
                                                                         ...prevBundle,
-                                                                        published: newSelection === 'true',
+                                                                        published: newSelection === "true",
                                                                     };
                                                                 });
                                                             }}

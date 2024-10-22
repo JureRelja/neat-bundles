@@ -68,7 +68,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
             const canAddMoreSteps = await bundleBuilderStepService.checkIfCanAddNewStep(Number(params.bundleid));
 
-            if (canAddMoreSteps) {
+            if (!canAddMoreSteps) {
                 return json(
                     {
                         ...new JsonData(false, "error", "There was an error with your request", [
@@ -165,7 +165,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
             const canAddMoreSteps = await bundleBuilderStepService.checkIfCanAddNewStep(Number(params.bundleid));
 
-            if (canAddMoreSteps) {
+            if (!canAddMoreSteps) {
+                console.log("can't add more than 5 steps");
                 return json(
                     {
                         ...new JsonData(false, "error", "There was an error with your request", [
