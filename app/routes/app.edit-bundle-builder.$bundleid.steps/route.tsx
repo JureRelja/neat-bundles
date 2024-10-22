@@ -1,45 +1,27 @@
-import { BlockStack, Divider, SkeletonPage, Page, Badge, SkeletonBodyText, Card, FooterHelp } from "@shopify/polaris";
+import { BlockStack, SkeletonPage, Page, Badge, SkeletonBodyText, Card, FooterHelp } from "@shopify/polaris";
 import { GapBetweenSections } from "../../constants";
-import { InputType, StepType } from "@prisma/client";
+import { StepType } from "@prisma/client";
 import { json, redirect } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { useNavigation, useLoaderData, useNavigate, Outlet, useParams, useRevalidator, Link } from "@remix-run/react";
+import { useNavigation, useLoaderData, useNavigate, Outlet, useParams, Link } from "@remix-run/react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
 import db from "../../db.server";
 import { BundleStep } from "@prisma/client";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
-import { bundleStepBasic, BundleStepBasicResources } from "@adminBackend/service/dto/BundleStep";
-import { useEffect, useRef, useState } from "react";
+import { BundleStepBasicResources, BundleStepContent, BundleStepProduct } from "@adminBackend/service/dto/BundleStep";
 import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 import { ApiCacheKeyService } from "@adminBackend/service/utils/ApiCacheKeyService";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
-import bundleBuilderRepository from "~/adminBackend/repository/impl/BundleBuilderRepository";
-import bundleBuilderStepRepository from "~/adminBackend/repository/impl/BundleBuilderStepRepository";
-import bundleBuilderStepService from "~/adminBackend/service/BundleBuilderStepService";
+import { bundleBuilderStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderStepRepository";
+import bundleBuilderContentStepRepository from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderContentStepRepository";
+import { bundleBuilderProductStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderProductStepRepository";
+import { bundleBuilderStepsService } from "~/adminBackend/service/impl/BundleBuilderStepsService";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
 
-    let bundleStep: BundleStepBasicResources | null;
-
-    if (!params.stepnum) {
-        bundleStep = await db.bundleStep.findFirst({
-            where: {
-                bundleBuilderId: Number(params.bundleid),
-                stepNumber: Number(1),
-            },
-            select: bundleStepBasic,
-        });
-    } else {
-        bundleStep = await db.bundleStep.findFirst({
-            where: {
-                bundleBuilderId: Number(params.bundleid),
-                stepNumber: Number(params.stepnum),
-            },
-            select: bundleStepBasic,
-        });
-    }
+    let bundleStep = await bundleBuilderStepRepository.getStepByBundleIdAndStepNumber(Number(params.bundleid), Number(params.stepnum));
 
     if (!bundleStep) {
         throw new Response(null, {
@@ -63,143 +45,29 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
     switch (action) {
         //Adding a new step to the bundle
-        case "addStep": {
-            const numOfSteps = await bundleBuilderStepRepository.getNumberOfSteps(Number(params.bundleid));
-
-            const canAddMoreSteps = await bundleBuilderStepService.checkIfCanAddNewStep(Number(params.bundleid));
-
-            if (!canAddMoreSteps) {
-                return json(
-                    {
-                        ...new JsonData(false, "error", "There was an error with your request", [
-                            {
-                                fieldId: "stepsLength",
-                                field: "Number of total stepss",
-                                message: "You can't have more than 5 steps",
-                            },
-                        ]),
-                    },
-                    { status: 400 },
-                );
-            }
-
-            const billingPlanAllowsMoreSteps = await bundleBuilderStepService.checkIfBillingPlanAllowsMoreSteps(Number(params.bundleid), user);
-
-            // Ceck if the user has reached the limit of steps for the basic plan
-            if (!billingPlanAllowsMoreSteps) return json(new JsonData(false, "error", "You have reached the limit of 2 steps for one bundle for the basic plan."), { status: 400 });
-
-            try {
-                const newStepType = formData.get("stepType") as string;
-
-                const newStepTitle = formData.get("stepTitle") as string;
-
-                let newStepDescription = formData.get("stepDescription");
-                newStepDescription = newStepDescription ? (newStepDescription as string) : "This is the description for this step. Feel free to change it.";
-
-                let newStep: BundleStep | null = null;
-
-                if (newStepType === "PRODUCT") {
-                    const minProducts = Number(formData.get("minProducts"));
-                    const maxProducts = Number(formData.get("maxProducts"));
-
-                    newStep = await bundleBuilderStepRepository.createProductStep(
-                        Number(params.bundleid),
-                        newStepDescription,
-                        numOfSteps + 1,
-                        newStepTitle,
-                        minProducts,
-                        maxProducts,
-                    );
-                } else if (newStepType === "CONTENT") {
-                    const inputLabel = formData.get("inputLabel") as string;
-                    const inputType = formData.get("inputType");
-
-                    const inputTypeForStorage =
-                        inputType == "IMAGE" ? InputType.IMAGE : inputType === "TEXT" ? InputType.TEXT : inputType === "NUMBER" ? InputType.NUMBER : InputType.TEXT;
-
-                    newStep = await bundleBuilderStepRepository.createContentStep(
-                        Number(params.bundleid),
-                        newStepDescription,
-                        numOfSteps + 1,
-                        newStepTitle,
-                        inputLabel,
-                        inputTypeForStorage,
-                    );
-                }
-
-                if (!newStep) throw new Error("New step couldn't be created.");
-
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
-
-                const url = new URL(request.url);
-
-                if (url.searchParams.get("onboarding") === "true") {
-                    if (url.searchParams.get("multiStep") === "true") {
-                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-3`);
-                    }
-                    return redirect(`/app/create-bundle-builder/${params.bundleid}/step-4`);
-                }
-
-                return redirect(`/app/edit-bundle-builder/${params.bundleid}/steps/${newStep.stepNumber}`);
-            } catch (error) {
-                console.log(error);
-                return json(
-                    {
-                        ...new JsonData(false, "error", "There was an error with your request", [
-                            {
-                                fieldId: "bundleStep",
-                                field: "Bundle step",
-                                message: "New step could't be created.",
-                            },
-                        ]),
-                    },
-                    { status: 400 },
-                );
-            }
-        }
         case "addEmptyStep": {
-            const numOfSteps = await bundleBuilderStepRepository.getNumberOfSteps(Number(params.bundleid));
+            const canAddMoreSteps = await bundleBuilderStepsService.canAddMoreSteps(Number(params.bundleid), user);
 
-            const canAddMoreSteps = await bundleBuilderStepService.checkIfCanAddNewStep(Number(params.bundleid));
-
-            if (!canAddMoreSteps) {
-                console.log("can't add more than 5 steps");
-                return json(
-                    {
-                        ...new JsonData(false, "error", "There was an error with your request", [
-                            {
-                                fieldId: "stepsLength",
-                                field: "Number of total stepss",
-                                message: "You can't have more than 5 steps",
-                            },
-                        ]),
-                    },
-                    { status: 400 },
-                );
+            if (!canAddMoreSteps.ok) {
+                return json(canAddMoreSteps, { status: 400 });
             }
-
-            const billingPlanAllowsMoreSteps = await bundleBuilderStepService.checkIfBillingPlanAllowsMoreSteps(Number(params.bundleid), user);
-
-            // Ceck if the user has reached the limit of steps for the basic plan
-            if (!billingPlanAllowsMoreSteps) return json(new JsonData(false, "error", "You have reached the limit of 2 steps for one bundle for the basic plan."), { status: 400 });
+            const numOfSteps = await bundleBuilderStepRepository.getNumberOfSteps(Number(params.bundleid));
 
             try {
                 const newStepType = formData.get("stepType") as string;
 
                 const newStepTitle = formData.get("stepTitle") as string;
 
-                let newStep: BundleStep | null = null;
+                let newStepDescription = formData.get("stepDescription")
+                    ? (formData.get("stepDescription") as string)
+                    : "This is the description for this step. Feel free to change it.";
 
-                let newStepDescription = formData.get("stepDescription");
-                newStepDescription = newStepDescription ? (newStepDescription as string) : "This is the description for this step. Feel free to change it.";
+                let newStep: BundleStepProduct | BundleStepContent | null = null;
 
                 if (newStepType === "PRODUCT") {
-                    newStep = await bundleBuilderStepRepository.createEmptyProductStep(Number(params.bundleid), numOfSteps + 1, newStepTitle);
+                    newStep = await bundleBuilderProductStepRepository.addNewStep(Number(params.bundleid), newStepDescription, numOfSteps + 1, newStepTitle);
                 } else if (newStepType === "CONTENT") {
-                    newStep = await bundleBuilderStepRepository.createEmptyContentStep(Number(params.bundleid), numOfSteps + 1, newStepTitle);
+                    newStep = await bundleBuilderContentStepRepository.addNewStep(Number(params.bundleid), newStepDescription, numOfSteps + 1, newStepTitle);
                 }
 
                 if (!newStep) throw new Error("New step couldn't be created.");
