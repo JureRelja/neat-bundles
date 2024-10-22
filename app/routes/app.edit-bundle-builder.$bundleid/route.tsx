@@ -1,21 +1,21 @@
-import { json, redirect } from '@remix-run/node';
-import { useNavigate, useNavigation, useLoaderData, Outlet } from '@remix-run/react';
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Card, BlockStack, Text, SkeletonPage, SkeletonBodyText, InlineStack, Badge, Divider } from '@shopify/polaris';
-import { authenticate } from '../../shopify.server';
-import { GapBetweenTitleAndContent, GapInsideSection } from '../../constants';
-import db from '../../db.server';
-import { BundleFullStepBasicClient, inclBundleFullStepsBasic } from '../../adminBackend/service/dto/Bundle';
-import { error, JsonData } from '../../adminBackend/service/dto/jsonData';
-import { useNavigateSubmit } from '../../hooks/useNavigateSubmit';
-import { BundlePricing } from '@prisma/client';
-import { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
-import { shopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
-import { ShopifyBundleBuilderPageRepository } from '~/adminBackend/repository/ShopifyBundleBuilderPageRepository';
-import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
-import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
-import shopifyBundleBuilderPageRepositoryGraphql from '@adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql';
-import styles from './route.module.css';
+import { json, redirect } from "@remix-run/node";
+import { useNavigate, useNavigation, useLoaderData, Outlet } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { Card, BlockStack, Text, SkeletonPage, SkeletonBodyText, InlineStack, Badge, Divider } from "@shopify/polaris";
+import { authenticate } from "../../shopify.server";
+import { GapBetweenTitleAndContent, GapInsideSection } from "../../constants";
+import db from "../../db.server";
+import { BundleFullStepBasicClient, inclBundleFullStepsBasic } from "../../adminBackend/service/dto/Bundle";
+import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
+import { useNavigateSubmit } from "../../hooks/useNavigateSubmit";
+import { BundleBuilder, BundlePricing } from "@prisma/client";
+import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
+import { shopifyBundleBuilderProductRepository } from "~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository";
+import { ShopifyBundleBuilderPageRepository } from "~/adminBackend/repository/ShopifyBundleBuilderPageRepository";
+import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
+import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
+import shopifyBundleBuilderPageRepositoryGraphql from "@adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql";
+import styles from "./route.module.css";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -32,21 +32,21 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     if (!bundleBuilder) {
         throw new Response(null, {
             status: 404,
-            statusText: 'Not Found',
+            statusText: "Not Found",
         });
     }
 
-    return json(new JsonData(true, 'success', 'Bundle succesfuly retrieved', [], bundleBuilder), { status: 200 });
+    return json(new JsonData(true, "success", "Bundle succesfuly retrieved", [], bundleBuilder), { status: 200 });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
     const formData = await request.formData();
-    const action = formData.get('action');
+    const action = formData.get("action");
 
     switch (action) {
-        case 'deleteBundle': {
+        case "deleteBundle": {
             try {
                 //Delete the bundle along with its steps, contentInputs, bundleSettings?, bundleColors, and bundleLabels
                 const bundleBuilderToDelete = await db.bundleBuilder.update({
@@ -65,10 +65,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 if (!bundleBuilderToDelete)
                     return json(
                         {
-                            ...new JsonData(false, 'error', 'There was an error with your request', [
+                            ...new JsonData(false, "error", "There was an error with your request", [
                                 {
-                                    fieldId: 'bundleId',
-                                    field: 'Bundle ID',
+                                    fieldId: "bundleId",
+                                    field: "Bundle ID",
                                     message: "Bundle with the provided id doesn't exist.",
                                 },
                             ]),
@@ -86,7 +86,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     shopifyBundleBuilderProductRepository.deleteBundleBuilderProduct(admin, bundleBuilderToDelete.shopifyProductId),
                 ]);
             } catch (error) {
-                console.log(error, 'Either the bundle product or the bundle page was already deleted.');
+                console.log(error, "Either the bundle product or the bundle page was already deleted.");
             } finally {
                 const url: URL = new URL(request.url);
 
@@ -95,49 +95,49 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                 await ApiCacheService.multiKeyDelete(await cacheKeyService.getAllBundleKeys(params.bundleid as string));
 
-                if (url.searchParams.get('redirect') === 'true') {
-                    return redirect('/app');
+                if (url.searchParams.get("redirect") === "true") {
+                    return redirect("/app");
                 }
 
-                return json({ ...new JsonData(true, 'success', 'Bundle deleted') }, { status: 200 });
+                return json({ ...new JsonData(true, "success", "Bundle deleted") }, { status: 200 });
             }
         }
 
         //Update the bundle
-        case 'updateBundle':
-            const bundleData: BundleFullStepBasicClient = JSON.parse(formData.get('bundle') as string);
+        case "updateBundle":
+            const bundleData: BundleBuilder = JSON.parse(formData.get("bundle") as string);
 
             const errors: error[] = [];
 
             if (!bundleData.title) {
                 errors.push({
-                    fieldId: 'bundleTitle',
-                    field: 'Bundle title',
-                    message: 'Please enter a bundle title.',
+                    fieldId: "bundleTitle",
+                    field: "Bundle title",
+                    message: "Please enter a bundle title.",
                 });
             } else if (bundleData.pricing === BundlePricing.FIXED && (!bundleData.priceAmount || bundleData.priceAmount < 0)) {
                 errors.push({
-                    fieldId: 'priceAmount',
-                    field: 'Price amount',
-                    message: 'Please enter a valid price for Fixed bundle.',
+                    fieldId: "priceAmount",
+                    field: "Price amount",
+                    message: "Please enter a valid price for Fixed bundle.",
                 });
-            } else if (bundleData.discountType != 'NO_DISCOUNT' && bundleData.discountValue <= 0) {
+            } else if (bundleData.discountType != "NO_DISCOUNT" && bundleData.discountValue <= 0) {
                 errors.push({
-                    fieldId: 'discountValue',
-                    field: 'Discount value',
-                    message: 'Please enter a desired discount.',
+                    fieldId: "discountValue",
+                    field: "Discount value",
+                    message: "Please enter a desired discount.",
                 });
-            } else if (bundleData.discountType === 'FIXED' && bundleData.pricing === 'FIXED' && bundleData.discountValue > (bundleData.priceAmount || 0)) {
+            } else if (bundleData.discountType === "FIXED" && bundleData.pricing === "FIXED" && bundleData.discountValue > (bundleData.priceAmount || 0)) {
                 errors.push({
-                    fieldId: 'discountValue',
-                    field: 'Discount value',
+                    fieldId: "discountValue",
+                    field: "Discount value",
                     message: "Discount amount can't be heigher that the bundle price.",
                 });
             }
 
             if (errors.length > 0)
                 return json({
-                    ...new JsonData(false, 'error', 'There was an error while trying to update the bundle.', errors, bundleData),
+                    ...new JsonData(false, "error", "There was an error while trying to update the bundle.", errors, bundleData),
                 });
 
             //Repository for creating a new page
@@ -167,30 +167,30 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                 await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
 
-                const saveBtn = formData.get('submitBtn');
+                const saveBtn = formData.get("submitBtn");
 
-                if (saveBtn === 'saveAndExitBtn') {
-                    return redirect('/app');
+                if (saveBtn === "saveAndExitBtn") {
+                    return redirect("/app");
                 }
 
-                return json({ ...new JsonData(true, 'success', 'Bundle updated') }, { status: 200 });
+                return json({ ...new JsonData(true, "success", "Bundle updated") }, { status: 200 });
 
                 //return redirect(`/app`);
             } catch (error) {
                 console.log(error);
 
                 return json({
-                    ...new JsonData(false, 'error', 'There was an error while trying to update the bundle.', [
+                    ...new JsonData(false, "error", "There was an error while trying to update the bundle.", [
                         {
-                            fieldId: 'Bundle',
-                            field: 'Bundle',
-                            message: 'Error updating the bundle',
+                            fieldId: "Bundle",
+                            field: "Bundle",
+                            message: "Error updating the bundle",
                         },
                     ]),
                 });
             }
 
-        case 'recreateBundleBuilder': {
+        case "recreateBundleBuilder": {
             //Repository for creating a new page
             const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
 
@@ -204,10 +204,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             if (!bundleBuilder) {
                 return json(
                     {
-                        ...new JsonData(false, 'error', 'There was an error with your request', [
+                        ...new JsonData(false, "error", "There was an error with your request", [
                             {
-                                fieldId: 'bundleId',
-                                field: 'Bundle ID',
+                                fieldId: "bundleId",
+                                field: "Bundle ID",
                                 message: "Bundle with the provided id doesn't exist.",
                             },
                         ]),
@@ -246,7 +246,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 }),
             ]);
 
-            return json({ ...new JsonData(true, 'success', 'Bundle builder refreshed') }, { status: 200 });
+            return json({ ...new JsonData(true, "success", "Bundle builder refreshed") }, { status: 200 });
         }
 
         // case "duplicateBundle":
@@ -401,7 +401,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         default: {
             return json(
                 {
-                    ...new JsonData(true, 'success', "This is the default action that doesn't do anything."),
+                    ...new JsonData(true, "success", "This is the default action that doesn't do anything."),
                 },
                 { status: 200 },
             );
@@ -412,8 +412,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 export default function Index() {
     const nav = useNavigation();
     const navigate = useNavigate();
-    const isLoading: boolean = nav.state === 'loading';
-    const isSubmitting: boolean = nav.state === 'submitting';
+    const isLoading: boolean = nav.state === "loading";
+    const isSubmitting: boolean = nav.state === "submitting";
     const navigateSubmit = useNavigateSubmit(); //Function for doing the submit with a navigation (the same if you were to use a From with a submit button)
 
     //Data from the loader
@@ -447,10 +447,10 @@ export default function Index() {
             ) : (
                 <div>
                     <div className={styles.sticky}>
-                        <Card padding={'300'}>
+                        <Card padding={"300"}>
                             <InlineStack gap={GapBetweenTitleAndContent} align="center">
                                 <Text variant="headingMd" as="h1">
-                                    <InlineStack gap={'100'} align="center">
+                                    <InlineStack gap={"100"} align="center">
                                         <Text as="p">
                                             <u>Editing: </u>
                                         </Text>

@@ -14,6 +14,16 @@ export class BundleBuilderStepRepository {
         return step;
     }
 
+    public async getAllStepsForBundleId(bundleId: number): Promise<BundleStep[]> {
+        const steps: BundleStep[] = await db.bundleStep.findMany({
+            where: {
+                bundleBuilderId: bundleId,
+            },
+        });
+
+        return steps;
+    }
+
     public async getNumberOfSteps(bundleId: number): Promise<number> {
         const steps: number = await db.bundleStep.count({
             where: {

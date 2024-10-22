@@ -1,7 +1,7 @@
 import { json, redirect } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { useNavigation, Outlet } from "@remix-run/react";
-import { SkeletonPage } from "@shopify/polaris";
+import { useNavigation, Outlet, Link, useLoaderData, useNavigate, useParams } from "@remix-run/react";
+import { Badge, BlockStack, FooterHelp, Page, SkeletonPage } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
 import db from "../../db.server";
 import { StepType, BundleStep } from "@prisma/client";
@@ -15,6 +15,7 @@ import { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto
 import { bundleBuilderStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderStepService";
 import { bundleBuilderContentStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderContentStepService";
 import { bundleBuilderStepsService } from "~/adminBackend/service/impl/BundleBuilderStepsService";
+import { GapBetweenSections } from "~/constants";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
@@ -28,10 +29,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         });
     }
 
-    if (stepData.stepType === "CONTENT") redirect("content");
-    else if (stepData.stepType === "PRODUCT") redirect("product");
-
-    return null;
+    return json(new JsonData(true, "success", "Step data was loaded", [], stepData));
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -231,6 +229,37 @@ export default function Index() {
     const nav = useNavigation();
     const isLoading = nav.state === "loading";
     const isSubmitting = nav.state === "submitting";
+    const navigate = useNavigate();
+    const params = useParams();
 
-    return <>{isLoading || isSubmitting ? <SkeletonPage primaryAction fullWidth></SkeletonPage> : <Outlet />}</>;
+    const loaderData = useLoaderData<typeof loader>();
+
+    const stepData = loaderData.data;
+
+    return (
+        <>
+            {isLoading || isSubmitting ? (
+                <SkeletonPage primaryAction></SkeletonPage>
+            ) : (
+                <Page
+                    titleMetadata={stepData.stepType === StepType.PRODUCT ? <Badge tone="warning">Product step</Badge> : <Badge tone="magic">Content step</Badge>}
+                    backAction={{
+                        content: "Products",
+                        onAction: async () => {
+                            // Save or discard the changes before leaving the page
+                            await shopify.saveBar.leaveConfirmation();
+                            navigate(`/app/edit-bundle-builder/${params.bundleid}`);
+                        },
+                    }}
+                    title={`Edit step: ${stepData.stepNumber}`}>
+                    <BlockStack gap={GapBetweenSections}>
+                        <Outlet />
+                        <FooterHelp>
+                            You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
+                        </FooterHelp>
+                    </BlockStack>
+                </Page>
+            )}
+        </>
+    );
 }

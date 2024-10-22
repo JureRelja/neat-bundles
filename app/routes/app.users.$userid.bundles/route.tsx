@@ -1,21 +1,21 @@
-import { useNavigation, json, useLoaderData, Link, redirect, useParams, useFetcher, useNavigate, useRevalidator, useSubmit } from '@remix-run/react';
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Card, Button, BlockStack, EmptyState, Text, Box, SkeletonPage, SkeletonBodyText, DataTable, ButtonGroup, Badge, Spinner, InlineStack, TextField } from '@shopify/polaris';
-import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from '@shopify/polaris-icons';
-import { authenticate } from '../../shopify.server';
-import db from '../../db.server';
-import { BundleAndStepsBasicClient, bundleAndSteps } from '../../adminBackend/service/dto/Bundle';
-import { JsonData } from '../../adminBackend/service/dto/jsonData';
-import styles from './route.module.css';
-import { useEffect, useState } from 'react';
-import { Modal, TitleBar } from '@shopify/app-bridge-react';
-import { bundlePagePreviewKey, GapBetweenSections, GapInsideSection } from '~/constants';
-import userRepository from '@adminBackend/repository/impl/UserRepository';
-import bundleBuilderRepository, { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
-import { shopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
-import { ShopifyRedirectRepository } from '~/adminBackend/repository/impl/ShopifyRedirectRepository';
-import { ShopifyBundleBuilderPageRepository } from '~/adminBackend/repository/ShopifyBundleBuilderPageRepository';
-import shopifyBundleBuilderPageGraphql from '@adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql';
+import { useNavigation, json, useLoaderData, Link, redirect, useFetcher, useRevalidator, useSubmit } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { Card, Button, BlockStack, EmptyState, Text, Box, SkeletonPage, SkeletonBodyText, DataTable, ButtonGroup, Badge, Spinner, InlineStack, TextField } from "@shopify/polaris";
+import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from "@shopify/polaris-icons";
+import { authenticate } from "../../shopify.server";
+import db from "../../db.server";
+import { BundleAndStepsBasicClient, bundleAndSteps } from "../../adminBackend/service/dto/Bundle";
+import { JsonData } from "../../adminBackend/service/dto/jsonData";
+import styles from "./route.module.css";
+import { useEffect, useState } from "react";
+import { Modal, TitleBar } from "@shopify/app-bridge-react";
+import { bundlePagePreviewKey, GapBetweenSections, GapInsideSection } from "~/constants";
+import userRepository from "@adminBackend/repository/impl/UserRepository";
+import bundleBuilderRepository, { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
+import { shopifyBundleBuilderProductRepository } from "~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository";
+import { ShopifyRedirectRepository } from "~/adminBackend/repository/impl/ShopifyRedirectRepository";
+import { ShopifyBundleBuilderPageRepository } from "~/adminBackend/repository/ShopifyBundleBuilderPageRepository";
+import shopifyBundleBuilderPageGraphql from "@adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
@@ -32,12 +32,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             },
             select: bundleAndSteps,
             orderBy: {
-                createdAt: 'desc',
+                createdAt: "desc",
             },
         }),
     ]);
 
-    if (!user) return redirect('/app');
+    if (!user) return redirect("/app");
 
     const bundleBuildersWithPageUrl = bundleBuildersWithoutPageUrl.map((bundleBuilder) => {
         return {
@@ -48,7 +48,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     return json(
         {
-            ...new JsonData(true, 'success', 'Bundles succesfuly retrieved.', [], { bundleBuildersWithPageUrl, user }),
+            ...new JsonData(true, "success", "Bundles succesfuly retrieved.", [], { bundleBuildersWithPageUrl, user }),
         },
         { status: 200 },
     );
@@ -58,31 +58,31 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
     const formData = await request.formData();
-    const action = formData.get('action');
+    const action = formData.get("action");
 
     switch (action) {
-        case 'createBundle': {
+        case "createBundle": {
             try {
                 const user = await userRepository.getUserByStoreUrl(session.shop);
 
-                if (!user) return redirect('/app');
+                if (!user) return redirect("/app");
 
-                if (user.activeBillingPlan === 'BASIC') {
+                if (user.activeBillingPlan === "BASIC") {
                     const bundleBuilderCount = await bundleBuilderRepository.getBundleBuilderCountByStoreUrl(session.shop);
 
                     if (bundleBuilderCount >= 2) {
-                        return json(new JsonData(false, 'error', 'You have reached the limit of 2 bundles for the basic plan.'), { status: 400 });
+                        return json(new JsonData(false, "error", "You have reached the limit of 2 bundles for the basic plan."), { status: 400 });
                     }
                 }
 
                 const url = new URL(request.url);
                 const urlParams = url.searchParams;
 
-                const isOnboarding = urlParams.get('onboarding') === 'true';
+                const isOnboarding = urlParams.get("onboarding") === "true";
 
                 const shopifyBundleBuilderPageRepository: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageGraphql;
 
-                const bundleBuilderTitle = formData.get('bundleTitle') as string;
+                const bundleBuilderTitle = formData.get("bundleTitle") as string;
 
                 //Create a new product that will be used as a bundle wrapper
                 const [bundleProductId, bundlePage] = await Promise.all([
@@ -110,7 +110,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 // if the user is not onboarding, redirect to edit bundle imidiately
                 else {
                     return redirect(`/app/create-bundle-builder/${bundleBuilder.id}/step-1`);
-                    return redirect(`/app/edit-bundle-builder/${bundleBuilder.id}`);
+                    return redirect(`/app/edit-bundle-builder/${bundleBuilder.id}/builder/steps`);
                 }
             } catch (error) {
                 console.log(error);
@@ -120,7 +120,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         default: {
             return json(
                 {
-                    ...new JsonData(true, 'success', "This is the default action that doesn't do anything."),
+                    ...new JsonData(true, "success", "This is the default action that doesn't do anything."),
                 },
                 { status: 200 },
             );
@@ -130,8 +130,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
 export default function Index() {
     const nav = useNavigation();
-    const isLoading = nav.state === 'loading';
-    const isSubmitting = nav.state === 'submitting';
+    const isLoading = nav.state === "loading";
+    const isSubmitting = nav.state === "submitting";
     const fetcher = useFetcher();
     const submit = useSubmit();
     const revalidator = useRevalidator();
@@ -143,8 +143,8 @@ export default function Index() {
     const user = loaderResponse.data.user;
 
     const canCreateNewBundle = (): boolean => {
-        if (user.activeBillingPlan === 'BASIC' && bundleBuilders.length >= 2) {
-            shopify.modal.show('bundle-limit-modal');
+        if (user.activeBillingPlan === "BASIC" && bundleBuilders.length >= 2) {
+            shopify.modal.show("bundle-limit-modal");
             return false;
         }
 
@@ -154,22 +154,22 @@ export default function Index() {
     const [newBundleTitle, setNewBundleTitle] = useState<string>();
 
     const createBundleBtnHandler = () => {
-        shopify.modal.show('new-bundle-builder-modal');
+        shopify.modal.show("new-bundle-builder-modal");
     };
 
     const createBundle = () => {
         if (!canCreateNewBundle()) return;
 
         if (!newBundleTitle) {
-            setNewBundleTitle('');
+            setNewBundleTitle("");
             return;
         }
 
         const form = new FormData();
-        form.append('bundleTitle', newBundleTitle as string);
-        form.append('action', 'createBundle');
+        form.append("bundleTitle", newBundleTitle as string);
+        form.append("action", "createBundle");
 
-        submit(form, { method: 'POST', action: `/app/users/${user.id}/bundles${bundleBuilders.length === 0 ? '?onboarding=true' : ''}`, navigate: true });
+        submit(form, { method: "POST", action: `/app/users/${user.id}/bundles${bundleBuilders.length === 0 ? "?onboarding=true" : ""}`, navigate: true });
     };
 
     const [bundleForDelete, setBundleForDelete] = useState<BundleAndStepsBasicClient | null>(null);
@@ -232,7 +232,7 @@ export default function Index() {
                                     name="bundleTitle"
                                     helpText="This title will be displayed to your customers on bundle page, in checkout and in cart."
                                     value={newBundleTitle}
-                                    error={newBundleTitle === '' ? 'Please enter a title' : undefined}
+                                    error={newBundleTitle === "" ? "Please enter a title" : undefined}
                                     onChange={(newTitile) => {
                                         setNewBundleTitle(newTitile);
                                     }}
@@ -241,7 +241,7 @@ export default function Index() {
                             </BlockStack>
                         </Box>
                         <TitleBar title="Bundle title">
-                            <button variant="primary" onClick={createBundle} disabled={fetcher.state !== 'idle'}>
+                            <button variant="primary" onClick={createBundle} disabled={fetcher.state !== "idle"}>
                                 Next
                             </button>
                         </TitleBar>
@@ -261,10 +261,10 @@ export default function Index() {
                                     if (!bundleForDelete) return;
 
                                     const form = new FormData();
-                                    form.append('action', 'deleteBundle');
+                                    form.append("action", "deleteBundle");
 
                                     fetcher.submit(form, {
-                                        method: 'post',
+                                        method: "post",
                                         action: `/app/edit-bundle-builder/${bundleForDelete.id}`,
                                     });
 
@@ -282,12 +282,12 @@ export default function Index() {
                             <BlockStack gap={GapBetweenSections}>
                                 <Text as="p">You are on the 'Basic' plan which only allows you to have up to 2 bundles at one time.</Text>
                                 <Text as="p" variant="headingSm">
-                                    If you want to create more bundles, go to <Link to={'/app/billing'}>billing</Link> and upgrade to paid plan.
+                                    If you want to create more bundles, go to <Link to={"/app/billing"}>billing</Link> and upgrade to paid plan.
                                 </Text>
                             </BlockStack>
                         </Box>
                         <TitleBar title="Maximum bundles reached">
-                            <button variant="primary" onClick={() => shopify.modal.hide('bundle-limit-modal')}>
+                            <button variant="primary" onClick={() => shopify.modal.hide("bundle-limit-modal")}>
                                 Close
                             </button>
                         </TitleBar>
@@ -304,14 +304,14 @@ export default function Index() {
                         </InlineStack>
 
                         <div id={styles.tableWrapper}>
-                            <div className={fetcher.state !== 'idle' ? styles.loadingTable : styles.hide}>
+                            <div className={fetcher.state !== "idle" ? styles.loadingTable : styles.hide}>
                                 <Spinner accessibilityLabel="Spinner example" size="large" />
                             </div>
                             <Card>
                                 {bundleBuilders.length > 0 ? (
                                     <DataTable
-                                        columnContentTypes={['text', 'text', 'text', 'text', 'text', 'text']}
-                                        headings={['Bundle ID', 'Name', 'Steps', 'Status', 'Actions', 'Settings', 'Preview']}
+                                        columnContentTypes={["text", "text", "text", "text", "text", "text"]}
+                                        headings={["Bundle ID", "Name", "Steps", "Status", "Actions", "Settings", "Preview"]}
                                         rows={bundleBuilders.map((bundleBuilder: BundleAndStepsBasicClient) => {
                                             return [
                                                 <Text as="p" tone="base">
@@ -319,7 +319,7 @@ export default function Index() {
                                                 </Text>,
 
                                                 //
-                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
+                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}/builder/steps`}>
                                                     <Text as="p" tone="base">
                                                         {bundleBuilder.title}
                                                     </Text>
@@ -327,7 +327,7 @@ export default function Index() {
                                                 //
                                                 bundleBuilder.steps.length,
                                                 //
-                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
+                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}/builder/steps`}>
                                                     {bundleBuilder.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
                                                 </Link>,
                                                 //
@@ -349,14 +349,14 @@ export default function Index() {
                                                             submitAction(
                                                             "duplicateBundle",
                                                             true,
-                                                            `/app/edit-bundle-builder/${bundle.id}`,
+                                                            `/app/edit-bundle-builder/${bundle.id}/builder`,
                                                             );
                                                         }}
                                                         >
                                                         Duplicate
                                                         </Button> */}
 
-                                                    <Button icon={EditIcon} variant="primary" url={`/app/edit-bundle-builder/${bundleBuilder.id}`}>
+                                                    <Button icon={EditIcon} variant="primary" url={`/app/edit-bundle-builder/${bundleBuilder.id}/builder/steps`}>
                                                         Edit
                                                     </Button>
                                                 </ButtonGroup>,
@@ -365,7 +365,7 @@ export default function Index() {
                                                     icon={SettingsIcon}
                                                     variant="secondary"
                                                     tone="success"
-                                                    url={`/app/edit-bundle-builder/${bundleBuilder.id}/settings/?redirect=/app/edit-bundle-builder`}>
+                                                    url={`/app/edit-bundle-builder/${bundleBuilder.id}/settings/?redirect=/app/edit-bundle-builder/builder/steps`}>
                                                     Settings
                                                 </Button>,
                                                 <Button
@@ -382,7 +382,7 @@ export default function Index() {
                                     <EmptyState
                                         heading="Let’s create the first custom bundle for your customers!"
                                         action={{
-                                            content: 'Create bundle',
+                                            content: "Create bundle",
                                             icon: PlusIcon,
                                             onAction: createBundleBtnHandler,
                                         }}

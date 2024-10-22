@@ -1,5 +1,5 @@
 import { json, redirect } from "@remix-run/node";
-import { Link, useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Outlet, useSubmit, useRevalidator, useFetcher } from "@remix-run/react";
+import { Link, useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Outlet } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
     Page,
@@ -12,34 +12,27 @@ import {
     SkeletonPage,
     ChoiceList,
     SkeletonBodyText,
-    SkeletonDisplayText,
     ButtonGroup,
-    DataTable,
-    EmptyState,
-    InlineStack,
     Badge,
     Select,
     Tooltip,
     Icon,
-    Spinner,
     Divider,
     Layout,
     FooterHelp,
 } from "@shopify/polaris";
-import { DeleteIcon, PlusIcon, ArrowDownIcon, ArrowUpIcon, PageAddIcon, EditIcon, QuestionCircleIcon, ExternalIcon, SettingsIcon, RefreshIcon } from "@shopify/polaris-icons";
+import { QuestionCircleIcon, ExternalIcon, SettingsIcon, RefreshIcon } from "@shopify/polaris-icons";
 import { useAppBridge, Modal, TitleBar } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
-import { BigGapBetweenSections, bundlePagePreviewKey, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, LargeGapBetweenSections } from "../../constants";
+import { bundlePagePreviewKey, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from "../../constants";
 import db from "../../db.server";
-import { StepType, BundlePricing, BundleDiscountType } from "@prisma/client";
-import { BundleStepBasicResources } from "../../adminBackend/service/dto/BundleStep";
-import { BundleFullStepBasicClient, BundleFullStepBasicServer, inclBundleFullStepsBasic } from "../../adminBackend/service/dto/Bundle";
+import { BundlePricing, BundleDiscountType, BundleBuilder } from "@prisma/client";
 import { JsonData, error } from "../../adminBackend/service/dto/jsonData";
-import { useAsyncSubmit } from "../../hooks/useAsyncSubmit";
 import { useNavigateSubmit } from "../../hooks/useNavigateSubmit";
 import styles from "./route.module.css";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
+import { BundleBuilderClient } from "~/frontend/types/BundleBuilderClient";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -48,11 +41,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 
     if (!user) return redirect("/app");
 
-    const bundleBuilder = await db.bundleBuilder.findUnique({
+    const bundleBuilder: BundleBuilder | null = await db.bundleBuilder.findUnique({
         where: {
             id: Number(params.bundleid),
         },
-        include: inclBundleFullStepsBasic,
     });
 
     if (!bundleBuilder) {
@@ -65,9 +57,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     //Url of the bundle page
     const bundleBuilderPageUrl = `${user.primaryDomain}/pages/${bundleBuilder.bundleBuilderPageHandle}`;
 
-    const bundleBuilderWithPageUrl: BundleFullStepBasicServer = { ...bundleBuilder, bundleBuilderPageUrl };
-
-    return json(new JsonData(true, "success", "Bundle succesfuly retrieved", [], { bundleBuilderWithPageUrl, user }), { status: 200 });
+    return json(new JsonData(true, "success", "Bundle succesfuly retrieved", [], { bundleBuilderPageUrl, bundleBuilder }), { status: 200 });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -93,90 +83,19 @@ export default function Index() {
     const params = useParams();
     const navigateSubmit = useNavigateSubmit(); //Function for doing the submit with a navigation (the same if you were to use a From with a submit button)
     const actionData = useActionData<typeof action>();
-    const fetcher = useFetcher();
-
-    const tableLoading: boolean = fetcher.state !== "idle"; //Table loading state
+    const loaderData = useLoaderData<typeof loader>().data;
 
     //Errors from action
     const errors = actionData?.errors;
     //Data from the action if the form submission returned errors
-    const submittedBundle: BundleFullStepBasicClient = actionData?.data as BundleFullStepBasicClient;
+    const submittedBundle: BundleBuilderClient = actionData?.data as BundleBuilderClient;
 
     //Data from the loader
-    const serverBundle = useLoaderData<typeof loader>().data.bundleBuilderWithPageUrl;
-
-    //user data from the loader
-    const user = useLoaderData<typeof loader>().data.user;
+    const serverBundle = loaderData.bundleBuilder;
+    const bundleBuilderPageUrl = loaderData.bundleBuilderPageUrl;
 
     //Using 'old' bundle data if there were errors when submitting the form. Otherwise, use the data from the loader.
-    const [bundleState, setBundleState] = useState<BundleFullStepBasicClient>(errors?.length === 0 || !errors ? serverBundle : submittedBundle);
-
-    const bundleSteps: BundleStepBasicResources[] = serverBundle.steps.sort((a: BundleStepBasicResources, b: BundleStepBasicResources): number => a.stepNumber - b.stepNumber);
-
-    const checkStepCount = (): boolean => {
-        if (serverBundle.steps.length >= 5) {
-            shopify.modal.show("no-more-steps-modal");
-            return false;
-        }
-
-        if (user.activeBillingPlan === "BASIC" && serverBundle.steps.length >= 2) {
-            shopify.modal.show("step-limit-modal");
-            return false;
-        }
-
-        return true;
-    };
-
-    //Function for adding the step if there are less than 5 steps total
-    const [newStepTitle, setNewStepTitle] = useState<string>();
-    const [activeBtnOption, setActiveBtnOption] = useState<"PRODUCT" | "CONTENT">("PRODUCT");
-    const addStep = async (): Promise<void> => {
-        if (!checkStepCount()) return;
-
-        shopify.modal.show("new-step-modal");
-    };
-
-    const addStepHandler = () => {
-        if (!newStepTitle) return;
-
-        const form = new FormData();
-        form.append("action", "addEmptyStep");
-        form.append("stepType", activeBtnOption);
-        form.append("stepTitle", newStepTitle);
-
-        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps` });
-
-        shopify.modal.hide("new-step-modal");
-    };
-
-    //Duplicating the step
-    const duplicateStep = async (stepNumber: number): Promise<void> => {
-        if (!checkStepCount()) return;
-
-        const form = new FormData();
-        form.append("action", "duplicateStep");
-
-        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps/${stepNumber}` });
-    };
-
-    const handeleStepDelete = async (stepNumber: number): Promise<void> => {
-        if (!checkStepCount()) return;
-
-        const form = new FormData();
-        form.append("action", "deleteStep");
-
-        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps/${stepNumber}` });
-    };
-
-    //Rearanging the steps
-    const handleStepRearange = async (stepId: number, direction: "moveStepUp" | "moveStepDown"): Promise<void> => {
-        const form = new FormData();
-
-        form.append("action", direction);
-        form.append("stepId", stepId.toString());
-
-        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps` });
-    };
+    const [bundleState, setBundleState] = useState<BundleBuilderClient>(errors?.length === 0 || !errors ? serverBundle : submittedBundle);
 
     const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 
@@ -186,12 +105,6 @@ export default function Index() {
 
         setShowDeleteModal(true);
         // navigateSubmit('deleteBundle', `/app/edit-bundle-builder/${params.bundleid}?redirect=true`);
-    };
-
-    const handleNavigationOnUnsavedChanges = async (navPath: string): Promise<void> => {
-        await shopify.saveBar.leaveConfirmation();
-
-        navigate(navPath);
     };
 
     //Navigating to the first error
@@ -245,7 +158,7 @@ export default function Index() {
                     </BlockStack>
                 </SkeletonPage>
             ) : (
-                <>
+                <div>
                     {/* Modal for users to confirm that they want to delete the bundle. */}
                     <Modal id="delete-confirm-modal" open={showDeleteModal}>
                         <Box padding="300">
@@ -265,88 +178,6 @@ export default function Index() {
                         </TitleBar>
                     </Modal>
 
-                    {/* Modal to show the customer that they've reacheda  limit and should upgrade */}
-                    <Modal id="step-limit-modal">
-                        <Box padding="300">
-                            <BlockStack gap={GapBetweenSections}>
-                                <Text as="p">You are on the 'Basic' plan which only allows you to create up to 2 steps for each bundle.</Text>
-                                <Text as="p" variant="headingSm">
-                                    If you want to create more steps, go to <Link to={"/app/billing"}>billing</Link> and upgrade to paid plan.
-                                </Text>
-                            </BlockStack>
-                        </Box>
-                        <TitleBar title="Maximum steps reached">
-                            <button variant="primary" onClick={() => shopify.modal.hide("step-limit-modal")}>
-                                Close
-                            </button>
-                        </TitleBar>
-                    </Modal>
-
-                    {/* Modal to alert the user that he can't have more tha 5 steps in one bundle. */}
-                    <Modal id="no-more-steps-modal">
-                        <Box padding="300">
-                            <Text as="p">You can't add more than 5 steps for one bundle.</Text>
-                        </Box>
-                        <TitleBar title="Maximum steps reached">
-                            <button variant="primary" onClick={() => shopify.modal.hide("no-more-steps-modal")}>
-                                Close
-                            </button>
-                        </TitleBar>
-                    </Modal>
-
-                    {/* Title modal */}
-                    <Modal id="new-step-modal">
-                        <Box padding="300">
-                            <BlockStack gap={GapBetweenSections}>
-                                <BlockStack gap={GapBetweenSections}>
-                                    <Text as="p" variant="headingSm">
-                                        Enter the title of your new step
-                                    </Text>
-                                    <TextField
-                                        label="Title"
-                                        labelHidden
-                                        autoComplete="off"
-                                        inputMode="text"
-                                        name="bundleTitle"
-                                        helpText="Customer will see this title when they build a bundle."
-                                        value={newStepTitle}
-                                        error={newStepTitle === "" ? "Please enter a title" : undefined}
-                                        onChange={(newTitile) => {
-                                            setNewStepTitle(newTitile);
-                                        }}
-                                        type="text"
-                                    />
-                                </BlockStack>
-
-                                <Divider />
-
-                                <BlockStack gap={GapBetweenSections} align="center" inlineAlign="center">
-                                    <Text as="p" variant="headingSm">
-                                        Select the type of step you want to create.
-                                    </Text>
-                                    <ButtonGroup variant="segmented">
-                                        <Button pressed={activeBtnOption === "PRODUCT"} size="large" onClick={() => setActiveBtnOption("PRODUCT")}>
-                                            Product selection
-                                        </Button>
-                                        <Button pressed={activeBtnOption === "CONTENT"} size="large" onClick={() => setActiveBtnOption("CONTENT")}>
-                                            Content input
-                                        </Button>
-                                    </ButtonGroup>
-                                    <Text as="p" variant="bodyMd">
-                                        {activeBtnOption === "PRODUCT"
-                                            ? "Customers will be able to select products on this step."
-                                            : "Customers will be able to add content on this step."}
-                                    </Text>
-                                </BlockStack>
-                            </BlockStack>
-                        </Box>
-                        <TitleBar title="New step">
-                            <button variant="primary" onClick={addStepHandler} disabled={isLoading}>
-                                Create
-                            </button>
-                        </TitleBar>
-                    </Modal>
-
                     {/* Edit bundle page */}
                     <Page
                         secondaryActions={[
@@ -359,7 +190,7 @@ export default function Index() {
                                 content: "Preview",
                                 accessibilityLabel: "Preview action label",
                                 icon: ExternalIcon,
-                                url: `${serverBundle.bundleBuilderPageUrl}?${bundlePagePreviewKey}=true`,
+                                url: `${bundleBuilderPageUrl}?${bundlePagePreviewKey}=true`,
                                 target: "_blank",
                             },
                             {
@@ -387,118 +218,10 @@ export default function Index() {
                                 <Layout>
                                     <Layout.Section>
                                         <BlockStack gap={GapBetweenSections}>
-                                            <div id={styles.tableWrapper}>
-                                                <div className={tableLoading ? styles.loadingTable : styles.hide}>
-                                                    <Spinner accessibilityLabel="Spinner example" size="large" />
-                                                </div>
-                                                <Card>
-                                                    <BlockStack>
-                                                        <InlineStack align="space-between">
-                                                            <Text as="h2" variant="headingMd">
-                                                                Bundle steps
-                                                            </Text>
-
-                                                            <Button icon={PlusIcon} size="slim" variant="primary" onClick={addStep}>
-                                                                Add step
-                                                            </Button>
-                                                        </InlineStack>
-                                                        {bundleSteps.length > 0 ? (
-                                                            <DataTable
-                                                                hoverable
-                                                                columnContentTypes={["text", "text", "text", "text", "text"]}
-                                                                headings={["Step", "Title", "Type", "Rearange", "Actions"]}
-                                                                rows={bundleSteps.map((step: BundleStepBasicResources) => {
-                                                                    return [
-                                                                        step.stepNumber,
-                                                                        <Link
-                                                                            onClick={handleNavigationOnUnsavedChanges.bind(
-                                                                                null,
-                                                                                `/app/edit-bundle-builder/${params.bundleid}/steps/${step.stepNumber}`,
-                                                                            )}
-                                                                            to={"#"}>
-                                                                            <div className={styles.stepTitleContainer}>
-                                                                                <Text as="p" tone="base">
-                                                                                    {step.title}
-                                                                                </Text>
-                                                                            </div>
-                                                                        </Link>,
-                                                                        step.stepType === StepType.PRODUCT ? (
-                                                                            <Badge tone="warning">Product step</Badge>
-                                                                        ) : (
-                                                                            <Badge tone="magic">Content step</Badge>
-                                                                        ),
-                                                                        <ButtonGroup>
-                                                                            <InlineStack align="space-between" blockAlign="stretch">
-                                                                                {step.stepNumber !== bundleSteps.length ? (
-                                                                                    <Button
-                                                                                        icon={ArrowDownIcon}
-                                                                                        size="slim"
-                                                                                        variant="plain"
-                                                                                        onClick={handleStepRearange.bind(null, step.id, "moveStepDown")}
-                                                                                    />
-                                                                                ) : (
-                                                                                    <div className={styles.dummyIconPlaceholder}> </div>
-                                                                                )}
-                                                                                {step.stepNumber !== 1 && (
-                                                                                    <Button
-                                                                                        icon={ArrowUpIcon}
-                                                                                        size="slim"
-                                                                                        variant="plain"
-                                                                                        onClick={handleStepRearange.bind(null, step.id, "moveStepUp")}
-                                                                                    />
-                                                                                )}
-                                                                            </InlineStack>
-                                                                        </ButtonGroup>,
-                                                                        <ButtonGroup>
-                                                                            <Button
-                                                                                icon={DeleteIcon}
-                                                                                variant="secondary"
-                                                                                tone="critical"
-                                                                                onClick={handeleStepDelete.bind(null, step.stepNumber)}></Button>
-
-                                                                            <Button
-                                                                                icon={PageAddIcon}
-                                                                                variant="secondary"
-                                                                                onClick={() => {
-                                                                                    duplicateStep(step.stepNumber);
-                                                                                }}>
-                                                                                Duplicate
-                                                                            </Button>
-
-                                                                            <Button
-                                                                                icon={EditIcon}
-                                                                                variant="primary"
-                                                                                onClick={handleNavigationOnUnsavedChanges.bind(
-                                                                                    null,
-                                                                                    `/app/edit-bundle-builder/${params.bundleid}/steps/${step.stepNumber}`,
-                                                                                )}>
-                                                                                Edit
-                                                                            </Button>
-                                                                        </ButtonGroup>,
-                                                                    ];
-                                                                })}></DataTable>
-                                                        ) : (
-                                                            <EmptyState
-                                                                heading="Let’s create the first step for your customers to take!"
-                                                                action={{
-                                                                    content: "Create step",
-                                                                    icon: PlusIcon,
-                                                                    onAction: addStep,
-                                                                }}
-                                                                fullWidth
-                                                                image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png">
-                                                                <p>
-                                                                    Your customers will be able to select products or add content (like text or images) at each step to their
-                                                                    bundle.
-                                                                </p>
-                                                            </EmptyState>
-                                                        )}
-                                                    </BlockStack>
-                                                </Card>
-                                            </div>
+                                            {/* Bundle builder steps */}
+                                            <Outlet />
 
                                             {/* Bundle builder page url */}
-
                                             <Card>
                                                 <BlockStack gap={GapBetweenTitleAndContent}>
                                                     <Text as="p" variant="headingMd">
@@ -513,7 +236,7 @@ export default function Index() {
                                                             readOnly
                                                             name="bundlePage"
                                                             helpText="Send customers to this page to let them create their unique bundles."
-                                                            value={serverBundle.bundleBuilderPageUrl}
+                                                            value={bundleBuilderPageUrl}
                                                             type="url"
                                                         />
                                                     </BlockStack>
@@ -583,7 +306,7 @@ export default function Index() {
                                                                             value={bundleState.priceAmount?.toString()}
                                                                             prefix="$"
                                                                             onChange={(newPrice: string) => {
-                                                                                setBundleState((prevBundle: BundleFullStepBasicClient) => {
+                                                                                setBundleState((prevBundle: BundleBuilderClient) => {
                                                                                     return {
                                                                                         ...prevBundle,
                                                                                         priceAmount: parseFloat(newPrice),
@@ -599,7 +322,7 @@ export default function Index() {
                                                     ]}
                                                     selected={[bundleState.pricing]}
                                                     onChange={(newPricing) => {
-                                                        setBundleState((prevBundle: BundleFullStepBasicClient) => {
+                                                        setBundleState((prevBundle: BundleBuilderClient) => {
                                                             return {
                                                                 ...prevBundle,
                                                                 pricing: newPricing[0] as BundlePricing,
@@ -636,7 +359,7 @@ export default function Index() {
                                                             ]}
                                                             value={bundleState.discountType}
                                                             onChange={(newDiscountType: string) => {
-                                                                setBundleState((prevBundle: BundleFullStepBasicClient) => {
+                                                                setBundleState((prevBundle: BundleBuilderClient) => {
                                                                     return {
                                                                         ...prevBundle,
                                                                         discountType: newDiscountType as BundleDiscountType,
@@ -650,7 +373,7 @@ export default function Index() {
                                                             type="number"
                                                             autoComplete="off"
                                                             inputMode="numeric"
-                                                            disabled={bundleState.discountType === BundleDiscountType.NO_DISCOUNT}
+                                                            disabled={bundleState.discountType === "NO_DISCOUNT"}
                                                             name={`discountValue`}
                                                             prefix={bundleState.discountType === BundleDiscountType.PERCENTAGE ? "%" : "$"}
                                                             min={0}
@@ -658,7 +381,7 @@ export default function Index() {
                                                             value={bundleState.discountValue.toString()}
                                                             error={errors?.find((err: error) => err.fieldId === "discountValue")?.message}
                                                             onChange={(newDiscountValue) => {
-                                                                setBundleState((prevBundle: BundleFullStepBasicClient) => {
+                                                                setBundleState((prevBundle: BundleBuilderClient) => {
                                                                     return {
                                                                         ...prevBundle,
                                                                         discountValue: parseInt(newDiscountValue),
@@ -696,7 +419,7 @@ export default function Index() {
                                                                 error={errors?.find((err: error) => err.fieldId === "bundleTitle")?.message}
                                                                 value={bundleState.title}
                                                                 onChange={(newTitile) => {
-                                                                    setBundleState((prevBundle: BundleFullStepBasicClient) => {
+                                                                    setBundleState((prevBundle: BundleBuilderClient) => {
                                                                         return { ...prevBundle, title: newTitile };
                                                                     });
                                                                     updateFieldErrorHandler("bundleTitle");
@@ -725,7 +448,7 @@ export default function Index() {
                                                             helpText="Bundles set to 'ACTIVE' are visible to anyone browsing your store"
                                                             value={bundleState.published ? "true" : "false"}
                                                             onChange={(newSelection: string) => {
-                                                                setBundleState((prevBundle: BundleFullStepBasicClient) => {
+                                                                setBundleState((prevBundle: BundleBuilderClient) => {
                                                                     return {
                                                                         ...prevBundle,
                                                                         published: newSelection === "true",
@@ -754,7 +477,6 @@ export default function Index() {
                                                 type="submit">
                                                 <span className="Polaris-Text--root Polaris-Text--bodySm Polaris-Text--medium">Save</span>
                                             </button>
-                                            {/* <button variant="primary">Save</button> */}
 
                                             <button
                                                 className="Polaris-Button Polaris-Button--pressable Polaris-Button--variantPrimary Polaris-Button--sizeMedium Polaris-Button--textAlignCenter"
@@ -773,7 +495,7 @@ export default function Index() {
                             </BlockStack>
                         </Form>
                     </Page>
-                </>
+                </div>
             )}
         </>
     );
