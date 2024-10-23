@@ -20,6 +20,8 @@ import shopifyBundleBuilderPageGraphql from "@adminBackend/repository/impl/Shopi
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
 
+    console.log("I'm on bundles loader");
+
     const [user, bundleBuildersWithoutPageUrl] = await Promise.all([
         userRepository.getUserByStoreUrl(session.shop),
 
@@ -60,7 +62,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const formData = await request.formData();
     const action = formData.get("action");
 
-    console.log("I'm on bundle", action);
+    console.log("I'm on bundles", action);
 
     switch (action) {
         case "createBundle": {

@@ -3,6 +3,10 @@ import { BundleStepProduct } from "../../../dto/BundleStep";
 import { error } from "../../../dto/jsonData";
 import { bundleBuilderProductStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderProductStepRepository";
 import { bundleBuilderStepsService } from "../../BundleBuilderStepsService";
+import { ProductStepDataDto } from "~/adminBackend/service/dto/ProductStepDataDto";
+import { StepType } from "@prisma/client";
+import bundleBuilderRepository from "~/adminBackend/repository/impl/BundleBuilderRepository";
+import { bundleBuilderStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderStepRepository";
 
 class BundleBuilderProductStepService extends BundleBuilderStepTypeService {
     public checkIfErrorsInStepData(stepData: BundleStepProduct): error[] {
@@ -43,8 +47,8 @@ class BundleBuilderProductStepService extends BundleBuilderStepTypeService {
         return updatedStep;
     }
 
-    public async addNewStep(bundleId: number, stepDescription: string, stepNumber: number, newStepTitle: string): Promise<BundleStepProduct> {
-        const newStep: BundleStepProduct = await bundleBuilderProductStepRepository.addNewStep(bundleId, stepDescription, stepNumber, newStepTitle);
+    public async addNewStep(bundleId: number, stepData: ProductStepDataDto): Promise<BundleStepProduct> {
+        const newStep: BundleStepProduct = await bundleBuilderProductStepRepository.addNewStep(bundleId, stepData);
         return newStep;
     }
 
@@ -55,12 +59,23 @@ class BundleBuilderProductStepService extends BundleBuilderStepTypeService {
             throw new Error("Step not found");
         }
 
-        const newStep: BundleStepProduct = await bundleBuilderProductStepRepository.addNewStep(
-            bundleId,
-            stepToDuplicate.description,
-            stepToDuplicate.stepNumber + 1,
-            stepToDuplicate.title,
-        );
+        const numOfSteps = await bundleBuilderStepRepository.getNumberOfSteps(bundleId);
+
+        const stepData: ProductStepDataDto = {
+            description: stepToDuplicate.description,
+            title: stepToDuplicate.title,
+            stepNumber: numOfSteps + 1,
+            stepType: stepToDuplicate.stepType,
+            productInput: {
+                minProductsOnStep: stepToDuplicate.productInput?.minProductsOnStep || 1,
+                maxProductsOnStep: stepToDuplicate.productInput?.maxProductsOnStep || 1,
+                allowProductDuplicates: stepToDuplicate.productInput?.allowProductDuplicates || false,
+                showProductPrice: stepToDuplicate.productInput?.showProductPrice || true,
+                products: stepToDuplicate.productInput?.products || [],
+            },
+        };
+
+        const newStep: BundleStepProduct = await bundleBuilderProductStepRepository.addNewStep(bundleId, stepData);
 
         await bundleBuilderStepsService.incrementStepNumberForStepsGreater(bundleId, stepToDuplicate.stepNumber + 1);
 

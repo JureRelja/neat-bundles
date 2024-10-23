@@ -6,17 +6,22 @@ import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, ButtonGro
 import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from "../../constants";
-import db from "../../db.server";
-import { ContentInput } from "@prisma/client";
-import { BundleStepContent } from "~/adminBackend/service/dto/BundleStep";
+import { BundleStep, ContentInput, StepType } from "@prisma/client";
+import { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
 import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
 import ContentStepInputs from "~/components/contentStepInputs";
-
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import bundleBuilderContentStepRepository from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderContentStepRepository";
+import { bundleBuilderContentStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderContentStepService";
+import { bundleBuilderProductStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderProductStepService";
+import { bundleBuilderStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderStepService";
+import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
+import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
+
+    console.log("I'm on stepnum.content loader");
 
     const stepData: BundleStepContent | null = await bundleBuilderContentStepRepository.getStepByBundleIdAndStepNumber(Number(params.bundleid), Number(params.stepnum));
 
@@ -41,7 +46,59 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const formData = await request.formData();
     const action = formData.get("action") as string;
 
+    console.log("I'm on stepnum.content", action);
+
     switch (action) {
+        //Updating the step
+        case "updateStep": {
+            const stepData: BundleStep | BundleStepProduct | BundleStepContent = JSON.parse(formData.get("stepData") as string);
+
+            const errors: error[] = [];
+
+            const basicErrors = bundleBuilderStepService.checkIfErrorsInStepData(stepData);
+            errors.push(...basicErrors);
+
+            const stepSpecificErrors = bundleBuilderContentStepService.checkIfErrorsInStepData(stepData as BundleStepContent);
+            errors.push(...stepSpecificErrors);
+
+            if (errors.length > 0) {
+                return json(
+                    {
+                        ...new JsonData(false, "error", "There was an error with your request", errors, stepData),
+                    },
+                    { status: 400 },
+                );
+            }
+
+            try {
+                await bundleBuilderContentStepService.updateStep(stepData as BundleStepContent);
+
+                // Clear the cache for the bundle
+                const cacheKeyService = new ApiCacheKeyService(session.shop);
+
+                await Promise.all([
+                    ApiCacheService.singleKeyDelete(cacheKeyService.getStepKey(stepData.stepNumber.toString(), params.bundleid as string)),
+                    ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
+                ]);
+
+                return json(
+                    {
+                        ...new JsonData(true, "success", "Step succesfully updated", errors, stepData),
+                    },
+                    { status: 400 },
+                );
+
+                // return redirect(`/app/edit-bundle-builder/${params.bundleid}/builder/steps/${params.stepnum}/${stepData.stepType === StepType.PRODUCT ? "product" : "content"}`);
+            } catch (error) {
+                console.log(error);
+                return json(
+                    {
+                        ...new JsonData(false, "error", "There was an error with your request"),
+                    },
+                    { status: 400 },
+                );
+            }
+        }
         default:
             return json(
                 {

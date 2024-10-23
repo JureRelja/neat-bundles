@@ -34,10 +34,13 @@ export class BundleBuilderStepRepository {
         return steps;
     }
 
-    public async getStepByBundleIdAndStepNumber(bundleId: number, stepNumber: number): Promise<BundleStep | null> {
+    public async getStepByBundleIdAndStepNumber(bundleId: number, stepNumber: number, storeUrl: string): Promise<BundleStep | null> {
         const step: BundleStep | null = await db.bundleStep.findFirst({
             where: {
-                bundleBuilderId: bundleId,
+                bundleBuilder: {
+                    id: bundleId,
+                    storeUrl: storeUrl,
+                },
                 stepNumber: stepNumber,
             },
         });

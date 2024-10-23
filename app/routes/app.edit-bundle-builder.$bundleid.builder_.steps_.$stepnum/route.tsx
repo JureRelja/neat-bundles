@@ -18,9 +18,11 @@ import { bundleBuilderStepsService } from "~/adminBackend/service/impl/BundleBui
 import { GapBetweenSections } from "~/constants";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    await authenticate.admin(request);
+    const { admin, session } = await authenticate.admin(request);
 
-    const stepData: BundleStep | null = await bundleBuilderStepRepository.getStepByBundleIdAndStepNumber(Number(params.bundleid), Number(params.stepnum));
+    console.log("I'm on stepNum.product loader");
+
+    const stepData: BundleStep | null = await bundleBuilderStepRepository.getStepByBundleIdAndStepNumber(Number(params.bundleid), Number(params.stepnum), session.shop);
 
     if (!stepData) {
         throw new Response(null, {
@@ -44,7 +46,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const bundleId = params.bundleid;
     const stepNum = params.stepnum;
 
-    console.log("I'm on stepnum");
+    console.log("I'm on stepnum", action);
 
     if (!bundleId || !stepNum) {
         return json(
@@ -70,7 +72,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         //Deleting the step from the bundle
         case "deleteStep": {
             try {
-                const bundleStep = await bundleBuilderStepRepository.getStepByBundleIdAndStepNumber(Number(params.bundleid), Number(params.stepnum));
+                const bundleStep = await bundleBuilderStepRepository.getStepByBundleIdAndStepNumber(Number(params.bundleid), Number(params.stepnum), session.shop);
 
                 if (!bundleStep) {
                     throw new Error("Step not found");
@@ -115,7 +117,11 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             }
 
             try {
-                let stepToDuplicate: BundleStep | null = await bundleBuilderStepRepository.getStepByBundleIdAndStepNumber(Number(params.bundleid), Number(params.stepnum));
+                let stepToDuplicate: BundleStep | null = await bundleBuilderStepRepository.getStepByBundleIdAndStepNumber(
+                    Number(params.bundleid),
+                    Number(params.stepnum),
+                    session.shop,
+                );
 
                 if (!stepToDuplicate) {
                     return json(
@@ -134,9 +140,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                 //Creating a new step with the same data as the duplicated step
                 if (stepToDuplicate.stepType === StepType.PRODUCT) {
-                    bundleBuilderProductStepService.duplicateStep(Number(bundleId), stepToDuplicate.id);
+                    await bundleBuilderProductStepService.duplicateStep(Number(bundleId), stepToDuplicate.id);
                 } else if (stepToDuplicate.stepType === StepType.CONTENT) {
-                    bundleBuilderContentStepService.duplicateStep(Number(bundleId), stepToDuplicate.id);
+                    await bundleBuilderContentStepService.duplicateStep(Number(bundleId), stepToDuplicate.id);
                 }
 
                 // Clear the cache for the bundle
@@ -150,7 +156,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 return json({
                     ...new JsonData(true, "success", "Step was duplicated"),
                 });
-                // return redirect(`/app/edit-bundle-builder/${params.bundleid}/`);
+                // return redirect(`/app/edit-bundle-builder/${params.bundleid}/builder/steps`);
             } catch (error) {
                 console.log(error);
                 return json(
@@ -191,11 +197,11 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             try {
                 //Adding the products data to the step
                 if (stepData.stepType === StepType.PRODUCT) {
-                    bundleBuilderProductStepService.updateStep(stepData as BundleStepProduct);
+                    await bundleBuilderProductStepService.updateStep(stepData as BundleStepProduct);
                 }
                 //Adding the content inputs to the step
                 else if (stepData.stepType === StepType.CONTENT) {
-                    bundleBuilderContentStepService.updateStep(stepData as BundleStepContent);
+                    await bundleBuilderContentStepService.updateStep(stepData as BundleStepContent);
                 }
 
                 // Clear the cache for the bundle
@@ -206,7 +212,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
                 ]);
 
-                return redirect(`/app/edit-bundle-builder/${params.bundleid}/builder/steps`);
+                return redirect(`/app/edit-bundle-builder/${params.bundleid}/builder/steps/${params.stepnum}/${stepData.stepType === StepType.PRODUCT ? "product" : "content"}`);
             } catch (error) {
                 console.log(error);
                 return json(
@@ -251,7 +257,7 @@ export default function Index() {
                         onAction: async () => {
                             // Save or discard the changes before leaving the page
                             await shopify.saveBar.leaveConfirmation();
-                            navigate(-1);
+                            navigate(`/app/edit-bundle-builder/${params.bundleid}/builder/steps`);
                         },
                     }}
                     title={`Edit step: ${stepData.stepNumber}`}>

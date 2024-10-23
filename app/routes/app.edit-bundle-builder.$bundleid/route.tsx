@@ -20,6 +20,8 @@ import styles from "./route.module.css";
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
+    console.log("I'm on bundleID loader");
+
     const bundleBuilder = await db.bundleBuilder.findUnique({
         where: {
             id: Number(params.bundleid),
@@ -116,6 +118,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             await db.bundleBuilder.update({
                 where: {
                     id: Number(params.bundleid),
+                    storeUrl: session.shop,
                 },
                 data: {
                     discountValue: Number(discountValue),

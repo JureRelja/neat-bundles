@@ -37,6 +37,8 @@ import { BundleBuilderClient } from "~/frontend/types/BundleBuilderClient";
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
+    console.log("I'm on bundleId.builder, loader");
+
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
     if (!user) return redirect("/app");
@@ -66,6 +68,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
     const formData = await request.formData();
     const action = formData.get("action");
+
+    console.log("I'm on builder", action);
 
     return json(
         {
@@ -214,7 +218,7 @@ export default function Index() {
                         title={`${serverBundle.title}`}
                         subtitle="Edit bundle details and steps"
                         compactTitle>
-                        <Form method="POST" data-discard-confirmation data-save-bar action={`/app/edit-bundle-builder/2`}>
+                        <Form method="POST" data-discard-confirmation data-save-bar action={`/app/edit-bundle-builder/${params.bundleid}`}>
                             <BlockStack gap={GapBetweenSections}>
                                 <Layout>
                                     <Layout.Section>

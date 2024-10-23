@@ -38,9 +38,12 @@ import { useEffect, useState } from "react";
 import styles from "./route.module.css";
 import { ProductStepDataDto } from "~/adminBackend/service/dto/ProductStepDataDto";
 import { ContentStepDataDto } from "~/adminBackend/service/dto/ContentStepDataDto";
+import { bundleBuilderProductStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderProductStepService";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
+
+    console.log("I'm on steps loader");
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
@@ -71,14 +74,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             if (!canAddMoreSteps.ok) {
                 return json(canAddMoreSteps, { status: 400 });
             }
-            const numOfSteps = await bundleBuilderStepRepository.getNumberOfSteps(Number(params.bundleid));
 
             try {
                 const stepDataJson = formData.get("stepData") as string;
 
                 const productStepData: ProductStepDataDto = JSON.parse(stepDataJson as string);
 
-                const newStep: BundleStepProduct = await bundleBuilderProductStepRepository.addNewStep(Number(params.bundleid), { ...productStepData, stepNumber: numOfSteps + 1 });
+                const newStep: BundleStepProduct = await bundleBuilderProductStepService.addNewStep(Number(params.bundleid), productStepData);
 
                 if (!newStep) throw new Error("New step couldn't be created.");
 
@@ -95,7 +97,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     }
                 }
 
-                return redirect(`/app/edit-bundle-builder/${params.bundleid}/steps/${newStep.stepNumber}/product`);
+                return redirect(`/app/edit-bundle-builder/${params.bundleid}/builder/steps/${newStep.stepNumber}/product`);
             } catch (error) {
                 console.log(error);
                 return json(
@@ -119,14 +121,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             if (!canAddMoreSteps.ok) {
                 return json(canAddMoreSteps, { status: 400 });
             }
-            const numOfSteps = await bundleBuilderStepRepository.getNumberOfSteps(Number(params.bundleid));
 
             try {
                 const stepDataJson = formData.get("stepData") as string;
 
                 const contentStepData: ContentStepDataDto = JSON.parse(stepDataJson as string);
 
-                const newStep: BundleStepContent = await bundleBuilderContentStepRepository.addNewStep(Number(params.bundleid), { ...contentStepData, stepNumber: numOfSteps + 1 });
+                const newStep: BundleStepContent = await bundleBuilderContentStepRepository.addNewStep(Number(params.bundleid), contentStepData);
 
                 if (!newStep) throw new Error("New step couldn't be created.");
 
@@ -477,9 +478,30 @@ export default function Index({}) {
         if (!newStepTitle) return;
 
         const form = new FormData();
-        form.append("action", "addEmptyStep");
-        form.append("stepType", activeBtnOption);
-        form.append("stepTitle", newStepTitle);
+
+        if (activeBtnOption === "PRODUCT") {
+            const stepData = {
+                title: newStepTitle,
+                description: "",
+                stepNumber: bundleBuilderSteps.length + 1,
+                stepType: "PRODUCT",
+                productInput: {
+                    minProducts: 0,
+                    maxProducts: 0,
+                },
+            };
+            form.append("stepData", JSON.stringify(stepData));
+            form.append("action", "addProductStep");
+        } else {
+            const stepData = {
+                title: newStepTitle,
+                description: "",
+                stepNumber: bundleBuilderSteps.length + 1,
+                stepType: "CONTENT",
+            };
+            form.append("stepData", JSON.stringify(stepData));
+            form.append("action", "addContentStep");
+        }
 
         submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/builder/steps` });
 
@@ -628,7 +650,7 @@ export default function Index({}) {
                             </BlockStack>
                         </Box>
                         <TitleBar title="New step">
-                            <button variant="primary" onClick={addStepHandler} disabled={isLoading}>
+                            <button variant="primary" type="button" onClick={addStepHandler} disabled={isLoading}>
                                 Create
                             </button>
                         </TitleBar>
