@@ -8,7 +8,7 @@ import db from "../../db.server";
 import { BundleFullStepBasicClient, inclBundleFullStepsBasic } from "../../adminBackend/service/dto/Bundle";
 import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
 import { useNavigateSubmit } from "../../hooks/useNavigateSubmit";
-import { BundleBuilder, BundlePricing } from "@prisma/client";
+import { BundleBuilder, BundleDiscountType, BundlePricing } from "@prisma/client";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
 import { shopifyBundleBuilderProductRepository } from "~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository";
 import { ShopifyBundleBuilderPageRepository } from "~/adminBackend/repository/ShopifyBundleBuilderPageRepository";
@@ -16,6 +16,7 @@ import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyServ
 import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 import shopifyBundleBuilderPageRepositoryGraphql from "@adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql";
 import styles from "./route.module.css";
+import { DiscountType } from "@shopifyGraphql/graphql";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -105,6 +106,23 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
         case "updatedDiscount": {
             const url = new URL(request.url);
+
+            const discountType = formData.get("discountType");
+            const discountValue = formData.get("discountValue");
+
+            if (!discountType || !discountValue) {
+                throw Error("Discount type and value are required");
+            }
+
+            await db.bundleBuilder.update({
+                where: {
+                    id: Number(params.bundleid),
+                },
+                data: {
+                    discountValue: Number(discountValue),
+                    discountType: discountType as BundleDiscountType,
+                },
+            });
 
             try {
                 //redirect user to finish step if he is onboarding
