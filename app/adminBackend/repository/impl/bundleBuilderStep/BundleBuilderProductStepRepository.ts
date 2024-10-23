@@ -2,6 +2,8 @@ import { BundleBuilderStepTypeRepository } from "./BundleBuilderStepTypeReposito
 import { Product, StepType } from "@prisma/client";
 import { BundleStepProduct, selectBundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
 import db from "~/db.server";
+import { bundleBuilderProductInputRepository } from "./BundleBuilderProductInputRepository";
+import { ProductStepDataDto } from "~/adminBackend/service/dto/ProductStepDataDto";
 
 export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRepository {
     public async getStepById(stepId: number): Promise<BundleStepProduct | null> {
@@ -27,17 +29,27 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
         return step;
     }
 
-    public async addNewStep(bundleId: number, stepDescription: string, stepNumber: number, newStepTitle: string): Promise<BundleStepProduct> {
+    public async addNewStep(bundleId: number, stepData: ProductStepDataDto): Promise<BundleStepProduct> {
         const newStep: BundleStepProduct = await db.bundleStep.create({
             data: {
                 bundleBuilderId: bundleId,
-                stepNumber: stepNumber,
+                stepNumber: stepData.stepNumber,
                 stepType: StepType.PRODUCT,
-                title: newStepTitle,
-                description: stepDescription,
+                title: stepData.title,
+                description: stepData.description,
+                productInput: {
+                    create: {
+                        minProductsOnStep: stepData.productInput?.minProductsOnStep || 1,
+                        maxProductsOnStep: stepData.productInput?.maxProductsOnStep || 3,
+                        allowProductDuplicates: false,
+                        showProductPrice: true,
+                    },
+                },
             },
             include: selectBundleStepProduct,
         });
+
+        await bundleBuilderProductInputRepository.updateSelectedProducts(newStep.id, stepData.productInput?.products || []);
 
         if (!newStep) throw new Error("Failed to create new step");
 
@@ -58,25 +70,13 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
                         maxProductsOnStep: stepData.productInput?.maxProductsOnStep,
                         allowProductDuplicates: stepData.productInput?.allowProductDuplicates,
                         showProductPrice: stepData.productInput?.showProductPrice,
-                        products: {
-                            set: [],
-                            connectOrCreate: stepData.productInput?.products.map((product: Product) => {
-                                return {
-                                    where: {
-                                        shopifyProductId: product.shopifyProductId,
-                                    },
-                                    create: {
-                                        shopifyProductId: product.shopifyProductId,
-                                        shopifyProductHandle: product.shopifyProductHandle,
-                                    },
-                                };
-                            }),
-                        },
                     },
                 },
             },
             include: selectBundleStepProduct,
         });
+
+        await bundleBuilderProductInputRepository.updateSelectedProducts(updatedStep.id, stepData.productInput?.products || []);
 
         return updatedStep;
     }

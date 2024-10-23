@@ -2,6 +2,7 @@ import { BundleStep, StepType } from "@prisma/client";
 import { BundleBuilderStepTypeRepository } from "./BundleBuilderStepTypeRepository";
 import db from "~/db.server";
 import { BundleStepContent, selectBundleStepContent } from "~/adminBackend/service/dto/BundleStep";
+import { ContentStepDataDto } from "~/adminBackend/service/dto/ContentStepDataDto";
 
 class BundleBuilderContentStepRepository extends BundleBuilderStepTypeRepository {
     public async getStepById(stepId: number): Promise<BundleStepContent | null> {
@@ -15,14 +16,14 @@ class BundleBuilderContentStepRepository extends BundleBuilderStepTypeRepository
         return step;
     }
 
-    public async addNewStep(bundleId: number, stepDescription: string, stepNumber: number, newStepTitle: string): Promise<BundleStepContent> {
+    public async addNewStep(bundleId: number, stepData: ContentStepDataDto): Promise<BundleStepContent> {
         const newStep: BundleStepContent = await db.bundleStep.create({
             data: {
                 bundleBuilderId: bundleId,
-                stepNumber: stepNumber,
+                stepNumber: stepData.stepNumber,
                 stepType: StepType.CONTENT,
-                title: newStepTitle,
-                description: stepDescription,
+                title: stepData.title,
+                description: stepData.description,
             },
             include: selectBundleStepContent,
         });

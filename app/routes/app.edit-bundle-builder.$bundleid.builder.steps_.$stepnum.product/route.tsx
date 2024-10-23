@@ -14,6 +14,7 @@ import ResourcePicker from "~/components/resourcePicer";
 import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
 import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
+import { bundleBuilderProductInputRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderProductInputRepository";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
@@ -48,37 +49,19 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const action = formData.get("action") as string;
 
     const bundleId = params.bundleid;
-    const stepNum = params.stepnum;
+
+    if (!bundleId) {
+        throw new Response(null, {
+            status: 404,
+            statusText: "Bundle id and step number are required",
+        });
+    }
 
     switch (action) {
         case "updateSelectedProducts": {
             const selectedProducts: { stepId: number; selectedProducts: Product[] } = JSON.parse(formData.get("selectedProducts") as string);
 
-            await db.bundleStep.update({
-                where: {
-                    id: selectedProducts.stepId,
-                },
-                data: {
-                    productInput: {
-                        update: {
-                            products: {
-                                set: [],
-                                connectOrCreate: selectedProducts.selectedProducts.map((product: Product) => {
-                                    return {
-                                        where: {
-                                            shopifyProductId: product.shopifyProductId,
-                                        },
-                                        create: {
-                                            shopifyProductId: product.shopifyProductId,
-                                            shopifyProductHandle: product.shopifyProductHandle,
-                                        },
-                                    };
-                                }),
-                            },
-                        },
-                    },
-                },
-            });
+            await bundleBuilderProductInputRepository.updateSelectedProducts(selectedProducts.stepId, selectedProducts.selectedProducts);
 
             // Clear the cache for the step
             const cacheKeyService = new ApiCacheKeyService(session.shop);

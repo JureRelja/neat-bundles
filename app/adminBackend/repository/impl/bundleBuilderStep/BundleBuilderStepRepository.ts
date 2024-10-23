@@ -1,4 +1,4 @@
-import { BundleStep } from "@prisma/client";
+import { BundleStep, StepType } from "@prisma/client";
 import { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
 
 import db from "~/db.server";
@@ -43,6 +43,22 @@ export class BundleBuilderStepRepository {
         });
 
         return step;
+    }
+
+    public async addNewEmptyStep(bundleId: number, stepType: StepType, stepDescription: string, stepNumber: number, newStepTitle: string): Promise<BundleStep> {
+        const newStep: BundleStep = await db.bundleStep.create({
+            data: {
+                bundleBuilderId: bundleId,
+                stepNumber: stepNumber,
+                stepType: stepType,
+                title: newStepTitle,
+                description: stepDescription,
+            },
+        });
+
+        if (!newStep) throw new Error("Failed to create new step");
+
+        return newStep;
     }
 
     public async deleteStepByBundleBuilderIdAndStepNumber(bundleId: number, stepNumber: number): Promise<void> {
