@@ -60,6 +60,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const formData = await request.formData();
     const action = formData.get("action");
 
+    console.log("I'm on bundle", action);
+
     switch (action) {
         case "createBundle": {
             try {

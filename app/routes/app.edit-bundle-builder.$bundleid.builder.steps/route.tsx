@@ -16,10 +16,10 @@ import {
     Spinner,
 } from "@shopify/polaris";
 import { GapBetweenSections } from "../../constants";
-import { Product, StepType } from "@prisma/client";
+import { StepType } from "@prisma/client";
 import { json, redirect } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { useNavigation, useLoaderData, useNavigate, useParams, Link, useFetcher } from "@remix-run/react";
+import { useNavigation, useLoaderData, useNavigate, useParams, Link, useFetcher, useRevalidator, useSubmit } from "@remix-run/react";
 import { TitleBar, Modal, useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
 import db from "../../db.server";
@@ -34,7 +34,7 @@ import bundleBuilderContentStepRepository from "~/adminBackend/repository/impl/b
 import { bundleBuilderProductStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderProductStepRepository";
 import { bundleBuilderStepsService } from "~/adminBackend/service/impl/BundleBuilderStepsService";
 import { ArrowDownIcon, ArrowUpIcon, DeleteIcon, EditIcon, PageAddIcon, PlusIcon } from "@shopify/polaris-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./route.module.css";
 import { ProductStepDataDto } from "~/adminBackend/service/dto/ProductStepDataDto";
 import { ContentStepDataDto } from "~/adminBackend/service/dto/ContentStepDataDto";
@@ -48,13 +48,6 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 
     let allBundleSteps = await bundleBuilderStepRepository.getAllStepsForBundleId(Number(params.bundleid));
 
-    if (allBundleSteps.length === 0) {
-        throw new Response(null, {
-            status: 404,
-            statusText: "Not Found",
-        });
-    }
-
     return json(new JsonData(true, "success", "Bundle step succesfuly retrieved", [], { user, allBundleSteps }), { status: 200 });
 };
 
@@ -67,6 +60,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
     if (!user) return redirect("/app");
+
+    console.log("I'm on steps", action);
 
     switch (action) {
         //Adding a new step to the bundle
@@ -210,7 +205,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     }
                 }
 
-                return redirect(`/app/edit-bundle-builder/${params.bundleid}/steps/${newStep.stepNumber}/${newStep.stepType === "CONTENT" ? "content" : "product"}`);
+                return redirect(`${newStep.stepNumber}/${newStep.stepType === "CONTENT" ? "content" : "product"}`);
             } catch (error) {
                 console.log(error);
                 return json(
@@ -444,6 +439,8 @@ export default function Index({}) {
     const isLoading = nav.state != "idle";
     const params = useParams();
     const fetcher = useFetcher();
+    const submit = useSubmit();
+    const revalidator = useRevalidator();
 
     //user data from the loader
     const user = useLoaderData<typeof loader>().data.user;
@@ -469,6 +466,7 @@ export default function Index({}) {
     //Function for adding the step if there are less than 5 steps total
     const [newStepTitle, setNewStepTitle] = useState<string>();
     const [activeBtnOption, setActiveBtnOption] = useState<"PRODUCT" | "CONTENT">("PRODUCT");
+
     const addStep = async (): Promise<void> => {
         if (!checkStepCount()) return;
 
@@ -483,7 +481,7 @@ export default function Index({}) {
         form.append("stepType", activeBtnOption);
         form.append("stepTitle", newStepTitle);
 
-        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps` });
+        submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/builder/steps` });
 
         shopify.modal.hide("new-step-modal");
     };
@@ -495,7 +493,7 @@ export default function Index({}) {
         const form = new FormData();
         form.append("action", "duplicateStep");
 
-        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps/${stepNumber}` });
+        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/builder/steps/${stepNumber}` });
     };
 
     const handeleStepDelete = async (stepNumber: number): Promise<void> => {
@@ -504,7 +502,7 @@ export default function Index({}) {
         const form = new FormData();
         form.append("action", "deleteStep");
 
-        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps/${stepNumber}` });
+        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/builder/steps/${stepNumber}` });
     };
 
     //Rearanging the steps
@@ -514,7 +512,7 @@ export default function Index({}) {
         form.append("action", direction);
         form.append("stepId", stepId.toString());
 
-        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps` });
+        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/builder/steps` });
     };
 
     const handleNavigationOnUnsavedChanges = async (navPath: string): Promise<void> => {
@@ -522,6 +520,11 @@ export default function Index({}) {
 
         navigate(navPath);
     };
+
+    useEffect(() => {
+        revalidator.revalidate();
+    }, [fetcher.state]);
+
     return (
         <>
             {isLoading ? (
@@ -698,7 +701,7 @@ export default function Index({}) {
                                                         variant="primary"
                                                         onClick={handleNavigationOnUnsavedChanges.bind(
                                                             null,
-                                                            `/app/edit-bundle-builder/${params.bundleid}/steps/${step.stepNumber}`,
+                                                            `/app/edit-bundle-builder/${params.bundleid}/builder/steps/${step.stepNumber}/${step.stepType === StepType.PRODUCT ? "product" : "content"}`,
                                                         )}>
                                                         Edit
                                                     </Button>

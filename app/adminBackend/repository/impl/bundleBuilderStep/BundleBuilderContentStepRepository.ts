@@ -10,7 +10,9 @@ class BundleBuilderContentStepRepository extends BundleBuilderStepTypeRepository
             where: {
                 id: stepId,
             },
-            include: selectBundleStepContent,
+            include: {
+                contentInputs: true,
+            },
         });
 
         return step;
@@ -25,7 +27,9 @@ class BundleBuilderContentStepRepository extends BundleBuilderStepTypeRepository
                 title: stepData.title,
                 description: stepData.description,
             },
-            include: selectBundleStepContent,
+            include: {
+                contentInputs: true,
+            },
         });
 
         if (!newStep) throw new Error("Failed to create new step");
@@ -39,7 +43,9 @@ class BundleBuilderContentStepRepository extends BundleBuilderStepTypeRepository
                 bundleBuilderId: bundleId,
                 stepNumber: stepNumber,
             },
-            include: selectBundleStepContent,
+            include: {
+                contentInputs: true,
+            },
         });
 
         return step;
@@ -54,7 +60,9 @@ class BundleBuilderContentStepRepository extends BundleBuilderStepTypeRepository
                 title: stepData.title,
                 description: stepData.description,
             },
-            include: selectBundleStepContent,
+            include: {
+                contentInputs: true,
+            },
         });
 
         return updatedStep;

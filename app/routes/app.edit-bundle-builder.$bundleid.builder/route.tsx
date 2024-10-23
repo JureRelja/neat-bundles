@@ -44,6 +44,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const bundleBuilder: BundleBuilder | null = await db.bundleBuilder.findUnique({
         where: {
             id: Number(params.bundleid),
+            deleted: false,
         },
     });
 

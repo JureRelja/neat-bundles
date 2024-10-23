@@ -44,6 +44,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const bundleId = params.bundleid;
     const stepNum = params.stepnum;
 
+    console.log("I'm on stepnum");
+
     if (!bundleId || !stepNum) {
         return json(
             {
@@ -74,8 +76,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     throw new Error("Step not found");
                 }
 
-                await bundleBuilderStepRepository.deleteStepByBundleBuilderIdAndStepNumber(Number(params.stepnum), Number(params.bundleid));
+                await bundleBuilderStepRepository.deleteStepByBundleBuilderIdAndStepNumber(Number(params.bundleid), Number(params.stepnum));
             } catch (error) {
+                console.log(error);
                 return json(
                     {
                         ...new JsonData(false, "error", "There was an error with trying to delete the step"),
@@ -87,7 +90,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             const url = new URL(request.url);
 
             if (url.searchParams.has("redirect") && url.searchParams.get("redirect") === "true") {
-                return redirect(`/app/edit-bundle-builder/${params.bundleid}`);
+                return redirect(`/app/edit-bundle-builder/${params.bundleid}/builder/steps`);
             }
 
             // Clear the cache for the bundle
@@ -203,7 +206,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
                 ]);
 
-                return redirect(`/app/edit-bundle-builder/${params.bundleid}`);
+                return redirect(`/app/edit-bundle-builder/${params.bundleid}/builder/steps`);
             } catch (error) {
                 console.log(error);
                 return json(
@@ -248,7 +251,7 @@ export default function Index() {
                         onAction: async () => {
                             // Save or discard the changes before leaving the page
                             await shopify.saveBar.leaveConfirmation();
-                            navigate(`/app/edit-bundle-builder/${params.bundleid}`);
+                            navigate(-1);
                         },
                     }}
                     title={`Edit step: ${stepData.stepNumber}`}>

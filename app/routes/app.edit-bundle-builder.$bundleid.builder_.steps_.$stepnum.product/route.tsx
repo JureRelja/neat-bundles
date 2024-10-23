@@ -2,30 +2,24 @@ import { json, redirect } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useNavigation, useLoaderData, useParams, useActionData } from "@remix-run/react";
 import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
-import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, InlineGrid, ButtonGroup, ChoiceList, Divider, InlineError, Layout } from "@shopify/polaris";
+import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, InlineGrid, ButtonGroup, ChoiceList, InlineError, Layout } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, HorizontalGap } from "../../constants";
-import db from "../../db.server";
 import { Product } from "@prisma/client";
-import { BundleStepProduct, selectBundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
+import { BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
 import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
 import ResourcePicker from "~/components/resourcePicer";
 import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
 import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { bundleBuilderProductInputRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderProductInputRepository";
+import { bundleBuilderProductStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderProductStepRepository";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
 
-    const stepData: BundleStepProduct | null = await db.bundleStep.findFirst({
-        where: {
-            bundleBuilderId: Number(params.bundleid),
-            stepNumber: Number(params.stepnum),
-        },
-        include: selectBundleStepProduct,
-    });
+    const stepData: BundleStepProduct | null = await bundleBuilderProductStepRepository.getStepByBundleIdAndStepNumber(Number(params.bundleid), Number(params.stepnum));
 
     if (!stepData) {
         throw new Response(null, {
@@ -69,6 +63,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             ApiCacheService.singleKeyDelete(cacheKeyService.getStepKey(params.stepnum as string, params.bundleid as string));
 
             return json(new JsonData(true, "success", "Selected products were updated"));
+        }
+
+        case "updateProductStep": {
         }
 
         default:
@@ -141,7 +138,7 @@ export default function Index() {
             {isLoading || isSubmitting ? (
                 <SkeletonPage primaryAction fullWidth></SkeletonPage>
             ) : (
-                <Form method="POST" data-discard-confirmation data-save-bar>
+                <Form method="POST" data-discard-confirmation data-save-bar action={`/app/edit-bundle-builder/${params.bundleid}/builder/steps/${params.stepnum}`}>
                     <input type="hidden" name="action" defaultValue="updateStep" />
                     <input type="hidden" name="stepData" value={JSON.stringify(stepData)} />
                     <BlockStack gap={GapBetweenSections}>

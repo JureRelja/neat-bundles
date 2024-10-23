@@ -1,11 +1,11 @@
 import { json, redirect } from "@remix-run/node";
 import { useNavigate, useNavigation, useLoaderData, Outlet } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Card, BlockStack, Text, SkeletonPage, SkeletonBodyText, InlineStack, Badge, Divider } from "@shopify/polaris";
+import { Card, BlockStack, Text, SkeletonPage, SkeletonBodyText, InlineStack, Badge } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
-import { GapBetweenTitleAndContent, GapInsideSection } from "../../constants";
+import { GapBetweenTitleAndContent } from "../../constants";
 import db from "../../db.server";
-import { BundleFullStepBasicClient, inclBundleFullStepsBasic } from "../../adminBackend/service/dto/Bundle";
+import { inclBundleFullStepsBasic } from "../../adminBackend/service/dto/Bundle";
 import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
 import { useNavigateSubmit } from "../../hooks/useNavigateSubmit";
 import { BundleBuilder, BundleDiscountType, BundlePricing } from "@prisma/client";
@@ -16,7 +16,6 @@ import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyServ
 import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 import shopifyBundleBuilderPageRepositoryGraphql from "@adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql";
 import styles from "./route.module.css";
-import { DiscountType } from "@shopifyGraphql/graphql";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -24,9 +23,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const bundleBuilder = await db.bundleBuilder.findUnique({
         where: {
             id: Number(params.bundleid),
-        },
-        include: {
-            ...inclBundleFullStepsBasic,
+            deleted: false,
         },
     });
 
@@ -45,6 +42,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
     const formData = await request.formData();
     const action = formData.get("action");
+
+    console.log("I'm on bundleID", action);
 
     switch (action) {
         case "deleteBundle": {
@@ -204,9 +203,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     return redirect("/app");
                 }
 
-                return json({ ...new JsonData(true, "success", "Bundle updated") }, { status: 200 });
+                console.log(params, formData);
 
-                //return redirect(`/app`);
+                return redirect(`/app/edit-bundle-builder/${params.bundleid}/builder/steps`);
             } catch (error) {
                 console.log(error);
 

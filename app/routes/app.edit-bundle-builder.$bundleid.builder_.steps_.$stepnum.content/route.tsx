@@ -8,22 +8,17 @@ import { useEffect, useState } from "react";
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from "../../constants";
 import db from "../../db.server";
 import { ContentInput } from "@prisma/client";
-import { BundleStepContent, selectBundleStepContent } from "~/adminBackend/service/dto/BundleStep";
+import { BundleStepContent } from "~/adminBackend/service/dto/BundleStep";
 import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
 import ContentStepInputs from "~/components/contentStepInputs";
 
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
+import bundleBuilderContentStepRepository from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderContentStepRepository";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
 
-    const stepData: BundleStepContent | null = await db.bundleStep.findFirst({
-        where: {
-            bundleBuilderId: Number(params.bundleid),
-            stepNumber: Number(params.stepnum),
-        },
-        include: selectBundleStepContent,
-    });
+    const stepData: BundleStepContent | null = await bundleBuilderContentStepRepository.getStepByBundleIdAndStepNumber(Number(params.bundleid), Number(params.stepnum));
 
     if (!stepData) {
         throw new Response(null, {

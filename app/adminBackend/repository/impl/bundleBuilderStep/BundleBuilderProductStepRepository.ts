@@ -11,7 +11,13 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
             where: {
                 id: stepId,
             },
-            include: selectBundleStepProduct,
+            include: {
+                productInput: {
+                    include: {
+                        products: true,
+                    },
+                },
+            },
         });
 
         return step;
@@ -23,7 +29,13 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
                 bundleBuilderId: bundleId,
                 stepNumber: stepNumber,
             },
-            include: selectBundleStepProduct,
+            include: {
+                productInput: {
+                    include: {
+                        products: true,
+                    },
+                },
+            },
         });
 
         return step;
