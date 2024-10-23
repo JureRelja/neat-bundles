@@ -113,15 +113,9 @@ export default function Index() {
             <BlockStack gap={"1000"} inlineAlign="center">
                 {/*  */}
                 <BlockStack gap={GapInsideSection}>
-                    {loaderData.data.multiStep ? (
-                        <Text as={"p"} variant="headingLg" alignment="center">
-                            Enter the title for the first step
-                        </Text>
-                    ) : (
-                        <Text as={"p"} variant="headingLg" alignment="center">
-                            Enter the title for this step
-                        </Text>
-                    )}
+                    <Text as={"p"} variant="headingLg" alignment="center">
+                        Enter the title for the second step
+                    </Text>
 
                     <TextField
                         label="Step title"
