@@ -1,18 +1,19 @@
 import { json, redirect } from "@remix-run/node";
-import { useFetcher, useLoaderData, useNavigate, useNavigation, useParams } from "@remix-run/react";
+import { Form, useFetcher, useLoaderData, useNavigate, useNavigation, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { BlockStack, Text, Button, InlineError, Box, InlineGrid, TextField } from "@shopify/polaris";
+import { BlockStack, Text, Button, InlineError, Box, InlineGrid, TextField, Divider } from "@shopify/polaris";
+import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
-import { JsonData } from "../../adminBackend/service/dto/jsonData";
+import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
-import userRepository from "@adminBackend/repository/impl/UserRepository";
+import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
 import { BundleBuilder } from "@prisma/client";
 import { useState } from "react";
-import ResourcePicker from "../../components/resourcePicer";
-import { GapInsideSection, HorizontalGap } from "../../constants";
+import ResourcePicker from "~/components/resourcePicer";
+import { GapInsideSection, HorizontalGap } from "~/constants";
 import { Product } from "@prisma/client";
-import WideButton from "../../components/wideButton";
+import WideButton from "~/components/wideButton";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -37,7 +38,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         });
     }
 
-    return json(new JsonData(true, "success", "Loader response", [], bundleBuilder), { status: 200 });
+    const url = new URL(request.url);
+    const multiStep = url.searchParams.get("multiStep") === "true";
+
+    return json(new JsonData(true, "success", "Loader response", [], { bundleBuilder, multiStep }), { status: 200 });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -81,18 +85,18 @@ export default function Index() {
         const stepData = {
             title: stepTitle,
             description: "",
-            stepType: "CONTENT",
-            contentInput: [
-                {
-                    inputLabel: "Content",
-                },
-            ],
+            stepType: "PRODUCT",
+            productInput: {
+                minProducts: minProducts,
+                maxProducts: maxProducts,
+                products: stepProducts,
+            },
         };
 
         form.append("stepData", JSON.stringify(stepData));
         form.append("action", "addProductStep");
 
-        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps?onboarding=true&stepNumber=4` });
+        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps?stepNumber=2&onboarding=true&multiStep=${loaderData.data.multiStep}` });
     };
 
     //step data

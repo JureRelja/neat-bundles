@@ -103,6 +103,19 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             }
         }
 
+        case "updatedDiscount": {
+            const url = new URL(request.url);
+
+            try {
+                //redirect user to finish step if he is onboarding
+                if (url.searchParams.get("onboarding") === "true" && url.searchParams.get("stepNumber") === "5") {
+                    return redirect(`/app/create-bundle-builder/${params.bundleid}/step-6`);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
         //Update the bundle
         case "updateBundle":
             const bundleData: BundleBuilder = JSON.parse(formData.get("bundle") as string);

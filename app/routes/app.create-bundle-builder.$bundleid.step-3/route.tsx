@@ -59,25 +59,22 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
-    const nav = useNavigation();
-    const navigate = useNavigate();
-    const isLoading: boolean = nav.state === "loading";
-    const isSubmitting: boolean = nav.state === "submitting";
     const fetcher = useFetcher();
     const params = useParams();
 
     const loaderData = useLoaderData<typeof loader>();
 
-    const bundleBuilder = loaderData.data.bundleBuilder;
-
     const handleNextBtnHandler = () => {
         const form = new FormData();
 
         form.append("action", "addStep");
-        form.append("stepType", "PRODUCT");
+        form.append("stepType", activeBtnOption);
         form.append("stepTitle", stepTitle);
 
-        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps?onboarding=true` });
+        fetcher.submit(form, {
+            method: "POST",
+            action: `/app/edit-bundle-builder/${params.bundleid}/steps?stepNumber=3&onboarding=true&nextStepContent=${activeBtnOption === "CONTENT" ? "true" : "false"}`,
+        });
     };
 
     //step data

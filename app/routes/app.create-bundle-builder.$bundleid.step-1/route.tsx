@@ -61,7 +61,7 @@ export default function Index() {
     const [activeBtnOption, setActiveBtnOption] = useState<"singleStep" | "multiStep">("multiStep");
 
     const handleNextBtnHandler = () => {
-        navigate(`/app/create-bundle-builder/${params.bundleid}/step-2-product?multiStep=${activeBtnOption === "multiStep" ? "true" : "false"}`);
+        navigate(`/app/create-bundle-builder/${params.bundleid}/step-2-product?onboarding=true&stepNumber=1&multiStep=${activeBtnOption === "multiStep" ? "true" : "false"}`);
     };
 
     return (

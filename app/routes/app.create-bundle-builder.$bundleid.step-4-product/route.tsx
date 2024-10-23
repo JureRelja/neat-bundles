@@ -1,10 +1,9 @@
 import { json, redirect } from "@remix-run/node";
-import { Form, useFetcher, useLoaderData, useNavigate, useNavigation, useParams } from "@remix-run/react";
+import { useFetcher, useLoaderData, useNavigate, useNavigation, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { BlockStack, Text, Button, InlineError, Box, InlineGrid, TextField, Divider } from "@shopify/polaris";
-import { useAppBridge } from "@shopify/app-bridge-react";
+import { BlockStack, Text, InlineError, Box, InlineGrid, TextField } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
-import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
+import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
@@ -38,10 +37,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         });
     }
 
-    const url = new URL(request.url);
-    const multiStep = url.searchParams.get("multiStep") === "true";
-
-    return json(new JsonData(true, "success", "Loader response", [], { bundleBuilder, multiStep }), { status: 200 });
+    return json(new JsonData(true, "success", "Loader response", [], bundleBuilder), { status: 200 });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -82,14 +78,21 @@ export default function Index() {
 
         const form = new FormData();
 
-        form.append("action", "addStep");
-        form.append("stepType", "PRODUCT");
-        form.append("stepTitle", stepTitle);
-        form.append("minProducts", minProducts.toString());
-        form.append("maxProducts", maxProducts.toString());
-        form.append("products", JSON.stringify(stepProducts));
+        const stepData = {
+            title: stepTitle,
+            description: "",
+            stepType: "PRODUCT",
+            productInput: {
+                minProducts: minProducts,
+                maxProducts: maxProducts,
+                products: stepProducts,
+            },
+        };
 
-        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps?onboarding=true&multiStep=true` });
+        form.append("stepData", JSON.stringify(stepData));
+        form.append("action", "addProductStep");
+
+        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps?stepNumber=4&onboarding=true` });
     };
 
     //step data
