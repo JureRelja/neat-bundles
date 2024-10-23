@@ -52,16 +52,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
-    const nav = useNavigation();
     const navigate = useNavigate();
-    const isLoading: boolean = nav.state === "loading";
-    const isSubmitting: boolean = nav.state === "submitting";
     const params = useParams();
 
     const [activeBtnOption, setActiveBtnOption] = useState<"singleStep" | "multiStep">("multiStep");
 
     const handleNextBtnHandler = () => {
-        navigate(`/app/create-bundle-builder/${params.bundleid}/step-2-product?onboarding=true&stepNumber=1&multiStep=${activeBtnOption === "multiStep" ? "true" : "false"}`);
+        navigate(`/app/create-bundle-builder/${params.bundleid}/step-2?onboarding=true&stepNumber=1&multiStep=${activeBtnOption === "multiStep" ? "true" : "false"}`);
     };
 
     return (

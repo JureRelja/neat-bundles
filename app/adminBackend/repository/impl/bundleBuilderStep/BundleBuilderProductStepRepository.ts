@@ -46,7 +46,13 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
                     },
                 },
             },
-            include: selectBundleStepProduct,
+            include: {
+                productInput: {
+                    include: {
+                        products: true,
+                    },
+                },
+            },
         });
 
         await bundleBuilderProductInputRepository.updateSelectedProducts(newStep.id, stepData.productInput?.products || []);
@@ -73,7 +79,13 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
                     },
                 },
             },
-            include: selectBundleStepProduct,
+            include: {
+                productInput: {
+                    include: {
+                        products: true,
+                    },
+                },
+            },
         });
 
         await bundleBuilderProductInputRepository.updateSelectedProducts(updatedStep.id, stepData.productInput?.products || []);

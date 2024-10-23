@@ -98,12 +98,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     if (url.searchParams.get("stepNumber") === "2" && url.searchParams.get("multiStep") === "true") {
                         return redirect(`/app/create-bundle-builder/${params.bundleid}/step-3`);
                     }
-
-                    if (url.searchParams.get("nextStepContent") === "true") {
-                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-4-content`);
-                    } else if (url.searchParams.get("nextStepContent") === "false") {
-                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-4-product`);
-                    }
                 }
 
                 return redirect(`/app/edit-bundle-builder/${params.bundleid}/steps/${newStep.stepNumber}/product`);
@@ -151,12 +145,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 if (url.searchParams.get("onboarding") === "true") {
                     if (url.searchParams.get("stepNumber") === "2" && url.searchParams.get("multiStep") === "true") {
                         return redirect(`/app/create-bundle-builder/${params.bundleid}/step-3`);
-                    }
-
-                    if (url.searchParams.get("nextStepContent") === "true") {
-                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-4-content`);
-                    } else if (url.searchParams.get("nextStepContent") === "false") {
-                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-4-product`);
                     }
                 }
 
@@ -215,12 +203,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 if (url.searchParams.get("onboarding") === "true") {
                     if (url.searchParams.get("stepNumber") === "2" && url.searchParams.get("multiStep") === "true") {
                         return redirect(`/app/create-bundle-builder/${params.bundleid}/step-3`);
-                    }
-
-                    if (url.searchParams.get("nextStepContent") === "true") {
-                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-4-content`);
-                    } else if (url.searchParams.get("nextStepContent") === "false") {
-                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-4-product`);
                     }
 
                     if (url.searchParams.get("stepNumber") === "5") {

@@ -1,5 +1,5 @@
 import { json, redirect } from "@remix-run/node";
-import { Form, useFetcher, useLoaderData, useNavigate, useNavigation, useParams } from "@remix-run/react";
+import { Form, useFetcher, useLoaderData, useNavigate, useNavigation, useParams, useSubmit } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { BlockStack, Text, Button, InlineError, Box, InlineGrid, TextField, Divider } from "@shopify/polaris";
 import { useAppBridge } from "@shopify/app-bridge-react";
@@ -59,7 +59,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
-    const fetcher = useFetcher();
+    const submit = useSubmit();
     const params = useParams();
 
     const loaderData = useLoaderData<typeof loader>();
@@ -85,6 +85,7 @@ export default function Index() {
         const stepData = {
             title: stepTitle,
             description: "",
+            stepNumber: 1,
             stepType: "PRODUCT",
             productInput: {
                 minProducts: minProducts,
@@ -96,7 +97,11 @@ export default function Index() {
         form.append("stepData", JSON.stringify(stepData));
         form.append("action", "addProductStep");
 
-        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps?stepNumber=2&onboarding=true&multiStep=${loaderData.data.multiStep}` });
+        submit(form, {
+            method: "POST",
+            action: `/app/edit-bundle-builder/${params.bundleid}/builder/steps?stepNumber=2&onboarding=true&multiStep=${loaderData.data.multiStep}`,
+            navigate: true,
+        });
     };
 
     //step data

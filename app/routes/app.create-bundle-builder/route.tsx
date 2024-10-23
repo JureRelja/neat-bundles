@@ -1,27 +1,27 @@
-import { json, redirect } from '@remix-run/node';
-import { Link, Outlet, useFetcher, useLoaderData, useNavigate, useNavigation, useParams, useSubmit } from '@remix-run/react';
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Page, Card, BlockStack, SkeletonPage, SkeletonBodyText, FooterHelp, Divider, Spinner } from '@shopify/polaris';
-import { useAppBridge } from '@shopify/app-bridge-react';
-import { authenticate } from '../../shopify.server';
-import { JsonData } from '../../adminBackend/service/dto/jsonData';
-import styles from './route.module.css';
-import userRepository from '~/adminBackend/repository/impl/UserRepository';
-import { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
-import { BundleBuilder } from '@prisma/client';
-import { GapBetweenSections } from '~/constants';
+import { json, redirect } from "@remix-run/node";
+import { Link, Outlet, useFetcher, useLoaderData, useNavigate, useNavigation, useParams, useSubmit } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { Page, Card, BlockStack, SkeletonPage, SkeletonBodyText, FooterHelp, Divider, Spinner } from "@shopify/polaris";
+import { useAppBridge } from "@shopify/app-bridge-react";
+import { authenticate } from "../../shopify.server";
+import { JsonData } from "../../adminBackend/service/dto/jsonData";
+import styles from "./route.module.css";
+import userRepository from "~/adminBackend/repository/impl/UserRepository";
+import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
+import { BundleBuilder } from "@prisma/client";
+import { GapBetweenSections } from "~/constants";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
-    if (!user) return redirect('/app');
+    if (!user) return redirect("/app");
 
     if (!params.bundleid) {
         throw new Response(null, {
             status: 404,
-            statusText: 'Bundle id is required',
+            statusText: "Bundle id is required",
         });
     }
 
@@ -30,22 +30,22 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     if (!bundleBuilder) {
         throw new Response(null, {
             status: 404,
-            statusText: 'Bundle with this id not found',
+            statusText: "Bundle with this id not found",
         });
     }
 
-    return json(new JsonData(true, 'success', 'Loader response', [], bundleBuilder), { status: 200 });
+    return json(new JsonData(true, "success", "Loader response", [], bundleBuilder), { status: 200 });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
     const formData = await request.formData();
-    const action = formData.get('action');
+    const action = formData.get("action");
 
     return json(
         {
-            ...new JsonData(true, 'success', "This is the default action that doesn't do anything."),
+            ...new JsonData(true, "success", "This is the default action that doesn't do anything."),
         },
         { status: 200 },
     );
@@ -53,16 +53,15 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
 export default function Index() {
     const nav = useNavigation();
-    const isLoading: boolean = nav.state != 'idle';
+    const isLoading: boolean = nav.state != "idle";
     const loaderData = useLoaderData<typeof loader>();
-    const params = useParams();
 
     const bundleBuilder = loaderData.data;
 
     return (
         <Page title={bundleBuilder.title}>
             <div className={styles.cardWrapper}>
-                <Card padding={'600'}>
+                <Card padding={"600"}>
                     <BlockStack gap={GapBetweenSections}>
                         <div id={styles.tableWrapper}>
                             <div className={isLoading ? styles.loadingTable : styles.hide}>

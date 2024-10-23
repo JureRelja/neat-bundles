@@ -1,18 +1,15 @@
 import { json, redirect } from "@remix-run/node";
-import { Form, useFetcher, useLoaderData, useNavigate, useNavigation, useParams } from "@remix-run/react";
+import { useNavigate, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { BlockStack, Text, Button, InlineError, Box, InlineGrid, TextField, Divider, ChoiceList, ButtonGroup } from "@shopify/polaris";
-import { useAppBridge } from "@shopify/app-bridge-react";
+import { BlockStack, Text, Button, ButtonGroup } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
-import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
+import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
 import { BundleBuilder, StepType } from "@prisma/client";
 import { useState } from "react";
-import ResourcePicker from "~/components/resourcePicer";
-import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, HorizontalGap } from "~/constants";
-import { Product } from "@prisma/client";
+import { GapInsideSection } from "~/constants";
 import WideButton from "~/components/wideButton";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
@@ -59,56 +56,26 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
-    const fetcher = useFetcher();
+    const navigate = useNavigate();
     const params = useParams();
 
-    const loaderData = useLoaderData<typeof loader>();
-
     const handleNextBtnHandler = () => {
-        const form = new FormData();
-
-        form.append("action", "addStep");
-        form.append("stepType", activeBtnOption);
-        form.append("stepTitle", stepTitle);
-
-        fetcher.submit(form, {
-            method: "POST",
-            action: `/app/edit-bundle-builder/${params.bundleid}/steps?stepNumber=3&onboarding=true&nextStepContent=${activeBtnOption === "CONTENT" ? "true" : "false"}`,
-        });
+        navigate(`/app/create-bundle-builder/${params.bundleid}/step-4-${activeBtnOption === "CONTENT" ? "content" : "product"}?stepNumber=3&onboarding=true`);
     };
 
     //step data
     const [activeBtnOption, setActiveBtnOption] = useState<"PRODUCT" | "CONTENT">("PRODUCT");
-    const [stepTitle, setStepTitle] = useState<string>("");
 
     return (
         <div className={styles.fadeIn}>
             <BlockStack gap={"1000"} inlineAlign="center">
                 {/*  */}
-                <BlockStack gap={GapInsideSection}>
-                    <Text as={"p"} variant="headingLg" alignment="center">
-                        Enter the title for the second step
-                    </Text>
 
-                    <TextField
-                        label="Step title"
-                        labelHidden
-                        error={stepTitle === "" ? "Step title is required" : ""}
-                        type="text"
-                        name={`stepTitle`}
-                        value={stepTitle}
-                        helpText="Customer will see this title when they build a bundle."
-                        onChange={(newTitle: string) => {
-                            setStepTitle(newTitle);
-                        }}
-                        autoComplete="off"
-                    />
-                </BlockStack>
+                <Text as={"p"} variant="headingLg" alignment="center">
+                    Select the type of the second step
+                </Text>
 
-                <BlockStack gap={GapBetweenSections} align="center" inlineAlign="center">
-                    <Text as="p" variant="headingSm">
-                        Select the type of step you want to create.
-                    </Text>
+                <BlockStack gap={GapInsideSection} inlineAlign="center">
                     <ButtonGroup variant="segmented">
                         <Button pressed={activeBtnOption === "PRODUCT"} size="large" onClick={() => setActiveBtnOption("PRODUCT")}>
                             Product selection
