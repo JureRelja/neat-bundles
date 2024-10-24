@@ -2,7 +2,7 @@ import { json, redirect } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useNavigation, useLoaderData, useParams, useActionData } from "@remix-run/react";
 import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
-import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, ButtonGroup, Layout, Banner } from "@shopify/polaris";
+import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, ButtonGroup, Layout, Banner, Divider } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, LargeGapBetweenSections } from "../../constants";
@@ -175,6 +175,34 @@ export default function Index() {
         });
     };
 
+    const addContentInputFieldHandler = () => {
+        setStepData((stepData: BundleStepContent) => {
+            return {
+                ...stepData,
+                contentInputs: [
+                    ...stepData.contentInputs,
+                    {
+                        id: stepData.contentInputs.length + 1,
+                        bundleStepId: stepData.id,
+                        inputType: "TEXT",
+                        inputLabel: "Enter your name",
+                        required: true,
+                        maxChars: 100,
+                    },
+                ],
+            };
+        });
+    };
+
+    const removeContentInputFieldHandler = (inputId: number) => {
+        setStepData((stepData: BundleStepContent) => {
+            return {
+                ...stepData,
+                contentInputs: stepData.contentInputs.filter((input: ContentInput) => input.id !== inputId),
+            };
+        });
+    };
+
     return (
         <>
             {isLoading || isSubmitting ? (
@@ -199,32 +227,44 @@ export default function Index() {
                                     <Card>
                                         <BlockStack gap={LargeGapBetweenSections}>
                                             <BlockStack gap={GapBetweenSections}>
-                                                <Text as="h2" variant="headingMd">
-                                                    Content inputs on this step
-                                                </Text>
+                                                <BlockStack gap={GapBetweenTitleAndContent}>
+                                                    <Text as="h2" variant="headingLg">
+                                                        Content step configuration
+                                                    </Text>
+                                                    <Text as="p" variant="bodyMd" tone="subdued">
+                                                        On content steps, customers will need to enter content (text, numbers or image) into the input fields.
+                                                    </Text>
+                                                </BlockStack>
 
                                                 <BlockStack gap={GapBetweenSections}>
                                                     {stepData.contentInputs.length > 0 ? (
                                                         <BlockStack gap={GapBetweenSections}>
-                                                            {stepData.contentInputs.map((contentInput) => (
-                                                                <ContentStepInputs
-                                                                    key={contentInput.id}
-                                                                    contentInput={contentInput}
-                                                                    errors={errors}
-                                                                    inputId={contentInput.id}
-                                                                    updateFieldErrorHandler={updateFieldErrorHandler}
-                                                                    updateContentInput={updateContentInput}
-                                                                />
+                                                            {stepData.contentInputs.map((contentInput, index) => (
+                                                                <>
+                                                                    <ContentStepInputs
+                                                                        removeContentInputField={removeContentInputFieldHandler}
+                                                                        key={contentInput.id}
+                                                                        contentInput={contentInput}
+                                                                        errors={errors}
+                                                                        inputId={contentInput.id}
+                                                                        index={index + 1}
+                                                                        updateFieldErrorHandler={updateFieldErrorHandler}
+                                                                        updateContentInput={updateContentInput}
+                                                                    />
+                                                                    {stepData.contentInputs.indexOf(contentInput) !== stepData.contentInputs.length - 1 && <Divider />}
+                                                                </>
                                                             ))}
-                                                            <Button variant="primary" fullWidth disabled={stepData.contentInputs.length >= 2}>
-                                                                Add another content input
-                                                            </Button>
+                                                            {stepData.contentInputs.length < 2 && (
+                                                                <Button variant="primary" fullWidth onClick={addContentInputFieldHandler}>
+                                                                    Add another input field
+                                                                </Button>
+                                                            )}
                                                         </BlockStack>
                                                     ) : (
                                                         <BlockStack gap={GapBetweenSections}>
                                                             <Text as="p">There are no content inputs on this step.</Text>
-                                                            <Button variant="primary" fullWidth>
-                                                                Add first content input
+                                                            <Button onClick={addContentInputFieldHandler} variant="primary" fullWidth>
+                                                                Add first input field
                                                             </Button>
                                                         </BlockStack>
                                                     )}

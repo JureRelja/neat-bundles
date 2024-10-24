@@ -1,7 +1,7 @@
 import { json, redirect } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { useNavigation, Outlet, Link, useLoaderData, useNavigate, useParams } from "@remix-run/react";
-import { Badge, BlockStack, FooterHelp, Page, SkeletonPage } from "@shopify/polaris";
+import { Badge, BlockStack, Card, FooterHelp, Page, Text, SkeletonPage } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
 import { StepType, BundleStep } from "@prisma/client";
 import { error, JsonData } from "../../adminBackend/service/dto/jsonData";

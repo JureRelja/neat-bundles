@@ -62,6 +62,30 @@ class BundleBuilderContentStepRepository extends BundleBuilderStepTypeRepository
             data: {
                 title: stepData.title,
                 description: stepData.description,
+                contentInputs: {
+                    deleteMany: {
+                        id: {
+                            notIn: stepData.contentInputs.map((input) => input.id),
+                        },
+                    },
+                    upsert: stepData.contentInputs.map((input) => ({
+                        where: {
+                            id: input.id,
+                        },
+                        create: {
+                            inputLabel: input.inputLabel,
+                            inputType: input.inputType,
+                            maxChars: input.maxChars,
+                            required: input.required,
+                        },
+                        update: {
+                            inputLabel: input.inputLabel,
+                            inputType: input.inputType,
+                            maxChars: input.maxChars,
+                            required: input.required,
+                        },
+                    })),
+                },
             },
             include: {
                 contentInputs: true,

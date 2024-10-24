@@ -225,6 +225,14 @@ export default function Index() {
                                 <Layout.Section>
                                     <Card>
                                         <BlockStack gap={LargeGapBetweenSections}>
+                                            <BlockStack gap={GapBetweenTitleAndContent}>
+                                                <Text as="h2" variant="headingLg">
+                                                    Product step configuration
+                                                </Text>
+                                                <Text as="p" variant="bodyMd" tone="subdued">
+                                                    On product steps, customers can choose products to add to their bundle.
+                                                </Text>
+                                            </BlockStack>
                                             <BlockStack gap={GapBetweenSections}>
                                                 <Text as="h2" variant="headingMd">
                                                     Available products for customers to select
@@ -273,114 +281,120 @@ export default function Index() {
                                                     }
                                                     updateSelectedResources={updateSelectedResources}
                                                     />*/}
-                                                <input
-                                                    name="products[]"
-                                                    type="hidden"
-                                                    value={stepData.productInput?.products.map((product: Product) => product.shopifyProductId).join(",")}
-                                                />
-                                                <ResourcePicker
-                                                    stepId={stepData.id}
-                                                    selectedProducts={(stepData.productInput?.products as Product[]) || []}
-                                                    updateSelectedProducts={updateSelectedProducts}
-                                                />
-                                                <InlineError message={errors?.find((err: error) => err.fieldId === "products")?.message || ""} fieldID="products" />
+                                                <BlockStack gap={GapBetweenTitleAndContent}>
+                                                    <input
+                                                        name="products[]"
+                                                        type="hidden"
+                                                        value={stepData.productInput?.products.map((product: Product) => product.shopifyProductId).join(",")}
+                                                    />
+                                                    <ResourcePicker
+                                                        stepId={stepData.id}
+                                                        selectedProducts={(stepData.productInput?.products as Product[]) || []}
+                                                        updateSelectedProducts={updateSelectedProducts}
+                                                    />
+                                                    <Text as="p" variant="bodyMd" tone="subdued">
+                                                        This will be the list of products that customers can choose from.
+                                                    </Text>
+                                                    <InlineError message={errors?.find((err: error) => err.fieldId === "products")?.message || ""} fieldID="products" />
+                                                </BlockStack>
                                             </BlockStack>
 
                                             <BlockStack gap={GapBetweenSections}>
-                                                <Text as="h2" variant="headingSm">
+                                                <Text as="h2" variant="headingMd">
                                                     Product rules
                                                 </Text>
-
-                                                <InlineGrid columns={2} gap={HorizontalGap}>
-                                                    <Box id="minProducts">
-                                                        <TextField
-                                                            label="Minimum products to select"
-                                                            type="number"
-                                                            helpText="Customers must select at least this number of products on this step."
-                                                            autoComplete="off"
-                                                            inputMode="numeric"
-                                                            name={`minProductsToSelect`}
-                                                            min={1}
-                                                            value={stepData.productInput?.minProductsOnStep.toString()}
-                                                            onChange={(value) => {
-                                                                setStepData((stepData: BundleStepProduct) => {
-                                                                    if (!stepData.productInput)
+                                                <BlockStack gap={LargeGapBetweenSections}>
+                                                    <InlineGrid columns={2} gap={HorizontalGap}>
+                                                        <Box id="minProducts">
+                                                            <TextField
+                                                                label="Minimum products to select"
+                                                                type="number"
+                                                                helpText="Customers must select at least this number of products on this step."
+                                                                autoComplete="off"
+                                                                inputMode="numeric"
+                                                                name={`minProductsToSelect`}
+                                                                min={1}
+                                                                value={stepData.productInput?.minProductsOnStep.toString()}
+                                                                onChange={(value) => {
+                                                                    setStepData((stepData: BundleStepProduct) => {
+                                                                        if (!stepData.productInput)
+                                                                            return {
+                                                                                ...stepData,
+                                                                            };
                                                                         return {
                                                                             ...stepData,
+                                                                            productInput: {
+                                                                                ...stepData.productInput,
+                                                                                minProductsOnStep: Number(value),
+                                                                            },
                                                                         };
-                                                                    return {
-                                                                        ...stepData,
-                                                                        productInput: {
-                                                                            ...stepData.productInput,
-                                                                            minProductsOnStep: Number(value),
-                                                                        },
-                                                                    };
-                                                                });
-                                                                updateFieldErrorHandler("minProducts");
-                                                            }}
-                                                            error={errors?.find((err: error) => err.fieldId === "minProducts")?.message}
-                                                        />
-                                                    </Box>
+                                                                    });
+                                                                    updateFieldErrorHandler("minProducts");
+                                                                }}
+                                                                error={errors?.find((err: error) => err.fieldId === "minProducts")?.message}
+                                                            />
+                                                        </Box>
 
-                                                    <Box id="maxProducts">
-                                                        <TextField
-                                                            label="Maximum products to select"
-                                                            helpText="Customers can select up to this number of products on this step."
-                                                            type="number"
-                                                            autoComplete="off"
-                                                            inputMode="numeric"
-                                                            name={`maxProductsToSelect`}
-                                                            min={stepData.productInput?.minProductsOnStep || 1} //Maximum number of products needs to be equal or greater than the minimum number of products
-                                                            value={stepData.productInput?.maxProductsOnStep.toString()}
-                                                            onChange={(value) => {
-                                                                setStepData((stepData: BundleStepProduct) => {
-                                                                    if (!stepData.productInput) return stepData;
-                                                                    return {
-                                                                        ...stepData,
-                                                                        productInput: {
-                                                                            ...stepData.productInput,
-                                                                            maxProductsOnStep: Number(value),
-                                                                        },
-                                                                    };
-                                                                });
-                                                                updateFieldErrorHandler("maxProducts");
-                                                            }}
-                                                            error={errors?.find((err: error) => err.fieldId === "maxProducts")?.message}
-                                                        />
-                                                    </Box>
-                                                </InlineGrid>
-                                                <ChoiceList
-                                                    title="Display products"
-                                                    allowMultiple
-                                                    name={`displayProducts`}
-                                                    choices={[
-                                                        {
-                                                            label: "Allow customers to select one product more than once",
-                                                            value: "allowProductDuplicates",
-                                                        },
-                                                        {
-                                                            label: "Show price under each product",
-                                                            value: "showProductPrice",
-                                                        },
-                                                    ]}
-                                                    selected={[
-                                                        stepData.productInput?.allowProductDuplicates ? "allowProductDuplicates" : "",
-                                                        stepData.productInput?.showProductPrice ? "showProductPrice" : "",
-                                                    ]}
-                                                    onChange={(selectedValues: string[]) => {
-                                                        setStepData((stepData: BundleStepProduct) => {
-                                                            if (!stepData.productInput) return stepData;
-                                                            return {
-                                                                ...stepData,
-                                                                productInput: {
-                                                                    ...stepData.productInput,
-                                                                    allowProductDuplicates: selectedValues.includes("allowProductDuplicates"),
-                                                                    showProductPrice: selectedValues.includes("showProductPrice"),
-                                                                },
-                                                            };
-                                                        });
-                                                    }}
-                                                />
+                                                        <Box id="maxProducts">
+                                                            <TextField
+                                                                label="Maximum products to select"
+                                                                helpText="Customers can select up to this number of products on this step."
+                                                                type="number"
+                                                                autoComplete="off"
+                                                                inputMode="numeric"
+                                                                name={`maxProductsToSelect`}
+                                                                min={stepData.productInput?.minProductsOnStep || 1} //Maximum number of products needs to be equal or greater than the minimum number of products
+                                                                value={stepData.productInput?.maxProductsOnStep.toString()}
+                                                                onChange={(value) => {
+                                                                    setStepData((stepData: BundleStepProduct) => {
+                                                                        if (!stepData.productInput) return stepData;
+                                                                        return {
+                                                                            ...stepData,
+                                                                            productInput: {
+                                                                                ...stepData.productInput,
+                                                                                maxProductsOnStep: Number(value),
+                                                                            },
+                                                                        };
+                                                                    });
+                                                                    updateFieldErrorHandler("maxProducts");
+                                                                }}
+                                                                error={errors?.find((err: error) => err.fieldId === "maxProducts")?.message}
+                                                            />
+                                                        </Box>
+                                                    </InlineGrid>
+                                                    <ChoiceList
+                                                        title="Display products"
+                                                        allowMultiple
+                                                        name={`displayProducts`}
+                                                        choices={[
+                                                            {
+                                                                label: "Allow customers to select one product more than once",
+                                                                value: "allowProductDuplicates",
+                                                            },
+                                                            {
+                                                                label: "Show price under each product",
+                                                                value: "showProductPrice",
+                                                            },
+                                                        ]}
+                                                        selected={[
+                                                            stepData.productInput?.allowProductDuplicates ? "allowProductDuplicates" : "",
+                                                            stepData.productInput?.showProductPrice ? "showProductPrice" : "",
+                                                        ]}
+                                                        onChange={(selectedValues: string[]) => {
+                                                            setStepData((stepData: BundleStepProduct) => {
+                                                                if (!stepData.productInput) return stepData;
+                                                                return {
+                                                                    ...stepData,
+                                                                    productInput: {
+                                                                        ...stepData.productInput,
+                                                                        allowProductDuplicates: selectedValues.includes("allowProductDuplicates"),
+                                                                        showProductPrice: selectedValues.includes("showProductPrice"),
+                                                                    },
+                                                                };
+                                                            });
+                                                        }}
+                                                    />
+                                                </BlockStack>
                                             </BlockStack>
                                         </BlockStack>
                                     </Card>

@@ -31,6 +31,7 @@ class BundleBuilderContentStepService extends BundleBuilderStepTypeService {
     }
 
     public async updateStep(stepData: BundleStepContent): Promise<BundleStepContent> {
+        console.log("stepData", stepData);
         const updatedStep: BundleStepContent = await bundleBuilderContentStepRepository.updateStep(stepData);
 
         return updatedStep;
