@@ -50,8 +50,8 @@ class BundleBuilderContentStepService extends BundleBuilderStepTypeService {
 
         const contentStepDto: ContentStepDataDto = {
             description: stepToDuplicate.description,
-            title: stepToDuplicate.title,
-            stepNumber: stepNumber,
+            title: stepToDuplicate.title + " (Copy)",
+            stepNumber: stepNumber + 1,
             stepType: stepToDuplicate.stepType,
             contentInputs: stepToDuplicate.contentInputs.map((contentInput: ContentInput) => ({
                 inputLabel: contentInput.inputLabel,
@@ -61,7 +61,7 @@ class BundleBuilderContentStepService extends BundleBuilderStepTypeService {
             })),
         };
 
-        await bundleBuilderStepsService.incrementStepNumberForStepsGreater(bundleId, stepToDuplicate.stepNumber + 1);
+        await bundleBuilderStepsService.incrementStepNumberForStepsGreater(bundleId, stepToDuplicate.stepNumber);
 
         const newStep: BundleStepContent = await bundleBuilderContentStepRepository.addNewStep(bundleId, contentStepDto);
 

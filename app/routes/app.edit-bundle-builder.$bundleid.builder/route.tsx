@@ -247,8 +247,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     return redirect("/app");
                 }
 
-                console.log(params, formData);
-
                 return json({ ...new JsonData(true, "success", "Bundle updated", [], bundleData) }, { status: 200 });
             } catch (error) {
                 console.log(error);

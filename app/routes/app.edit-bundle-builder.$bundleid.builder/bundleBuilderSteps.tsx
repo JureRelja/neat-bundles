@@ -128,7 +128,7 @@ export default function Index({ user, bundleBuilderSteps }: { user: User; bundle
     };
 
     useEffect(() => {
-        revalidator.revalidate();
+        //revalidator.revalidate();
     }, [fetcher.state]);
 
     return (

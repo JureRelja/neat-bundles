@@ -61,7 +61,7 @@ class BundleBuilderProductStepService extends BundleBuilderStepTypeService {
 
         const stepData: ProductStepDataDto = {
             description: stepToDuplicate.description,
-            title: stepToDuplicate.title,
+            title: stepToDuplicate.title + " (Copy)",
             stepNumber: stepToDuplicate.stepNumber + 1,
             stepType: stepToDuplicate.stepType,
             productInput: {
