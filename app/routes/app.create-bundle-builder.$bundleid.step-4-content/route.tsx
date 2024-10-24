@@ -1,19 +1,21 @@
 import { json, redirect } from "@remix-run/node";
 import { useFetcher, useLoaderData, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { BlockStack, Text, InlineError, Box, InlineGrid, TextField } from "@shopify/polaris";
+import { BlockStack, Text, TextField } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
-import { JsonData } from "../../adminBackend/service/dto/jsonData";
+import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import userRepository from "@adminBackend/repository/impl/UserRepository";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
-import { BundleBuilder } from "@prisma/client";
+import { BundleBuilder, ContentInput, InputType } from "@prisma/client";
 import { useState } from "react";
-import ResourcePicker from "../../components/resourcePicer";
-import { GapInsideSection, HorizontalGap } from "../../constants";
+import { GapBetweenTitleAndContent, GapInsideSection } from "../../constants";
 import { Product } from "@prisma/client";
 import WideButton from "../../components/wideButton";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
+import ContentStepInput from "../../components/contentStepInputs";
+import { UserContentInputDto } from "~/adminBackend/service/dto/UserContentInputDto";
+import { ContentStepDataDto } from "~/adminBackend/service/dto/ContentStepDataDto";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -68,54 +70,107 @@ export default function Index() {
     const fetcher = useFetcher();
     const params = useParams();
 
-    const loaderData = useLoaderData<typeof loader>();
+    const [errors, setErrors] = useState<error[]>();
 
     const handleNextBtnHandler = () => {
-        if (stepProducts.length === 0 || stepProducts.length < minProducts) {
-            setProductSelectionActivated(true);
-            return;
-        }
-
-        if (minProducts < 1 || maxProducts < minProducts) {
-            setProductSelectionActivated(true);
-            return;
-        }
-
         if (!stepTitle) {
-            setProductSelectionActivated(true);
+            return;
+        }
+
+        if (contentInput.inputLabel.length === 0) {
+            setErrors((errors) => {
+                if (!errors) {
+                    return [
+                        {
+                            fieldId: `inputLabel${contentInput.id}`,
+                            field: "Input label",
+                            message: "Input label is required",
+                        },
+                    ];
+                }
+                return [
+                    ...errors,
+                    {
+                        fieldId: `inputLabel${contentInput.id}`,
+                        field: "Input label",
+                        message: "Input label is required",
+                    },
+                ];
+            });
+        } else if (contentInput.inputType != "IMAGE" && (!contentInput.maxChars || contentInput.maxChars < 1)) {
+            setErrors((errors) => {
+                if (!errors) {
+                    return [
+                        {
+                            fieldId: `maxChars${contentInput.id}`,
+                            field: "Max length",
+                            message: "Max length is required and must be greater than 0",
+                        },
+                    ];
+                }
+                return [
+                    ...errors,
+                    {
+                        fieldId: `maxChars${contentInput.id}`,
+                        field: "Max length",
+                        message: "Max length is required and must be greater than 0",
+                    },
+                ];
+            });
+        }
+
+        alert(JSON.stringify(errors));
+
+        if (errors.length > 0) {
             return;
         }
 
         const form = new FormData();
 
-        const stepData = {
+        const stepData: ContentStepDataDto = {
             title: stepTitle,
             description: "",
             stepType: "CONTENT",
-            contentInput: [
-                {
-                    inputLabel: "Content",
-                },
-            ],
+            stepNumber: 1,
+            contentInputs: [contentInput],
         };
 
         form.append("stepData", JSON.stringify(stepData));
-        form.append("action", "addProductStep");
+        form.append("action", "addContentStep");
 
         fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps?onboarding=true&stepNumber=4` });
     };
 
-    //step data
-    const [productSelectionActivated, setProductSelectionActivated] = useState<boolean>(false);
     const [stepTitle, setStepTitle] = useState<string>();
-    const [stepProducts, setStepProducts] = useState<Product[]>([]);
-    const [minProducts, setMinProducts] = useState<number>(1);
-    const [maxProducts, setMaxProducts] = useState<number>(3);
+    const [contentInput, setContentInput] = useState<ContentInput>({
+        id: 1,
+        inputType: "TEXT",
+        inputLabel: "",
+        required: false,
+        maxChars: 0,
+        bundleStepId: 1,
+    });
 
-    const updateSelectedProducts = (products: Product[]) => {
-        setProductSelectionActivated(true);
+    const updateContentInput = (contentInput: ContentInput) => {
+        setContentInput(contentInput);
+    };
 
-        setStepProducts(products);
+    //Update field error on change
+    const updateFieldErrorHandler = (fieldId: string) => {
+        errors?.forEach((err: error) => {
+            if (err.fieldId === fieldId) {
+                err.message = "";
+            }
+        });
+    };
+
+    const removeContentInputFieldHandler = (inputId: number) => {
+        setContentInput((contentInput: ContentInput) => {
+            return {
+                ...contentInput,
+                id: contentInput.id - 1,
+            };
+        });
     };
 
     return (
@@ -142,62 +197,27 @@ export default function Index() {
                     />
                 </BlockStack>
 
-                <Text as={"p"} variant="headingLg" alignment="center">
-                    Select the products you want to display
-                </Text>
-
-                <BlockStack gap={GapInsideSection}>
-                    <ResourcePicker onBoarding stepId={undefined} selectedProducts={stepProducts} updateSelectedProducts={updateSelectedProducts} />
-                    <InlineError
-                        message={
-                            (stepProducts.length === 0 || stepProducts.length < minProducts) && productSelectionActivated
-                                ? `Please select between ${minProducts} and ${maxProducts} products`
-                                : ""
-                        }
-                        fieldID="products"
-                    />
-                    <BlockStack gap={GapInsideSection}>
-                        <Text as="h2" variant="headingSm">
-                            Product rules
+                <BlockStack gap={"600"} inlineAlign="center">
+                    <BlockStack gap={GapBetweenTitleAndContent}>
+                        <Text as={"p"} variant="headingLg" alignment="center">
+                            Configure the input fields for the second step
                         </Text>
-
-                        <InlineGrid columns={2} gap={HorizontalGap}>
-                            <Box id="minProducts">
-                                <TextField
-                                    label="Minimum products to select"
-                                    type="number"
-                                    helpText="Customers must select at least this number of products on this step."
-                                    autoComplete="off"
-                                    inputMode="numeric"
-                                    name={`minProducts`}
-                                    min={1}
-                                    max={maxProducts}
-                                    value={minProducts.toString()}
-                                    onChange={(value) => {
-                                        setMinProducts(Number(value));
-                                    }}
-                                    error={minProducts < 1 ? "Min products must be greater than 0" : ""}
-                                />
-                            </Box>
-
-                            <Box id="maxProducts">
-                                <TextField
-                                    label="Maximum products to select"
-                                    helpText="Customers can select up to this number of products on this step."
-                                    type="number"
-                                    autoComplete="off"
-                                    inputMode="numeric"
-                                    name={`maxProducts`}
-                                    min={minProducts > 0 ? minProducts : 1}
-                                    value={maxProducts.toString()}
-                                    onChange={(value) => {
-                                        setMaxProducts(Number(value));
-                                    }}
-                                    error={maxProducts < minProducts ? "Max products must be greater than or equal to min products" : ""}
-                                />
-                            </Box>
-                        </InlineGrid>
+                        <Text as="p" variant="bodyMd" tone="subdued" alignment="center">
+                            This is a content step, where customers will need to enter content (text, numbers or image) into the input fields.
+                        </Text>
                     </BlockStack>
+
+                    <ContentStepInput
+                        removeContentInputField={removeContentInputFieldHandler}
+                        key={contentInput.id}
+                        contentInput={contentInput}
+                        single
+                        errors={errors}
+                        inputId={contentInput.id}
+                        index={1}
+                        updateFieldErrorHandler={updateFieldErrorHandler}
+                        updateContentInput={updateContentInput}
+                    />
                 </BlockStack>
 
                 {/*  */}

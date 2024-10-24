@@ -1,9 +1,8 @@
-import { BundleStep, ContentInput } from "@prisma/client";
+import { ContentInput } from "@prisma/client";
 import { BundleBuilderStepTypeService } from "./BundleBuilderStepTypeService";
-import { BundleStepProduct, BundleStepContent } from "../../../dto/BundleStep";
+import { BundleStepContent } from "../../../dto/BundleStep";
 import { error } from "../../../dto/jsonData";
 import bundleBuilderContentStepRepository from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderContentStepRepository";
-import { bundleBuilderProductStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderProductStepRepository";
 import { bundleBuilderStepsService } from "../../BundleBuilderStepsService";
 import { ContentStepDataDto } from "~/adminBackend/service/dto/ContentStepDataDto";
 

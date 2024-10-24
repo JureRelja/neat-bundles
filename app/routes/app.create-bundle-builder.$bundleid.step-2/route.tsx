@@ -10,7 +10,7 @@ import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBu
 import { BundleBuilder } from "@prisma/client";
 import { useState } from "react";
 import ResourcePicker from "~/components/resourcePicer";
-import { GapInsideSection, HorizontalGap } from "~/constants";
+import { GapBetweenTitleAndContent, GapInsideSection, HorizontalGap } from "~/constants";
 import { Product } from "@prisma/client";
 import WideButton from "~/components/wideButton";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
@@ -157,9 +157,14 @@ export default function Index() {
                 </BlockStack>
 
                 <BlockStack gap={"600"} inlineAlign="center">
-                    <Text as={"p"} variant="headingLg" alignment="center">
-                        Select the products you want to display
-                    </Text>
+                    <BlockStack gap={GapBetweenTitleAndContent}>
+                        <Text as={"p"} variant="headingLg" alignment="center">
+                            Select the products you want to display on this step
+                        </Text>
+                        <Text as="p" variant="bodyMd" tone="subdued" alignment="center">
+                            This is a product step, where customers can choose products to add to their bundle.
+                        </Text>
+                    </BlockStack>
 
                     <BlockStack gap={GapInsideSection}>
                         <ResourcePicker onBoarding stepId={undefined} selectedProducts={stepProducts} updateSelectedProducts={updateSelectedProducts} />
@@ -172,7 +177,7 @@ export default function Index() {
                             fieldID="products"
                         />
                         <BlockStack gap={GapInsideSection}>
-                            <Text as="h2" variant="headingSm">
+                            <Text as="h2" variant="headingMd">
                                 Product rules
                             </Text>
 

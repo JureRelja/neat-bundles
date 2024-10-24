@@ -88,14 +88,16 @@ export default function Index() {
                 <BlockStack gap={GapInsideSection} inlineAlign="center">
                     <ButtonGroup variant="segmented">
                         <Button pressed={activeBtnOption === "PRODUCT"} size="large" onClick={() => setActiveBtnOption("PRODUCT")}>
-                            Product selection
+                            Product step
                         </Button>
                         <Button pressed={activeBtnOption === "CONTENT"} size="large" onClick={() => setActiveBtnOption("CONTENT")}>
-                            Content input
+                            Content step
                         </Button>
                     </ButtonGroup>
                     <Text as="p" variant="bodyMd">
-                        {activeBtnOption === "PRODUCT" ? "Customers will be able to select products on this step." : "Customers will be able to add content on this step."}
+                        {activeBtnOption === "PRODUCT"
+                            ? "Customers will be able to select products on this step."
+                            : "Customers will be able to enter content (text, image, etc) on this step."}
                     </Text>
                 </BlockStack>
 

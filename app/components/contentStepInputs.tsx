@@ -9,6 +9,7 @@ export default function Index({
     errors,
     inputId,
     index,
+    single,
     updateContentInput,
     updateFieldErrorHandler,
     removeContentInputField,
@@ -17,18 +18,22 @@ export default function Index({
     errors: error[];
     inputId: number;
     index: number;
+    single?: boolean;
     updateFieldErrorHandler: (fieldName: string) => void;
     updateContentInput: (newContentInput: ContentInput) => void;
     removeContentInputField: (inputId: number) => void;
 }) {
+    console.log(errors);
     return (
         <BlockStack gap={GapInsideSection}>
-            <InlineStack align="space-between">
-                <Text as="p" variant="headingMd">
-                    Input field #{index}
-                </Text>
-                <Button variant="primary" tone="critical" size="micro" icon={DeleteIcon} onClick={() => removeContentInputField(inputId)}></Button>
-            </InlineStack>
+            {!single && (
+                <InlineStack align="space-between">
+                    <Text as="p" variant="headingMd">
+                        Input field #{index}
+                    </Text>
+                    <Button variant="primary" tone="critical" size="micro" icon={DeleteIcon} onClick={() => removeContentInputField(inputId)}></Button>
+                </InlineStack>
+            )}
 
             <InlineGrid gap={HorizontalGap} columns={2}>
                 <Select
@@ -46,12 +51,14 @@ export default function Index({
                         });
                     }}
                     value={contentInput.inputType}
+                    helpText="Right input type is important for correct data entry."
                     name={`inputType`}
                 />
 
                 <TextField
                     label="Input label"
                     name={`inputLabel${inputId}`}
+                    helpText="The label will be visible above the input field."
                     value={contentInput.inputLabel}
                     disabled={contentInput.inputType === "NONE"}
                     error={errors?.find((err: error) => err.fieldId === `inputLabel${inputId}`)?.message}
@@ -68,6 +75,7 @@ export default function Index({
             <InlineGrid gap={HorizontalGap} columns={2} alignItems="end">
                 <TextField
                     label="Max length (in characters)"
+                    helpText="It let's you limit the number of characters that customer can enter."
                     type="number"
                     name={`maxChars${inputId}`}
                     inputMode="numeric"

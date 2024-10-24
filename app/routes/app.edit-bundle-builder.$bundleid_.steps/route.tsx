@@ -78,8 +78,15 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 const url = new URL(request.url);
 
                 if (url.searchParams.get("onboarding") === "true") {
+                    ///
                     if (url.searchParams.get("stepNumber") === "2" && url.searchParams.get("multiStep") === "true") {
                         return redirect(`/app/create-bundle-builder/${params.bundleid}/step-3`);
+                        //
+                    } else if (url.searchParams.get("stepNumber") === "2" && url.searchParams.get("multiStep") === "false") {
+                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-5`);
+                        //
+                    } else if (url.searchParams.get("stepNumber") === "4") {
+                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-5`);
                     }
                 }
 
@@ -125,8 +132,15 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 const url = new URL(request.url);
 
                 if (url.searchParams.get("onboarding") === "true") {
+                    ///
                     if (url.searchParams.get("stepNumber") === "2" && url.searchParams.get("multiStep") === "true") {
                         return redirect(`/app/create-bundle-builder/${params.bundleid}/step-3`);
+                        //
+                    } else if (url.searchParams.get("stepNumber") === "2" && url.searchParams.get("multiStep") === "false") {
+                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-5`);
+                        //
+                    } else if (url.searchParams.get("stepNumber") === "4") {
+                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-5`);
                     }
                 }
 
@@ -183,11 +197,14 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 const url = new URL(request.url);
 
                 if (url.searchParams.get("onboarding") === "true") {
+                    ///
                     if (url.searchParams.get("stepNumber") === "2" && url.searchParams.get("multiStep") === "true") {
                         return redirect(`/app/create-bundle-builder/${params.bundleid}/step-3`);
-                    }
-
-                    if (url.searchParams.get("stepNumber") === "5") {
+                        //
+                    } else if (url.searchParams.get("stepNumber") === "2" && url.searchParams.get("multiStep") === "false") {
+                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-5`);
+                        //
+                    } else if (url.searchParams.get("stepNumber") === "4") {
                         return redirect(`/app/create-bundle-builder/${params.bundleid}/step-5`);
                     }
                 }
