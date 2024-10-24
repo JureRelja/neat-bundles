@@ -111,7 +111,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     { status: 400 },
                 );
 
-                // return redirect(`/app/edit-bundle-builder/${params.bundleid}/builder/steps/${params.stepnum}/${stepData.stepType === StepType.PRODUCT ? "product" : "content"}`);
+                // return redirect(`/app/edit-bundle-builder/${params.bundleid}/steps/${params.stepnum}/${stepData.stepType === StepType.PRODUCT ? "product" : "content"}`);
             } catch (error) {
                 console.log(error);
                 return json(
@@ -173,6 +173,11 @@ export default function Index() {
 
     //Navigating to the first error
     useEffect(() => {
+        if (errors && errors.length === 0) {
+            window.scrollTo(0, 0);
+            return;
+        }
+
         errors?.forEach((err: error) => {
             if (err.fieldId) {
                 document.getElementById(err.fieldId)?.scrollIntoView();
@@ -434,7 +439,7 @@ export default function Index() {
                                             tone="critical"
                                             onClick={async (): Promise<void> => {
                                                 await shopify.saveBar.leaveConfirmation();
-                                                navigateSubmit("deleteStep", `/app/edit-bundle-builder/${params.bundleid}/builder/steps/${params.stepnum}?redirect=true`);
+                                                navigateSubmit("deleteStep", `/app/edit-bundle-builder/${params.bundleid}/steps/${params.stepnum}?redirect=true`);
                                             }}>
                                             Delete
                                         </Button>

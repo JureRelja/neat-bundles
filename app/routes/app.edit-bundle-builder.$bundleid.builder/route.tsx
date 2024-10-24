@@ -20,6 +20,7 @@ import {
     Divider,
     Layout,
     FooterHelp,
+    Banner,
 } from "@shopify/polaris";
 import { QuestionCircleIcon, ExternalIcon, SettingsIcon, RefreshIcon } from "@shopify/polaris-icons";
 import { useAppBridge, Modal, TitleBar } from "@shopify/app-bridge-react";
@@ -30,9 +31,18 @@ import db from "../../db.server";
 import { BundlePricing, BundleDiscountType, BundleBuilder } from "@prisma/client";
 import { JsonData, error } from "../../adminBackend/service/dto/jsonData";
 import { useNavigateSubmit } from "../../hooks/useNavigateSubmit";
+import userRepository from "../../adminBackend/repository/impl/UserRepository";
+import { BundleBuilderClient } from "../../frontend/types/BundleBuilderClient";
+import BundleBuilderSteps from "./bundleBuilderSteps";
+import { bundleBuilderStepRepository } from "../../adminBackend//repository/impl/bundleBuilderStep/BundleBuilderStepRepository";
+import bundleBuilderRepository, { BundleBuilderRepository } from "../../adminBackend//repository/impl/BundleBuilderRepository";
+import { shopifyBundleBuilderProductRepository } from "../../adminBackend//repository/impl/ShopifyBundleBuilderProductRepository";
+import { ShopifyBundleBuilderPageRepository } from "../../adminBackend//repository/ShopifyBundleBuilderPageRepository";
+import { inclBundleFullStepsBasic } from "../../adminBackend//service/dto/Bundle";
+import { ApiCacheKeyService } from "../../adminBackend//service/utils/ApiCacheKeyService";
+import { ApiCacheService } from "../../adminBackend//service/utils/ApiCacheService";
+import shopifyBundleBuilderPageRepositoryGraphql from "../../adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql";
 import styles from "./route.module.css";
-import userRepository from "~/adminBackend/repository/impl/UserRepository";
-import { BundleBuilderClient } from "~/frontend/types/BundleBuilderClient";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -43,12 +53,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 
     if (!user) return redirect("/app");
 
-    const bundleBuilder: BundleBuilder | null = await db.bundleBuilder.findUnique({
-        where: {
-            id: Number(params.bundleid),
-            deleted: false,
-        },
-    });
+    const bundleBuilder: BundleBuilder | null = await bundleBuilderRepository.getBundleBuilderByIdAndStoreUrl(Number(params.bundleid), session.shop);
 
     if (!bundleBuilder) {
         throw new Response(null, {
@@ -60,7 +65,9 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     //Url of the bundle page
     const bundleBuilderPageUrl = `${user.primaryDomain}/pages/${bundleBuilder.bundleBuilderPageHandle}`;
 
-    return json(new JsonData(true, "success", "Bundle succesfuly retrieved", [], { bundleBuilderPageUrl, bundleBuilder }), { status: 200 });
+    let allBundleSteps = await bundleBuilderStepRepository.getAllStepsForBundleId(Number(params.bundleid));
+
+    return json(new JsonData(true, "success", "Bundle succesfuly retrieved", [], { bundleBuilderPageUrl, bundleBuilder, allBundleSteps, user }), { status: 200 });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -69,14 +76,401 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const formData = await request.formData();
     const action = formData.get("action");
 
-    console.log("I'm on builder", action);
+    console.log("I'm on bundleID", action);
 
-    return json(
-        {
-            ...new JsonData(true, "success", "This is the default action that doesn't do anything."),
-        },
-        { status: 200 },
-    );
+    switch (action) {
+        case "deleteBundle": {
+            try {
+                //Delete the bundle along with its steps, contentInputs, bundleSettings?, bundleColors, and bundleLabels
+                const bundleBuilderToDelete = await db.bundleBuilder.update({
+                    where: {
+                        id: Number(params.bundleid),
+                    },
+                    data: {
+                        deleted: true,
+                    },
+                    select: {
+                        shopifyProductId: true,
+                        shopifyPageId: true,
+                    },
+                });
+
+                if (!bundleBuilderToDelete)
+                    return json(
+                        {
+                            ...new JsonData(false, "error", "There was an error with your request", [
+                                {
+                                    fieldId: "bundleId",
+                                    field: "Bundle ID",
+                                    message: "Bundle with the provided id doesn't exist.",
+                                },
+                            ]),
+                        },
+                        { status: 400 },
+                    );
+
+                const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
+
+                await Promise.all([
+                    //Deleting a associated bundle page
+                    shopifyBundleBuilderPage.deletePage(admin, session, bundleBuilderToDelete.shopifyPageId),
+
+                    //Deleting a associated bundle product
+                    shopifyBundleBuilderProductRepository.deleteBundleBuilderProduct(admin, bundleBuilderToDelete.shopifyProductId),
+                ]);
+            } catch (error) {
+                console.log(error, "Either the bundle product or the bundle page was already deleted.");
+            } finally {
+                const url: URL = new URL(request.url);
+
+                // Clear the cache for the bundle
+                const cacheKeyService = new ApiCacheKeyService(session.shop);
+
+                await ApiCacheService.multiKeyDelete(await cacheKeyService.getAllBundleKeys(params.bundleid as string));
+
+                if (url.searchParams.get("redirect") === "true") {
+                    return redirect("/app");
+                }
+
+                return json({ ...new JsonData(true, "success", "Bundle deleted") }, { status: 200 });
+            }
+        }
+
+        case "updatedDiscount": {
+            const url = new URL(request.url);
+
+            const discountType = formData.get("discountType");
+            const discountValue = formData.get("discountValue");
+
+            if (!discountType || !discountValue) {
+                throw Error("Discount type and value are required");
+            }
+
+            await db.bundleBuilder.update({
+                where: {
+                    id: Number(params.bundleid),
+                    storeUrl: session.shop,
+                },
+                data: {
+                    discountValue: Number(discountValue),
+                    discountType: discountType as BundleDiscountType,
+                },
+            });
+
+            try {
+                //redirect user to finish step if he is onboarding
+                if (url.searchParams.get("onboarding") === "true" && url.searchParams.get("stepNumber") === "5") {
+                    return redirect(`/app/create-bundle-builder/${params.bundleid}/step-6`);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        //Update the bundle
+        case "updateBundle":
+            const bundleData: BundleBuilder = JSON.parse(formData.get("bundle") as string);
+
+            const errors: error[] = [];
+
+            if (!bundleData.title) {
+                errors.push({
+                    fieldId: "bundleTitle",
+                    field: "Bundle title",
+                    message: "Please enter a bundle title.",
+                });
+            } else if (bundleData.pricing === BundlePricing.FIXED && (!bundleData.priceAmount || bundleData.priceAmount < 0)) {
+                errors.push({
+                    fieldId: "priceAmount",
+                    field: "Price amount",
+                    message: "Please enter a valid price for Fixed bundle.",
+                });
+            } else if (bundleData.discountType != "NO_DISCOUNT" && bundleData.discountValue <= 0) {
+                errors.push({
+                    fieldId: "discountValue",
+                    field: "Discount value",
+                    message: "Please enter a desired discount.",
+                });
+            } else if (bundleData.discountType === "FIXED" && bundleData.pricing === "FIXED" && bundleData.discountValue > (bundleData.priceAmount || 0)) {
+                errors.push({
+                    fieldId: "discountValue",
+                    field: "Discount value",
+                    message: "Discount amount can't be heigher that the bundle price.",
+                });
+            }
+
+            if (errors.length > 0)
+                return json({
+                    ...new JsonData(false, "error", "There was an error while trying to update the bundle.", errors, bundleData),
+                });
+
+            //Repository for creating a new page
+            const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
+
+            try {
+                await Promise.all([
+                    db.bundleBuilder.update({
+                        where: {
+                            id: Number(bundleData.id),
+                        },
+                        data: {
+                            title: bundleData.title,
+                            published: bundleData.published,
+                            priceAmount: bundleData.priceAmount,
+                            pricing: bundleData.pricing,
+                            discountType: bundleData.discountType,
+                            discountValue: bundleData.discountValue,
+                        },
+                    }),
+                    shopifyBundleBuilderProductRepository.updateBundleProductTitle(admin, bundleData.shopifyProductId, bundleData.title),
+                    shopifyBundleBuilderPage.updateBundleBuilderPageTitle(admin, session, bundleData.shopifyPageId, bundleData.title),
+                ]);
+
+                // Clear the cache for the bundle
+                const cacheKeyService = new ApiCacheKeyService(session.shop);
+
+                await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
+
+                const saveBtn = formData.get("submitBtn");
+
+                if (saveBtn === "saveAndExitBtn") {
+                    return redirect("/app");
+                }
+
+                console.log(params, formData);
+
+                return json({ ...new JsonData(true, "success", "Bundle updated", [], bundleData) }, { status: 200 });
+            } catch (error) {
+                console.log(error);
+
+                return json({
+                    ...new JsonData(false, "error", "There was an error while trying to update the bundle.", [
+                        {
+                            fieldId: "Bundle",
+                            field: "Bundle",
+                            message: "Error updating the bundle",
+                        },
+                    ]),
+                });
+            }
+
+        case "recreateBundleBuilder": {
+            //Repository for creating a new page
+            const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
+
+            const bundleBuilder = await db.bundleBuilder.findUnique({
+                where: {
+                    id: Number(params.bundleid),
+                },
+                include: inclBundleFullStepsBasic,
+            });
+
+            if (!bundleBuilder) {
+                return json(
+                    {
+                        ...new JsonData(false, "error", "There was an error with your request", [
+                            {
+                                fieldId: "bundleId",
+                                field: "Bundle ID",
+                                message: "Bundle with the provided id doesn't exist.",
+                            },
+                        ]),
+                    },
+                    { status: 400 },
+                );
+            }
+
+            await Promise.all([
+                new Promise(async (res, rej) => {
+                    //Check if the bundle builder product exists (it may have been deleted by the user on accident)
+                    const doesBundleBuilderProductExist = await shopifyBundleBuilderProductRepository.checkIfProductExists(admin, bundleBuilder.shopifyProductId);
+
+                    if (!doesBundleBuilderProductExist) {
+                        //create new product
+                        const newBundleBuilderProductId = await shopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilder.title, session.shop);
+
+                        //set bundle product to new product
+                        await BundleBuilderRepository.updateBundleBuilderProductId(Number(params.bundleid), newBundleBuilderProductId);
+                    }
+                    res(null);
+                }),
+
+                new Promise(async (res, rej) => {
+                    //Check if the page exists
+                    const doesBundleBuilderPageExist = await shopifyBundleBuilderPage.checkIfPageExists(admin, bundleBuilder.shopifyPageId);
+
+                    if (!doesBundleBuilderPageExist) {
+                        //create new page
+                        const newBundleBuilderPage = await shopifyBundleBuilderPage.createPageWithMetafields(admin, session, bundleBuilder.title, Number(params.bundleid));
+
+                        //set bundle page to new page
+                        await BundleBuilderRepository.updateBundleBuilderPage(Number(params.bundleid), newBundleBuilderPage);
+                    }
+                    res(null);
+                }),
+            ]);
+
+            return json({ ...new JsonData(true, "success", "Bundle builder refreshed") }, { status: 200 });
+        }
+
+        // case "duplicateBundle":
+        //   const bundleToDuplicate: BundleAllResources | null =
+        //     await db.bundle.findUnique({
+        //       where: {
+        //         id: Number(params.bundleid),
+        //       },
+        //       include: bundleAllResources,
+        //     });
+
+        //   if (!bundleToDuplicate) {
+        //     return json(
+        //       {
+        //         ...new JsonData(
+        //           false,
+        //           "error",
+        //           "There was an error with your request",
+        //           "The bundle you are trying to duplicate does not exist",
+        //         ),
+        //       },
+        //       { status: 400 },
+        //     );
+        //   }
+
+        //   try {
+        //     //Create a new product that will be used as a bundle wrapper
+        //     const { _max }: { _max: { id: number | null } } =
+        //       await db.bundle.aggregate({
+        //         _max: {
+        //           id: true,
+        //         },
+        //         where: {
+        //           storeUrl: session.shop,
+        //         },
+        //       });
+
+        //     //Create a new product that will be used as a bundle wrapper
+        //     const response = await admin.graphql(
+        //       `#graphql
+        //     mutation productCreate($productInput: ProductInput!) {
+        //       productCreate(input: $productInput) {
+        //         product {
+        //           id
+        //         }
+        //       }
+        //     }`,
+        //       {
+        //         variables: {
+        //           productInput: {
+        //             title: `Neat Bundle ${_max.id ? _max.id : ""}`,
+        //             productType: "Neat Bundle",
+        //             vendor: "Neat Bundles",
+        //             published: true,
+        //             tags: [bundleTagIndentifier],
+        //           },
+        //         },
+        //       },
+        //     );
+
+        //     const data = await response.json();
+
+        //     await db.bundle.create({
+        //       data: {
+        //         storeUrl: bundleToDuplicate.storeUrl,
+        //         title: `${bundleToDuplicate.title} - Copy`,
+        //         shopifyProductId: data.data.productCreate.product.id,
+        //         pricing: bundleToDuplicate.pricing,
+        //         priceAmount: bundleToDuplicate.priceAmount,
+        //         discountType: bundleToDuplicate.discountType,
+        //         discountValue: bundleToDuplicate.discountValue,
+        //         bundleSettings: {
+        //           create: {
+        //             displayDiscountBanner:
+        //               bundleToDuplicate.bundleSettings?.displayDiscountBanner,
+        //             skipTheCart: bundleToDuplicate.bundleSettings?.skipTheCart,
+        //             showOutOfStockProducts:
+        //               bundleToDuplicate.bundleSettings?.showOutOfStockProducts,
+        //             numOfProductColumns:
+        //               bundleToDuplicate.bundleSettings?.numOfProductColumns,
+
+        //             bundleColors: {
+        //               create: {
+        //                 stepsIcon:
+        //                   bundleToDuplicate.bundleSettings?.bundleColors.stepsIcon,
+        //               },
+        //             },
+        //             bundleLabels: {
+        //               create: {},
+        //             },
+        //           },
+        //         },
+        //         steps: {
+        //           create: [
+        //             {
+        //               stepNumber: 1,
+        //               title: "Step 1",
+        //               stepType: "PRODUCT",
+        //               productsData: {
+        //                 create: {},
+        //               },
+        //               contentInputs: {
+        //                 create: [{}, {}],
+        //               },
+        //             },
+        //             {
+        //               stepNumber: 2,
+        //               title: "Step 2",
+        //               stepType: "PRODUCT",
+        //               productsData: {
+        //                 create: {},
+        //               },
+        //               contentInputs: {
+        //                 create: [{}, {}],
+        //               },
+        //             },
+        //             {
+        //               stepNumber: 3,
+        //               title: "Step 3",
+        //               stepType: "PRODUCT",
+        //               productsData: {
+        //                 create: {},
+        //               },
+        //               contentInputs: {
+        //                 create: [{}, {}],
+        //               },
+        //             },
+        //           ],
+        //         },
+        //       },
+        //     });
+        //   } catch (error) {
+        //     console.log(error);
+        //     return json(
+        //       {
+        //         ...new JsonData(
+        //           false,
+        //           "error",
+        //           "There was an error with your request",
+        //           "The bundle you are trying to duplicate does not exist",
+        //         ),
+        //       },
+        //       { status: 400 },
+        //     );
+        //   }
+
+        //   return json(
+        //     { ...new JsonData(true, "success", "Bundle duplicated") },
+        //     { status: 200 },
+        //   );
+
+        default: {
+            return json(
+                {
+                    ...new JsonData(true, "success", "This is the default action that doesn't do anything."),
+                },
+                { status: 200 },
+            );
+        }
+    }
 };
 
 export default function Index() {
@@ -92,6 +486,9 @@ export default function Index() {
 
     //Errors from action
     const errors = actionData?.errors;
+
+    console.log(errors);
+
     //Data from the action if the form submission returned errors
     const submittedBundle: BundleBuilderClient = actionData?.data as BundleBuilderClient;
 
@@ -114,6 +511,11 @@ export default function Index() {
 
     //Navigating to the first error
     useEffect(() => {
+        if (errors && errors.length === 0) {
+            window.scrollTo(0, 0);
+            return;
+        }
+
         errors?.forEach((err: error) => {
             if (err.fieldId) {
                 document.getElementById(err.fieldId)?.scrollIntoView();
@@ -175,7 +577,7 @@ export default function Index() {
                                 variant="primary"
                                 tone="critical"
                                 onClick={() => {
-                                    navigateSubmit("deleteBundle", `/app/edit-bundle-builder/${params.bundleid}?redirect=true`);
+                                    navigateSubmit("deleteBundle", `/app/edit-bundle-builder/${params.bundleid}/builder?redirect=true`);
                                     setShowDeleteModal(false);
                                 }}>
                                 Delete
@@ -188,7 +590,7 @@ export default function Index() {
                         secondaryActions={[
                             {
                                 content: "Settings",
-                                url: `settings/?redirect=/app/edit-bundle-builder/${serverBundle.id}`,
+                                url: `settings/?redirect=/app/edit-bundle-builder/${serverBundle.id}/builder`,
                                 icon: SettingsIcon,
                             },
                             {
@@ -218,287 +620,299 @@ export default function Index() {
                         title={`${serverBundle.title}`}
                         subtitle="Edit bundle details and steps"
                         compactTitle>
-                        <Form method="POST" data-discard-confirmation data-save-bar action={`/app/edit-bundle-builder/${params.bundleid}`}>
-                            <BlockStack gap={GapBetweenSections}>
-                                <Layout>
-                                    <Layout.Section>
-                                        <BlockStack gap={GapBetweenSections}>
-                                            {/* Bundle builder steps */}
-                                            <Outlet />
+                        <BlockStack gap={GapBetweenTitleAndContent}>
+                            {errors && errors.length === 0 ? (
+                                <Banner title="Bundle updated!" tone="success" onDismiss={() => {}}>
+                                    <BlockStack gap={GapInsideSection}>
+                                        <Text as={"p"} variant="headingMd">
+                                            You succesfuly updated this bundle.
+                                        </Text>
+                                    </BlockStack>
+                                </Banner>
+                            ) : null}
 
-                                            {/* Bundle builder page url */}
-                                            <Card>
-                                                <BlockStack gap={GapBetweenTitleAndContent}>
-                                                    <Text as="p" variant="headingMd">
-                                                        Bundle page
-                                                    </Text>
-
-                                                    <BlockStack gap={GapInsideSection}>
-                                                        <TextField
-                                                            label="Bundle page"
-                                                            labelHidden
-                                                            autoComplete="off"
-                                                            readOnly
-                                                            name="bundlePage"
-                                                            helpText="Send customers to this page to let them create their unique bundles."
-                                                            value={bundleBuilderPageUrl}
-                                                            type="url"
-                                                        />
-                                                    </BlockStack>
-                                                </BlockStack>
-                                            </Card>
-
-                                            <Card>
-                                                <ChoiceList
-                                                    title="Bundle Pricing"
-                                                    name="bundlePricing"
-                                                    choices={[
-                                                        {
-                                                            label: "Calculated price ",
-                                                            value: BundlePricing.CALCULATED,
-                                                            helpText: (
-                                                                <Tooltip
-                                                                    width="wide"
-                                                                    activatorWrapper="div"
-                                                                    content={`e.g. use case: you want to sell shirt,
-                                      pants, and a hat in a bundle with a 10%
-                                      discount on whole order, and you want the
-                                      total price before discount to be the sum of
-                                      the prices of individual products that customer has selected.`}>
-                                                                    <div className={styles.tooltipContent}>
-                                                                        <Box>
-                                                                            <p>Final price is calculated based on the products that customers selects.</p>
-                                                                        </Box>
-                                                                        <Box>
-                                                                            <Icon source={QuestionCircleIcon} />
-                                                                        </Box>
-                                                                    </div>
-                                                                </Tooltip>
-                                                            ),
-                                                        },
-                                                        {
-                                                            label: "Fixed price",
-                                                            value: BundlePricing.FIXED,
-                                                            helpText: (
-                                                                <Tooltip
-                                                                    width="wide"
-                                                                    activatorWrapper="div"
-                                                                    content={`e.g. use case: you want to sell 5 cookies
-                                    in a bundle, always at the same price, but want
-                                    your customers to be able to select which
-                                    cookies they want.`}>
-                                                                    <div className={styles.tooltipContent}>
-                                                                        <Box>
-                                                                            <Text as="p">All bundles created will be priced the same.</Text>
-                                                                        </Box>
-                                                                        <Box>
-                                                                            <Icon source={QuestionCircleIcon} />
-                                                                        </Box>
-                                                                    </div>
-                                                                </Tooltip>
-                                                            ),
-                                                            renderChildren: (isSelected: boolean) => {
-                                                                return isSelected ? (
-                                                                    <Box maxWidth="50" id="priceAmount">
-                                                                        <TextField
-                                                                            label="Price"
-                                                                            type="number"
-                                                                            name="priceAmount"
-                                                                            inputMode="numeric"
-                                                                            autoComplete="off"
-                                                                            min={0}
-                                                                            error={errors?.find((err: error) => err.fieldId === "priceAmount")?.message}
-                                                                            value={bundleState.priceAmount?.toString()}
-                                                                            prefix="$"
-                                                                            onChange={(newPrice: string) => {
-                                                                                setBundleState((prevBundle: BundleBuilderClient) => {
-                                                                                    return {
-                                                                                        ...prevBundle,
-                                                                                        priceAmount: parseFloat(newPrice),
-                                                                                    };
-                                                                                });
-                                                                                updateFieldErrorHandler("priceAmount");
-                                                                            }}
-                                                                        />
-                                                                    </Box>
-                                                                ) : null;
-                                                            },
-                                                        },
-                                                    ]}
-                                                    selected={[bundleState.pricing]}
-                                                    onChange={(newPricing) => {
-                                                        setBundleState((prevBundle: BundleBuilderClient) => {
-                                                            return {
-                                                                ...prevBundle,
-                                                                pricing: newPricing[0] as BundlePricing,
-                                                            };
-                                                        });
-                                                    }}
-                                                />
-                                            </Card>
-
-                                            {/* Bundle discount */}
-                                            <Card>
-                                                <BlockStack gap={GapBetweenTitleAndContent}>
-                                                    <Text as="p" variant="headingMd">
-                                                        Discount
-                                                    </Text>
-                                                    <BlockStack gap={GapInsideSection}>
-                                                        <Select
-                                                            label="Type"
-                                                            name="bundleDiscountType"
-                                                            options={[
-                                                                {
-                                                                    label: "Percentage (e.g. 25% off)",
-                                                                    value: BundleDiscountType.PERCENTAGE,
-                                                                },
-                                                                {
-                                                                    label: "Fixed (e.g. 10$ off)",
-                                                                    value: BundleDiscountType.FIXED,
-                                                                },
-
-                                                                {
-                                                                    label: "No discount",
-                                                                    value: BundleDiscountType.NO_DISCOUNT,
-                                                                },
-                                                            ]}
-                                                            value={bundleState.discountType}
-                                                            onChange={(newDiscountType: string) => {
-                                                                setBundleState((prevBundle: BundleBuilderClient) => {
-                                                                    return {
-                                                                        ...prevBundle,
-                                                                        discountType: newDiscountType as BundleDiscountType,
-                                                                    };
-                                                                });
-                                                            }}
-                                                        />
-
-                                                        <TextField
-                                                            label="Amount"
-                                                            type="number"
-                                                            autoComplete="off"
-                                                            inputMode="numeric"
-                                                            disabled={bundleState.discountType === "NO_DISCOUNT"}
-                                                            name={`discountValue`}
-                                                            prefix={bundleState.discountType === BundleDiscountType.PERCENTAGE ? "%" : "$"}
-                                                            min={0}
-                                                            max={100}
-                                                            value={bundleState.discountValue.toString()}
-                                                            error={errors?.find((err: error) => err.fieldId === "discountValue")?.message}
-                                                            onChange={(newDiscountValue) => {
-                                                                setBundleState((prevBundle: BundleBuilderClient) => {
-                                                                    return {
-                                                                        ...prevBundle,
-                                                                        discountValue: parseInt(newDiscountValue),
-                                                                    };
-                                                                });
-                                                                updateFieldErrorHandler("discountValue");
-                                                            }}
-                                                        />
-                                                    </BlockStack>
-                                                </BlockStack>
-                                            </Card>
-                                        </BlockStack>
-                                    </Layout.Section>
-                                    <Layout.Section variant="oneThird">
-                                        <BlockStack gap={GapBetweenSections}>
-                                            <input type="hidden" name="action" defaultValue="updateBundle" />
-                                            <input type="hidden" name="bundle" defaultValue={JSON.stringify(bundleState)} />
+                            <Form method="POST" data-discard-confirmation data-save-bar>
+                                <BlockStack gap={GapBetweenSections}>
+                                    <Layout>
+                                        <Layout.Section>
                                             <BlockStack gap={GapBetweenSections}>
-                                                {/* Bundle title */}
+                                                {/* Bundle builder steps */}
+                                                <BundleBuilderSteps user={loaderData.user} bundleBuilderSteps={loaderData.allBundleSteps} />
 
+                                                {/* Bundle builder page url */}
                                                 <Card>
                                                     <BlockStack gap={GapBetweenTitleAndContent}>
                                                         <Text as="p" variant="headingMd">
-                                                            Bundle title
+                                                            Bundle page
                                                         </Text>
 
                                                         <BlockStack gap={GapInsideSection}>
                                                             <TextField
-                                                                label="Title"
+                                                                label="Bundle page"
                                                                 labelHidden
                                                                 autoComplete="off"
-                                                                inputMode="text"
-                                                                name="bundleTitle"
-                                                                helpText="This title will be displayed to your customers on bundle page, in checkout and in cart."
-                                                                error={errors?.find((err: error) => err.fieldId === "bundleTitle")?.message}
-                                                                value={bundleState.title}
-                                                                onChange={(newTitile) => {
-                                                                    setBundleState((prevBundle: BundleBuilderClient) => {
-                                                                        return { ...prevBundle, title: newTitile };
-                                                                    });
-                                                                    updateFieldErrorHandler("bundleTitle");
-                                                                }}
-                                                                type="text"
+                                                                readOnly
+                                                                name="bundlePage"
+                                                                helpText="Send customers to this page to let them create their unique bundles."
+                                                                value={bundleBuilderPageUrl}
+                                                                type="url"
                                                             />
                                                         </BlockStack>
                                                     </BlockStack>
                                                 </Card>
 
-                                                {/* Bundle status */}
+                                                <Card>
+                                                    <ChoiceList
+                                                        title="Bundle Pricing"
+                                                        name="bundlePricing"
+                                                        choices={[
+                                                            {
+                                                                label: "Calculated price ",
+                                                                value: BundlePricing.CALCULATED,
+                                                                helpText: (
+                                                                    <Tooltip
+                                                                        width="wide"
+                                                                        activatorWrapper="div"
+                                                                        content={`e.g. use case: you want to sell shirt,
+                                      pants, and a hat in a bundle with a 10%
+                                      discount on whole order, and you want the
+                                      total price before discount to be the sum of
+                                      the prices of individual products that customer has selected.`}>
+                                                                        <div className={styles.tooltipContent}>
+                                                                            <Box>
+                                                                                <p>Final price is calculated based on the products that customers selects.</p>
+                                                                            </Box>
+                                                                            <Box>
+                                                                                <Icon source={QuestionCircleIcon} />
+                                                                            </Box>
+                                                                        </div>
+                                                                    </Tooltip>
+                                                                ),
+                                                            },
+                                                            {
+                                                                label: "Fixed price",
+                                                                value: BundlePricing.FIXED,
+                                                                helpText: (
+                                                                    <Tooltip
+                                                                        width="wide"
+                                                                        activatorWrapper="div"
+                                                                        content={`e.g. use case: you want to sell 5 cookies
+                                    in a bundle, always at the same price, but want
+                                    your customers to be able to select which
+                                    cookies they want.`}>
+                                                                        <div className={styles.tooltipContent}>
+                                                                            <Box>
+                                                                                <Text as="p">All bundles created will be priced the same.</Text>
+                                                                            </Box>
+                                                                            <Box>
+                                                                                <Icon source={QuestionCircleIcon} />
+                                                                            </Box>
+                                                                        </div>
+                                                                    </Tooltip>
+                                                                ),
+                                                                renderChildren: (isSelected: boolean) => {
+                                                                    return isSelected ? (
+                                                                        <Box maxWidth="50" id="priceAmount">
+                                                                            <TextField
+                                                                                label="Price"
+                                                                                type="number"
+                                                                                name="priceAmount"
+                                                                                inputMode="numeric"
+                                                                                autoComplete="off"
+                                                                                min={0}
+                                                                                error={errors?.find((err: error) => err.fieldId === "priceAmount")?.message}
+                                                                                value={bundleState.priceAmount?.toString()}
+                                                                                prefix="$"
+                                                                                onChange={(newPrice: string) => {
+                                                                                    setBundleState((prevBundle: BundleBuilderClient) => {
+                                                                                        return {
+                                                                                            ...prevBundle,
+                                                                                            priceAmount: parseFloat(newPrice),
+                                                                                        };
+                                                                                    });
+                                                                                    updateFieldErrorHandler("priceAmount");
+                                                                                }}
+                                                                            />
+                                                                        </Box>
+                                                                    ) : null;
+                                                                },
+                                                            },
+                                                        ]}
+                                                        selected={[bundleState.pricing]}
+                                                        onChange={(newPricing) => {
+                                                            setBundleState((prevBundle: BundleBuilderClient) => {
+                                                                return {
+                                                                    ...prevBundle,
+                                                                    pricing: newPricing[0] as BundlePricing,
+                                                                };
+                                                            });
+                                                        }}
+                                                    />
+                                                </Card>
+
+                                                {/* Bundle discount */}
                                                 <Card>
                                                     <BlockStack gap={GapBetweenTitleAndContent}>
                                                         <Text as="p" variant="headingMd">
-                                                            Bundle status
+                                                            Discount
                                                         </Text>
+                                                        <BlockStack gap={GapInsideSection}>
+                                                            <Select
+                                                                label="Type"
+                                                                name="bundleDiscountType"
+                                                                options={[
+                                                                    {
+                                                                        label: "Percentage (e.g. 25% off)",
+                                                                        value: BundleDiscountType.PERCENTAGE,
+                                                                    },
+                                                                    {
+                                                                        label: "Fixed (e.g. 10$ off)",
+                                                                        value: BundleDiscountType.FIXED,
+                                                                    },
 
-                                                        <Select
-                                                            label="Visibility"
-                                                            name="bundleVisibility"
-                                                            labelHidden
-                                                            options={[
-                                                                { label: "Active", value: "true" },
-                                                                { label: "Draft", value: "false" },
-                                                            ]}
-                                                            helpText="Bundles set to 'ACTIVE' are visible to anyone browsing your store"
-                                                            value={bundleState.published ? "true" : "false"}
-                                                            onChange={(newSelection: string) => {
-                                                                setBundleState((prevBundle: BundleBuilderClient) => {
-                                                                    return {
-                                                                        ...prevBundle,
-                                                                        published: newSelection === "true",
-                                                                    };
-                                                                });
-                                                            }}
-                                                        />
+                                                                    {
+                                                                        label: "No discount",
+                                                                        value: BundleDiscountType.NO_DISCOUNT,
+                                                                    },
+                                                                ]}
+                                                                value={bundleState.discountType}
+                                                                onChange={(newDiscountType: string) => {
+                                                                    setBundleState((prevBundle: BundleBuilderClient) => {
+                                                                        return {
+                                                                            ...prevBundle,
+                                                                            discountType: newDiscountType as BundleDiscountType,
+                                                                        };
+                                                                    });
+                                                                }}
+                                                            />
+
+                                                            <TextField
+                                                                label="Amount"
+                                                                type="number"
+                                                                autoComplete="off"
+                                                                inputMode="numeric"
+                                                                disabled={bundleState.discountType === "NO_DISCOUNT"}
+                                                                name={`discountValue`}
+                                                                prefix={bundleState.discountType === BundleDiscountType.PERCENTAGE ? "%" : "$"}
+                                                                min={0}
+                                                                max={100}
+                                                                value={bundleState.discountValue.toString()}
+                                                                error={errors?.find((err: error) => err.fieldId === "discountValue")?.message}
+                                                                onChange={(newDiscountValue) => {
+                                                                    setBundleState((prevBundle: BundleBuilderClient) => {
+                                                                        return {
+                                                                            ...prevBundle,
+                                                                            discountValue: parseInt(newDiscountValue),
+                                                                        };
+                                                                    });
+                                                                    updateFieldErrorHandler("discountValue");
+                                                                }}
+                                                            />
+                                                        </BlockStack>
                                                     </BlockStack>
                                                 </Card>
                                             </BlockStack>
+                                        </Layout.Section>
+                                        <Layout.Section variant="oneThird">
+                                            <BlockStack gap={GapBetweenSections}>
+                                                <input type="hidden" name="action" defaultValue="updateBundle" />
+                                                <input type="hidden" name="bundle" defaultValue={JSON.stringify(bundleState)} />
+                                                <BlockStack gap={GapBetweenSections}>
+                                                    {/* Bundle title */}
+
+                                                    <Card>
+                                                        <BlockStack gap={GapBetweenTitleAndContent}>
+                                                            <Text as="p" variant="headingMd">
+                                                                Bundle title
+                                                            </Text>
+
+                                                            <BlockStack gap={GapInsideSection}>
+                                                                <TextField
+                                                                    label="Title"
+                                                                    labelHidden
+                                                                    autoComplete="off"
+                                                                    inputMode="text"
+                                                                    name="bundleTitle"
+                                                                    helpText="This title will be displayed to your customers on bundle page, in checkout and in cart."
+                                                                    error={errors?.find((err: error) => err.fieldId === "bundleTitle")?.message}
+                                                                    value={bundleState.title}
+                                                                    onChange={(newTitile) => {
+                                                                        setBundleState((prevBundle: BundleBuilderClient) => {
+                                                                            return { ...prevBundle, title: newTitile };
+                                                                        });
+                                                                        updateFieldErrorHandler("bundleTitle");
+                                                                    }}
+                                                                    type="text"
+                                                                />
+                                                            </BlockStack>
+                                                        </BlockStack>
+                                                    </Card>
+
+                                                    {/* Bundle status */}
+                                                    <Card>
+                                                        <BlockStack gap={GapBetweenTitleAndContent}>
+                                                            <Text as="p" variant="headingMd">
+                                                                Bundle status
+                                                            </Text>
+
+                                                            <Select
+                                                                label="Visibility"
+                                                                name="bundleVisibility"
+                                                                labelHidden
+                                                                options={[
+                                                                    { label: "Active", value: "true" },
+                                                                    { label: "Draft", value: "false" },
+                                                                ]}
+                                                                helpText="Bundles set to 'ACTIVE' are visible to anyone browsing your store"
+                                                                value={bundleState.published ? "true" : "false"}
+                                                                onChange={(newSelection: string) => {
+                                                                    setBundleState((prevBundle: BundleBuilderClient) => {
+                                                                        return {
+                                                                            ...prevBundle,
+                                                                            published: newSelection === "true",
+                                                                        };
+                                                                    });
+                                                                }}
+                                                            />
+                                                        </BlockStack>
+                                                    </Card>
+                                                </BlockStack>
+                                            </BlockStack>
+                                        </Layout.Section>
+                                    </Layout>
+                                    <Divider borderColor="transparent" />
+
+                                    <Box width="full">
+                                        <BlockStack inlineAlign="end">
+                                            <ButtonGroup>
+                                                <Button variant="primary" tone="critical" onClick={deleteBundleHandler}>
+                                                    Delete
+                                                </Button>
+                                                <button
+                                                    className="Polaris-Button Polaris-Button--pressable Polaris-Button--variantSecondary Polaris-Button--sizeMedium Polaris-Button--textAlignCenter"
+                                                    name="submitBtn"
+                                                    value="saveBtn"
+                                                    type="submit">
+                                                    <span className="Polaris-Text--root Polaris-Text--bodySm Polaris-Text--medium">Save</span>
+                                                </button>
+
+                                                <button
+                                                    className="Polaris-Button Polaris-Button--pressable Polaris-Button--variantPrimary Polaris-Button--sizeMedium Polaris-Button--textAlignCenter"
+                                                    name="submitBtn"
+                                                    value="saveAndExitBtn"
+                                                    type="submit">
+                                                    <span className="Polaris-Text--root Polaris-Text--bodySm Polaris-Text--medium">Save and return</span>
+                                                </button>
+                                            </ButtonGroup>
                                         </BlockStack>
-                                    </Layout.Section>
-                                </Layout>
-                                <Divider borderColor="transparent" />
+                                    </Box>
 
-                                <Box width="full">
-                                    <BlockStack inlineAlign="end">
-                                        <ButtonGroup>
-                                            <Button variant="primary" tone="critical" onClick={deleteBundleHandler}>
-                                                Delete
-                                            </Button>
-                                            <button
-                                                className="Polaris-Button Polaris-Button--pressable Polaris-Button--variantSecondary Polaris-Button--sizeMedium Polaris-Button--textAlignCenter"
-                                                name="submitBtn"
-                                                value="saveBtn"
-                                                type="submit">
-                                                <span className="Polaris-Text--root Polaris-Text--bodySm Polaris-Text--medium">Save</span>
-                                            </button>
-
-                                            <button
-                                                className="Polaris-Button Polaris-Button--pressable Polaris-Button--variantPrimary Polaris-Button--sizeMedium Polaris-Button--textAlignCenter"
-                                                name="submitBtn"
-                                                value="saveAndExitBtn"
-                                                type="submit">
-                                                <span className="Polaris-Text--root Polaris-Text--bodySm Polaris-Text--medium">Save and return</span>
-                                            </button>
-                                        </ButtonGroup>
-                                    </BlockStack>
-                                </Box>
-
-                                <FooterHelp>
-                                    You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
-                                </FooterHelp>
-                            </BlockStack>
-                        </Form>
+                                    <FooterHelp>
+                                        You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
+                                    </FooterHelp>
+                                </BlockStack>
+                            </Form>
+                        </BlockStack>
                     </Page>
                 </div>
             )}

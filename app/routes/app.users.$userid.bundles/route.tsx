@@ -114,7 +114,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 // if the user is not onboarding, redirect to edit bundle imidiately
                 else {
                     return redirect(`/app/create-bundle-builder/${bundleBuilder.id}/step-1`);
-                    return redirect(`/app/edit-bundle-builder/${bundleBuilder.id}/builder/steps`);
+                    return redirect(`/app/edit-bundle-builder/${bundleBuilder.id}/builder`);
                 }
             } catch (error) {
                 console.log(error);
@@ -269,7 +269,7 @@ export default function Index() {
 
                                     fetcher.submit(form, {
                                         method: "post",
-                                        action: `/app/edit-bundle-builder/${bundleForDelete.id}`,
+                                        action: `/app/edit-bundle-builder/${bundleForDelete.id}/builder`,
                                     });
 
                                     setBundleForDelete(null);
@@ -323,7 +323,7 @@ export default function Index() {
                                                 </Text>,
 
                                                 //
-                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}/builder/steps`}>
+                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
                                                     <Text as="p" tone="base">
                                                         {bundleBuilder.title}
                                                     </Text>
@@ -331,7 +331,7 @@ export default function Index() {
                                                 //
                                                 bundleBuilder.steps.length,
                                                 //
-                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}/builder/steps`}>
+                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
                                                     {bundleBuilder.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
                                                 </Link>,
                                                 //
@@ -360,7 +360,7 @@ export default function Index() {
                                                         Duplicate
                                                         </Button> */}
 
-                                                    <Button icon={EditIcon} variant="primary" url={`/app/edit-bundle-builder/${bundleBuilder.id}/builder/steps`}>
+                                                    <Button icon={EditIcon} variant="primary" url={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
                                                         Edit
                                                     </Button>
                                                 </ButtonGroup>,
@@ -369,7 +369,7 @@ export default function Index() {
                                                     icon={SettingsIcon}
                                                     variant="secondary"
                                                     tone="success"
-                                                    url={`/app/edit-bundle-builder/${bundleBuilder.id}/settings/?redirect=/app/edit-bundle-builder/builder/steps`}>
+                                                    url={`/app/edit-bundle-builder/${bundleBuilder.id}/builder/settings/?redirect=/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
                                                     Settings
                                                 </Button>,
                                                 <Button

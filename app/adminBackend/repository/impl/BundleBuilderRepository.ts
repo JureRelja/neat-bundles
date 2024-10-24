@@ -1,6 +1,6 @@
-import { Page } from '@shopifyGraphql/graphql';
-import db from '../../../db.server';
-import { BundleBuilder } from '@prisma/client';
+import { Page } from "@shopifyGraphql/graphql";
+import db from "../../../db.server";
+import { BundleBuilder } from "@prisma/client";
 
 export class BundleBuilderRepository {
     public static async createNewBundleBuilder(shop: string, bundleTitle: string, bundleProductId: string, bundlePageId: string, bundleBuilderPageHandle: string) {
@@ -16,8 +16,8 @@ export class BundleBuilderRepository {
                 published: true,
                 shopifyProductId: bundleProductId,
                 shopifyPageId: bundlePageId,
-                pricing: 'CALCULATED',
-                discountType: 'PERCENTAGE',
+                pricing: "CALCULATED",
+                discountType: "PERCENTAGE",
                 discountValue: 10,
                 bundleSettings: {
                     create: {
@@ -32,9 +32,9 @@ export class BundleBuilderRepository {
                     create: [
                         {
                             stepNumber: 1,
-                            title: 'Step 1',
-                            stepType: 'PRODUCT',
-                            description: 'This is a description for Step 1',
+                            title: "Step 1",
+                            stepType: "PRODUCT",
+                            description: "This is a description for Step 1",
                             productInput: {
                                 create: {
                                     minProductsOnStep: 1,
@@ -46,26 +46,26 @@ export class BundleBuilderRepository {
                             contentInputs: {
                                 create: [
                                     {
-                                        inputType: 'TEXT',
-                                        inputLabel: 'Enter text',
+                                        inputType: "TEXT",
+                                        inputLabel: "Enter text",
                                         maxChars: 50,
                                         required: true,
                                     },
                                     {
-                                        inputLabel: '',
+                                        inputLabel: "",
                                         maxChars: 0,
                                         required: false,
-                                        inputType: 'NONE',
+                                        inputType: "NONE",
                                     },
                                 ],
                             },
                         },
                         {
                             stepNumber: 2,
-                            title: 'Step 2',
-                            description: 'This is a description for Step 2',
+                            title: "Step 2",
+                            description: "This is a description for Step 2",
 
-                            stepType: 'PRODUCT',
+                            stepType: "PRODUCT",
                             productInput: {
                                 create: {
                                     minProductsOnStep: 1,
@@ -77,26 +77,26 @@ export class BundleBuilderRepository {
                             contentInputs: {
                                 create: [
                                     {
-                                        inputType: 'TEXT',
-                                        inputLabel: 'Enter text',
+                                        inputType: "TEXT",
+                                        inputLabel: "Enter text",
                                         maxChars: 50,
                                         required: true,
                                     },
                                     {
-                                        inputLabel: '',
+                                        inputLabel: "",
                                         maxChars: 0,
                                         required: false,
-                                        inputType: 'NONE',
+                                        inputType: "NONE",
                                     },
                                 ],
                             },
                         },
                         {
                             stepNumber: 3,
-                            title: 'Step 3',
-                            description: 'This is a description for Step 3',
+                            title: "Step 3",
+                            description: "This is a description for Step 3",
 
-                            stepType: 'PRODUCT',
+                            stepType: "PRODUCT",
                             productInput: {
                                 create: {
                                     minProductsOnStep: 1,
@@ -108,16 +108,16 @@ export class BundleBuilderRepository {
                             contentInputs: {
                                 create: [
                                     {
-                                        inputType: 'TEXT',
-                                        inputLabel: 'Enter text',
+                                        inputType: "TEXT",
+                                        inputLabel: "Enter text",
                                         maxChars: 50,
                                         required: true,
                                     },
                                     {
-                                        inputLabel: '',
+                                        inputLabel: "",
                                         maxChars: 0,
                                         required: false,
-                                        inputType: 'NONE',
+                                        inputType: "NONE",
                                     },
                                 ],
                             },
@@ -144,8 +144,8 @@ export class BundleBuilderRepository {
                 shopifyProductId: bundleProductId,
                 shopifyPageId: bundlePageId,
                 bundleBuilderPageHandle: bundleBuilderPageHandle,
-                pricing: 'CALCULATED',
-                discountType: 'PERCENTAGE',
+                pricing: "CALCULATED",
+                discountType: "PERCENTAGE",
                 discountValue: 10,
                 bundleSettings: {
                     create: {
@@ -226,6 +226,16 @@ export class BundleBuilderRepository {
     public async getBundleBuilderCountByStoreUrl(storeUrl: string): Promise<number> {
         return db.bundleBuilder.count({
             where: {
+                storeUrl: storeUrl,
+                deleted: false,
+            },
+        });
+    }
+
+    public async getBundleBuilderByIdAndStoreUrl(id: number, storeUrl: string): Promise<BundleBuilder | null> {
+        return db.bundleBuilder.findUnique({
+            where: {
+                id: id,
                 storeUrl: storeUrl,
                 deleted: false,
             },

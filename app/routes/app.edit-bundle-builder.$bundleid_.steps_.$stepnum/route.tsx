@@ -92,7 +92,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             const url = new URL(request.url);
 
             if (url.searchParams.has("redirect") && url.searchParams.get("redirect") === "true") {
-                return redirect(`/app/edit-bundle-builder/${params.bundleid}/builder/steps`);
+                return redirect(`/app/edit-bundle-builder/${params.bundleid}`);
             }
 
             // Clear the cache for the bundle
@@ -156,7 +156,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 return json({
                     ...new JsonData(true, "success", "Step was duplicated"),
                 });
-                // return redirect(`/app/edit-bundle-builder/${params.bundleid}/builder/steps`);
+                // return redirect(`/app/edit-bundle-builder/${params.bundleid}/steps`);
             } catch (error) {
                 console.log(error);
                 return json(
@@ -212,7 +212,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
                 ]);
 
-                return redirect(`/app/edit-bundle-builder/${params.bundleid}/builder/steps/${params.stepnum}/${stepData.stepType === StepType.PRODUCT ? "product" : "content"}`);
+                return redirect(`/app/edit-bundle-builder/${params.bundleid}/steps/${params.stepnum}/${stepData.stepType === StepType.PRODUCT ? "product" : "content"}`);
             } catch (error) {
                 console.log(error);
                 return json(
@@ -257,7 +257,7 @@ export default function Index() {
                         onAction: async () => {
                             // Save or discard the changes before leaving the page
                             await shopify.saveBar.leaveConfirmation();
-                            navigate(`/app/edit-bundle-builder/${params.bundleid}/builder/steps`);
+                            navigate(`/app/edit-bundle-builder/${params.bundleid}/builder`);
                         },
                     }}
                     title={`Edit step: ${stepData.stepNumber}`}>

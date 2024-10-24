@@ -26,6 +26,9 @@ class BundleBuilderContentStepRepository extends BundleBuilderStepTypeRepository
                 stepType: StepType.CONTENT,
                 title: stepData.title,
                 description: stepData.description,
+                contentInputs: {
+                    create: stepData.contentInputs,
+                },
             },
             include: {
                 contentInputs: true,

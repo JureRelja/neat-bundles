@@ -90,7 +90,7 @@ export default function Index() {
         form.append("stepData", JSON.stringify(stepData));
         form.append("action", "addProductStep");
 
-        submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/builder/steps?stepNumber=4&onboarding=true`, navigate: true });
+        submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps?stepNumber=4&onboarding=true`, navigate: true });
     };
 
     //step data

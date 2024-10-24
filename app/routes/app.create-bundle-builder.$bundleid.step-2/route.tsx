@@ -99,7 +99,7 @@ export default function Index() {
 
         submit(form, {
             method: "POST",
-            action: `/app/edit-bundle-builder/${params.bundleid}/builder/steps?stepNumber=2&onboarding=true&multiStep=${loaderData.data.multiStep}`,
+            action: `/app/edit-bundle-builder/${params.bundleid}/steps?stepNumber=2&onboarding=true&multiStep=${loaderData.data.multiStep}`,
             navigate: true,
         });
     };
