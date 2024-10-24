@@ -7,11 +7,21 @@ import { GapBetweenTitleAndContent } from "../../constants";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import bundleBuilderRepository from "~/adminBackend/repository/impl/BundleBuilderRepository";
 import styles from "./route.module.css";
+import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
     console.log("I'm on bundleID loader");
+
+    const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
+
+    if (!isAuthorized) {
+        throw new Response(null, {
+            status: 404,
+            statusText: "Not Found",
+        });
+    }
 
     const bundleBuilder = await bundleBuilderRepository.getBundleBuilderByIdAndStoreUrl(Number(params.bundleid), session.shop);
 

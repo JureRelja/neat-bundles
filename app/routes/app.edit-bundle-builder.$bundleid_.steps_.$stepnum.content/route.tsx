@@ -5,7 +5,7 @@ import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
 import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, ButtonGroup, Layout, Banner } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
-import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from "../../constants";
+import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, LargeGapBetweenSections } from "../../constants";
 import { BundleStep, ContentInput, StepType } from "@prisma/client";
 import { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
 import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
@@ -13,15 +13,24 @@ import ContentStepInputs from "~/components/contentStepInputs";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import bundleBuilderContentStepRepository from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderContentStepRepository";
 import { bundleBuilderContentStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderContentStepService";
-import { bundleBuilderProductStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderProductStepService";
 import { bundleBuilderStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderStepService";
 import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
 import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
+import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    await authenticate.admin(request);
+    const { admin, session } = await authenticate.admin(request);
 
     console.log("I'm on stepnum.content loader");
+
+    const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
+
+    if (!isAuthorized) {
+        throw new Response(null, {
+            status: 404,
+            statusText: "Not Found",
+        });
+    }
 
     const stepData: BundleStepContent | null = await bundleBuilderContentStepRepository.getStepByBundleIdAndStepNumber(Number(params.bundleid), Number(params.stepnum));
 
@@ -188,22 +197,38 @@ export default function Index() {
                             <Layout>
                                 <Layout.Section>
                                     <Card>
-                                        <BlockStack gap={GapBetweenTitleAndContent}>
-                                            <Text as="h2" variant="headingMd">
-                                                Step settings
-                                            </Text>
-
+                                        <BlockStack gap={LargeGapBetweenSections}>
                                             <BlockStack gap={GapBetweenSections}>
-                                                {stepData.contentInputs.map((contentInput) => (
-                                                    <ContentStepInputs
-                                                        key={contentInput.id}
-                                                        contentInput={contentInput}
-                                                        errors={errors}
-                                                        inputId={contentInput.id}
-                                                        updateFieldErrorHandler={updateFieldErrorHandler}
-                                                        updateContentInput={updateContentInput}
-                                                    />
-                                                ))}
+                                                <Text as="h2" variant="headingMd">
+                                                    Content inputs on this step
+                                                </Text>
+
+                                                <BlockStack gap={GapBetweenSections}>
+                                                    {stepData.contentInputs.length > 0 ? (
+                                                        <BlockStack gap={GapBetweenSections}>
+                                                            {stepData.contentInputs.map((contentInput) => (
+                                                                <ContentStepInputs
+                                                                    key={contentInput.id}
+                                                                    contentInput={contentInput}
+                                                                    errors={errors}
+                                                                    inputId={contentInput.id}
+                                                                    updateFieldErrorHandler={updateFieldErrorHandler}
+                                                                    updateContentInput={updateContentInput}
+                                                                />
+                                                            ))}
+                                                            <Button variant="primary" fullWidth disabled={stepData.contentInputs.length >= 2}>
+                                                                Add another content input
+                                                            </Button>
+                                                        </BlockStack>
+                                                    ) : (
+                                                        <BlockStack gap={GapBetweenSections}>
+                                                            <Text as="p">There are no content inputs on this step.</Text>
+                                                            <Button variant="primary" fullWidth>
+                                                                Add first content input
+                                                            </Button>
+                                                        </BlockStack>
+                                                    )}
+                                                </BlockStack>
                                             </BlockStack>
                                         </BlockStack>
                                     </Card>

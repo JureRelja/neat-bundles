@@ -59,12 +59,10 @@ class BundleBuilderProductStepService extends BundleBuilderStepTypeService {
             throw new Error("Step not found");
         }
 
-        const numOfSteps = await bundleBuilderStepRepository.getNumberOfSteps(bundleId);
-
         const stepData: ProductStepDataDto = {
             description: stepToDuplicate.description,
             title: stepToDuplicate.title,
-            stepNumber: numOfSteps + 1,
+            stepNumber: stepToDuplicate.stepNumber + 1,
             stepType: stepToDuplicate.stepType,
             productInput: {
                 minProductsOnStep: stepToDuplicate.productInput?.minProductsOnStep || 1,
@@ -75,9 +73,9 @@ class BundleBuilderProductStepService extends BundleBuilderStepTypeService {
             },
         };
 
-        const newStep: BundleStepProduct = await bundleBuilderProductStepRepository.addNewStep(bundleId, stepData);
+        await bundleBuilderStepsService.incrementStepNumberForStepsGreater(bundleId, stepToDuplicate.stepNumber);
 
-        await bundleBuilderStepsService.incrementStepNumberForStepsGreater(bundleId, stepToDuplicate.stepNumber + 1);
+        const newStep: BundleStepProduct = await bundleBuilderProductStepRepository.addNewStep(bundleId, stepData);
 
         return newStep;
     }

@@ -5,6 +5,7 @@ import { error } from "../../../dto/jsonData";
 import bundleBuilderContentStepRepository from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderContentStepRepository";
 import { bundleBuilderProductStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderProductStepRepository";
 import { bundleBuilderStepsService } from "../../BundleBuilderStepsService";
+import { ContentStepDataDto } from "~/adminBackend/service/dto/ContentStepDataDto";
 
 class BundleBuilderContentStepService extends BundleBuilderStepTypeService {
     public checkIfErrorsInStepData(stepData: BundleStepContent): error[] {
@@ -35,8 +36,8 @@ class BundleBuilderContentStepService extends BundleBuilderStepTypeService {
         return updatedStep;
     }
 
-    public async addNewStep(bundleId: number, stepDescription: string, stepNumber: number, newStepTitle: string): Promise<BundleStepContent> {
-        const newStep: BundleStepContent = await bundleBuilderContentStepRepository.addNewStep(bundleId, stepDescription, stepNumber, newStepTitle);
+    public async addNewStep(bundleId: number, stepData: ContentStepDataDto): Promise<BundleStepContent> {
+        const newStep: BundleStepContent = await bundleBuilderContentStepRepository.addNewStep(bundleId, stepData);
 
         return newStep;
     }
@@ -47,9 +48,22 @@ class BundleBuilderContentStepService extends BundleBuilderStepTypeService {
             throw new Error("Step not found");
         }
 
-        const newStep: BundleStepContent = await bundleBuilderContentStepRepository.addNewStep(bundleId, stepToDuplicate.description, stepNumber + 1, stepToDuplicate.title);
+        const contentStepDto: ContentStepDataDto = {
+            description: stepToDuplicate.description,
+            title: stepToDuplicate.title,
+            stepNumber: stepNumber,
+            stepType: stepToDuplicate.stepType,
+            contentInputs: stepToDuplicate.contentInputs.map((contentInput: ContentInput) => ({
+                inputLabel: contentInput.inputLabel,
+                inputType: contentInput.inputType,
+                maxChars: contentInput.maxChars,
+                required: contentInput.required,
+            })),
+        };
 
         await bundleBuilderStepsService.incrementStepNumberForStepsGreater(bundleId, stepToDuplicate.stepNumber + 1);
+
+        const newStep: BundleStepContent = await bundleBuilderContentStepRepository.addNewStep(bundleId, contentStepDto);
 
         return newStep;
     }

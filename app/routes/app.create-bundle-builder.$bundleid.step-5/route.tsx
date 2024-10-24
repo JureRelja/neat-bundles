@@ -1,21 +1,29 @@
 import { json, redirect } from "@remix-run/node";
-import { useActionData, useFetcher, useLoaderData, useNavigate, useNavigation, useParams, useSubmit } from "@remix-run/react";
+import { useFetcher, useLoaderData, useNavigate, useNavigation, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Page, Card, BlockStack, TextField, Text, Box, SkeletonPage, SkeletonBodyText, Spinner, InlineStack, Button, Tabs, ButtonGroup } from "@shopify/polaris";
-import { useAppBridge, Modal, TitleBar } from "@shopify/app-bridge-react";
+import { BlockStack, Text, Button, ButtonGroup } from "@shopify/polaris";
+import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
-
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
 import { BundleBuilder } from "@prisma/client";
-import { BigGapBetweenSections, GapBetweenSections, LargeGapBetweenSections } from "~/constants";
 import { useState } from "react";
 import WideButton from "~/components/wideButton";
+import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
+
+    const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
+
+    if (!isAuthorized) {
+        throw new Response(null, {
+            status: 404,
+            statusText: "Not Found",
+        });
+    }
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 

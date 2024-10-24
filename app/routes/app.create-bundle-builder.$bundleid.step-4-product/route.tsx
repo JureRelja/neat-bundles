@@ -10,12 +10,22 @@ import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBu
 import { BundleBuilder } from "@prisma/client";
 import { useState } from "react";
 import ResourcePicker from "~/components/resourcePicer";
-import { GapBetweenSections, GapInsideSection, HorizontalGap } from "~/constants";
+import { GapInsideSection, HorizontalGap } from "~/constants";
 import { Product } from "@prisma/client";
 import WideButton from "~/components/wideButton";
+import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
+
+    const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
+
+    if (!isAuthorized) {
+        throw new Response(null, {
+            status: 404,
+            statusText: "Not Found",
+        });
+    }
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 

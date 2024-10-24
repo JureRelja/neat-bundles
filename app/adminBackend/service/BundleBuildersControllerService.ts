@@ -1,6 +1,8 @@
+import { AdminApiContext } from "@shopify/shopify-app-remix/server";
+
 export interface BundleBuildersControllerService {
-    createBundleProduct(admin: any, productTitle: string, storeUrl: string): Promise<string | null>;
-    getOnlineStorePublicationId(admin: any): Promise<string | null>;
-    publishProductToOnlineStore(admin: any, productId: string, storeUrl: string): Promise<boolean>;
-    createProductToBundleRedirect(admin: any, pageHandle: string, productHandle: string): Promise<boolean>;
+    createBundleProduct(admin: AdminApiContext, productTitle: string, storeUrl: string): Promise<string | null>;
+    getOnlineStorePublicationId(admin: AdminApiContext): Promise<string | null>;
+    publishProductToOnlineStore(admin: AdminApiContext, productId: string, storeUrl: string): Promise<boolean>;
+    createProductToBundleRedirect(admin: AdminApiContext, pageHandle: string, productHandle: string): Promise<boolean>;
 }

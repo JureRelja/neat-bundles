@@ -5,20 +5,29 @@ import { authenticate } from "../../shopify.server";
 import db from "../../db.server";
 import { BundleStep } from "@prisma/client";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
-import { BundleStepBasicResources, BundleStepContent, BundleStepProduct } from "@adminBackend/service/dto/BundleStep";
+import { BundleStepContent, BundleStepProduct } from "@adminBackend/service/dto/BundleStep";
 import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 import { ApiCacheKeyService } from "@adminBackend/service/utils/ApiCacheKeyService";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { bundleBuilderStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderStepRepository";
 import bundleBuilderContentStepRepository from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderContentStepRepository";
 import { bundleBuilderStepsService } from "~/adminBackend/service/impl/BundleBuilderStepsService";
-
 import { ProductStepDataDto } from "~/adminBackend/service/dto/ProductStepDataDto";
 import { ContentStepDataDto } from "~/adminBackend/service/dto/ContentStepDataDto";
 import { bundleBuilderProductStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderProductStepService";
+import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
+
+    const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
+
+    if (!isAuthorized) {
+        throw new Response(null, {
+            status: 404,
+            statusText: "Not Found",
+        });
+    }
 
     console.log("I'm on steps loader");
 

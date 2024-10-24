@@ -3,7 +3,6 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { useNavigation, Outlet, Link, useLoaderData, useNavigate, useParams } from "@remix-run/react";
 import { Badge, BlockStack, FooterHelp, Page, SkeletonPage } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
-import db from "../../db.server";
 import { StepType, BundleStep } from "@prisma/client";
 import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
 import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
@@ -16,11 +15,21 @@ import { bundleBuilderStepService } from "~/adminBackend/service/impl/bundleBuil
 import { bundleBuilderContentStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderContentStepService";
 import { bundleBuilderStepsService } from "~/adminBackend/service/impl/BundleBuilderStepsService";
 import { GapBetweenSections } from "~/constants";
+import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
     console.log("I'm on stepNum.product loader");
+
+    const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
+
+    if (!isAuthorized) {
+        throw new Response(null, {
+            status: 404,
+            statusText: "Not Found",
+        });
+    }
 
     const stepData: BundleStep | null = await bundleBuilderStepRepository.getStepByBundleIdAndStepNumber(Number(params.bundleid), Number(params.stepnum), session.shop);
 

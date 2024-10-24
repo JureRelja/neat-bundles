@@ -7,13 +7,23 @@ import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
-import { BundleBuilder, StepType } from "@prisma/client";
+import { BundleBuilder } from "@prisma/client";
 import { useState } from "react";
 import { GapInsideSection } from "~/constants";
 import WideButton from "~/components/wideButton";
+import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
+
+    const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
+
+    if (!isAuthorized) {
+        throw new Response(null, {
+            status: 404,
+            statusText: "Not Found",
+        });
+    }
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 

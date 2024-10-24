@@ -16,9 +16,19 @@ import { shopifyBundleBuilderProductRepository } from "~/adminBackend/repository
 import { ShopifyRedirectRepository } from "~/adminBackend/repository/impl/ShopifyRedirectRepository";
 import { ShopifyBundleBuilderPageRepository } from "~/adminBackend/repository/ShopifyBundleBuilderPageRepository";
 import shopifyBundleBuilderPageGraphql from "@adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql";
+import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
+
+    const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
+
+    if (!isAuthorized) {
+        throw new Response(null, {
+            status: 404,
+            statusText: "Not Found",
+        });
+    }
 
     console.log("I'm on bundles loader");
 

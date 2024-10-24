@@ -1,7 +1,7 @@
 import { json, redirect } from "@remix-run/node";
-import { useFetcher, useLoaderData, useNavigate, useNavigation, useParams } from "@remix-run/react";
+import { useFetcher, useLoaderData, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { BlockStack, Text, Button, InlineError, Box, InlineGrid, TextField } from "@shopify/polaris";
+import { BlockStack, Text, InlineError, Box, InlineGrid, TextField } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
@@ -13,9 +13,19 @@ import ResourcePicker from "../../components/resourcePicer";
 import { GapInsideSection, HorizontalGap } from "../../constants";
 import { Product } from "@prisma/client";
 import WideButton from "../../components/wideButton";
+import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
+
+    const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
+
+    if (!isAuthorized) {
+        throw new Response(null, {
+            status: 404,
+            statusText: "Not Found",
+        });
+    }
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 

@@ -1,30 +1,39 @@
-import { json, redirect } from '@remix-run/node';
-import { useActionData, useFetcher, useLoaderData, useNavigate, useNavigation, useParams, useSubmit } from '@remix-run/react';
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Page, Card, BlockStack, TextField, Text, Box, SkeletonPage, SkeletonBodyText, Spinner, InlineStack, Button, Tabs, ButtonGroup } from '@shopify/polaris';
-import { useAppBridge, Modal, TitleBar } from '@shopify/app-bridge-react';
-import { authenticate } from '../../shopify.server';
+import { json, redirect } from "@remix-run/node";
+import { useFetcher, useLoaderData, useNavigate, useNavigation, useParams } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { BlockStack, Text, Button, ButtonGroup } from "@shopify/polaris";
+import { useAppBridge } from "@shopify/app-bridge-react";
+import { authenticate } from "../../shopify.server";
+import { JsonData } from "../../adminBackend/service/dto/jsonData";
+import styles from "./route.module.css";
+import userRepository from "~/adminBackend/repository/impl/UserRepository";
+import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
+import { BundleBuilder } from "@prisma/client";
 
-import { JsonData } from '../../adminBackend/service/dto/jsonData';
-import styles from './route.module.css';
-import userRepository from '~/adminBackend/repository/impl/UserRepository';
-import { BundleBuilderRepository } from '~/adminBackend/repository/impl/BundleBuilderRepository';
-import { BundleBuilder } from '@prisma/client';
-import { BigGapBetweenSections, GapBetweenSections, LargeGapBetweenSections } from '~/constants';
-import { useState } from 'react';
-import WideButton from '~/components/wideButton';
+import { useState } from "react";
+import WideButton from "~/components/wideButton";
+import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
+    const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
+
+    if (!isAuthorized) {
+        throw new Response(null, {
+            status: 404,
+            statusText: "Not Found",
+        });
+    }
+
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
-    if (!user) return redirect('/app');
+    if (!user) return redirect("/app");
 
     if (!params.bundleid) {
         throw new Response(null, {
             status: 404,
-            statusText: 'Bundle id is required',
+            statusText: "Bundle id is required",
         });
     }
 
@@ -33,22 +42,22 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     if (!bundleBuilder) {
         throw new Response(null, {
             status: 404,
-            statusText: 'Bundle with this id not found',
+            statusText: "Bundle with this id not found",
         });
     }
 
-    return json(new JsonData(true, 'success', 'Loader response', [], bundleBuilder), { status: 200 });
+    return json(new JsonData(true, "success", "Loader response", [], bundleBuilder), { status: 200 });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
     const formData = await request.formData();
-    const action = formData.get('action');
+    const action = formData.get("action");
 
     return json(
         {
-            ...new JsonData(true, 'success', "This is the default action that doesn't do anything."),
+            ...new JsonData(true, "success", "This is the default action that doesn't do anything."),
         },
         { status: 200 },
     );
@@ -58,8 +67,8 @@ export default function Index() {
     const nav = useNavigation();
     const navigate = useNavigate();
     const shopify = useAppBridge();
-    const isLoading: boolean = nav.state === 'loading';
-    const isSubmitting: boolean = nav.state === 'submitting';
+    const isLoading: boolean = nav.state === "loading";
+    const isSubmitting: boolean = nav.state === "submitting";
     const params = useParams();
     const fetcher = useFetcher();
     const loaderData = useLoaderData<typeof loader>();
@@ -78,8 +87,8 @@ export default function Index() {
 
     return (
         <div className={styles.fadeIn}>
-            <BlockStack gap={'1200'} inlineAlign="center">
-                <Text as={'p'} variant="headingLg" alignment="center">
+            <BlockStack gap={"1200"} inlineAlign="center">
+                <Text as={"p"} variant="headingLg" alignment="center">
                     How many steps do you want your bundle builder to have?
                 </Text>
 

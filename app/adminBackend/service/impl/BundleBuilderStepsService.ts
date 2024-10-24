@@ -7,14 +7,14 @@ class BundleBuilderStepsService {
     public async canAddMoreSteps(bundleId: number, user: User) {
         const canAddMoreSteps = await this.checkIfCanAddNewStep(bundleId);
 
-        if (!canAddMoreSteps) {
+        if (!canAddMoreSteps.ok) {
             return canAddMoreSteps;
         }
 
         const billingPlanAllowsMoreSteps = await this.checkIfBillingPlanAllowsMoreSteps(bundleId, user);
 
         // Ceck if the user has reached the limit of steps for the basic plan
-        if (!billingPlanAllowsMoreSteps) {
+        if (!billingPlanAllowsMoreSteps.ok) {
             return billingPlanAllowsMoreSteps;
         }
 

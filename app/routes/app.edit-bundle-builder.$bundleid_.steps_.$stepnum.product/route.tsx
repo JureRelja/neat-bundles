@@ -6,7 +6,7 @@ import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, InlineGri
 import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, HorizontalGap, LargeGapBetweenSections } from "../../constants";
-import { BundleStep, Product, StepType } from "@prisma/client";
+import { BundleStep, Product } from "@prisma/client";
 import { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
 import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
 import ResourcePicker from "~/components/resourcePicer";
@@ -15,12 +15,21 @@ import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { bundleBuilderProductInputRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderProductInputRepository";
 import { bundleBuilderProductStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderProductStepRepository";
-import { bundleBuilderContentStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderContentStepService";
 import { bundleBuilderProductStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderProductStepService";
 import { bundleBuilderStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderStepService";
+import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    await authenticate.admin(request);
+    const { admin, session } = await authenticate.admin(request);
+
+    const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
+
+    if (!isAuthorized) {
+        throw new Response(null, {
+            status: 404,
+            statusText: "Not Found",
+        });
+    }
 
     console.log("I'm on stepNum.product loader");
 
@@ -146,8 +155,6 @@ export default function Index() {
     const submittedStepData: BundleStepProduct = actionData?.data as BundleStepProduct;
 
     const errors = actionData?.errors as error[]; //Errors from the form submission
-
-    console.log(errors);
 
     const serverStepData: BundleStepProduct = useLoaderData<typeof loader>().data; //Data that was loaded from the server
 

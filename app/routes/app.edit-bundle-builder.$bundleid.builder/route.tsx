@@ -43,11 +43,21 @@ import { ApiCacheKeyService } from "../../adminBackend//service/utils/ApiCacheKe
 import { ApiCacheService } from "../../adminBackend//service/utils/ApiCacheService";
 import shopifyBundleBuilderPageRepositoryGraphql from "../../adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql";
 import styles from "./route.module.css";
+import { AuthorizationCheck } from "../../adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
     console.log("I'm on bundleId.builder, loader");
+
+    const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
+
+    if (!isAuthorized) {
+        throw new Response(null, {
+            status: 404,
+            statusText: "Not Found",
+        });
+    }
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
@@ -485,7 +495,7 @@ export default function Index() {
     const loaderData = useLoaderData<typeof loader>().data;
 
     //Errors from action
-    const errors = actionData?.errors;
+    const errors = actionData?.errors as error[]; //Errors from the form submission
 
     console.log(errors);
 
@@ -506,7 +516,7 @@ export default function Index() {
         await shopify.saveBar.leaveConfirmation();
 
         setShowDeleteModal(true);
-        // navigateSubmit('deleteBundle', `/app/edit-bundle-builder/${params.bundleid}?redirect=true`);
+        navigateSubmit("deleteBundle", `/app/edit-bundle-builder/${params.bundleid}/builder?redirect=true`);
     };
 
     //Navigating to the first error
@@ -536,7 +546,7 @@ export default function Index() {
     const refreshBundleBuilderHandler = async () => {
         await shopify.saveBar.leaveConfirmation();
 
-        navigateSubmit("recreateBundleBuilder", `/app/edit-bundle-builder/${params.bundleid}`);
+        navigateSubmit("recreateBundleBuilder", `/app/edit-bundle-builder/${params.bundleid}/builder`);
     };
 
     return (
