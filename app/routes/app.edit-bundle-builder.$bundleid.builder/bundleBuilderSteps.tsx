@@ -1,4 +1,5 @@
-import { BundleStep, StepType, User } from "@prisma/client";
+import type { BundleStep, User } from "@prisma/client";
+import { StepType } from "@prisma/client";
 import { useNavigate, useNavigation, useParams, useFetcher, useSubmit, useRevalidator, Link } from "@remix-run/react";
 import { useAppBridge, TitleBar, Modal } from "@shopify/app-bridge-react";
 import {
@@ -19,7 +20,7 @@ import {
     EmptyState,
 } from "@shopify/polaris";
 import { useState, useEffect } from "react";
-import { BundleStepBasicResources } from "~/adminBackend/service/dto/BundleStep";
+import type { BundleStepBasicResources } from "~/adminBackend/service/dto/BundleStep";
 import { GapBetweenSections } from "~/constants";
 import { ArrowDownIcon, ArrowUpIcon, DeleteIcon, EditIcon, PageAddIcon, PlusIcon } from "@shopify/polaris-icons";
 import styles from "./bundelBuilderSteps.module.css";

@@ -1,24 +1,23 @@
 import { json, redirect } from "@remix-run/node";
-import { useFetcher, useLoaderData, useParams } from "@remix-run/react";
+import { useFetcher, useParams, useSubmit } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { BlockStack, Text, TextField } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
-import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
+import type { error } from "../../adminBackend/service/dto/jsonData";
+import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import userRepository from "@adminBackend/repository/impl/UserRepository";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
-import { BundleBuilder, ContentInput, InputType } from "@prisma/client";
+import type { BundleBuilder, ContentInput } from "@prisma/client";
 import { useState } from "react";
 import { GapBetweenTitleAndContent, GapInsideSection } from "../../constants";
-import { Product } from "@prisma/client";
 import WideButton from "../../components/wideButton";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 import ContentStepInput from "../../components/contentStepInputs";
-import { UserContentInputDto } from "~/adminBackend/service/dto/UserContentInputDto";
-import { ContentStepDataDto } from "~/adminBackend/service/dto/ContentStepDataDto";
+import type { ContentStepDataDto } from "~/adminBackend/service/dto/ContentStepDataDto";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    const { session } = await authenticate.admin(request);
 
     const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
 
@@ -67,10 +66,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
-    const fetcher = useFetcher();
+    const submit = useSubmit();
     const params = useParams();
 
-    const [errors, setErrors] = useState<error[]>();
+    const [errors, setErrors] = useState<error[]>([]);
 
     const handleNextBtnHandler = () => {
         if (!stepTitle) {
@@ -119,9 +118,7 @@ export default function Index() {
             });
         }
 
-        alert(JSON.stringify(errors));
-
-        if (errors.length > 0) {
+        if (errors && errors.length > 0) {
             return;
         }
 
@@ -132,13 +129,13 @@ export default function Index() {
             description: "",
             stepType: "CONTENT",
             stepNumber: 1,
-            contentInputs: [contentInput],
+            contentInputs: [{ inputLabel: contentInput.inputLabel, required: contentInput.required, maxChars: contentInput.maxChars, inputType: contentInput.inputType }],
         };
 
         form.append("stepData", JSON.stringify(stepData));
         form.append("action", "addContentStep");
 
-        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps?onboarding=true&stepNumber=4` });
+        submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/steps?onboarding=true&stepNumber=4` });
     };
 
     const [stepTitle, setStepTitle] = useState<string>();
@@ -146,7 +143,7 @@ export default function Index() {
         id: 1,
         inputType: "TEXT",
         inputLabel: "",
-        required: false,
+        required: true,
         maxChars: 0,
         bundleStepId: 1,
     });
@@ -157,10 +154,10 @@ export default function Index() {
 
     //Update field error on change
     const updateFieldErrorHandler = (fieldId: string) => {
-        errors?.forEach((err: error) => {
-            if (err.fieldId === fieldId) {
-                err.message = "";
-            }
+        setErrors((errors: error[]) => {
+            const newErrors: error[] = errors.filter((error: error) => error.fieldId === fieldId);
+
+            return newErrors;
         });
     };
 

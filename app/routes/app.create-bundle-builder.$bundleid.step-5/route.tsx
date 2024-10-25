@@ -1,17 +1,19 @@
 import { json, redirect } from "@remix-run/node";
 import { useFetcher, useLoaderData, useNavigate, useNavigation, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { BlockStack, Text, Button, ButtonGroup } from "@shopify/polaris";
+import { BlockStack, Text, Button, ButtonGroup, Select, TextField } from "@shopify/polaris";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
-import { JsonData } from "../../adminBackend/service/dto/jsonData";
+import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
-import { BundleBuilder } from "@prisma/client";
+import { BundleBuilder, BundleDiscountType } from "@prisma/client";
 import { useState } from "react";
 import WideButton from "~/components/wideButton";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
+import { GapBetweenTitleAndContent, GapInsideSection } from "~/constants";
+import { BundleBuilderClient } from "~/frontend/types/BundleBuilderClient";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -64,38 +66,22 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
 export default function Index() {
     const nav = useNavigation();
-    const navigate = useNavigate();
-    const shopify = useAppBridge();
-    const isLoading: boolean = nav.state === "loading";
-    const isSubmitting: boolean = nav.state === "submitting";
     const params = useParams();
     const fetcher = useFetcher();
+
     const loaderData = useLoaderData<typeof loader>();
 
-    const bundleBuilder = loaderData.data;
-
-    const [activeButtonIndex, setActiveButtonIndex] = useState(0);
+    const [discountType, setDiscountType] = useState(loaderData.data.discountType);
+    const [discountValue, setDiscountValue] = useState(loaderData.data.discountValue);
 
     const handleButtonClick = (index: number) => {
-        setActiveButtonIndex(index);
+        const form = new FormData();
+
+        form.append("action", "updateDiscount");
     };
 
     const handleNextBtnHandler = () => {
         const form = new FormData();
-
-        const stepData = {
-            title: stepTitle,
-            description: "",
-            stepType: "PRODUCT",
-            productInput: {
-                minProducts: minProducts,
-                maxProducts: maxProducts,
-                products: stepProducts,
-            },
-        };
-
-        form.append("stepData", JSON.stringify(stepData));
-        form.append("action", "addProductStep");
 
         fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}?stepNumber=4&onboarding=true` });
     };
@@ -104,17 +90,52 @@ export default function Index() {
         <div className={styles.fadeIn}>
             <BlockStack gap={"1200"} inlineAlign="center">
                 <Text as={"p"} variant="headingLg" alignment="center">
-                    How many steps do you want your bundle builder to have?
+                    Bundle discount
                 </Text>
 
-                <ButtonGroup variant="segmented">
-                    <Button pressed={activeButtonIndex === 0} size="large" onClick={() => handleButtonClick(0)}>
-                        One step
-                    </Button>
-                    <Button pressed={activeButtonIndex === 1} size="large" onClick={() => handleButtonClick(1)}>
-                        Multiple steps
-                    </Button>
-                </ButtonGroup>
+                <BlockStack gap={GapBetweenTitleAndContent}>
+                    <Text as="p" variant="headingMd">
+                        Discount
+                    </Text>
+                    <BlockStack gap={GapInsideSection}>
+                        <Select
+                            label="Type"
+                            name="bundleDiscountType"
+                            options={[
+                                {
+                                    label: "Percentage (e.g. 25% off)",
+                                    value: BundleDiscountType.PERCENTAGE,
+                                },
+                                {
+                                    label: "Fixed (e.g. 10$ off)",
+                                    value: BundleDiscountType.FIXED,
+                                },
+
+                                {
+                                    label: "No discount",
+                                    value: BundleDiscountType.NO_DISCOUNT,
+                                },
+                            ]}
+                            value={bundleState.discountType}
+                            onChange={(newDiscountType: string) => {}}
+                        />
+
+                        <TextField
+                            label="Amount"
+                            type="number"
+                            autoComplete="off"
+                            inputMode="numeric"
+                            disabled={bundleState.discountType === "NO_DISCOUNT"}
+                            name={`discountValue`}
+                            prefix={bundleState.discountType === BundleDiscountType.PERCENTAGE ? "%" : "$"}
+                            min={0}
+                            max={100}
+                            value={bundleState.discountValue.toString()}
+                            error={errors?.find((err: error) => err.fieldId === "discountValue")?.message}
+                            onChange={(newDiscountValue) => {}}
+                        />
+                    </BlockStack>
+                </BlockStack>
 
                 {/*  */}
                 <WideButton onClick={handleNextBtnHandler} />
