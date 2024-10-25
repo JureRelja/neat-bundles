@@ -70,7 +70,7 @@ export default function Index() {
     const params = useParams();
 
     const handleNextBtnHandler = () => {
-        navigate(`/app/create-bundle-builder/${params.bundleid}/step-4-${activeBtnOption === "CONTENT" ? "content" : "product"}?stepNumber=3&onboarding=true`);
+        navigate(`/app/create-bundle-builder/${params.bundleid}/step-4-${activeBtnOption === "CONTENT" ? "content" : "product"}?stepNumber=3stepIndex=4&onboarding=true`);
     };
 
     //step data

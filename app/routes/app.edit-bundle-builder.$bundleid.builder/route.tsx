@@ -83,6 +83,18 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 export const action = async ({ request, params }: ActionFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
+    const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
+
+    if (!isAuthorized) {
+        throw new Response(null, {
+            status: 404,
+            statusText: "Not Found",
+        });
+    }
+
+    const user = await userRepository.getUserByStoreUrl(session.shop);
+    if (!user) return redirect("/app");
+
     const formData = await request.formData();
     const action = formData.get("action");
 
@@ -167,10 +179,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 },
             });
 
+            await userRepository.updateUser({ ...user, completedOnboarding: true });
+
             try {
                 //redirect user to finish step if he is onboarding
                 if (url.searchParams.get("onboarding") === "true" && url.searchParams.get("stepNumber") === "5") {
-                    return redirect(`/app/create-bundle-builder/${params.bundleid}/step-6`);
+                    return redirect(`/app/create-bundle-builder/${params.bundleid}/step-6?stepIndex=6`);
                 }
             } catch (error) {
                 console.log(error);

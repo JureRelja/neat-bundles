@@ -22,6 +22,7 @@ model User {
   hasAppInstalled          Boolean         @default(true)
   activeBillingPlan        PricingPlan     @default(NONE)
   completedInstallation    Boolean         @default(false)
+  completedOnboarding      Boolean         @default(false)
   showTutorialBanner       Boolean         @default(true)
   ownerName                String          @default("")
   storeName                String

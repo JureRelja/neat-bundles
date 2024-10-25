@@ -1,8 +1,7 @@
 import { json, redirect } from "@remix-run/node";
-import { Link, Outlet, useFetcher, useLoaderData, useNavigate, useNavigation, useParams, useSubmit } from "@remix-run/react";
+import { Link, Outlet, useLoaderData, useNavigation, useParams, useSubmit } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Page, Card, BlockStack, SkeletonPage, SkeletonBodyText, FooterHelp, Divider, Spinner } from "@shopify/polaris";
-import { useAppBridge } from "@shopify/app-bridge-react";
+import { Page, Card, BlockStack, FooterHelp, Divider, Spinner } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
@@ -34,7 +33,13 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         });
     }
 
-    return json(new JsonData(true, "success", "Loader response", [], bundleBuilder), { status: 200 });
+    const url = new URL(request.url);
+
+    const step = url.toString().split("/")[url.toString().split("/").length - 1];
+
+    const stepNumber = step.split("-")[1].split("?")[0];
+
+    return json(new JsonData(true, "success", "Loader response", [], { bundleBuilder, step: Number(stepNumber) }), { status: 200 });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -56,7 +61,9 @@ export default function Index() {
     const isLoading: boolean = nav.state != "idle";
     const loaderData = useLoaderData<typeof loader>();
 
-    const bundleBuilder = loaderData.data;
+    const bundleBuilder = loaderData.data.bundleBuilder;
+
+    const step = loaderData.data.step;
 
     return (
         <Page title={bundleBuilder.title}>
@@ -71,7 +78,7 @@ export default function Index() {
                         </div>
 
                         <Divider borderColor="transparent" />
-                        <div className={styles.progressBar} style={{ width: `${(100 / 6) * 1}%` }}>
+                        <div className={styles.progressBar} style={{ width: `${(100 / 6) * step}%` }}>
                             &nbsp;
                         </div>
                     </BlockStack>

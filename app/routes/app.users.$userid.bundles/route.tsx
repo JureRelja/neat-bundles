@@ -1,4 +1,4 @@
-import { useNavigation, json, useLoaderData, Link, redirect, useFetcher, useRevalidator, useSubmit } from "@remix-run/react";
+import { useNavigation, json, useLoaderData, Link, redirect, useFetcher, useRevalidator, useSubmit, useNavigate } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Card, Button, BlockStack, EmptyState, Text, Box, SkeletonPage, SkeletonBodyText, DataTable, ButtonGroup, Badge, Spinner, InlineStack, TextField } from "@shopify/polaris";
 import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from "@shopify/polaris-icons";
@@ -110,11 +110,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                 //If the user is onboarding, redirect to onboarding flow
                 if (isOnboarding) {
-                    return redirect(`/app/create-bundle-builder/${bundleBuilder.id}/step-1`);
+                    return redirect(`/app/create-bundle-builder/${bundleBuilder.id}/step-1?stepIndex=1`);
                 }
                 // if the user is not onboarding, redirect to edit bundle imidiately
                 else {
-                    return redirect(`/app/create-bundle-builder/${bundleBuilder.id}/step-1`);
                     return redirect(`/app/edit-bundle-builder/${bundleBuilder.id}/builder`);
                 }
             } catch (error) {
@@ -140,6 +139,7 @@ export default function Index() {
     const fetcher = useFetcher();
     const submit = useSubmit();
     const revalidator = useRevalidator();
+    const navigate = useNavigate();
 
     const loaderResponse = useLoaderData<typeof loader>();
 
@@ -174,7 +174,7 @@ export default function Index() {
         form.append("bundleTitle", newBundleTitle as string);
         form.append("action", "createBundle");
 
-        submit(form, { method: "POST", action: `/app/users/${user.id}/bundles${bundleBuilders.length === 0 ? "?onboarding=true" : ""}`, navigate: true });
+        submit(form, { method: "POST", action: `/app/users/${user.id}/bundles${!user.completedOnboarding ? "?onboarding=true" : ""}`, navigate: true });
     };
 
     const [bundleForDelete, setBundleForDelete] = useState<BundleAndStepsBasicClient | null>(null);
@@ -184,6 +184,10 @@ export default function Index() {
         revalidator.revalidate();
         if (bundleForDelete) setShowBundleDeleteConfirmModal(true);
     }, [bundleForDelete]);
+
+    const handleEditBundleBuilder = (bundleBuilderId: number) => {
+        navigate(`/app/edit-bundle-builder/${bundleBuilderId}/builder`);
+    };
 
     return (
         <>
@@ -324,7 +328,11 @@ export default function Index() {
                                                 </Text>,
 
                                                 //
-                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
+                                                <Link
+                                                    to="#"
+                                                    onClick={(e) => {
+                                                        handleEditBundleBuilder(bundleBuilder.id);
+                                                    }}>
                                                     <Text as="p" tone="base">
                                                         {bundleBuilder.title}
                                                     </Text>
@@ -332,7 +340,11 @@ export default function Index() {
                                                 //
                                                 bundleBuilder.steps.length,
                                                 //
-                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
+                                                <Link
+                                                    to="#"
+                                                    onClick={(e) => {
+                                                        handleEditBundleBuilder(bundleBuilder.id);
+                                                    }}>
                                                     {bundleBuilder.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
                                                 </Link>,
                                                 //
@@ -361,7 +373,12 @@ export default function Index() {
                                                         Duplicate
                                                         </Button> */}
 
-                                                    <Button icon={EditIcon} variant="primary" url={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
+                                                    <Button
+                                                        icon={EditIcon}
+                                                        variant="primary"
+                                                        onClick={() => {
+                                                            handleEditBundleBuilder(bundleBuilder.id);
+                                                        }}>
                                                         Edit
                                                     </Button>
                                                 </ButtonGroup>,

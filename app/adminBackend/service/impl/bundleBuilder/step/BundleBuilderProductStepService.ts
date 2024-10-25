@@ -48,6 +48,10 @@ class BundleBuilderProductStepService extends BundleBuilderStepTypeService {
     }
 
     public async addNewStep(bundleId: number, stepData: ProductStepDataDto): Promise<BundleStepProduct> {
+        const numberOfSteps = await bundleBuilderStepRepository.getNumberOfSteps(bundleId);
+
+        stepData.stepNumber = numberOfSteps + 1;
+
         const newStep: BundleStepProduct = await bundleBuilderProductStepRepository.addNewStep(bundleId, stepData);
         return newStep;
     }

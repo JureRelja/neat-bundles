@@ -91,7 +91,7 @@ export default function Index() {
                                 <Button url={`/app/edit-bundle-builder/${params.bundleid}/builder`} icon={EditIcon}>
                                     Edit bundle
                                 </Button>
-                                <Button variant="primary" icon={ExternalIcon} url={`${loaderData.data.bundleBuilderPageUrl}?${bundlePagePreviewKey}=true`} target="_blank">
+                                <Button variant="primary" icon={ExternalIcon} url={`${loaderData.data.bundleBuilderPageUrl}`} target="_blank">
                                     See on store
                                 </Button>
                             </InlineGrid>

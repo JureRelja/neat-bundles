@@ -134,13 +134,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 if (url.searchParams.get("onboarding") === "true") {
                     ///
                     if (url.searchParams.get("stepNumber") === "2" && url.searchParams.get("multiStep") === "true") {
-                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-3`);
+                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-3?stepNumber=3&stepIndex=3`);
                         //
                     } else if (url.searchParams.get("stepNumber") === "2" && url.searchParams.get("multiStep") === "false") {
-                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-5`);
+                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-5?stepNumber=3&stepIndex=3`);
                         //
                     } else if (url.searchParams.get("stepNumber") === "4") {
-                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-5`);
+                        return redirect(`/app/create-bundle-builder/${params.bundleid}/step-5?stepNumber=3&stepIndex=3`);
                     }
                 }
 
