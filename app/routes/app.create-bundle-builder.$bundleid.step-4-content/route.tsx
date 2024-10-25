@@ -144,7 +144,7 @@ export default function Index() {
         inputType: "TEXT",
         inputLabel: "",
         required: true,
-        maxChars: 0,
+        maxChars: 50,
         bundleStepId: 1,
     });
 

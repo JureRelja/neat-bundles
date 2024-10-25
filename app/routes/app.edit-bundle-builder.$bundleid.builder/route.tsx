@@ -146,7 +146,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             }
         }
 
-        case "updatedDiscount": {
+        case "updateDiscount": {
             const url = new URL(request.url);
 
             const discountType = formData.get("discountType");
@@ -670,103 +670,109 @@ export default function Index() {
                                                 </Card>
 
                                                 <Card>
-                                                    <ChoiceList
-                                                        title="Bundle Pricing"
-                                                        name="bundlePricing"
-                                                        choices={[
-                                                            {
-                                                                label: "Calculated price ",
-                                                                value: BundlePricing.CALCULATED,
-                                                                helpText: (
-                                                                    <Tooltip
-                                                                        width="wide"
-                                                                        activatorWrapper="div"
-                                                                        content={`e.g. use case: you want to sell shirt,
+                                                    <BlockStack>
+                                                        <Text as="p" variant="headingMd">
+                                                            Bundle Pricing
+                                                        </Text>
+                                                        <ChoiceList
+                                                            title="Bundle Pricing"
+                                                            name="bundlePricing"
+                                                            titleHidden
+                                                            choices={[
+                                                                {
+                                                                    label: "Calculated price ",
+                                                                    value: BundlePricing.CALCULATED,
+                                                                    helpText: (
+                                                                        <Tooltip
+                                                                            width="wide"
+                                                                            activatorWrapper="div"
+                                                                            content={`e.g. use case: you want to sell shirt,
                                       pants, and a hat in a bundle with a 10%
                                       discount on whole order, and you want the
                                       total price before discount to be the sum of
                                       the prices of individual products that customer has selected.`}>
-                                                                        <div className={styles.tooltipContent}>
-                                                                            <Box>
-                                                                                <p>Final price is calculated based on the products that customers selects.</p>
-                                                                            </Box>
-                                                                            <Box>
-                                                                                <Icon source={QuestionCircleIcon} />
-                                                                            </Box>
-                                                                        </div>
-                                                                    </Tooltip>
-                                                                ),
-                                                            },
-                                                            {
-                                                                label: "Fixed price",
-                                                                value: BundlePricing.FIXED,
-                                                                helpText: (
-                                                                    <Tooltip
-                                                                        width="wide"
-                                                                        activatorWrapper="div"
-                                                                        content={`e.g. use case: you want to sell 5 cookies
+                                                                            <div className={styles.tooltipContent}>
+                                                                                <Box>
+                                                                                    <p>Final price will be the sum of prices of all products that customer has selected.</p>
+                                                                                </Box>
+                                                                                <Box>
+                                                                                    <Icon source={QuestionCircleIcon} />
+                                                                                </Box>
+                                                                            </div>
+                                                                        </Tooltip>
+                                                                    ),
+                                                                },
+                                                                {
+                                                                    label: "Fixed price",
+                                                                    value: BundlePricing.FIXED,
+                                                                    helpText: (
+                                                                        <Tooltip
+                                                                            width="wide"
+                                                                            activatorWrapper="div"
+                                                                            content={`e.g. use case: you want to sell 5 cookies
                                     in a bundle, always at the same price, but want
                                     your customers to be able to select which
                                     cookies they want.`}>
-                                                                        <div className={styles.tooltipContent}>
-                                                                            <Box>
-                                                                                <Text as="p">All bundles created will be priced the same.</Text>
+                                                                            <div className={styles.tooltipContent}>
+                                                                                <Box>
+                                                                                    <Text as="p">All bundles created will be priced the same.</Text>
+                                                                                </Box>
+                                                                                <Box>
+                                                                                    <Icon source={QuestionCircleIcon} />
+                                                                                </Box>
+                                                                            </div>
+                                                                        </Tooltip>
+                                                                    ),
+                                                                    renderChildren: (isSelected: boolean) => {
+                                                                        return isSelected ? (
+                                                                            <Box maxWidth="50" id="priceAmount">
+                                                                                <TextField
+                                                                                    label="Price"
+                                                                                    type="number"
+                                                                                    name="priceAmount"
+                                                                                    inputMode="numeric"
+                                                                                    autoComplete="off"
+                                                                                    min={0}
+                                                                                    error={errors?.find((err: error) => err.fieldId === "priceAmount")?.message}
+                                                                                    value={bundleState.priceAmount?.toString()}
+                                                                                    prefix="$"
+                                                                                    onChange={(newPrice: string) => {
+                                                                                        setBundleState((prevBundle: BundleBuilderClient) => {
+                                                                                            return {
+                                                                                                ...prevBundle,
+                                                                                                priceAmount: parseFloat(newPrice),
+                                                                                            };
+                                                                                        });
+                                                                                        updateFieldErrorHandler("priceAmount");
+                                                                                    }}
+                                                                                />
                                                                             </Box>
-                                                                            <Box>
-                                                                                <Icon source={QuestionCircleIcon} />
-                                                                            </Box>
-                                                                        </div>
-                                                                    </Tooltip>
-                                                                ),
-                                                                renderChildren: (isSelected: boolean) => {
-                                                                    return isSelected ? (
-                                                                        <Box maxWidth="50" id="priceAmount">
-                                                                            <TextField
-                                                                                label="Price"
-                                                                                type="number"
-                                                                                name="priceAmount"
-                                                                                inputMode="numeric"
-                                                                                autoComplete="off"
-                                                                                min={0}
-                                                                                error={errors?.find((err: error) => err.fieldId === "priceAmount")?.message}
-                                                                                value={bundleState.priceAmount?.toString()}
-                                                                                prefix="$"
-                                                                                onChange={(newPrice: string) => {
-                                                                                    setBundleState((prevBundle: BundleBuilderClient) => {
-                                                                                        return {
-                                                                                            ...prevBundle,
-                                                                                            priceAmount: parseFloat(newPrice),
-                                                                                        };
-                                                                                    });
-                                                                                    updateFieldErrorHandler("priceAmount");
-                                                                                }}
-                                                                            />
-                                                                        </Box>
-                                                                    ) : null;
+                                                                        ) : null;
+                                                                    },
                                                                 },
-                                                            },
-                                                        ]}
-                                                        selected={[bundleState.pricing]}
-                                                        onChange={(newPricing) => {
-                                                            setBundleState((prevBundle: BundleBuilderClient) => {
-                                                                return {
-                                                                    ...prevBundle,
-                                                                    pricing: newPricing[0] as BundlePricing,
-                                                                };
-                                                            });
-                                                        }}
-                                                    />
+                                                            ]}
+                                                            selected={[bundleState.pricing]}
+                                                            onChange={(newPricing) => {
+                                                                setBundleState((prevBundle: BundleBuilderClient) => {
+                                                                    return {
+                                                                        ...prevBundle,
+                                                                        pricing: newPricing[0] as BundlePricing,
+                                                                    };
+                                                                });
+                                                            }}
+                                                        />
+                                                    </BlockStack>
                                                 </Card>
 
                                                 {/* Bundle discount */}
                                                 <Card>
                                                     <BlockStack gap={GapBetweenTitleAndContent}>
                                                         <Text as="p" variant="headingMd">
-                                                            Discount
+                                                            Bundle Discount
                                                         </Text>
                                                         <BlockStack gap={GapInsideSection}>
                                                             <Select
-                                                                label="Type"
+                                                                label="Discount Type"
                                                                 name="bundleDiscountType"
                                                                 options={[
                                                                     {
@@ -795,7 +801,7 @@ export default function Index() {
                                                             />
 
                                                             <TextField
-                                                                label="Amount"
+                                                                label="Discount amount"
                                                                 type="number"
                                                                 autoComplete="off"
                                                                 inputMode="numeric"

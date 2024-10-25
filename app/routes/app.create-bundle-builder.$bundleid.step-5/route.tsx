@@ -1,5 +1,5 @@
 import { json, redirect } from "@remix-run/node";
-import { useFetcher, useLoaderData, useNavigate, useNavigation, useParams } from "@remix-run/react";
+import { useFetcher, useLoaderData, useNavigate, useNavigation, useParams, useSubmit } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { BlockStack, Text, Button, ButtonGroup, Select, TextField } from "@shopify/polaris";
 import { useAppBridge } from "@shopify/app-bridge-react";
@@ -12,7 +12,7 @@ import { BundleBuilder, BundleDiscountType } from "@prisma/client";
 import { useState } from "react";
 import WideButton from "~/components/wideButton";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
-import { GapBetweenTitleAndContent, GapInsideSection } from "~/constants";
+import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, LargeGapBetweenSections } from "~/constants";
 import { BundleBuilderClient } from "~/frontend/types/BundleBuilderClient";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
@@ -65,41 +65,53 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
-    const nav = useNavigation();
+    const submit = useSubmit();
     const params = useParams();
-    const fetcher = useFetcher();
 
     const loaderData = useLoaderData<typeof loader>();
 
-    const [discountType, setDiscountType] = useState(loaderData.data.discountType);
-    const [discountValue, setDiscountValue] = useState(loaderData.data.discountValue);
+    const [discountType, setDiscountType] = useState<BundleDiscountType>(loaderData.data.discountType);
+    const [discountValue, setDiscountValue] = useState<number>(loaderData.data.discountValue);
 
-    const handleButtonClick = (index: number) => {
+    const [errors, setErrors] = useState<error[]>([]);
+
+    const handleNextBtnHandler = () => {
+        if (discountValue <= 0 || discountValue >= 100) {
+            setErrors([
+                {
+                    fieldId: "discountValue",
+                    field: "discountValue",
+                    message: "Discount value should be between 0 and 100",
+                },
+            ]);
+            return;
+        }
+
         const form = new FormData();
 
         form.append("action", "updateDiscount");
-    };
+        form.append("discountType", discountType);
+        form.append("discountValue", discountValue.toString());
 
-    const handleNextBtnHandler = () => {
-        const form = new FormData();
-
-        fetcher.submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}?stepNumber=4&onboarding=true` });
+        submit(form, { method: "POST", action: `/app/edit-bundle-builder/${params.bundleid}/builder?stepNumber=5&onboarding=true` });
     };
 
     return (
         <div className={styles.fadeIn}>
-            <BlockStack gap={"1200"} inlineAlign="center">
-                <Text as={"p"} variant="headingLg" alignment="center">
-                    Bundle discount
-                </Text>
-
-                <BlockStack gap={GapBetweenTitleAndContent}>
-                    <Text as="p" variant="headingMd">
-                        Discount
+            <BlockStack gap={"1000"} inlineAlign="center">
+                <BlockStack gap={GapInsideSection}>
+                    <Text as={"p"} variant="headingLg" alignment="center">
+                        Enter bundle discount
                     </Text>
-                    <BlockStack gap={GapInsideSection}>
+                    <Text as="p" variant="bodyMd" tone="subdued" alignment="center">
+                        Customers are more likely to buy a bundle if they know they are getting a discount.
+                    </Text>
+                </BlockStack>
+
+                <div style={{ width: "300px" }}>
+                    <BlockStack gap={LargeGapBetweenSections}>
                         <Select
-                            label="Type"
+                            label="Discount Type"
                             name="bundleDiscountType"
                             options={[
                                 {
@@ -116,26 +128,29 @@ export default function Index() {
                                     value: BundleDiscountType.NO_DISCOUNT,
                                 },
                             ]}
-                            value={bundleState.discountType}
-                            onChange={(newDiscountType: string) => {}}
+                            value={discountType}
+                            onChange={(newDiscountType: string) => {
+                                setDiscountType(newDiscountType as BundleDiscountType);
+                            }}
                         />
-
                         <TextField
-                            label="Amount"
+                            label="Discount amount"
                             type="number"
                             autoComplete="off"
                             inputMode="numeric"
-                            disabled={bundleState.discountType === "NO_DISCOUNT"}
+                            disabled={discountType === "NO_DISCOUNT"}
                             name={`discountValue`}
-                            prefix={bundleState.discountType === BundleDiscountType.PERCENTAGE ? "%" : "$"}
+                            prefix={discountType === BundleDiscountType.PERCENTAGE ? "%" : "$"}
                             min={0}
                             max={100}
-                            value={bundleState.discountValue.toString()}
+                            value={discountValue.toString()}
                             error={errors?.find((err: error) => err.fieldId === "discountValue")?.message}
-                            onChange={(newDiscountValue) => {}}
+                            onChange={(newDiscountValue) => {
+                                setDiscountValue(Number(newDiscountValue));
+                            }}
                         />
                     </BlockStack>
-                </BlockStack>
+                </div>
 
                 {/*  */}
                 <WideButton onClick={handleNextBtnHandler} />

@@ -1,7 +1,7 @@
 import { json, redirect } from "@remix-run/node";
 import { useFetcher, useLoaderData, useNavigate, useNavigation, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { BlockStack, Text, Button, ButtonGroup } from "@shopify/polaris";
+import { BlockStack, Text, Button, ButtonGroup, Banner, InlineStack, InlineGrid, Divider } from "@shopify/polaris";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
@@ -13,6 +13,8 @@ import { BundleBuilder } from "@prisma/client";
 import { useState } from "react";
 import WideButton from "~/components/wideButton";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
+import { bundlePagePreviewKey, GapBetweenSections, GapInsideSection, LargeGapBetweenSections } from "~/constants";
+import { EditIcon, ExternalIcon } from "@shopify/polaris-icons";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -46,7 +48,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         });
     }
 
-    return json(new JsonData(true, "success", "Loader response", [], bundleBuilder), { status: 200 });
+    //Url of the bundle page
+    const bundleBuilderPageUrl = `${user.primaryDomain}/pages/${bundleBuilder.bundleBuilderPageHandle}`;
+
+    return json(new JsonData(true, "success", "Loader response", [], { bundleBuilder, bundleBuilderPageUrl }), { status: 200 });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -64,22 +69,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
-    const nav = useNavigation();
     const navigate = useNavigate();
-    const shopify = useAppBridge();
-    const isLoading: boolean = nav.state === "loading";
-    const isSubmitting: boolean = nav.state === "submitting";
     const params = useParams();
-    const fetcher = useFetcher();
+
     const loaderData = useLoaderData<typeof loader>();
-
-    const bundleBuilder = loaderData.data;
-
-    const [activeButtonIndex, setActiveButtonIndex] = useState(0);
-
-    const handleButtonClick = (index: number) => {
-        setActiveButtonIndex(index);
-    };
 
     const handleNextBtnHandler = () => {
         navigate(`/app/create-bundle-builder/${params.bundleid}/step-2`);
@@ -87,22 +80,26 @@ export default function Index() {
 
     return (
         <div className={styles.fadeIn}>
-            <BlockStack gap={"1200"} inlineAlign="center">
-                <Text as={"p"} variant="headingLg" alignment="center">
-                    How many steps do you want your bundle builder to have?
-                </Text>
+            <BlockStack gap={"1000"} inlineAlign="center">
+                <Banner title="Congratulations! You have successfully created your first bundle." tone="success" onDismiss={() => {}}>
+                    <BlockStack gap={GapInsideSection}>
+                        <Divider borderColor="transparent" borderWidth="100" />
 
-                <ButtonGroup variant="segmented">
-                    <Button pressed={activeButtonIndex === 0} size="large" onClick={() => handleButtonClick(0)}>
-                        One step
-                    </Button>
-                    <Button pressed={activeButtonIndex === 1} size="large" onClick={() => handleButtonClick(1)}>
-                        Multiple steps
-                    </Button>
-                </ButtonGroup>
+                        <BlockStack gap={LargeGapBetweenSections}>
+                            <Text as="p">Continue editing your bundle or check it out live on your store.</Text>
+                            <InlineGrid gap={GapBetweenSections} columns={2}>
+                                <Button url={`/app/edit-bundle-builder/${params.bundleid}/builder`} icon={EditIcon}>
+                                    Edit bundle
+                                </Button>
+                                <Button variant="primary" icon={ExternalIcon} url={`${loaderData.data.bundleBuilderPageUrl}?${bundlePagePreviewKey}=true`} target="_blank">
+                                    See on store
+                                </Button>
+                            </InlineGrid>
+                        </BlockStack>
 
-                {/*  */}
-                <WideButton onClick={handleNextBtnHandler} />
+                        <Divider borderColor="transparent" borderWidth="100" />
+                    </BlockStack>
+                </Banner>
             </BlockStack>
         </div>
     );

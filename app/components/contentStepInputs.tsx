@@ -72,7 +72,7 @@ export default function Index({
                     autoComplete="off"
                 />
             </InlineGrid>
-            <InlineGrid gap={HorizontalGap} columns={2} alignItems="end">
+            <InlineGrid gap={HorizontalGap} columns={2} alignItems="center">
                 <TextField
                     label="Max length (in characters)"
                     helpText="It let's you limit the number of characters that customer can enter."
