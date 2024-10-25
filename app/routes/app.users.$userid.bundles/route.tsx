@@ -16,7 +16,6 @@ import { shopifyBundleBuilderProductRepository } from "~/adminBackend/repository
 import { ShopifyRedirectRepository } from "~/adminBackend/repository/impl/ShopifyRedirectRepository";
 import { ShopifyBundleBuilderPageRepository } from "~/adminBackend/repository/ShopifyBundleBuilderPageRepository";
 import shopifyBundleBuilderPageGraphql from "@adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql";
-import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
@@ -138,7 +137,7 @@ export default function Index() {
     const isSubmitting = nav.state === "submitting";
     const fetcher = useFetcher();
     const submit = useSubmit();
-    const revalidator = useRevalidator();
+    // const revalidator = useRevalidator();
     const navigate = useNavigate();
 
     const loaderResponse = useLoaderData<typeof loader>();
@@ -181,7 +180,7 @@ export default function Index() {
     const [showBundleDeleteConfirmModal, setShowBundleDeleteConfirmModal] = useState(false);
 
     useEffect(() => {
-        revalidator.revalidate();
+        // revalidator.revalidate();
         if (bundleForDelete) setShowBundleDeleteConfirmModal(true);
     }, [bundleForDelete]);
 
