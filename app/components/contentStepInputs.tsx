@@ -51,7 +51,7 @@ export default function Index({
                         });
                     }}
                     value={contentInput.inputType}
-                    helpText="Right input type is important for correct data entry."
+                    helpText="The right input type is important for correct data entry."
                     name={`inputType`}
                 />
 
@@ -75,7 +75,7 @@ export default function Index({
             <InlineGrid gap={HorizontalGap} columns={2} alignItems="center">
                 <TextField
                     label="Max length (in characters)"
-                    helpText="It let's you limit the number of characters that customer can enter."
+                    helpText="It lets you limit the number of characters that customers can enter."
                     type="number"
                     name={`maxChars${inputId}`}
                     inputMode="numeric"

@@ -1,11 +1,11 @@
-import { useNavigation, json, useLoaderData, Link, useNavigate } from '@remix-run/react';
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, FooterHelp } from '@shopify/polaris';
-import { authenticate } from '~/shopify.server';
-import { JsonData } from '@adminBackend/service/dto/jsonData';
-import { useAsyncSubmit } from '~/hooks/useAsyncSubmit';
-import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
-import { GapBetweenSections } from '~/constants';
+import { useNavigation, json, useLoaderData, Link, useNavigate } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, FooterHelp } from "@shopify/polaris";
+import { authenticate } from "~/shopify.server";
+import { JsonData } from "@adminBackend/service/dto/jsonData";
+import { useAsyncSubmit } from "~/hooks/useAsyncSubmit";
+import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
+import { GapBetweenSections } from "~/constants";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
@@ -17,16 +17,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
     const formData = await request.formData();
-    const action = formData.get('action');
+    const action = formData.get("action");
 
     switch (action) {
-        case 'dismissHomePageBanner': {
+        case "dismissHomePageBanner": {
             break;
         }
         default: {
             return json(
                 {
-                    ...new JsonData(true, 'success', "This is the default action that doesn't do anything."),
+                    ...new JsonData(true, "success", "This is the default action that doesn't do anything."),
                 },
                 { status: 200 },
             );
@@ -36,7 +36,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function Index() {
     const nav = useNavigation();
-    const isLoading = nav.state !== 'idle';
+    const isLoading = nav.state !== "idle";
     const asyncSubmit = useAsyncSubmit(); //Function for doing the submit action where the only data is action and url
     const navigateSubmit = useNavigateSubmit(); //Function for doing the submit action as if form was submitted
 
@@ -73,7 +73,7 @@ export default function Index() {
                     <Page
                         title="Want to request a feature?"
                         backAction={{
-                            content: 'Back',
+                            content: "Back",
                             onAction: async () => {
                                 navigate(-1);
                             },
@@ -90,15 +90,14 @@ export default function Index() {
                             </Text>
 
                             <Text as="p">
-                                Send your feature requests to{' '}
+                                Send your feature requests to{" "}
                                 <Link to="mailto:contact@neatmerchant.com" target="_blank">
                                     contact@neatmerchant.com
                                 </Link>
-                                , and we will get back to you as soon as possible. Every feature request will be personally reviewed by me and my team and considered for
-                                implementation.
+                                , and we will reply as soon as possible. Every feature request will be personally reviewed by me and my team and considered for implementation.
                             </Text>
 
-                            <Text as="p">Thank you for your continued support and for helping us make Neat Bundles even better!</Text>
+                            <Text as="p">Thank you for your continued support and for helping us make Neat Bundles better every day.</Text>
 
                             <Text as="p" alignment="end">
                                 Jure Reljanovic, the creator of Neat Merchant and Neat Bundles

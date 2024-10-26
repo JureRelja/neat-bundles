@@ -1,5 +1,5 @@
-import { useNavigation, json, useLoaderData, Link, useNavigate, redirect, useActionData, useFetcher, Form } from '@remix-run/react';
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
+import { useNavigation, json, useLoaderData, Link, useNavigate, redirect, useActionData, useFetcher, Form } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
     Page,
     Card,
@@ -18,28 +18,28 @@ import {
     Badge,
     Spinner,
     FooterHelp,
-} from '@shopify/polaris';
-import { CheckIcon, ExternalIcon, XSmallIcon } from '@shopify/polaris-icons';
-import { authenticate } from '../../shopify.server';
-import { JsonData } from '../../adminBackend/service/dto/jsonData';
-import { useAsyncSubmit } from '../../hooks/useAsyncSubmit';
-import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
-import { GapBetweenSections, GapInsideSection, LargeGapBetweenSections } from '~/constants';
-import ActivateVideo from '../../assets/biscuits-bundles-add-an-app-block-53671127.mp4';
-import userRepository from '~/adminBackend/repository/impl/UserRepository';
-import shopifyThemesRepository from '~/adminBackend/repository/impl/ShopifyThemesRepository';
-import { useEffect } from 'react';
-import styles from './route.module.css';
+} from "@shopify/polaris";
+import { CheckIcon, ExternalIcon, XSmallIcon } from "@shopify/polaris-icons";
+import { authenticate } from "../../shopify.server";
+import { JsonData } from "../../adminBackend/service/dto/jsonData";
+import { useAsyncSubmit } from "../../hooks/useAsyncSubmit";
+import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
+import { GapBetweenSections, GapInsideSection, LargeGapBetweenSections } from "~/constants";
+import ActivateVideo from "../../assets/biscuits-bundles-add-an-app-block-53671127.mp4";
+import userRepository from "~/adminBackend/repository/impl/UserRepository";
+import shopifyThemesRepository from "~/adminBackend/repository/impl/ShopifyThemesRepository";
+import { useEffect } from "react";
+import styles from "./route.module.css";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
 
     const url = new URL(request.url);
-    const thankYouBanner = url.searchParams.get('thankYou');
+    const thankYouBanner = url.searchParams.get("thankYou");
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
-    if (!user) return redirect('/app');
+    if (!user) return redirect("/app");
 
     //Currently active theme
     const activeTheme = await shopifyThemesRepository.getMainThemeWithTandS(admin);
@@ -50,20 +50,20 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         //Checking if theme has .json templates
         if (!activeTheme.files || activeTheme.files.nodes.length === 0) {
             activeThemeCompatible = false;
-            throw Error('Theme not compatible, there are no .json templates in active theme.');
+            throw Error("Theme not compatible, there are no .json templates in active theme.");
         }
 
         //Checking if page template has 'main' section
-        const pageTemplate = activeTheme.files.nodes.filter((file) => file.filename === 'templates/page.json');
+        const pageTemplate = activeTheme.files.nodes.filter((file) => file.filename === "templates/page.json");
 
-        if (!pageTemplate) throw Error('There is no template/page.json file in active theme.');
+        if (!pageTemplate) throw Error("There is no template/page.json file in active theme.");
 
         const templateBody = pageTemplate[0].body;
 
-        if (templateBody.__typename === 'OnlineStoreThemeFileBodyText') {
+        if (templateBody.__typename === "OnlineStoreThemeFileBodyText") {
             const bodyContent = JSON.parse(templateBody.content);
 
-            const mainSection = Object.entries(bodyContent.sections).find(([id, section]: [any, any]) => id === 'main' || section.type.startsWith('main-'));
+            const mainSection = Object.entries(bodyContent.sections).find(([id, section]: [any, any]) => id === "main" || section.type.startsWith("main-"));
 
             if (!mainSection) {
                 activeThemeCompatible = false;
@@ -77,12 +77,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         return json({
             ...new JsonData(
                 true,
-                'success',
-                'Installation page',
+                "success",
+                "Installation page",
                 [],
                 [
                     {
-                        displayThankYouBaner: thankYouBanner === 'true',
+                        displayThankYouBaner: thankYouBanner === "true",
                         storeUrl: user.storeUrl,
                         appId: process.env.SHOPIFY_BUNDLE_UI_ID,
                         activeTheme: { name: activeTheme.name, compatible: activeThemeCompatible },
@@ -98,25 +98,25 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
-    if (!user) return '/app';
+    if (!user) return "/app";
 
     const formData = await request.formData();
-    const action = formData.get('action');
+    const action = formData.get("action");
 
     switch (action) {
-        case 'FINISH_INSTALL': {
+        case "FINISH_INSTALL": {
             try {
                 //Currently active theme
                 const mainTheme = await shopifyThemesRepository.getMainThemeWithSettings(admin);
 
                 //Checking if theme has .json templates
                 if (!mainTheme.files || mainTheme.files.nodes.length === 0) {
-                    throw Error('Theme not compatible, there are no .json templates in active theme.');
+                    throw Error("Theme not compatible, there are no .json templates in active theme.");
                 }
 
                 const themeSettings = mainTheme.files?.nodes[0];
 
-                if (themeSettings.body.__typename === 'OnlineStoreThemeFileBodyText') {
+                if (themeSettings.body.__typename === "OnlineStoreThemeFileBodyText") {
                     const bodyContent = JSON.parse(themeSettings.body.content);
 
                     const neatBundlesEmbedBlock = Object.entries(bodyContent.current.blocks).filter(([blockId, block]: [string, any]) => {
@@ -133,7 +133,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                         user.completedInstallation = false;
 
                         await userRepository.updateUser(user);
-                        throw Error('App not activated.');
+                        throw Error("App not activated.");
                     }
 
                     user.completedInstallation = true;
@@ -149,7 +149,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     {
                         ...new JsonData(
                             false,
-                            'error',
+                            "error",
                             "Neat Bundels hasn't been properly activated. If you've already activated it, please try deactivating it and activating it again. If the errror continues, feel free to reach us as support@neatmerchant.com.",
                         ),
                     },
@@ -160,7 +160,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         default: {
             return json(
                 {
-                    ...new JsonData(true, 'success', "This is the default action that doesn't do anything."),
+                    ...new JsonData(true, "success", "This is the default action that doesn't do anything."),
                 },
                 { status: 200 },
             );
@@ -170,7 +170,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function Index() {
     const nav = useNavigation();
-    const isLoading = nav.state !== 'idle';
+    const isLoading = nav.state !== "idle";
     const asyncSubmit = useAsyncSubmit(); //Function for doing the submit action where the only data is action and url
     const navigateSubmit = useNavigateSubmit(); //Function for doing the submit action as if form was submitted
     const fetcher = useFetcher();
@@ -217,17 +217,17 @@ export default function Index() {
                     <Page
                         title="Installation"
                         backAction={{
-                            content: 'Back',
+                            content: "Back",
                             onAction: async () => {
                                 navigate(-1);
                             },
                         }}>
                         <BlockStack gap={LargeGapBetweenSections} id="top">
-                            {actionResponse && actionResponse !== '/app' && !actionResponse.ok && actionResponse.message ? (
+                            {actionResponse && actionResponse !== "/app" && !actionResponse.ok && actionResponse.message ? (
                                 <>
                                     <Banner title="App wasn't detected in your theme." tone="critical" onDismiss={() => {}}>
                                         <BlockStack gap={GapInsideSection}>
-                                            <Text as={'p'}>{actionResponse.message}</Text>
+                                            <Text as={"p"}>{actionResponse.message}</Text>
                                         </BlockStack>
                                     </Banner>
                                     <Divider />
@@ -235,7 +235,7 @@ export default function Index() {
                             ) : null}
 
                             {/* Video tutorial */}
-                            <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                            <InlineGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="400">
                                 <Box as="section">
                                     <BlockStack gap="400">
                                         <Text as="h3" variant="headingMd">
@@ -244,19 +244,19 @@ export default function Index() {
                                     </BlockStack>
                                 </Box>
                                 <MediaCard
-                                    title="Watch a short tutorial to get quickly started"
+                                    title="Watch a short tutorial to get quickly started with Neat Bundles"
                                     primaryAction={{
-                                        content: 'Watch tutorial',
+                                        content: "Watch tutorial",
                                         icon: ExternalIcon,
-                                        url: 'https://help.shopify.com',
-                                        target: '_blank',
+                                        url: "https://help.shopify.com",
+                                        target: "_blank",
                                     }}
                                     size="small"
-                                    description="We recommend watching this short tutorial to get quickly started instalation and creating bundles.">
+                                    description="We recommend watching this short tutorial to get quickly started with installation and creating your first bundles.">
                                     <VideoThumbnail
                                         videoLength={80}
                                         thumbnailUrl="https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850"
-                                        onClick={() => console.log('clicked')}
+                                        onClick={() => console.log("clicked")}
                                     />
                                 </MediaCard>
                             </InlineGrid>
@@ -264,14 +264,14 @@ export default function Index() {
                             <Divider />
 
                             {/* Activating app embed */}
-                            <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                            <InlineGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="400">
                                 <Box as="section">
                                     <BlockStack gap="400">
                                         <Text as="h3" variant="headingXl">
                                             App activation
                                         </Text>
                                         <Text as="p" variant="bodyMd">
-                                            Follow these 3 steps to active the Neat bundles app.
+                                            Follow these 3 steps to active the Bundles app.
                                         </Text>
                                     </BlockStack>
                                 </Box>
@@ -292,7 +292,7 @@ export default function Index() {
                                                     <Button
                                                         variant="primary"
                                                         target="_blank"
-                                                        url={`https://${data.storeUrl}/admin/themes/current/editor?context=apps&activateAppId=${data.appId}/${'embed_block'}`}>
+                                                        url={`https://${data.storeUrl}/admin/themes/current/editor?context=apps&activateAppId=${data.appId}/${"embed_block"}`}>
                                                         Activate app
                                                     </Button>
                                                 </InlineStack>
@@ -306,17 +306,17 @@ export default function Index() {
                             <Divider />
 
                             {/* Theme compatibility */}
-                            <InlineGrid columns={{ xs: '1fr', md: '2fr 5fr' }} gap="400">
+                            <InlineGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="400">
                                 <Box as="section">
                                     <BlockStack gap="400">
                                         <Text as="h3" variant="headingMd">
                                             Theme compatibility
                                         </Text>
                                         <Text as="p" variant="bodyMd">
-                                            Neat bundles is compatible with all{' '}
+                                            Neat Bundles is compatible with all{" "}
                                             <Link to="https://www.shopify.com/partners/blog/shopify-online-store" target="_blank">
                                                 Online store 2.0
-                                            </Link>{' '}
+                                            </Link>{" "}
                                             themes.
                                         </Text>
                                     </BlockStack>
@@ -338,7 +338,7 @@ export default function Index() {
                                                     If you change your theme, make sure to come back here and check if Neat Bundles supports your new theme.
                                                 </Text>
                                                 <Text as="p">
-                                                    If you have trouble activating the app, send us an email at{' '}
+                                                    If you have trouble activating the app, send us an email at{" "}
                                                     <Link to="mailto:support@neatmerchantcom">support@neatmerchant.com</Link> and we will help you with the activation.
                                                 </Text>
                                             </InlineStack>
@@ -377,7 +377,7 @@ export default function Index() {
                             </Box>
 
                             <FooterHelp>
-                                You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
+                                Are you stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
                             </FooterHelp>
                         </BlockStack>
                     </Page>

@@ -372,7 +372,7 @@ export default function Index() {
                                                                 value: "allowProductDuplicates",
                                                             },
                                                             {
-                                                                label: "Show price under each product",
+                                                                label: "Show the price under each product",
                                                                 value: "showProductPrice",
                                                             },
                                                         ]}
@@ -414,7 +414,7 @@ export default function Index() {
                                                     type="text"
                                                     name={`stepTitle`}
                                                     value={stepData.title}
-                                                    helpText="Customer will see this title when they build a bundle."
+                                                    helpText="Customers will see this title when they build a bundle."
                                                     onChange={(newTitle: string) => {
                                                         setStepData((stepData: BundleStepProduct) => {
                                                             return {
@@ -432,7 +432,7 @@ export default function Index() {
                                                     value={stepData.description}
                                                     type="text"
                                                     name={`stepDescription`}
-                                                    helpText="Customer will se this description on this step."
+                                                    helpText="Customers will see this description on this step."
                                                     onChange={(newDesc: string) => {
                                                         setStepData((stepData: BundleStepProduct) => {
                                                             return {

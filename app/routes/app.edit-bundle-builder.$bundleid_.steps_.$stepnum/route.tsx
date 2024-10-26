@@ -273,7 +273,7 @@ export default function Index() {
                     <BlockStack gap={GapBetweenSections}>
                         <Outlet />
                         <FooterHelp>
-                            You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
+                            Are you stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
                         </FooterHelp>
                     </BlockStack>
                 </Page>

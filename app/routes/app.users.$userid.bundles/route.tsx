@@ -230,7 +230,7 @@ export default function Index() {
                         <Box padding="300">
                             <BlockStack gap={GapBetweenSections}>
                                 <Text as="p" variant="headingSm">
-                                    Enter the title of your bundle.
+                                    Enter the title of your bundle
                                 </Text>
                                 <TextField
                                     label="Title"
@@ -238,7 +238,7 @@ export default function Index() {
                                     autoComplete="off"
                                     inputMode="text"
                                     name="bundleTitle"
-                                    helpText="This title will be displayed to your customers on bundle page, in checkout and in cart."
+                                    helpText="This title will be displayed to your customers on the bundle page, in checkout, and in the cart."
                                     value={newBundleTitle}
                                     error={newBundleTitle === "" ? "Please enter a title" : undefined}
                                     onChange={(newTitile) => {
@@ -386,7 +386,7 @@ export default function Index() {
                                                     icon={SettingsIcon}
                                                     variant="secondary"
                                                     tone="success"
-                                                    url={`/app/edit-bundle-builder/${bundleBuilder.id}/builder/settings/?redirect=/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
+                                                    url={`/app/edit-bundle-builder/${bundleBuilder.id}/settings/?redirect=/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
                                                     Settings
                                                 </Button>,
                                                 <Button

@@ -612,7 +612,7 @@ export default function Index() {
                         secondaryActions={[
                             {
                                 content: "Settings",
-                                url: `settings/?redirect=/app/edit-bundle-builder/${serverBundle.id}/builder`,
+                                url: `/app/edit-bundle-builder/${serverBundle.id}/settings/?redirect=/app/edit-bundle-builder/${serverBundle.id}/builder`,
                                 icon: SettingsIcon,
                             },
                             {
@@ -627,7 +627,7 @@ export default function Index() {
                                 onAction: refreshBundleBuilderHandler,
                                 content: "Recreate bundle",
                                 helpText:
-                                    "If you accidentally deleted the page where this bundle is displayed or you deleted the dummy product associated with this bundle, click this button to recreate them.",
+                                    "If you accidentally deleted the page where this bundle is displayed or you deleted the dummy product associated with this bundle, click this button to recreate both of them.",
                             },
                         ]}
                         titleMetadata={serverBundle.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
@@ -700,14 +700,17 @@ export default function Index() {
                                                                         <Tooltip
                                                                             width="wide"
                                                                             activatorWrapper="div"
-                                                                            content={`e.g. use case: you want to sell shirt,
+                                                                            content={`e.g. use case: you want to sell a shirt,
                                       pants, and a hat in a bundle with a 10%
-                                      discount on whole order, and you want the
+                                      discount on the whole order, and you want the
                                       total price before discount to be the sum of
-                                      the prices of individual products that customer has selected.`}>
+                                      the prices of individual products that the customer has selected.`}>
                                                                             <div className={styles.tooltipContent}>
                                                                                 <Box>
-                                                                                    <p>Final price will be the sum of prices of all products that customer has selected.</p>
+                                                                                    <p>
+                                                                                        The final price will be the sum of the prices of all products that the customer has
+                                                                                        selected.
+                                                                                    </p>
                                                                                 </Box>
                                                                                 <Box>
                                                                                     <Icon source={QuestionCircleIcon} />
@@ -861,7 +864,7 @@ export default function Index() {
                                                                     autoComplete="off"
                                                                     inputMode="text"
                                                                     name="bundleTitle"
-                                                                    helpText="This title will be displayed to your customers on bundle page, in checkout and in cart."
+                                                                    helpText="This title will be displayed to your customers on the bundle page, in checkout, and in the cart."
                                                                     error={errors?.find((err: error) => err.fieldId === "bundleTitle")?.message}
                                                                     value={bundleState.title}
                                                                     onChange={(newTitile) => {
@@ -891,7 +894,7 @@ export default function Index() {
                                                                     { label: "Active", value: "true" },
                                                                     { label: "Draft", value: "false" },
                                                                 ]}
-                                                                helpText="Bundles set to 'ACTIVE' are visible to anyone browsing your store"
+                                                                helpText="Bundles set to 'ACTIVE' are visible to anyone browsing your store."
                                                                 value={bundleState.published ? "true" : "false"}
                                                                 onChange={(newSelection: string) => {
                                                                     setBundleState((prevBundle: BundleBuilderClient) => {
@@ -936,7 +939,7 @@ export default function Index() {
                                     </Box>
 
                                     <FooterHelp>
-                                        You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
+                                        Are you stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
                                     </FooterHelp>
                                 </BlockStack>
                             </Form>

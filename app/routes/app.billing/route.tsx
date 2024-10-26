@@ -1,19 +1,19 @@
-import { useNavigation, json, useLoaderData, useNavigate, redirect, useFetcher } from '@remix-run/react';
-import { useState } from 'react';
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, InlineStack, Button, Banner, Spinner, Box } from '@shopify/polaris';
-import { authenticate } from '../../shopify.server';
-import { LargeGapBetweenSections, BillingPlanIdentifiers } from '../../constants';
-import { JsonData } from '../../adminBackend/service/dto/jsonData';
-import PricingPlanComponent from './pricingPlan';
-import { GapBetweenSections, GapInsideSection } from '~/constants';
-import ToggleSwitch from './toogleSwitch';
-import userRepository from '~/adminBackend/repository/impl/UserRepository';
-import styles from './route.module.css';
-import { Modal, TitleBar } from '@shopify/app-bridge-react';
-import { PricingPlan } from '@prisma/client';
+import { useNavigation, json, useLoaderData, useNavigate, redirect, useFetcher } from "@remix-run/react";
+import { useState } from "react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, InlineStack, Button, Banner, Spinner, Box } from "@shopify/polaris";
+import { authenticate } from "../../shopify.server";
+import { LargeGapBetweenSections, BillingPlanIdentifiers } from "../../constants";
+import { JsonData } from "../../adminBackend/service/dto/jsonData";
+import PricingPlanComponent from "./pricingPlan";
+import { GapBetweenSections, GapInsideSection } from "~/constants";
+import ToggleSwitch from "./toogleSwitch";
+import userRepository from "~/adminBackend/repository/impl/UserRepository";
+import styles from "./route.module.css";
+import { Modal, TitleBar } from "@shopify/app-bridge-react";
+import { PricingPlan } from "@prisma/client";
 
-export type PricingInterval = 'MONTHLY' | 'YEARLY';
+export type PricingInterval = "MONTHLY" | "YEARLY";
 
 export type BillingPlan = {
     planName: string;
@@ -25,7 +25,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
-    if (!user) return redirect('/app');
+    if (!user) return redirect("/app");
 
     const { hasActivePayment, appSubscriptions } = await billing.check({
         plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY],
@@ -34,9 +34,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     if (hasActivePayment) {
         return json({ planName: user.activeBillingPlan, planId: appSubscriptions[0].name });
-    } else if (user.activeBillingPlan === 'BASIC') {
+    } else if (user.activeBillingPlan === "BASIC") {
         return json({ planName: user.activeBillingPlan, planId: BillingPlanIdentifiers.BASIC });
-    } else return json({ planName: user.activeBillingPlan, planId: 'NONE' });
+    } else return json({ planName: user.activeBillingPlan, planId: "NONE" });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -44,7 +44,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
-    if (!user) return redirect('/app');
+    if (!user) return redirect("/app");
 
     const { hasActivePayment, appSubscriptions } = await billing.check({
         plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY],
@@ -52,13 +52,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     });
 
     const formData = await request.formData();
-    const action = formData.get('action');
+    const action = formData.get("action");
 
-    let state: 'upgrading' | 'downgrading' | 'none' = 'none';
+    let state: "upgrading" | "downgrading" | "none" = "none";
     console.log(action);
 
     switch (action) {
-        case 'CANCEL': {
+        case "CANCEL": {
             if (hasActivePayment) {
                 const cancelledSubscription = await billing.cancel({
                     subscriptionId: appSubscriptions[0].id,
@@ -66,8 +66,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     prorate: false,
                 });
             }
-            await userRepository.updateUser({ ...user, activeBillingPlan: 'NONE' });
-            return redirect('/app/billing');
+            await userRepository.updateUser({ ...user, activeBillingPlan: "NONE" });
+            return redirect("/app/billing");
         }
 
         case BillingPlanIdentifiers.BASIC: {
@@ -78,45 +78,45 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     prorate: false,
                 });
 
-                state = 'downgrading';
+                state = "downgrading";
             }
 
-            await userRepository.updateUser({ ...user, activeBillingPlan: 'BASIC' });
+            await userRepository.updateUser({ ...user, activeBillingPlan: "BASIC" });
 
-            if (state === 'downgrading') {
-                return redirect('/app/billing');
+            if (state === "downgrading") {
+                return redirect("/app/billing");
             } else {
-                return redirect('/app/thank-you?variant=firstPlan');
+                return redirect("/app/thank-you?variant=firstPlan");
             }
         }
 
         case BillingPlanIdentifiers.PRO_MONTHLY: {
-            if (user.activeBillingPlan === 'BASIC') state = 'upgrading';
+            if (user.activeBillingPlan === "BASIC") state = "upgrading";
 
-            await userRepository.updateUser({ ...user, activeBillingPlan: 'PRO' });
+            await userRepository.updateUser({ ...user, activeBillingPlan: "PRO" });
 
             console.log("I'm here");
 
             const res = await billing.request({
                 plan: action,
                 isTest: true,
-                returnUrl: `https://admin.shopify.com/store/${session.shop.split('.')[0]}/apps/neat-bundles/app/thank-you?variant=${state === 'upgrading' ? 'upgrade' : state === 'none' ? 'firstPlan' : ''}`,
+                returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/thank-you?variant=${state === "upgrading" ? "upgrade" : state === "none" ? "firstPlan" : ""}`,
             });
 
             break;
         }
 
         case BillingPlanIdentifiers.PRO_YEARLY: {
-            if (user.activeBillingPlan === 'BASIC') state = 'upgrading';
+            if (user.activeBillingPlan === "BASIC") state = "upgrading";
 
-            await userRepository.updateUser({ ...user, activeBillingPlan: 'PRO' });
+            await userRepository.updateUser({ ...user, activeBillingPlan: "PRO" });
 
             console.log("I'm here");
 
             const res = await billing.request({
                 plan: action,
                 isTest: true,
-                returnUrl: `https://admin.shopify.com/store/${session.shop.split('.')[0]}/apps/neat-bundles/app/thank-you?variant=${state === 'upgrading' ? 'upgrade' : state === 'none' ? 'firstPlan' : ''}`,
+                returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/thank-you?variant=${state === "upgrading" ? "upgrade" : state === "none" ? "firstPlan" : ""}`,
             });
 
             break;
@@ -125,19 +125,19 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         default: {
             return json(
                 {
-                    ...new JsonData(true, 'success', "This is the default action that doesn't do anything."),
+                    ...new JsonData(true, "success", "This is the default action that doesn't do anything."),
                 },
                 { status: 200 },
             );
         }
     }
 
-    return redirect('/app');
+    return redirect("/app");
 };
 
 export default function Index() {
     const nav = useNavigation();
-    const isLoading = nav.state !== 'idle';
+    const isLoading = nav.state !== "idle";
     const fetcher = useFetcher();
     const navigate = useNavigate();
 
@@ -145,13 +145,13 @@ export default function Index() {
 
     //
     //pricing interval
-    const [pricingInterval, setPricingInterval] = useState<PricingInterval>('MONTHLY');
+    const [pricingInterval, setPricingInterval] = useState<PricingInterval>("MONTHLY");
 
     const handlePricingIntervalToogle = () => {
         setPricingInterval((state: PricingInterval) => {
-            if (state === 'MONTHLY') return 'YEARLY';
+            if (state === "MONTHLY") return "YEARLY";
 
-            return 'MONTHLY';
+            return "MONTHLY";
         });
     };
 
@@ -160,8 +160,8 @@ export default function Index() {
     const handleCanclePlan = async () => {
         const form = new FormData();
 
-        form.append('action', 'CANCEL');
-        fetcher.submit(form, { method: 'POST', navigate: false });
+        form.append("action", "CANCEL");
+        fetcher.submit(form, { method: "POST", navigate: false });
     };
 
     //
@@ -190,8 +190,8 @@ export default function Index() {
     const chargeCustomer = (newPlan: BillingPlan) => {
         const form = new FormData();
 
-        form.append('action', newPlan.planId);
-        fetcher.submit(form, { method: 'POST', navigate: false });
+        form.append("action", newPlan.planId);
+        fetcher.submit(form, { method: "POST", navigate: false });
     };
 
     return (
@@ -228,13 +228,13 @@ export default function Index() {
                             <Text as="p">If you cancel the subscription, you won't be able to use Neat Bundles app. Are you sure that you want to to that?</Text>
                         </Box>
                         <TitleBar title="Cancel confirmation">
-                            <button onClick={() => shopify.modal.hide('cancel-subscription-modal')}>Close</button>
+                            <button onClick={() => shopify.modal.hide("cancel-subscription-modal")}>Close</button>
                             <button
                                 variant="primary"
                                 tone="critical"
                                 onClick={() => {
                                     handleCanclePlan();
-                                    shopify.modal.hide('cancel-subscription-modal');
+                                    shopify.modal.hide("cancel-subscription-modal");
                                 }}>
                                 Cancel
                             </button>
@@ -242,14 +242,14 @@ export default function Index() {
                     </Modal>
 
                     {/* Modal for users to confirm downgrading */}
-                    <Modal id="downgrading-subscription-modal" open={isDowngrading}>
+                    <Modal id="downgrading-subscription-modal" open={isDowngrading} onHide={() => setIsDowngrading(false)}>
                         <Box padding="300">
                             <Text as="p">
                                 You are about to downgrade from the <b>{activeSubscription.planId}</b> plan to the <b>{newSelectedSubscription?.planId}</b> plan. You'll lose all
                                 the features from the <b>{activeSubscription.planId}</b> plan. Are you sure that you want to do that?
                             </Text>
                         </Box>
-                        <TitleBar title="Downgrade confirmation">
+                        <TitleBar title="Are you sure you want to downgrade your plan?">
                             <button onClick={() => setIsDowngrading(false)}>Close</button>
                             <button
                                 variant="primary"
@@ -265,13 +265,13 @@ export default function Index() {
                     <Page
                         title="Billing"
                         backAction={{
-                            content: 'Back',
+                            content: "Back",
                             onAction: async () => {
                                 navigate(-1);
                             },
                         }}>
                         <div id={styles.tableWrapper}>
-                            <div className={fetcher.state !== 'idle' ? styles.loadingTable : styles.hide}>
+                            <div className={fetcher.state !== "idle" ? styles.loadingTable : styles.hide}>
                                 <Spinner accessibilityLabel="Spinner example" size="large" />
                             </div>
                             <BlockStack align="center" gap={LargeGapBetweenSections}>
@@ -302,16 +302,16 @@ export default function Index() {
                                             monthly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.BASIC },
                                         }}
                                         handleSubscription={handleSubscription}
-                                        title={{ yearly: 'Basic', monthly: 'Basic' }}
-                                        monthlyPricing={'Free'}
-                                        yearlyPricing={'Free'}
+                                        title={{ yearly: "Basic", monthly: "Basic" }}
+                                        monthlyPricing={"Free"}
+                                        yearlyPricing={"Free"}
                                         pricingInterval={pricingInterval}
                                         features={[
-                                            'Create up to 2 bundles',
-                                            'Create up to 2 two steps in one bundle',
-                                            'Create product steps',
-                                            'Customize colors',
-                                            'Customer support',
+                                            "Create up to 2 bundles",
+                                            "Create up to 2 two steps in one bundle",
+                                            "Create product steps",
+                                            "Customize colors",
+                                            "Customer support",
                                         ]}
                                     />
                                     <PricingPlanComponent
@@ -323,18 +323,18 @@ export default function Index() {
                                             monthly: { planName: PricingPlan.PRO, planId: BillingPlanIdentifiers.PRO_MONTHLY },
                                         }}
                                         handleSubscription={handleSubscription}
-                                        title={{ yearly: 'Pro (yearly)', monthly: 'Pro (monthly)' }}
-                                        monthlyPricing={'$4.99'}
-                                        yearlyPricing={'$49.99'}
+                                        title={{ yearly: "Pro (yearly)", monthly: "Pro (monthly)" }}
+                                        monthlyPricing={"$4.99"}
+                                        yearlyPricing={"$49.99"}
                                         pricingInterval={pricingInterval}
                                         features={[
-                                            'Create unlimited bundles',
-                                            'Create up to 5 steps on all bundles',
-                                            'Create product steps',
-                                            'Collect images or text on steps',
-                                            'Remove Neat bundles branding',
-                                            'Customize colors',
-                                            'Priority support',
+                                            "Create unlimited bundles",
+                                            "Create up to 5 steps on all bundles",
+                                            "Create product steps",
+                                            "Collect images or text on steps",
+                                            "Remove Neat bundles branding",
+                                            "Customize colors",
+                                            "Priority support",
                                         ]}
                                     />
                                 </InlineStack>
@@ -343,14 +343,14 @@ export default function Index() {
                                 <InlineStack gap={GapBetweenSections} align="center" blockAlign="center">
                                     <Text as="p">
                                         <u>
-                                            {activeSubscription.planId === 'NONE'
+                                            {activeSubscription.planId === "NONE"
                                                 ? "You don't have an active plan."
                                                 : `Your currently active plan is ${activeSubscription.planId}.`}
                                         </u>
                                     </Text>
 
-                                    {activeSubscription.planId !== BillingPlanIdentifiers.BASIC && activeSubscription.planName !== 'NONE' && (
-                                        <Button onClick={() => shopify.modal.show('cancel-subscription-modal')}>Cancel plan</Button>
+                                    {activeSubscription.planId !== BillingPlanIdentifiers.BASIC && activeSubscription.planName !== "NONE" && (
+                                        <Button onClick={() => shopify.modal.show("cancel-subscription-modal")}>Cancel plan</Button>
                                     )}
                                 </InlineStack>
 

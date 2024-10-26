@@ -86,7 +86,7 @@ export default function Index() {
             </div>
 
             <FooterHelp>
-                You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
+                Are you stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
             </FooterHelp>
         </Page>
     );

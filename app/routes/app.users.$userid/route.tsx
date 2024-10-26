@@ -1,5 +1,5 @@
-import { useNavigation, json, useLoaderData, Link, useNavigate, Outlet, useParams, redirect } from '@remix-run/react';
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
+import { useNavigation, json, useLoaderData, Link, useNavigate, Outlet, useParams, redirect } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
     Page,
     Card,
@@ -20,48 +20,48 @@ import {
     MediaCard,
     Spinner,
     VideoThumbnail,
-} from '@shopify/polaris';
-import { authenticate } from '~/shopify.server';
-import { JsonData } from '@adminBackend/service/dto/jsonData';
-import { useAsyncSubmit } from '~/hooks/useAsyncSubmit';
-import { useNavigateSubmit } from '~/hooks/useNavigateSubmit';
-import { ExternalIcon, PlusIcon } from '@shopify/polaris-icons';
-import { GapBetweenSections, GapInsideSection, bundlePagePreviewKey } from '~/constants';
-import userRepository from '~/adminBackend/repository/impl/UserRepository';
+} from "@shopify/polaris";
+import { authenticate } from "~/shopify.server";
+import { JsonData } from "@adminBackend/service/dto/jsonData";
+import { useAsyncSubmit } from "~/hooks/useAsyncSubmit";
+import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
+import { ExternalIcon, PlusIcon } from "@shopify/polaris-icons";
+import { GapBetweenSections, GapInsideSection, bundlePagePreviewKey } from "~/constants";
+import userRepository from "~/adminBackend/repository/impl/UserRepository";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
-    if (!user) return redirect('/app');
+    if (!user) return redirect("/app");
 
     const url = new URL(request.url);
-    const installSuccessBanner = url.searchParams.get('installSuccess');
+    const installSuccessBanner = url.searchParams.get("installSuccess");
 
-    return json(new JsonData(true, 'success', 'User successfuly retrieved', [], { installSuccessBanner: installSuccessBanner === 'true', user: user }));
+    return json(new JsonData(true, "success", "User successfuly retrieved", [], { installSuccessBanner: installSuccessBanner === "true", user: user }));
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
 
     const formData = await request.formData();
-    const action = formData.get('action');
+    const action = formData.get("action");
 
     switch (action) {
-        case 'hideTutorial': {
+        case "hideTutorial": {
             const user = await userRepository.getUserByStoreUrl(session.shop);
 
-            if (!user) return redirect('/app');
+            if (!user) return redirect("/app");
 
             await userRepository.updateUser({ ...user, showTutorialBanner: false });
 
-            return redirect('bundles');
+            return redirect("bundles");
         }
         default: {
             return json(
                 {
-                    ...new JsonData(true, 'success', "This is the default action that doesn't do anything."),
+                    ...new JsonData(true, "success", "This is the default action that doesn't do anything."),
                 },
                 { status: 200 },
             );
@@ -71,7 +71,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function Index() {
     const nav = useNavigation();
-    const isLoading = nav.state === 'loading';
+    const isLoading = nav.state === "loading";
     const navigateSubmit = useNavigateSubmit(); //Function for doing the submit action as if form was submitted
     const params = useParams();
 
@@ -116,13 +116,13 @@ export default function Index() {
                     //     },
                     // }}
                     >
-                        <BlockStack gap={'800'}>
+                        <BlockStack gap={"800"}>
                             <BlockStack gap={GapBetweenSections}>
                                 {data.installSuccessBanner && (
                                     <>
                                         <Banner title="Installation successfull, congradulation!" tone="success" onDismiss={() => {}}>
                                             <BlockStack gap={GapInsideSection}>
-                                                <Text as={'p'}>
+                                                <Text as={"p"}>
                                                     Congradulation on succesfully installing our app. Let's now start creating the first bundle for your customers. The whole
                                                     process should take less than 5 minutes.
                                                 </Text>
@@ -144,26 +144,26 @@ export default function Index() {
                                     <MediaCard
                                         title="Watch a short tutorial to get quickly started"
                                         primaryAction={{
-                                            content: 'Watch tutorial',
+                                            content: "Watch tutorial",
                                             onAction: () => {},
                                             icon: ExternalIcon,
-                                            url: 'https://help.shopify.com',
-                                            target: '_blank',
+                                            url: "https://help.shopify.com",
+                                            target: "_blank",
                                         }}
                                         size="small"
-                                        description="We recommend watching this short tutorial to get started with creating Neat Bundle Builder"
+                                        description="We recommend watching this short tutorial to get started with creating Neat Bundles."
                                         popoverActions={[
                                             {
-                                                content: 'Dismiss',
+                                                content: "Dismiss",
                                                 onAction: () => {
-                                                    navigateSubmit('hideTutorial', `/app/users/${params.userid}`);
+                                                    navigateSubmit("hideTutorial", `/app/users/${params.userid}`);
                                                 },
                                             },
                                         ]}>
                                         <VideoThumbnail
                                             videoLength={80}
                                             thumbnailUrl="https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850"
-                                            onClick={() => console.log('clicked')}
+                                            onClick={() => console.log("clicked")}
                                         />
                                     </MediaCard>
                                 )}
@@ -201,7 +201,7 @@ export default function Index() {
                                 </Banner>
 
                                 <FooterHelp>
-                                    You stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
+                                    Are you stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
                                 </FooterHelp>
                             </BlockStack>
                         </BlockStack>

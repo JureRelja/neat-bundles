@@ -232,7 +232,7 @@ export default function Index() {
                                                         Content step configuration
                                                     </Text>
                                                     <Text as="p" variant="bodyMd" tone="subdued">
-                                                        On content steps, customers will need to enter content (text, numbers or image) into the input fields.
+                                                        On content steps, customers will need to enter content (text, numbers, or images) into the input fields.
                                                     </Text>
                                                 </BlockStack>
 
@@ -288,7 +288,7 @@ export default function Index() {
                                                     type="text"
                                                     name={`stepTitle`}
                                                     value={stepData.title}
-                                                    helpText="Customer will see this title when they build a bundle."
+                                                    helpText="Customers will see this title when they build a bundle."
                                                     onChange={(newTitle: string) => {
                                                         setStepData((stepData: BundleStepContent) => {
                                                             return {

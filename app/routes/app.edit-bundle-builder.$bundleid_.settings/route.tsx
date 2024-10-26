@@ -1,9 +1,9 @@
-import type { LoaderFunctionArgs, ActionFunctionArgs } from '@remix-run/node';
-import { json, redirect } from '@remix-run/node';
-import { useLoaderData, useNavigation, useNavigate, Form, Link } from '@remix-run/react';
-import { useAppBridge } from '@shopify/app-bridge-react';
-import { authenticate } from '../../shopify.server';
-import db from '../../db.server';
+import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import { useLoaderData, useNavigation, useNavigate, Form, Link } from "@remix-run/react";
+import { useAppBridge } from "@shopify/app-bridge-react";
+import { authenticate } from "../../shopify.server";
+import db from "../../db.server";
 import {
     Card,
     BlockStack,
@@ -20,14 +20,14 @@ import {
     Icon,
     InlineStack,
     FooterHelp,
-} from '@shopify/polaris';
-import { BigGapBetweenSections, GapBetweenSections } from '../../constants';
-import { QuestionCircleIcon } from '@shopify/polaris-icons';
-import { useState } from 'react';
-import { JsonData } from '~/adminBackend/service/dto/jsonData';
-import { ApiCacheService } from '~/adminBackend/service/utils/ApiCacheService';
-import { ApiCacheKeyService } from '~/adminBackend/service/utils/ApiCacheKeyService';
-import { BundleSettings } from '@prisma/client';
+} from "@shopify/polaris";
+import { BigGapBetweenSections, GapBetweenSections } from "../../constants";
+import { QuestionCircleIcon } from "@shopify/polaris-icons";
+import { useState } from "react";
+import { JsonData } from "~/adminBackend/service/dto/jsonData";
+import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
+import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
+import { BundleSettings } from "@prisma/client";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
@@ -41,11 +41,11 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     if (!bundleSettings) {
         throw new Response(null, {
             status: 404,
-            statusText: 'Not Found',
+            statusText: "Not Found",
         });
     }
     return json(
-        new JsonData(true, 'success', 'Bundle settings succesfuly retrieved', [], bundleSettings),
+        new JsonData(true, "success", "Bundle settings succesfuly retrieved", [], bundleSettings),
 
         { status: 200 },
     );
@@ -56,7 +56,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
     const formData = await request.formData();
 
-    const bundleSettings: BundleSettings = JSON.parse(formData.get('bundleSettings') as string);
+    const bundleSettings: BundleSettings = JSON.parse(formData.get("bundleSettings") as string);
 
     try {
         const result: BundleSettings | null = await db.bundleSettings.update({
@@ -72,7 +72,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         });
 
         if (!result) {
-            throw new Error('Failed to update bundle settings');
+            throw new Error("Failed to update bundle settings");
         }
 
         // Clear the cache for the bundle
@@ -83,8 +83,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         const url: URL = new URL(request.url);
 
         // Redirect to a specific page if the query param is present
-        if (url.searchParams.has('redirect')) {
-            return redirect(url.searchParams.get('redirect') as string);
+        if (url.searchParams.has("redirect")) {
+            return redirect(url.searchParams.get("redirect") as string);
         }
 
         return redirect(`/app`);
@@ -92,7 +92,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         console.error(error);
         throw new Response(null, {
             status: 404,
-            statusText: 'Settings not found',
+            statusText: "Settings not found",
         });
     }
 };
@@ -101,7 +101,7 @@ export default function Index() {
     const navigate = useNavigate();
     const nav = useNavigation();
     const shopify = useAppBridge();
-    const isLoading: boolean = nav.state != 'idle';
+    const isLoading: boolean = nav.state != "idle";
 
     const serverSettings: BundleSettings = useLoaderData<typeof loader>().data;
 
@@ -138,7 +138,7 @@ export default function Index() {
                     title={`Bundle settings`}
                     subtitle="Edit settings only for this bundle."
                     backAction={{
-                        content: 'Products',
+                        content: "Products",
                         onAction: async () => {
                             // Save or discard the changes before leaving the page
                             await shopify.saveBar.leaveConfirmation();
@@ -150,14 +150,14 @@ export default function Index() {
 
                         <BlockStack gap={BigGapBetweenSections}>
                             {/* Checkbox settings */}
-                            <InlineGrid columns={{ xs: '1fr', md: '3fr 4fr' }} gap="400">
+                            <InlineGrid columns={{ xs: "1fr", md: "3fr 4fr" }} gap="400">
                                 <Box as="section">
                                     <BlockStack gap="400">
                                         <Text as="h3" variant="headingMd">
                                             Pricing summary
                                         </Text>
                                         <Text as="p" variant="bodyMd">
-                                            Pricing summary shows customers the pricing and discount of the bundle that they are creating.
+                                            Thep pricing summary shows customers the pricing and discount of the bundle that they are creating.
                                         </Text>
                                     </BlockStack>
                                 </Box>
@@ -170,23 +170,23 @@ export default function Index() {
                                             {
                                                 label: (
                                                     <InlineStack>
-                                                        <Text as={'p'}>Hide pricing summary on steps</Text>
+                                                        <Text as={"p"}>Hide pricing summary on steps</Text>
                                                         <Tooltip
                                                             width="wide"
-                                                            content="By hiding pricing summary, customers won't be able to see their bundle price until they add a bundle to cart or reach checkout.">
+                                                            content="By hiding the pricing summary, customers won't be able to see their bundle price until they add a bundle to the cart or reach checkout.">
                                                             <Icon source={QuestionCircleIcon}></Icon>
                                                         </Tooltip>
                                                     </InlineStack>
                                                 ),
-                                                value: 'true',
+                                                value: "true",
                                             },
                                         ]}
-                                        selected={settingsState.hidePricingSummary ? ['true'] : []}
+                                        selected={settingsState.hidePricingSummary ? ["true"] : []}
                                         onChange={(value) => {
                                             setSetttingsState((prevSettings: BundleSettings) => {
                                                 return {
                                                     ...prevSettings,
-                                                    hidePricingSummary: value[0] === 'true',
+                                                    hidePricingSummary: value[0] === "true",
                                                 };
                                             });
                                         }}
@@ -194,7 +194,7 @@ export default function Index() {
                                 </Card>
                             </InlineGrid>
                             <Divider />
-                            <InlineGrid columns={{ xs: '1fr', md: '3fr 4fr' }} gap="400">
+                            <InlineGrid columns={{ xs: "1fr", md: "3fr 4fr" }} gap="400">
                                 <Box as="section">
                                     <BlockStack gap="400">
                                         <Text as="h3" variant="headingMd">
@@ -214,7 +214,7 @@ export default function Index() {
                                             {
                                                 label: (
                                                     <InlineStack>
-                                                        <Text as={'p'}>Allow customers to go back on steps</Text>
+                                                        <Text as={"p"}>Allow customers to go back on steps</Text>
                                                         <Tooltip
                                                             width="wide"
                                                             content="If this is not selected, customers won't be able to use the 'back' button to go back on steps.">
@@ -222,15 +222,15 @@ export default function Index() {
                                                         </Tooltip>
                                                     </InlineStack>
                                                 ),
-                                                value: 'true',
+                                                value: "true",
                                             },
                                         ]}
-                                        selected={settingsState.allowBackNavigation ? ['true'] : []}
+                                        selected={settingsState.allowBackNavigation ? ["true"] : []}
                                         onChange={(value) => {
                                             setSetttingsState((prevSettings: BundleSettings) => {
                                                 return {
                                                     ...prevSettings,
-                                                    allowBackNavigation: value[0] === 'true',
+                                                    allowBackNavigation: value[0] === "true",
                                                 };
                                             });
                                         }}
@@ -243,23 +243,23 @@ export default function Index() {
                                             {
                                                 label: (
                                                     <InlineStack>
-                                                        <Text as={'p'}>Skip the cart and go to checkout directly</Text>
+                                                        <Text as={"p"}>Skip the cart and go to checkout directly</Text>
                                                         <Tooltip
                                                             width="wide"
-                                                            content="Without this option selected, all the customer will be redirected to cart page after the finish building their bundle.">
+                                                            content="Without this option selected, all the customer will be redirected to the cart page after they finish building their bundle.">
                                                             <Icon source={QuestionCircleIcon}></Icon>
                                                         </Tooltip>
                                                     </InlineStack>
                                                 ),
-                                                value: 'true',
+                                                value: "true",
                                             },
                                         ]}
-                                        selected={settingsState.skipTheCart ? ['true'] : []}
+                                        selected={settingsState.skipTheCart ? ["true"] : []}
                                         onChange={(value) => {
                                             setSetttingsState((prevSettings: BundleSettings) => {
                                                 return {
                                                     ...prevSettings,
-                                                    skipTheCart: value[0] === 'true',
+                                                    skipTheCart: value[0] === "true",
                                                 };
                                             });
                                         }}
@@ -267,7 +267,7 @@ export default function Index() {
                                 </Card>
                             </InlineGrid>
                             <Divider />
-                            <InlineGrid columns={{ xs: '1fr', md: '3fr 4fr' }} gap="400">
+                            <InlineGrid columns={{ xs: "1fr", md: "3fr 4fr" }} gap="400">
                                 <Box as="section">
                                     <BlockStack gap="400">
                                         <Text as="h3" variant="headingMd">
@@ -287,23 +287,23 @@ export default function Index() {
                                             {
                                                 label: (
                                                     <InlineStack>
-                                                        <Text as={'p'}>Show “out of stock” and unavailable products</Text>
+                                                        <Text as={"p"}>Show “out of stock” and unavailable products</Text>
                                                         <Tooltip
                                                             width="wide"
-                                                            content="By default, only products that have at least one variant that's in stock at the time of purchase will be displayed. If this is selected, all 'out of stock' products will be visible, but customers won't be able to add the to their bundles.">
+                                                            content="By default, only products that have at least one variant that's in stock at the time of purchase will be displayed. If this is selected, all 'out of stock' products will be visible, but customers won't be able to add them to their bundles.">
                                                             <Icon source={QuestionCircleIcon}></Icon>
                                                         </Tooltip>
                                                     </InlineStack>
                                                 ),
-                                                value: 'true',
+                                                value: "true",
                                             },
                                         ]}
-                                        selected={settingsState.showOutOfStockProducts ? ['true'] : []}
+                                        selected={settingsState.showOutOfStockProducts ? ["true"] : []}
                                         onChange={(value) => {
                                             setSetttingsState((prevSettings: BundleSettings) => {
                                                 return {
                                                     ...prevSettings,
-                                                    showOutOfStockProducts: value[0] === 'true',
+                                                    showOutOfStockProducts: value[0] === "true",
                                                 };
                                             });
                                         }}
