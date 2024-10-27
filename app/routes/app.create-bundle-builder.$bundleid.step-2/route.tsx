@@ -148,7 +148,7 @@ export default function Index() {
                         type="text"
                         name={`stepTitle`}
                         value={stepTitle}
-                        helpText="Customer will see this title when they build a bundle."
+                        helpText="Customers will see this title when they build a bundle."
                         onChange={(newTitle: string) => {
                             setStepTitle(newTitle);
                         }}

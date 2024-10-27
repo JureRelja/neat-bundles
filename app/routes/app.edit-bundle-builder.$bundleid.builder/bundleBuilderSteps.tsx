@@ -202,7 +202,7 @@ export default function Index({ user, bundleBuilderSteps }: { user: User; bundle
                                         autoComplete="off"
                                         inputMode="text"
                                         name="bundleTitle"
-                                        helpText="Customer will see this title when they build a bundle."
+                                        helpText="Customers will see this title when they build a bundle."
                                         value={newStepTitle}
                                         error={newStepTitle === "" ? "Please enter a title" : undefined}
                                         onChange={(newTitile) => {

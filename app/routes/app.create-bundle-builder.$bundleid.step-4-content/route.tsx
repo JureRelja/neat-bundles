@@ -96,6 +96,7 @@ export default function Index() {
                     },
                 ];
             });
+            return;
         } else if (contentInput.inputType != "IMAGE" && (!contentInput.maxChars || contentInput.maxChars < 1)) {
             setErrors((errors) => {
                 if (!errors) {
@@ -116,9 +117,6 @@ export default function Index() {
                     },
                 ];
             });
-        }
-
-        if (errors && errors.length > 0) {
             return;
         }
 
@@ -186,7 +184,7 @@ export default function Index() {
                         type="text"
                         name={`stepTitle`}
                         value={stepTitle}
-                        helpText="Customer will see this title when they build a bundle."
+                        helpText="Customers will see this title when they build a bundle."
                         onChange={(newTitle: string) => {
                             setStepTitle(newTitle);
                         }}

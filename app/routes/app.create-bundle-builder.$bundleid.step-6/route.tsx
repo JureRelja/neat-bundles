@@ -92,7 +92,7 @@ export default function Index() {
                                     Edit bundle
                                 </Button>
                                 <Button variant="primary" icon={ExternalIcon} url={`${loaderData.data.bundleBuilderPageUrl}`} target="_blank">
-                                    See on store
+                                    See live on your store
                                 </Button>
                             </InlineGrid>
                         </BlockStack>
