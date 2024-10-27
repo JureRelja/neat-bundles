@@ -1,5 +1,5 @@
-import db from '../../../db.server';
-import { User } from '@prisma/client';
+import db from "../../../db.server";
+import { User } from "@prisma/client";
 
 class UserRepository {
     public async getUserByStoreUrl(storeUrl: string): Promise<User | null> {
@@ -12,10 +12,10 @@ class UserRepository {
         return user;
     }
 
-    public async createUser(storeUrl: string, storeEmail: string, storeName: string, primaryDomain: string, onlineStorePublicationId: string): Promise<User> {
+    public async createUser(storeUrl: string, storeEmail: string, storeName: string, primaryDomain: string, onlineStorePublicationId: string, ownerName: string): Promise<User> {
         const user = await db.user.create({
             data: {
-                ownerName: '',
+                ownerName: ownerName,
                 storeUrl: storeUrl,
                 email: storeEmail,
                 storeName: storeName,
@@ -25,26 +25,26 @@ class UserRepository {
                     create: {
                         bundleColors: {
                             create: {
-                                addToBundleBtn: '#000000',
-                                addToBundleText: '#000000',
-                                removeProductsBtn: '#000000',
-                                removeProductsBtnText: '#000000',
-                                stepsIcon: '#000000',
-                                nextStepBtn: '#000000',
-                                nextStepBtnText: '#000000',
-                                titleAndDESC: '#000000',
-                                prevStepBtnText: '#000000',
-                                viewProductBtn: '#000000',
-                                viewProductBtnText: '#000000',
-                                prevStepBtn: '#000000',
+                                addToBundleBtn: "#000000",
+                                addToBundleText: "#000000",
+                                removeProductsBtn: "#000000",
+                                removeProductsBtnText: "#000000",
+                                stepsIcon: "#000000",
+                                nextStepBtn: "#000000",
+                                nextStepBtnText: "#000000",
+                                titleAndDESC: "#000000",
+                                prevStepBtnText: "#000000",
+                                viewProductBtn: "#000000",
+                                viewProductBtnText: "#000000",
+                                prevStepBtn: "#000000",
                             },
                         },
                         bundleLabels: {
                             create: {
-                                addToBundleBtn: 'Add to bundle',
-                                prevStepBtn: 'Previous step',
-                                nextStepBtn: 'Next step',
-                                viewProductBtn: 'View product',
+                                addToBundleBtn: "Add to bundle",
+                                prevStepBtn: "Previous step",
+                                nextStepBtn: "Next step",
+                                viewProductBtn: "View product",
                             },
                         },
                     },
