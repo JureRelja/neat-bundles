@@ -1,5 +1,5 @@
 const fetchActiveStepData = async (bundleId, activeStepNumber, isBundleInPreview) => {
-    const response = await fetch(`${APP_URL}/bundleData/step?bundleId=${bundleId}&stepNum=${activeStepNumber}&neatBundlePreview=${isBundleInPreview}`, { mode: 'cors' });
+    const response = await fetch(`${APP_URL}/bundleData/step?bundleId=${bundleId}&stepNum=${activeStepNumber}&neatBundlePreview=${isBundleInPreview}`, { mode: "cors" });
 
     const data = await response.json();
 
@@ -7,13 +7,13 @@ const fetchActiveStepData = async (bundleId, activeStepNumber, isBundleInPreview
         return data.data[0];
     } else {
         console.log(data.message);
-        alert('There was an error with fetching content for this step. Try refreshing the page.');
+        alert("There was an error with fetching content for this step. Try refreshing the page.");
         return null;
     }
 };
 
 const fetchProducts = async (activeStepData, activeStepProducts, windowShopify, Shopify) => {
-    if (activeStepData.stepType == 'PRODUCT') {
+    if (activeStepData.stepType == "PRODUCT") {
         //Getting product handles for all products
         const productHandlesToFetch = activeStepData.productInput.products.map((product) => product.shopifyProductHandle);
         activeStepProducts.length = 0; //Clearing the array
@@ -46,7 +46,7 @@ const fetchProducts = async (activeStepData, activeStepProducts, windowShopify, 
                         product.selectedVariantIndex = 0; //By default first variant is selected
                         product.outOfStock = product.variants.every((variant) => !variant.available);
 
-                        product.options = product.options.filter((option) => option.name !== 'Title' && option.values.length !== 1);
+                        product.options = product.options.filter((option) => option.name !== "Title" && option.values.length !== 1);
 
                         tempActiveStepProducts.push(product);
 
@@ -85,10 +85,10 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
 
     //Adding files to formData
     stepInputs.forEach((stepInput) => {
-        if (stepInput.inputs && stepInput.inputs.length != 0 && stepInput.stepType == 'CONTENT') {
+        if (stepInput.inputs && stepInput.inputs.length != 0 && stepInput.stepType == "CONTENT") {
             //Adding files to formData
             stepInput.inputs.forEach((content) => {
-                if (content.type == 'file') {
+                if (content.type == "file") {
                     //Extract blob from the old file
                     let blob = content.value.slice(0, content.value.size, content.value.type);
 
@@ -99,7 +99,7 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
                     let newFile = new File([blob], newFileName, { type: content.value.type });
 
                     //Add file to formData
-                    formData.append('files', newFile);
+                    formData.append("files", newFile);
                     console.log(newFile);
 
                     //Save filename as a reference to a file
@@ -110,10 +110,10 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
     });
 
     //Adding products to formData
-    formData.append('customerInputs', JSON.stringify(stepInputs));
+    formData.append("customerInputs", JSON.stringify(stepInputs));
 
     const response = await fetch(`${APP_URL}/bundleData/addToCart?bundleId=${bundleId}&shop=${shopDomain}`, {
-        method: 'POST',
+        method: "POST",
         body: formData,
     });
 
@@ -132,22 +132,22 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
                 },
             ],
         };
-        await fetch(Shopify.routes.root + 'cart/add.js', {
-            method: 'POST',
+        await fetch(Shopify.routes.root + "cart/add.js", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
             },
             body: JSON.stringify(formData),
         }).catch((error) => {
-            console.error('Error:', error);
+            console.error("Error:", error);
         });
 
         let bundleContentFormData = new FormData();
 
-        bundleContentFormData.append(`attributes[User data for bundle: ${bundleVariantForCart.bundleTitle}]`, bundleVariantForCart.bundleInputsAdmin);
+        bundleContentFormData.append(`attributes[Customer inputs for bundle: ${bundleVariantForCart.bundleTitle}]`, bundleVariantForCart.bundleInputsAdmin);
 
-        await fetch(Shopify.routes.root + 'cart/update.js', {
-            method: 'POST',
+        await fetch(Shopify.routes.root + "cart/update.js", {
+            method: "POST",
             body: bundleContentFormData,
         })
             .then(() => {
@@ -157,10 +157,10 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
                 }, 100);
             })
             .catch((error) => {
-                console.log('error', error);
+                console.log("error", error);
             });
     } else {
         console.log(result.message);
-        alert('There was an error with adding the bundle to the cart. Try refreshing the page.');
+        alert("There was an error with adding the bundle to the cart. Try refreshing the page.");
     }
 };

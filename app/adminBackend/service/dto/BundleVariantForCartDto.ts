@@ -1,6 +1,6 @@
-import { get } from 'http';
-import { AddedContentDto } from './AddedContentDto';
-import { BundleFullAndStepsFullDto } from './BundleFullAndStepsFullDto';
+import { get } from "http";
+import { AddedContentDto } from "./AddedContentDto";
+import { BundleFullAndStepsFullDto } from "./BundleFullAndStepsFullDto";
 
 export class BundleVariantForCartDto {
     private bundleId: number;
@@ -12,7 +12,7 @@ export class BundleVariantForCartDto {
         this.bundleTitle = bundleTitle;
 
         //Turn bundle variant ID into Shopify REST API ID
-        const bundleVariantIdArray = bundleVariantId.split('/');
+        const bundleVariantIdArray = bundleVariantId.split("/");
         const bundleVariantIdShopify = bundleVariantIdArray[bundleVariantIdArray.length - 1];
 
         this.bundleId = parseInt(bundleVariantIdShopify);
@@ -30,42 +30,46 @@ export class BundleVariantForCartDto {
         bundleId: number,
     ): { customerBundleInputs: { [key: string]: string }; adminBundleInputs: string } {
         if (addedContent.length === 0) {
-            return { customerBundleInputs: {}, adminBundleInputs: '' };
+            return { customerBundleInputs: {}, adminBundleInputs: "" };
         }
 
         const lineItemProperties: { [key: string]: string } = {}; //This is used to display what the customer has inputed in the cart and checkout page
 
-        let cartAttributes: string = ''; // This is used to display what the customer has inputed in the admin orders page
+        let cartAttributes: string = ""; // This is used to display what the customer has inputed in the admin orders page
 
-        lineItemProperties[`_neat_bundle_id`] = `${bundleId}`;
-        lineItemProperties[`- :-----Bundle Content-----`] = '-';
+        lineItemProperties[`_neat_bundles_id`] = `${bundleId}`;
+        lineItemProperties[`- :-----Bundle Inputs-----`] = "-";
 
         addedContent.forEach((addedContentOnStep) => {
             const stepNumber = addedContentOnStep.getStepNumber();
 
-            cartAttributes += 'Step #' + stepNumber + ': \n';
+            cartAttributes += "Step #" + stepNumber + ": \n";
 
-            addedContentOnStep.getContentItems().forEach((contentItem) => {
+            addedContentOnStep.getContentItems().forEach((contentItem, contentItemIndex) => {
+                console.log("contentItem", contentItem);
                 //If the content type is an image, we need to display the image url
-                if (contentItem.contentType === 'IMAGE') {
+                if (contentItem.contentType === "IMAGE") {
                     lineItemProperties[`Step #${stepNumber} - IMAGE URL`] = contentItem.value;
-                    cartAttributes += 'IMAGE URL: ' + contentItem.value;
-
-                    return;
+                    cartAttributes += "IMAGE URL: " + contentItem.value;
                 }
 
-                lineItemProperties[`Step #${stepNumber} - ${contentItem.contentType}`] = contentItem.value;
-                cartAttributes += contentItem.contentType + ': ' + contentItem.value;
+                //If the content type is text or number, we just display the value
+                if (contentItem.contentType === "TEXT" || contentItem.contentType === "NUMBER") {
+                    lineItemProperties[`Step #${stepNumber} - field ${contentItemIndex + 1} - ${contentItem.contentType}`] = contentItem.value;
+                    cartAttributes += contentItem.contentType + ": " + contentItem.value;
+                }
 
-                if (addedContentOnStep.getContentItems().indexOf(contentItem) < addedContentOnStep.getContentItems().length - 1) {
-                    cartAttributes += ', \n';
+                //Adding a command and a new line to separate the content items in Shopify admin orders page
+                if (contentItemIndex < addedContentOnStep.getContentItems().length - 1) {
+                    cartAttributes += ", \n";
                 }
             });
 
+            //This is used to separate the steps
             if (addedContent.indexOf(addedContentOnStep) < addedContent.length - 1) {
-                lineItemProperties[`- :----------------${this.getStringWithNumberOfDashes(stepNumber)}}`] = '-';
+                lineItemProperties[`- :----------------${this.getStringWithNumberOfDashes(stepNumber)}`] = "-";
 
-                cartAttributes += '  || \n\n';
+                cartAttributes += "   \n\n";
             }
         });
 
@@ -73,10 +77,10 @@ export class BundleVariantForCartDto {
     }
 
     public static getStringWithNumberOfDashes(numberOfDashes: number): string {
-        let dashes = '';
+        let dashes = "";
 
         for (let i = 0; i < numberOfDashes; i++) {
-            dashes += '-';
+            dashes += "-";
         }
 
         return dashes;
@@ -88,12 +92,12 @@ export class BundleVariantForCartDto {
         let bundlePrice = 0;
 
         //Compare at price
-        let bundleCompareAtPrice = bundle.pricing === 'CALCULATED' ? totalProductPrice : (bundle.priceAmount as number);
+        let bundleCompareAtPrice = bundle.pricing === "CALCULATED" ? totalProductPrice : (bundle.priceAmount as number);
 
-        if (bundle.discountType === 'FIXED') {
+        if (bundle.discountType === "FIXED") {
             //Subtract the discount value from the compare at price
             bundlePrice = bundleCompareAtPrice - bundle.discountValue;
-        } else if (bundle.discountType === 'PERCENTAGE') {
+        } else if (bundle.discountType === "PERCENTAGE") {
             //Subtract the discount value from the compare at price
             bundlePrice = bundleCompareAtPrice - bundleCompareAtPrice * (bundle.discountValue / 100);
         } else {

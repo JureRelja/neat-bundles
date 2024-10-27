@@ -5,6 +5,7 @@ import { error } from "../../../dto/jsonData";
 import bundleBuilderContentStepRepository from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderContentStepRepository";
 import { bundleBuilderStepsService } from "../../BundleBuilderStepsService";
 import { ContentStepDataDto } from "~/adminBackend/service/dto/ContentStepDataDto";
+import { bundleBuilderStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderStepRepository";
 
 class BundleBuilderContentStepService extends BundleBuilderStepTypeService {
     public checkIfErrorsInStepData(stepData: BundleStepContent): error[] {
@@ -37,12 +38,16 @@ class BundleBuilderContentStepService extends BundleBuilderStepTypeService {
     }
 
     public async addNewStep(bundleId: number, stepData: ContentStepDataDto): Promise<BundleStepContent> {
+        const numberOfSteps = await bundleBuilderStepRepository.getNumberOfSteps(bundleId);
+
+        stepData.stepNumber = numberOfSteps + 1;
+
         const newStep: BundleStepContent = await bundleBuilderContentStepRepository.addNewStep(bundleId, stepData);
 
         return newStep;
     }
-    public async duplicateStep(bundleId: number, stepNumber: number): Promise<BundleStepContent> {
-        const stepToDuplicate: BundleStepContent | null = await bundleBuilderContentStepRepository.getStepByBundleIdAndStepNumber(bundleId, stepNumber);
+    public async duplicateStep(bundleId: number, stepId: number): Promise<BundleStepContent> {
+        const stepToDuplicate: BundleStepContent | null = await bundleBuilderContentStepRepository.getStepById(stepId);
 
         if (!stepToDuplicate) {
             throw new Error("Step not found");
@@ -51,7 +56,7 @@ class BundleBuilderContentStepService extends BundleBuilderStepTypeService {
         const contentStepDto: ContentStepDataDto = {
             description: stepToDuplicate.description,
             title: stepToDuplicate.title + " (Copy)",
-            stepNumber: stepNumber + 1,
+            stepNumber: stepToDuplicate.stepNumber + 1,
             stepType: stepToDuplicate.stepType,
             contentInputs: stepToDuplicate.contentInputs.map((contentInput: ContentInput) => ({
                 inputLabel: contentInput.inputLabel,

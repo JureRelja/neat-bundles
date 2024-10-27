@@ -10,12 +10,12 @@ import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 import { ApiCacheKeyService } from "@adminBackend/service/utils/ApiCacheKeyService";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { bundleBuilderStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderStepRepository";
-import bundleBuilderContentStepRepository from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderContentStepRepository";
 import { bundleBuilderStepsService } from "~/adminBackend/service/impl/BundleBuilderStepsService";
 import { ProductStepDataDto } from "~/adminBackend/service/dto/ProductStepDataDto";
 import { ContentStepDataDto } from "~/adminBackend/service/dto/ContentStepDataDto";
 import { bundleBuilderProductStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderProductStepService";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
+import { bundleBuilderContentStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderContentStepService";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -120,7 +120,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                 const contentStepData: ContentStepDataDto = JSON.parse(stepDataJson as string);
 
-                const newStep: BundleStepContent = await bundleBuilderContentStepRepository.addNewStep(Number(params.bundleid), contentStepData);
+                const newStep: BundleStepContent = await bundleBuilderContentStepService.addNewStep(Number(params.bundleid), contentStepData);
 
                 if (!newStep) throw new Error("New step couldn't be created.");
 

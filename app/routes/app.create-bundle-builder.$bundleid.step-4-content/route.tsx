@@ -1,5 +1,5 @@
 import { json, redirect } from "@remix-run/node";
-import { useFetcher, useParams, useSubmit } from "@remix-run/react";
+import { useParams, useSubmit } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { BlockStack, Text, TextField } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";

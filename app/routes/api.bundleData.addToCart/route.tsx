@@ -1,20 +1,20 @@
-import type { ActionFunctionArgs } from '@remix-run/node';
-import { json } from '@remix-run/node';
-import db from '~/db.server';
-import { JsonData } from '~/adminBackend/service/dto/jsonData';
-import { checkPublicAuth } from '~/adminBackend/service/utils/publicApi.auth';
-import { FileStoreRepositoryImpl } from '~/adminBackend/repository/impl/FIleStoreServiceImpl';
-import { BundleFullAndStepsFullDto, bundleFullStepsFull } from '@adminBackend/service/dto/BundleFullAndStepsFullDto';
-import { CustomerInputDto } from '@adminBackend/service/dto/CustomerInputDto';
-import { ProductDto } from '@adminBackend/service/dto/ProductDto';
-import { ContentDto } from '@adminBackend/service/dto/ContentDto';
-import { CreatedBundleRepository } from '@adminBackend/repository/impl/CreatedBundleRepository';
-import { CustomerInputsDto } from '~/adminBackend/service/dto/CustomerInputsDto';
-import { shopifyProductVariantRepository } from '~/adminBackend/repository/impl/ShopifyProductVariantRepository';
-import { BundleVariantForCartDto } from '@adminBackend/service/dto/BundleVariantForCartDto';
-import { AddedContentItemDto } from '~/adminBackend/service/dto/AddedContentItemDto';
-import { shopifyBundleBuilderProductRepository } from '~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository';
-import { unauthenticated } from '~/shopify.server';
+import type { ActionFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import db from "~/db.server";
+import { JsonData } from "~/adminBackend/service/dto/jsonData";
+import { checkPublicAuth } from "~/adminBackend/service/utils/publicApi.auth";
+import { FileStoreRepositoryImpl } from "~/adminBackend/repository/impl/FIleStoreServiceImpl";
+import { BundleFullAndStepsFullDto, bundleFullStepsFull } from "@adminBackend/service/dto/BundleFullAndStepsFullDto";
+import { CustomerInputDto } from "@adminBackend/service/dto/CustomerInputDto";
+import { ProductDto } from "@adminBackend/service/dto/ProductDto";
+import { ContentDto } from "@adminBackend/service/dto/ContentDto";
+import { CreatedBundleRepository } from "@adminBackend/repository/impl/CreatedBundleRepository";
+import { CustomerInputsDto } from "~/adminBackend/service/dto/CustomerInputsDto";
+import { shopifyProductVariantRepository } from "~/adminBackend/repository/impl/ShopifyProductVariantRepository";
+import { BundleVariantForCartDto } from "@adminBackend/service/dto/BundleVariantForCartDto";
+import { AddedContentItemDto } from "~/adminBackend/service/dto/AddedContentItemDto";
+import { shopifyBundleBuilderProductRepository } from "~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository";
+import { unauthenticated } from "~/shopify.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
     const res = await checkPublicAuth(request, true); //Public auth check
@@ -22,15 +22,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     if (!res.ok)
         return json(res, {
             headers: {
-                'Access-Control-Allow-Origin': '*',
+                "Access-Control-Allow-Origin": "*",
             },
             status: 200,
         });
 
     //Get query params
     const url = new URL(request.url);
-    const shop = url.searchParams.get('shop') as string;
-    const bundleBuilderId = url.searchParams.get('bundleId');
+    const shop = url.searchParams.get("shop") as string;
+    const bundleBuilderId = url.searchParams.get("bundleId");
 
     const { admin } = await unauthenticated.admin(shop);
 
@@ -38,15 +38,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         const formData = await request.formData();
 
         //Get the customer inputs
-        const customerInputs: CustomerInputDto[] = JSON.parse(formData.get('customerInputs') as string) as CustomerInputDto[];
+        const customerInputs: CustomerInputDto[] = JSON.parse(formData.get("customerInputs") as string) as CustomerInputDto[];
 
         //Get the files
-        const files: File | File[] | null = formData.get('files') as File | File[] | null;
+        const files: File | File[] | null = formData.get("files") as File | File[] | null;
 
         if (!customerInputs) {
-            return json(new JsonData(true, 'error', 'Invalid form data.', []), {
+            return json(new JsonData(true, "error", "Invalid form data.", []), {
                 headers: {
-                    'Access-Control-Allow-Origin': '*',
+                    "Access-Control-Allow-Origin": "*",
                 },
                 status: 400,
             });
@@ -75,7 +75,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 return;
             }
 
-            if (step.stepType === 'PRODUCT') {
+            if (step.stepType === "PRODUCT") {
                 //Check if the number of products is in the range
                 const maxProductsOnThisStep: number = step.productInput?.maxProductsOnStep as number;
                 const minProductsOnThisStep: number = step.productInput?.minProductsOnStep as number;
@@ -102,11 +102,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 //
                 // Implementation
                 //
-            } else if (step.stepType === 'CONTENT') {
+            } else if (step.stepType === "CONTENT") {
                 const contentInputs: ContentDto[] = customerInputsOnThisStep?.inputs as ContentDto[];
 
                 step.contentInputs?.forEach((contentInput) => {
-                    if (contentInput.inputType === 'NONE') return;
+                    if (contentInput.inputType === "NONE") return;
 
                     //Customer content input on this step
                     const contentInputsOnThisStep: ContentDto = contentInputs.find((input) => {
@@ -114,24 +114,27 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     }) as ContentDto;
 
                     //Check if the content is required and if the content is not empty
-                    if (contentInputsOnThisStep.value.length == 0 && contentInput.required) {
+                    if (contentInputsOnThisStep.value.length == 0 && contentInput.required && contentInput.inputType != "IMAGE") {
                         error = true;
                         return;
                     }
 
                     //Check if the content is not too long
-                    if (contentInput.inputType != 'IMAGE' && contentInputsOnThisStep.value.length > contentInput.maxChars) {
+                    if (contentInput.inputType != "IMAGE" && contentInputsOnThisStep.value.length > contentInput.maxChars) {
                         error = true;
                         return;
                     }
 
                     //Check if the content type is correct
+                    if (contentInputsOnThisStep.type === "file" && contentInput.inputType != "IMAGE") {
+                        error = true;
+                        return;
+                    }
 
-                    //prettier-ignore
-                    if (contentInputsOnThisStep.type === "file" && contentInput.inputType != "IMAGE") { error = true; return;}
-
-                    //prettier-ignore
-                    if (contentInputsOnThisStep.type === "text" && !(contentInput.inputType === "TEXT" || contentInput.inputType === "NUMBER")) { error = true; return ;}
+                    if (contentInputsOnThisStep.type === "text" && !(contentInput.inputType === "TEXT" || contentInput.inputType === "NUMBER")) {
+                        error = true;
+                        return;
+                    }
                 });
             }
         });
@@ -139,9 +142,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         if (error) {
             console.log(error);
 
-            return json(new JsonData(false, 'error', 'Invalid form data.', []), {
+            return json(new JsonData(false, "error", "Invalid form data.", []), {
                 headers: {
-                    'Access-Control-Allow-Origin': '*',
+                    "Access-Control-Allow-Origin": "*",
                 },
                 status: 200,
             });
@@ -162,7 +165,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 addedContent.map(async (contentItem) => {
                     await Promise.all(
                         contentItem.getContentItems().map(async (contentInput: AddedContentItemDto) => {
-                            if (contentInput.contentType === 'IMAGE') {
+                            if (contentInput.contentType === "IMAGE") {
                                 //Upload the image to the storage
                                 const imageUrl = await fileStoreService.uploadFile(contentInput.value, files);
 
@@ -223,27 +226,27 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         const bundleVariantForCart = new BundleVariantForCartDto(newVariantId, bundleBuilder.title, addedContent);
 
         if (!success) {
-            return json(new JsonData(false, 'error', 'Error while adding the bundle to the cart.', []), {
+            return json(new JsonData(false, "error", "Error while adding the bundle to the cart.", []), {
                 headers: {
-                    'Access-Control-Allow-Origin': '*',
+                    "Access-Control-Allow-Origin": "*",
                 },
                 status: 200,
             });
         }
 
-        return json(new JsonData(true, 'success', 'Bundle succesfuly added to cart.', [], bundleVariantForCart), {
+        return json(new JsonData(true, "success", "Bundle succesfuly added to cart.", [], bundleVariantForCart), {
             headers: {
-                'Access-Control-Allow-Origin': '*',
+                "Access-Control-Allow-Origin": "*",
             },
             status: 200,
         });
     } catch (err) {
         console.log(err);
-        console.log('There was an error');
+        console.log("There was an error");
 
-        return json(new JsonData(false, 'error', 'Invalid form data.', []), {
+        return json(new JsonData(false, "error", "Invalid form data.", []), {
             headers: {
-                'Access-Control-Allow-Origin': '*',
+                "Access-Control-Allow-Origin": "*",
             },
             status: 200,
         });

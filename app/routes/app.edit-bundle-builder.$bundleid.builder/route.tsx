@@ -615,11 +615,18 @@ export default function Index() {
                                 url: `/app/edit-bundle-builder/${serverBundle.id}/settings/?redirect=/app/edit-bundle-builder/${serverBundle.id}/builder`,
                                 icon: SettingsIcon,
                             },
+                            // {
+                            //     content: "Preview",
+                            //     accessibilityLabel: "Preview action label",
+                            //     icon: ExternalIcon,
+                            //     url: `${bundleBuilderPageUrl}?${bundlePagePreviewKey}=true`,
+                            //     target: "_blank",
+                            // },
                             {
-                                content: "Preview",
+                                content: "See bundle page",
                                 accessibilityLabel: "Preview action label",
                                 icon: ExternalIcon,
-                                url: `${bundleBuilderPageUrl}?${bundlePagePreviewKey}=true`,
+                                url: `${bundleBuilderPageUrl}`,
                                 target: "_blank",
                             },
                             {
