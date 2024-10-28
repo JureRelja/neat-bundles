@@ -284,7 +284,9 @@ export default function Index() {
                             <Text as="p">Since your are running a development store, you already have all the features for free.</Text>
                         </Box>
                         <TitleBar title="Why pay when it's free!">
-                            <button onClick={() => shopify.modal.hide("partner-stores-moda")}>Close</button>
+                            <button variant="primary" onClick={() => shopify.modal.hide("partner-stores-modal")}>
+                                Close
+                            </button>
                         </TitleBar>
                     </Modal>
 
