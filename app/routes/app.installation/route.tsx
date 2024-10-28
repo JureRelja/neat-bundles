@@ -25,11 +25,10 @@ import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import { useAsyncSubmit } from "../../hooks/useAsyncSubmit";
 import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
 import { GapBetweenSections, GapInsideSection, LargeGapBetweenSections } from "~/constants";
-import ActivateVideo from "../../assets/biscuits-bundles-add-an-app-block-53671127.mp4";
+import ActivateVideo from "../../assets/installation-video.mp4";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import shopifyThemesRepository from "~/adminBackend/repository/impl/ShopifyThemesRepository";
 import { useEffect } from "react";
-import styles from "./route.module.css";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
