@@ -85,6 +85,26 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         await userRepository.updateUser({ ...user, hasAppInstalled: true });
     }
 
+    //check if the user is a development store
+    const response = await admin.graphql(
+        `#graphql
+            query  {
+            shop {
+                plan {
+                    partnerDevelopment
+                }
+            }
+            }`,
+    );
+
+    const data: Shop = (await response.json()).data.shop;
+
+    //if the user is not a development store but the database says it is a development store (this can happen if the user was a development store and then switched to a paid plan)
+    if (!data.plan.partnerDevelopment && user.isDevelopmentStore) {
+        user.isDevelopmentStore = false;
+        await userRepository.updateUser(user);
+    }
+
     const { hasActivePayment, appSubscriptions } = await billing.check({
         plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY, BillingPlanIdentifiers.BASIC_MONTHLY, BillingPlanIdentifiers.BASIC_YEARLY],
         isTest: true,

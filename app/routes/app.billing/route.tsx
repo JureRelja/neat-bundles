@@ -41,7 +41,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             await userRepository.updateUser(user);
 
             //
-        } else if (user.activeBillingPlan !== "NONE") {
+        } else if (user.activeBillingPlan !== "NONE" && !user.isDevelopmentStore) {
             user.activeBillingPlan = "NONE";
             await userRepository.updateUser(user);
         }
@@ -225,7 +225,8 @@ export default function Index() {
 
     const handleSubscription = (newPlan: BillingPlan) => {
         if (activeSubscription.planId === BillingPlanIdentifiers.FREE) {
-            shopify.modal.show("partner-stores-moda");
+            shopify.modal.show("partner-stores-modal");
+            return;
         }
 
         //check if the person is downgrading
@@ -282,7 +283,7 @@ export default function Index() {
                         <Box padding="300">
                             <Text as="p">Since your are running a development store, you already have all the features for free.</Text>
                         </Box>
-                        <TitleBar title="Why pay when it's free.">
+                        <TitleBar title="Why pay when it's free!">
                             <button onClick={() => shopify.modal.hide("partner-stores-moda")}>Close</button>
                         </TitleBar>
                     </Modal>
