@@ -12,6 +12,7 @@ datasource db {
 
 enum PricingPlan {
   NONE
+  FREE
   BASIC
   PRO
 }

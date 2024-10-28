@@ -552,13 +552,14 @@
             this.isBundleInPreview = true;
           }
 
-          const response = await fetch(`${APP_URL}/bundleData?neatBundlePreview=${isNeatBundlePreview}&bundleId={{ bundleId }}`, {mode: 'cors'})
+          const response = await fetch(`${APP_URL}/bundleData?bundleId={{ bundleId }}&neatBundlePreview=${isNeatBundlePreview}`, {mode: 'cors'})
 
           try {
             const data = await response.json();
   
             if (data.ok) {
               this.bundleData = data.data;
+
               this.bundleSettings = data.data.bundleSettings;
               this.activeStepData = data.data.steps[0];
               this.initialLoading = false;
@@ -575,12 +576,12 @@
             }
             else {
               console.log(data.message);
-              alert("There was an error with fetching your bundle. Please try again. If the problem persists, contact support.");
+              alert("The bundle that's displayed on this page is either not published or doesn't exist. Try refreshing the page.");
             }
           } catch (error) {
             console.log(error);
-            alert("There was an error with fetching your bundle. Please try again. If the problem persists, contact support.");
-          }
+            alert("The bundle that's displayed on this page is either not published or doesn't exist. Try refreshing the page.");
+            }
          
         },
   

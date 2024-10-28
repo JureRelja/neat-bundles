@@ -12,22 +12,18 @@
           {% capture bigBtnSkeleton %}
             {% render 'btnSkeleton' type: "big" %}
           {% endcapture %}
-          
           {% comment %} Button skeleton used in widgetSkeleton.liquid {% endcomment %}
           {% capture smallBtnSkeleton %}
             {% render 'btnSkeleton' type: "small" %}
           {% endcapture %}
-
           {% comment %} Button skeleton used in widgetSkeleton.liquid {% endcomment %}
           {% capture smallLongTextSkeleton %}
             {% render 'textSkeleton' type: "small-long" %}
           {% endcapture %}
-
           {% comment %} Button skeleton used in widgetSkeleton.liquid {% endcomment %}
           {% capture smallShortTextSkeleton %}
             {% render 'textSkeleton' type: "small-short" %}
           {% endcapture %}
-
           {% comment %} Products skeleton {% endcomment %}
           {% capture productsSkeleton %}
             {% render 'productsSkeleton', 
@@ -35,7 +31,6 @@
               smallLongTextSkeleton: smallLongTextSkeleton,
               smallShortTextSkeleton: smallShortTextSkeleton  %}
           {% endcapture %}
-          
           {% comment %} Step skeleton {% endcomment %}
           {% capture stepSkeleton %}
             {% render 'stepSkeleton'
@@ -44,7 +39,6 @@
               , smallBtnSkeleton: smallBtnSkeleton
                %}
           {% endcapture %}
-          
           {% comment %} Skeleton snippet used in embed block {% endcomment %}
           {% capture widgetSkeleton %}
             {% render 'widgetSkeleton', 
@@ -215,46 +209,46 @@
 
 
 {% comment %} 
-        {
-                "type": "header",
-                "content": "INPUT FIELDS SETTINGS"
-              },
-              {
-                "type": "range",
-                "id": "input_field_border_radius",
-                "label": "Input field rounding (border radius)",
-                "info": "The higher the value, the rounder the corners will be on input fields.",
-                "min": 0,
-                "max": 30,
-                "step": 1,
-                "unit": "px",
-                "default": 5
+          {
+                  "type": "header",
+                  "content": "INPUT FIELDS SETTINGS"
+                },
+                {
+                  "type": "range",
+                  "id": "input_field_border_radius",
+                  "label": "Input field rounding (border radius)",
+                  "info": "The higher the value, the rounder the corners will be on input fields.",
+                  "min": 0,
+                  "max": 30,
+                  "step": 1,
+                  "unit": "px",
+                  "default": 5
       }, {% endcomment %}
 
 {% comment %} 
 
-            {
-              "type": "select",
-              "id": "product_align",
-              "label": "Vertical alignment",
-              "options": [
-                {
-                  "value": "flex-start",
-                  "label": "Left"
-                },
-                {
-                  "value": "center",
-                  "label": "Middle"
-                },
-                {
-                  "value": "flex-end",
-                  "label": "Right"
-                },
-                {
-                  "value": "space-between",
-                  "label": "Justify"
-                }
-              ],
-              "default": "space-between",
-              "info": "Controls the horizontal aligment of products on steps."
+              {
+                "type": "select",
+                "id": "product_align",
+                "label": "Vertical alignment",
+                "options": [
+                  {
+                    "value": "flex-start",
+                    "label": "Left"
+                  },
+                  {
+                    "value": "center",
+                    "label": "Middle"
+                  },
+                  {
+                    "value": "flex-end",
+                    "label": "Right"
+                  },
+                  {
+                    "value": "space-between",
+                    "label": "Justify"
+                  }
+                ],
+                "default": "space-between",
+                "info": "Controls the horizontal aligment of products on steps."
       }, {% endcomment %}

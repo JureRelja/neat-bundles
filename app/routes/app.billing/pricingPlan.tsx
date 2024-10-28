@@ -1,8 +1,8 @@
-import { BlockStack, Box, Button, Card, Divider, Icon, InlineStack, Text } from '@shopify/polaris';
-import { CheckSmallIcon } from '@shopify/polaris-icons';
-import { GapInsideSection } from '~/constants';
-import { BillingPlan, PricingInterval } from './route';
-import styles from './pricingPlan.module.css';
+import { BlockStack, Box, Button, Card, Divider, Icon, InlineStack, Text } from "@shopify/polaris";
+import { CheckSmallIcon } from "@shopify/polaris-icons";
+import { GapBetweenTitleAndContent, GapInsideSection } from "~/constants";
+import { BillingPlan, PricingInterval } from "./route";
+import styles from "./pricingPlan.module.css";
 
 export default function Index({
     subscriptionIdentifier,
@@ -13,6 +13,7 @@ export default function Index({
     pricingInterval,
     activePlan,
     planDisabled,
+    trialDays,
     handleSubscription,
 }: {
     subscriptionIdentifier: { yearly: { planName: string; planId: string }; monthly: { planName: string; planId: string } };
@@ -23,21 +24,22 @@ export default function Index({
     pricingInterval: PricingInterval;
     monthlyPricing: string;
     yearlyPricing: string;
+    trialDays?: number;
     handleSubscription: (plan: BillingPlan) => void;
 }) {
     return (
-        <Card padding={'600'}>
+        <Card>
             <div className={styles.pricingPlanWrapper}>
                 <BlockStack gap={GapInsideSection}>
                     {/* Plan title */}
                     <Text as="h2" variant="headingLg" alignment="center">
-                        {pricingInterval === 'MONTHLY' ? title.monthly : title.yearly}
+                        {pricingInterval === "MONTHLY" ? title.monthly : title.yearly}
                     </Text>
 
                     <Divider />
 
                     {/* Plan features */}
-                    <BlockStack gap={'100'} align="start">
+                    <BlockStack gap={"100"} align="start">
                         {features.map((feature) => {
                             return (
                                 <InlineStack key={feature} align="start">
@@ -55,9 +57,18 @@ export default function Index({
 
                 <BlockStack gap={GapInsideSection}>
                     {/* Plan price */}
-                    <Text as="h2" variant="headingLg" alignment="center">
-                        {pricingInterval === 'MONTHLY' ? monthlyPricing : yearlyPricing}
-                    </Text>
+                    <BlockStack gap={GapBetweenTitleAndContent} align="center">
+                        <Text as="h2" variant="headingLg" alignment="center">
+                            {pricingInterval === "MONTHLY" ? monthlyPricing : yearlyPricing}
+                        </Text>
+
+                        {/* Trial days */}
+                        {trialDays && (
+                            <Text as="h2" variant="headingMd" alignment="center">
+                                + {trialDays}-day free trial
+                            </Text>
+                        )}
+                    </BlockStack>
 
                     {/* Select button */}
 
@@ -65,9 +76,9 @@ export default function Index({
                         variant="primary"
                         disabled={activePlan || planDisabled}
                         onClick={() => {
-                            handleSubscription(pricingInterval === 'MONTHLY' ? subscriptionIdentifier.monthly : subscriptionIdentifier.yearly);
+                            handleSubscription(pricingInterval === "MONTHLY" ? subscriptionIdentifier.monthly : subscriptionIdentifier.yearly);
                         }}>
-                        {activePlan === true ? 'Current plan' : 'Select plan'}
+                        {activePlan === true ? "Current plan" : "Select plan"}
                     </Button>
                 </BlockStack>
             </div>

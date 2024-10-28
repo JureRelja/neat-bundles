@@ -17,11 +17,36 @@ const shopify = shopifyApp({
     distribution: AppDistribution.AppStore,
     restResources,
     billing: {
-        [BillingPlanIdentifiers.PRO_MONTHLY]: {
+        //Basi
+        [BillingPlanIdentifiers.BASIC_MONTHLY]: {
             replacementBehavior: BillingReplacementBehavior.ApplyOnNextBillingCycle,
+            trialDays: 30,
             lineItems: [
                 {
-                    amount: 7.99,
+                    amount: 6.99,
+                    currencyCode: "USD",
+                    interval: BillingInterval.Every30Days,
+                },
+            ],
+        },
+        [BillingPlanIdentifiers.BASIC_YEARLY]: {
+            replacementBehavior: BillingReplacementBehavior.ApplyOnNextBillingCycle,
+            trialDays: 30,
+            lineItems: [
+                {
+                    amount: 69.99,
+                    currencyCode: "USD",
+                    interval: BillingInterval.Annual,
+                },
+            ],
+        },
+        //Pro billing plans
+        [BillingPlanIdentifiers.PRO_MONTHLY]: {
+            replacementBehavior: BillingReplacementBehavior.ApplyOnNextBillingCycle,
+            trialDays: 30,
+            lineItems: [
+                {
+                    amount: 9.99,
                     currencyCode: "USD",
                     interval: BillingInterval.Every30Days,
                 },
@@ -29,9 +54,10 @@ const shopify = shopifyApp({
         },
         [BillingPlanIdentifiers.PRO_YEARLY]: {
             replacementBehavior: BillingReplacementBehavior.ApplyOnNextBillingCycle,
+            trialDays: 30,
             lineItems: [
                 {
-                    amount: 49.99,
+                    amount: 99.99,
                     currencyCode: "USD",
                     interval: BillingInterval.Annual,
                 },

@@ -28,15 +28,20 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     if (!user) return redirect("/app");
 
     const { hasActivePayment, appSubscriptions } = await billing.check({
-        plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY],
+        plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY, BillingPlanIdentifiers.BASIC_MONTHLY, BillingPlanIdentifiers.BASIC_YEARLY],
         isTest: true,
     });
 
+    //has active payment
     if (hasActivePayment) {
         return json({ planName: user.activeBillingPlan, planId: appSubscriptions[0].name });
-    } else if (user.activeBillingPlan === "BASIC") {
-        return json({ planName: user.activeBillingPlan, planId: BillingPlanIdentifiers.BASIC });
-    } else return json({ planName: user.activeBillingPlan, planId: "NONE" });
+    }
+    //is on free plan (development store)
+    else if (user.activeBillingPlan === "FREE") {
+        return json({ planName: user.activeBillingPlan, planId: "FREE" });
+    }
+    //doesn't have plan selected
+    else return json({ planName: user.activeBillingPlan, planId: "NONE" });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -47,7 +52,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     if (!user) return redirect("/app");
 
     const { hasActivePayment, appSubscriptions } = await billing.check({
-        plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY],
+        plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY, BillingPlanIdentifiers.BASIC_MONTHLY, BillingPlanIdentifiers.BASIC_YEARLY],
         isTest: true,
     });
 
@@ -55,6 +60,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const action = formData.get("action");
 
     let state: "upgrading" | "downgrading" | "none" = "none";
+
     console.log(action);
 
     switch (action) {
@@ -70,32 +76,40 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             return redirect("/app/billing");
         }
 
-        case BillingPlanIdentifiers.BASIC: {
-            if (hasActivePayment) {
-                const cancelledSubscription = await billing.cancel({
-                    subscriptionId: appSubscriptions[0].id,
-                    isTest: true,
-                    prorate: false,
-                });
+        //basic plan handlers
+        case BillingPlanIdentifiers.BASIC_MONTHLY: {
+            if (user.activeBillingPlan === "PRO") state = "downgrading";
 
-                state = "downgrading";
-            }
+            await userRepository.updateUser({ ...user, activeBillingPlan: "PRO" });
 
-            await userRepository.updateUser({ ...user, activeBillingPlan: "BASIC" });
+            const res = await billing.request({
+                plan: action,
+                isTest: true,
+                returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/${state === "downgrading" ? "billing" : state === "none" ? "thank-you?variant=firstPlan" : ""}`,
+            });
 
-            if (state === "downgrading") {
-                return redirect("/app/billing");
-            } else {
-                return redirect("/app/thank-you?variant=firstPlan");
-            }
+            break;
         }
 
+        case BillingPlanIdentifiers.BASIC_YEARLY: {
+            if (user.activeBillingPlan === "PRO") state = "downgrading";
+
+            await userRepository.updateUser({ ...user, activeBillingPlan: "PRO" });
+
+            const res = await billing.request({
+                plan: action,
+                isTest: true,
+                returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/${state === "downgrading" ? "billing" : state === "none" ? "thank-you?variant=firstPlan" : ""}`,
+            });
+
+            break;
+        }
+
+        //pro plan handlers
         case BillingPlanIdentifiers.PRO_MONTHLY: {
             if (user.activeBillingPlan === "BASIC") state = "upgrading";
 
             await userRepository.updateUser({ ...user, activeBillingPlan: "PRO" });
-
-            console.log("I'm here");
 
             const res = await billing.request({
                 plan: action,
@@ -110,8 +124,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             if (user.activeBillingPlan === "BASIC") state = "upgrading";
 
             await userRepository.updateUser({ ...user, activeBillingPlan: "PRO" });
-
-            console.log("I'm here");
 
             const res = await billing.request({
                 plan: action,
@@ -175,7 +187,7 @@ export default function Index() {
     const handleSubscription = (newPlan: BillingPlan) => {
         //check if the person is downgrading
         if (
-            newPlan.planId === BillingPlanIdentifiers.BASIC &&
+            (newPlan.planId === BillingPlanIdentifiers.BASIC_MONTHLY || newPlan.planId === BillingPlanIdentifiers.BASIC_YEARLY) &&
             (activeSubscription.planId === BillingPlanIdentifiers.PRO_MONTHLY || activeSubscription.planId === BillingPlanIdentifiers.PRO_YEARLY)
         ) {
             setNewSelectedSubscription(newPlan);
@@ -295,16 +307,34 @@ export default function Index() {
 
                                 {/* Pricing plans */}
                                 <InlineStack gap={GapBetweenSections} align="center">
+                                    {/* Free plan */}
                                     <PricingPlanComponent
-                                        activePlan={activeSubscription.planId === BillingPlanIdentifiers.BASIC}
+                                        activePlan={activeSubscription.planId == BillingPlanIdentifiers.FREE.toString()}
                                         subscriptionIdentifier={{
-                                            yearly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.BASIC },
-                                            monthly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.BASIC },
+                                            yearly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.FREE.toString() },
+                                            monthly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.FREE.toString() },
                                         }}
                                         handleSubscription={handleSubscription}
-                                        title={{ yearly: "Basic", monthly: "Basic" }}
+                                        title={{ yearly: "Development", monthly: "Development" }}
                                         monthlyPricing={"Free"}
                                         yearlyPricing={"Free"}
+                                        pricingInterval={pricingInterval}
+                                        features={["All features", "For development stores only"]}
+                                    />
+                                    {/* Basic plan */}
+                                    <PricingPlanComponent
+                                        activePlan={
+                                            activeSubscription.planId === BillingPlanIdentifiers.BASIC_MONTHLY || activeSubscription.planId === BillingPlanIdentifiers.BASIC_YEARLY
+                                        }
+                                        subscriptionIdentifier={{
+                                            yearly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.BASIC_YEARLY.toString() },
+                                            monthly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.BASIC_MONTHLY.toString() },
+                                        }}
+                                        handleSubscription={handleSubscription}
+                                        title={{ yearly: "Basic (yearly)", monthly: "Basic (monthly)" }}
+                                        trialDays={30}
+                                        monthlyPricing={"$6.99"}
+                                        yearlyPricing={"$69.99"}
                                         pricingInterval={pricingInterval}
                                         features={[
                                             "Create up to 2 bundles",
@@ -314,18 +344,20 @@ export default function Index() {
                                             "Customer support",
                                         ]}
                                     />
+                                    {/* Pro plan */}
                                     <PricingPlanComponent
                                         activePlan={
                                             activeSubscription.planId === BillingPlanIdentifiers.PRO_MONTHLY || activeSubscription.planId === BillingPlanIdentifiers.PRO_YEARLY
                                         }
                                         subscriptionIdentifier={{
-                                            yearly: { planName: PricingPlan.PRO, planId: BillingPlanIdentifiers.PRO_YEARLY },
-                                            monthly: { planName: PricingPlan.PRO, planId: BillingPlanIdentifiers.PRO_MONTHLY },
+                                            yearly: { planName: PricingPlan.PRO, planId: BillingPlanIdentifiers.PRO_YEARLY.toString() },
+                                            monthly: { planName: PricingPlan.PRO, planId: BillingPlanIdentifiers.PRO_MONTHLY.toString() },
                                         }}
                                         handleSubscription={handleSubscription}
+                                        trialDays={30}
                                         title={{ yearly: "Pro (yearly)", monthly: "Pro (monthly)" }}
-                                        monthlyPricing={"$4.99"}
-                                        yearlyPricing={"$49.99"}
+                                        monthlyPricing={"$9.99"}
+                                        yearlyPricing={"$99.99"}
                                         pricingInterval={pricingInterval}
                                         features={[
                                             "Create unlimited bundles",
@@ -349,7 +381,7 @@ export default function Index() {
                                         </u>
                                     </Text>
 
-                                    {activeSubscription.planId !== BillingPlanIdentifiers.BASIC && activeSubscription.planName !== "NONE" && (
+                                    {activeSubscription.planId !== "FREE" && activeSubscription.planName !== "NONE" && (
                                         <Button onClick={() => shopify.modal.show("cancel-subscription-modal")}>Cancel plan</Button>
                                     )}
                                 </InlineStack>
