@@ -55,7 +55,9 @@ export class BundleVariantForCartDto {
 
                 //If the content type is text or number, we just display the value
                 if (contentItem.contentType === "TEXT" || contentItem.contentType === "NUMBER") {
-                    lineItemProperties[`Step #${stepNumber} - field ${contentItemIndex + 1} - ${contentItem.contentType}`] = contentItem.value;
+                    if (addedContentOnStep.getContentItems().length > 1) {
+                        lineItemProperties[`Step #${stepNumber} - input ${contentItemIndex + 1} - ${contentItem.contentType}`] = contentItem.value;
+                    }
                     cartAttributes += contentItem.contentType + ": " + contentItem.value;
                 }
 

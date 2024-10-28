@@ -120,10 +120,10 @@ export default function Index() {
                             <BlockStack gap={GapBetweenSections}>
                                 {data.installSuccessBanner && (
                                     <>
-                                        <Banner title="Installation successfull, congradulation!" tone="success" onDismiss={() => {}}>
+                                        <Banner title="Installation successful, congratulations!" tone="success" onDismiss={() => {}}>
                                             <BlockStack gap={GapInsideSection}>
                                                 <Text as={"p"}>
-                                                    Congradulation on succesfully installing our app. Let's now start creating the first bundle for your customers. The whole
+                                                    Congratulations on successfully installing our app. Let's now start creating the first bundle for your customers. The whole
                                                     process should take less than 5 minutes.
                                                 </Text>
                                             </BlockStack>

@@ -95,8 +95,8 @@ export default function Index() {
                                             </Text>
 
                                             <Text as={"p"}>
-                                                Just before you get there, you just need to quickly go through the installation to get the Neat Bundles app properly connected to
-                                                your store.
+                                                Just before you get there, you need to quickly go through the installation to get the Neat Bundles app properly connected to your
+                                                store.
                                             </Text>
                                         </BlockStack>
                                     </Banner>
