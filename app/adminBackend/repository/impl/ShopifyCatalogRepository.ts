@@ -1,6 +1,6 @@
-import { AdminApiContext } from '@shopify/shopify-app-remix/server';
-import { Catalog } from '@shopifyGraphql/graphql';
-import userRepository from './UserRepository';
+import { AdminApiContext } from "@shopify/shopify-app-remix/server";
+import { Catalog } from "~/shopifyGraphql/graphql";
+import userRepository from "./UserRepository";
 
 export class ShopifyCatalogRepository {
     //** Get the publication id of the "Online store" sales channel */
@@ -23,7 +23,7 @@ export class ShopifyCatalogRepository {
 
         const allPUblicationsData: Catalog[] = (await getAllPublicationsResponse.json()).data.catalogs.nodes;
 
-        const onlineStorePublication = allPUblicationsData.find((publication) => publication.title.includes('Online Store'));
+        const onlineStorePublication = allPUblicationsData.find((publication) => publication.title.includes("Online Store"));
 
         if (!onlineStorePublication || !onlineStorePublication.publication || !onlineStorePublication.publication.id) {
             return null;
@@ -41,7 +41,7 @@ export class ShopifyCatalogRepository {
      */
     public static async publishProductToOnlineStore(admin: AdminApiContext, productId: string, storeUrl: string): Promise<boolean> {
         const user = await userRepository.getUserByStoreUrl(storeUrl);
-        if (!user) throw Error('No user');
+        if (!user) throw Error("No user");
         const onlineStorePublicationId = user.onlineStorePublicationId;
 
         const response = await admin.graphql(

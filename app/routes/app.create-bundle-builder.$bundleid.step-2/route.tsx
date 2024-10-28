@@ -14,6 +14,7 @@ import { GapBetweenTitleAndContent, GapInsideSection, HorizontalGap } from "~/co
 import { Product } from "@prisma/client";
 import WideButton from "~/components/wideButton";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
+import { ProductStepDataDto } from "~/adminBackend/service/dto/ProductStepDataDto";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { admin, session } = await authenticate.admin(request);
@@ -91,14 +92,16 @@ export default function Index() {
 
         const form = new FormData();
 
-        const stepData = {
+        const stepData: ProductStepDataDto = {
             title: stepTitle,
             description: "",
             stepNumber: 1,
             stepType: "PRODUCT",
             productInput: {
-                minProducts: minProducts,
-                maxProducts: maxProducts,
+                allowProductDuplicates: false,
+                showProductPrice: true,
+                minProductsOnStep: minProducts,
+                maxProductsOnStep: maxProducts,
                 products: stepProducts,
             },
         };
@@ -171,7 +174,7 @@ export default function Index() {
                         <InlineError
                             message={
                                 (stepProducts.length === 0 || stepProducts.length < minProducts) && productSelectionActivated
-                                    ? `Please select between ${minProducts} and ${maxProducts} products`
+                                    ? `Please select at least ${minProducts} products.`
                                     : ""
                             }
                             fieldID="products"

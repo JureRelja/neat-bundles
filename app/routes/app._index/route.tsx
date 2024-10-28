@@ -4,11 +4,11 @@ import { authenticate } from "../../shopify.server";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import { ShopifyCatalogRepository } from "~/adminBackend/repository/impl/ShopifyCatalogRepository";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
-import { Shop } from "@shopifyGraphql/graphql";
+import { Shop } from "~/shopifyGraphql/graphql";
 import { useEffect } from "react";
 import { BlockStack, Card, SkeletonBodyText, SkeletonPage } from "@shopify/polaris";
 import { BillingPlanIdentifiers } from "~/constants";
-import { loopsClient } from "../../shopify.server";
+import { loopsClient } from "../../email.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { admin, session, billing } = await authenticate.admin(request);

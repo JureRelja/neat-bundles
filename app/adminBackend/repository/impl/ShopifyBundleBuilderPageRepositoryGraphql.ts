@@ -1,7 +1,7 @@
-import { AdminApiContext, Session } from '@shopify/shopify-app-remix/server';
-import { bundlePageKey, bundlePageNamespace, bundlePageType } from '~/constants';
-import { ShopifyBundleBuilderPageRepository } from '../ShopifyBundleBuilderPageRepository';
-import { Page } from '@shopifyGraphql/graphql';
+import { AdminApiContext, Session } from "@shopify/shopify-app-remix/server";
+import { bundlePageKey, bundlePageNamespace, bundlePageType } from "~/constants";
+import { ShopifyBundleBuilderPageRepository } from "../ShopifyBundleBuilderPageRepository";
+import { Page } from "~/shopifyGraphql/graphql";
 
 export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPageRepository {
     constructor() {}
@@ -43,7 +43,7 @@ export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPage
 
         if (pageCreatePayload.userErrors.length > 0) {
             console.log(pageCreatePayload.userErrors);
-            throw new Error('Failed to create the bundle builder page');
+            throw new Error("Failed to create the bundle builder page");
         }
 
         const bundleBuilderPage = pageData.pageCreate.page;
@@ -94,7 +94,7 @@ export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPage
 
         if (pageData.pageCreate.userErrors.length > 0) {
             console.log(pageData.pageCreate.userErrors);
-            throw new Error('Failed to create the bundle builder page');
+            throw new Error("Failed to create the bundle builder page");
         }
 
         const bundleBuilderPage = pageData.pageCreate.page;
@@ -162,7 +162,7 @@ export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPage
         if (pageMetafieldsUpdateData.pageUpdate.userErrors.length > 0) {
             console.log(pageMetafieldsUpdateData.pageUpdate.userErrors);
 
-            throw new Error('Failed to update the bundle builder page metafields');
+            throw new Error("Failed to update the bundle builder page metafields");
         }
     }
 

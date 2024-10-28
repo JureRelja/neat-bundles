@@ -1,5 +1,5 @@
-import { UrlRedirectCreatePayload } from '@shopifyGraphql/graphql';
-import { AdminApiContext } from '@shopify/shopify-app-remix/server';
+import { UrlRedirectCreatePayload } from "~/shopifyGraphql/graphql";
+import { AdminApiContext } from "@shopify/shopify-app-remix/server";
 
 export class ShopifyRedirectRepository {
     public static async createProductToBundleRedirect(admin: AdminApiContext, pageHandle: string, productHandle: string) {

@@ -52,6 +52,8 @@ class BundleBuilderProductStepService extends BundleBuilderStepTypeService {
 
         stepData.stepNumber = numberOfSteps + 1;
 
+        console.log("stepData", stepData);
+
         const newStep: BundleStepProduct = await bundleBuilderProductStepRepository.addNewStep(bundleId, stepData);
         return newStep;
     }

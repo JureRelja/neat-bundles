@@ -155,7 +155,7 @@ export default function Index() {
                         <InlineError
                             message={
                                 (stepProducts.length === 0 || stepProducts.length < minProducts) && productSelectionActivated
-                                    ? `Please select between ${minProducts} and ${maxProducts} products`
+                                    ? `Please select at least ${minProducts} products.`
                                     : ""
                             }
                             fieldID="products"

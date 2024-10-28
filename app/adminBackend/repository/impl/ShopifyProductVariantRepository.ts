@@ -1,6 +1,6 @@
-import { AdminApiContext } from '@shopify/shopify-app-remix/server';
-import { AddedProductVariantDto } from '@adminBackend/service/dto/AddedProductVariantDto';
-import { PriceCalculationType } from '@shopifyGraphql/graphql';
+import { AdminApiContext } from "@shopify/shopify-app-remix/server";
+import { AddedProductVariantDto } from "@adminBackend/service/dto/AddedProductVariantDto";
+import { PriceCalculationType } from "~/shopifyGraphql/graphql";
 
 export class ShopifyProductVariantRepository {
     constructor() {}
@@ -51,7 +51,7 @@ export class ShopifyProductVariantRepository {
                             compareAtPrice: compareAtPrice,
                             optionValues: [
                                 {
-                                    optionName: 'Title',
+                                    optionName: "Title",
                                     name: `Bundle #${createdBundleId}`,
                                 },
                             ],
@@ -65,7 +65,7 @@ export class ShopifyProductVariantRepository {
 
         if (data.productVariantsBulkCreate.userErrors > 0) {
             console.log(data.productVariantsBulkCreate.userErrors);
-            throw Error('There was an error creating a bundle builder product variant.');
+            throw Error("There was an error creating a bundle builder product variant.");
         }
 
         const productVariantId = data.productVariantsBulkCreate.productVariants[0].id;

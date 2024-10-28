@@ -2,9 +2,7 @@ import "@shopify/shopify-app-remix/adapters/node";
 import { ApiVersion, AppDistribution, BillingInterval, BillingReplacementBehavior, DeliveryMethod, shopifyApp } from "@shopify/shopify-app-remix/server";
 import { RedisSessionStorage } from "@shopify/shopify-app-session-storage-redis";
 import { restResources } from "@shopify/shopify-api/rest/admin/2024-10";
-import { createClient } from "redis";
 import { BillingPlanIdentifiers } from "./constants";
-import { LoopsClient } from "loops";
 
 const shopify = shopifyApp({
     apiKey: process.env.SHOPIFY_API_KEY,
@@ -89,23 +87,3 @@ export const unauthenticated = shopify.unauthenticated;
 export const login = shopify.login;
 export const registerWebhooks = shopify.registerWebhooks;
 export const sessionStorage = shopify.sessionStorage;
-
-//Additional setup
-
-//Redis client for caching
-let redis = createClient({
-    url: process.env.REDIS_URL,
-});
-
-await redis.connect();
-
-redis.on("error", (error: String) => {
-    console.error(`Redis client error:`, error);
-});
-
-//Loops.io client for sending emails
-const loops = new LoopsClient(process.env.LOOPS_API_KEY as string);
-
-//Exporting redis and loops clients
-export const redisClient = redis;
-export const loopsClient = loops;
