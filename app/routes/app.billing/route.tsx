@@ -345,7 +345,7 @@ export default function Index() {
                             <BlockStack align="center" gap={LargeGapBetweenSections}>
                                 <Banner onDismiss={() => {}}>
                                     <Text as="p">
-                                        Select the plan that best suits your needs. <b>For a limited time, we have a generous free plan</b> that should be enough to get your
+                                        Select the plan that best suits your needs. <b>For a limited time, we have a 30-day free trial</b> that should be enough to get your
                                         customers started with custom bundles.
                                     </Text>
                                 </Banner>
