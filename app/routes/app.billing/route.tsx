@@ -32,6 +32,41 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         isTest: true,
     });
 
+    //if the user doesn't have an active payment
+    if (!hasActivePayment) {
+        //if it says in the database that the user has an active billing plan that is not BASIC
+        //this can happend if the user had an active payment and then canceled it or the payment failed
+        if (user.isDevelopmentStore && user.activeBillingPlan !== "FREE") {
+            user.activeBillingPlan = "FREE";
+            await userRepository.updateUser(user);
+
+            //
+        } else if (user.activeBillingPlan !== "NONE") {
+            user.activeBillingPlan = "NONE";
+            await userRepository.updateUser(user);
+        }
+    }
+    //if the user has an active payment
+    else {
+        if (user.activeBillingPlan === "NONE") {
+            //update the user's active billing plan
+            switch (appSubscriptions[0].name) {
+                case BillingPlanIdentifiers.PRO_MONTHLY:
+                    user.activeBillingPlan = "PRO";
+
+                case BillingPlanIdentifiers.PRO_YEARLY:
+                    user.activeBillingPlan = "PRO";
+
+                case BillingPlanIdentifiers.BASIC_MONTHLY:
+                    user.activeBillingPlan = "BASIC";
+
+                case BillingPlanIdentifiers.BASIC_YEARLY:
+                    user.activeBillingPlan = "BASIC";
+            }
+            await userRepository.updateUser(user);
+        }
+    }
+
     //has active payment
     if (hasActivePayment) {
         return json({ planName: user.activeBillingPlan, planId: appSubscriptions[0].name });
@@ -62,6 +97,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     let state: "upgrading" | "downgrading" | "none" = "none";
 
     console.log(action);
+
+    if (user.isDevelopmentStore) {
+        return redirect("/app");
+    }
 
     switch (action) {
         case "CANCEL": {
@@ -185,6 +224,10 @@ export default function Index() {
     const [newSelectedSubscription, setNewSelectedSubscription] = useState<BillingPlan>();
 
     const handleSubscription = (newPlan: BillingPlan) => {
+        if (activeSubscription.planId === BillingPlanIdentifiers.FREE) {
+            shopify.modal.show("partner-stores-moda");
+        }
+
         //check if the person is downgrading
         if (
             (newPlan.planId === BillingPlanIdentifiers.BASIC_MONTHLY || newPlan.planId === BillingPlanIdentifiers.BASIC_YEARLY) &&
@@ -234,6 +277,16 @@ export default function Index() {
                 </SkeletonPage>
             ) : (
                 <>
+                    {/* Modal for users to confirm that they want to cancel the subscription. */}
+                    <Modal id="partner-stores-modal">
+                        <Box padding="300">
+                            <Text as="p">Since your are running a development store, you already have all the features for free.</Text>
+                        </Box>
+                        <TitleBar title="Why pay when it's free.">
+                            <button onClick={() => shopify.modal.hide("partner-stores-moda")}>Close</button>
+                        </TitleBar>
+                    </Modal>
+
                     {/* Modal for users to confirm that they want to cancel the subscription. */}
                     <Modal id="cancel-subscription-modal">
                         <Box padding="300">
@@ -309,10 +362,10 @@ export default function Index() {
                                 <InlineStack gap={GapBetweenSections} align="center">
                                     {/* Free plan */}
                                     <PricingPlanComponent
-                                        activePlan={activeSubscription.planId == BillingPlanIdentifiers.FREE.toString()}
+                                        activePlan={activeSubscription.planId === BillingPlanIdentifiers.FREE}
                                         subscriptionIdentifier={{
-                                            yearly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.FREE.toString() },
-                                            monthly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.FREE.toString() },
+                                            yearly: { planName: PricingPlan.FREE, planId: BillingPlanIdentifiers.FREE },
+                                            monthly: { planName: PricingPlan.FREE, planId: BillingPlanIdentifiers.FREE },
                                         }}
                                         handleSubscription={handleSubscription}
                                         title={{ yearly: "Development", monthly: "Development" }}
@@ -327,8 +380,8 @@ export default function Index() {
                                             activeSubscription.planId === BillingPlanIdentifiers.BASIC_MONTHLY || activeSubscription.planId === BillingPlanIdentifiers.BASIC_YEARLY
                                         }
                                         subscriptionIdentifier={{
-                                            yearly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.BASIC_YEARLY.toString() },
-                                            monthly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.BASIC_MONTHLY.toString() },
+                                            yearly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.BASIC_YEARLY },
+                                            monthly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.BASIC_MONTHLY },
                                         }}
                                         handleSubscription={handleSubscription}
                                         title={{ yearly: "Basic (yearly)", monthly: "Basic (monthly)" }}
@@ -350,8 +403,8 @@ export default function Index() {
                                             activeSubscription.planId === BillingPlanIdentifiers.PRO_MONTHLY || activeSubscription.planId === BillingPlanIdentifiers.PRO_YEARLY
                                         }
                                         subscriptionIdentifier={{
-                                            yearly: { planName: PricingPlan.PRO, planId: BillingPlanIdentifiers.PRO_YEARLY.toString() },
-                                            monthly: { planName: PricingPlan.PRO, planId: BillingPlanIdentifiers.PRO_MONTHLY.toString() },
+                                            yearly: { planName: PricingPlan.PRO, planId: BillingPlanIdentifiers.PRO_YEARLY },
+                                            monthly: { planName: PricingPlan.PRO, planId: BillingPlanIdentifiers.PRO_MONTHLY },
                                         }}
                                         handleSubscription={handleSubscription}
                                         trialDays={30}

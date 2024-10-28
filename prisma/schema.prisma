@@ -22,6 +22,7 @@ model User {
   id                       Int             @id @default(autoincrement())
   hasAppInstalled          Boolean         @default(true)
   activeBillingPlan        PricingPlan     @default(NONE)
+  isDevelopmentStore      Boolean         @default(false)
   completedInstallation    Boolean         @default(false)
   completedOnboarding      Boolean         @default(false)
   showTutorialBanner       Boolean         @default(true)

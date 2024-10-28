@@ -71,7 +71,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                 if (!user) return redirect("/app");
 
-                if (user.activeBillingPlan === "BASIC") {
+                // Check if the user is a development store
+                if (user.isDevelopmentStore) {
+                    return true;
+                }
+                // Check if the user has reached the limit of bundles for the basic plan
+                else if (user.activeBillingPlan === "BASIC") {
                     const bundleBuilderCount = await bundleBuilderRepository.getBundleBuilderCountByStoreUrl(session.shop);
 
                     if (bundleBuilderCount >= 2) {
@@ -147,7 +152,12 @@ export default function Index() {
     const user = loaderResponse.data.user;
 
     const canCreateNewBundle = (): boolean => {
-        if (user.activeBillingPlan === "BASIC" && bundleBuilders.length >= 2) {
+        // Check if the user is a development store
+        if (user.isDevelopmentStore) {
+            return true;
+        }
+        // Check if the user has reached the limit of bundles for the basic plan
+        else if (user.activeBillingPlan === "BASIC" && bundleBuilders.length >= 2) {
             shopify.modal.show("bundle-limit-modal");
             return false;
         }

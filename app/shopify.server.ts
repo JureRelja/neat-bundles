@@ -17,7 +17,7 @@ const shopify = shopifyApp({
     distribution: AppDistribution.AppStore,
     restResources,
     billing: {
-        //Basi
+        //Basic billing plans
         [BillingPlanIdentifiers.BASIC_MONTHLY]: {
             replacementBehavior: BillingReplacementBehavior.ApplyOnNextBillingCycle,
             trialDays: 30,

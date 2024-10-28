@@ -24,7 +24,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
                     shopOwnerName
                     email
                     primaryDomain {
-                    url
+                        url
+                    }
+                    plan {
+                        partnerDevelopment
                     }
                 }
                 }`,
@@ -44,6 +47,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         }
 
         user = await userRepository.createUser(session.shop, data.email, data.name, data.primaryDomain.url, onlineStorePublicationId, data.shopOwnerName);
+
+        if (data.plan.partnerDevelopment) {
+            user.activeBillingPlan = "FREE";
+            user.isDevelopmentStore = true;
+            await userRepository.updateUser(user);
+        }
 
         //welcome emails
         //etc.
@@ -77,7 +86,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     }
 
     const { hasActivePayment, appSubscriptions } = await billing.check({
-        plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY],
+        plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY, BillingPlanIdentifiers.BASIC_MONTHLY, BillingPlanIdentifiers.BASIC_YEARLY],
         isTest: true,
     });
 
@@ -85,8 +94,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     if (!hasActivePayment) {
         //if it says in the database that the user has an active billing plan that is not BASIC
         //this can happend if the user had an active payment and then canceled it or the payment failed
-        if (user.activeBillingPlan !== "BASIC") {
-            await userRepository.updateUser({ ...user, activeBillingPlan: "NONE" });
+        if (user.isDevelopmentStore && user.activeBillingPlan !== "FREE") {
+            user.activeBillingPlan = "FREE";
+            await userRepository.updateUser(user);
+
+            //
+        } else if (user.activeBillingPlan !== "NONE" && !user.isDevelopmentStore) {
+            user.activeBillingPlan = "NONE";
+            await userRepository.updateUser(user);
             return json(
                 {
                     ...new JsonData(true, "success", "Customer doesn't have an active subscription.", [], { redirect: "/app/billing" }),
@@ -98,8 +113,20 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     //if the user has an active payment
     else {
         if (user.activeBillingPlan === "NONE") {
-            user.activeBillingPlan =
-                appSubscriptions[0].name === BillingPlanIdentifiers.PRO_MONTHLY || appSubscriptions[0].name === BillingPlanIdentifiers.PRO_YEARLY ? "PRO" : "BASIC";
+            //update the user's active billing plan
+            switch (appSubscriptions[0].name) {
+                case BillingPlanIdentifiers.PRO_MONTHLY:
+                    user.activeBillingPlan = "PRO";
+
+                case BillingPlanIdentifiers.PRO_YEARLY:
+                    user.activeBillingPlan = "PRO";
+
+                case BillingPlanIdentifiers.BASIC_MONTHLY:
+                    user.activeBillingPlan = "BASIC";
+
+                case BillingPlanIdentifiers.BASIC_YEARLY:
+                    user.activeBillingPlan = "BASIC";
+            }
             await userRepository.updateUser(user);
         }
     }

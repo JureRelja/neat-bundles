@@ -16,7 +16,7 @@ export const bundlePageNamespace = "neat_bundles_app";
 export const bundlePagePreviewKey = "neatBundlePreview";
 
 export enum BillingPlanIdentifiers {
-    FREE,
+    FREE = "FREE",
     BASIC_MONTHLY = "Basic (monthly subscription)",
     BASIC_YEARLY = "Basic (yearly subscription)",
     PRO_YEARLY = "Pro (yearly subscription)",

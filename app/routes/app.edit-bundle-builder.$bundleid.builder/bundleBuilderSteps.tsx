@@ -43,6 +43,10 @@ export default function Index({ user, bundleBuilderSteps }: { user: User; bundle
             return false;
         }
 
+        if (user.isDevelopmentStore) {
+            return true;
+        }
+
         if (user.activeBillingPlan === "BASIC" && bundleBuilderSteps.length >= 2) {
             shopify.modal.show("step-limit-modal");
             return false;

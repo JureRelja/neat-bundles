@@ -40,8 +40,12 @@ class BundleBuilderStepsService {
     private async checkIfBillingPlanAllowsMoreSteps(bundleId: number, user: User) {
         const numOfSteps = await bundleBuilderStepRepository.getNumberOfSteps(bundleId);
 
+        // Check if the user is a development store
+        if (user.isDevelopmentStore) {
+            return new JsonData(true, "success", "You can add a new step");
+        }
         // Ceck if the user has reached the limit of steps for the basic plan
-        if (user.activeBillingPlan === "BASIC") {
+        else if (user.activeBillingPlan === "BASIC") {
             if (numOfSteps >= 2) {
                 return new JsonData(false, "error", "You have reached the limit of 2 steps for one bundle for the basic plan.");
             }
