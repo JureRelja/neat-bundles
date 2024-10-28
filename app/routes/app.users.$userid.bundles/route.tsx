@@ -73,7 +73,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                 // Check if the user is a development store
                 if (user.isDevelopmentStore) {
-                    return true;
+                    // Do nothing
                 }
                 // Check if the user has reached the limit of bundles for the basic plan
                 else if (user.activeBillingPlan === "BASIC") {
