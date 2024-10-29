@@ -1,4 +1,4 @@
-import { Page } from "~/shopifyGraphql/graphql";
+import { Page } from "~/adminBackend/shopifyGraphql/graphql";
 import db from "../../../db.server";
 import { BundleBuilder } from "@prisma/client";
 import { BundleBuilderAndBundleSteps, bundleBuilderAndBundleSteps } from "@adminBackend/model/BundleBuilderAndBundleSteps";
