@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "6d2f517a924d12d07841ec8e6ffa605c"
-name = "Neat bundles"
+name = "Neat Bundles"
 handle = "neat-bundles"
 application_url = "https://neat-bundle-builder-l4ad.onrender.com"
 embedded = true
