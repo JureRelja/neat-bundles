@@ -1,5 +1,5 @@
 import { AdminApiContext, Session } from "@shopify/shopify-app-remix/server";
-import { Page } from "~/shopifyGraphql/graphql";
+import { Page } from "~/adminBackend/shopifyGraphql/graphql";
 
 export interface ShopifyBundleBuilderPageRepository {
     createPage(admin: AdminApiContext, session: Session, pageTitle: string): Promise<Page>;

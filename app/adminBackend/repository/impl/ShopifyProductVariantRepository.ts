@@ -1,6 +1,6 @@
 import { AdminApiContext } from "@shopify/shopify-app-remix/server";
 import { AddedProductVariantDto } from "app/adminBackend/service/dto/AddedProductVariantDto";
-import { PriceCalculationType } from "~/shopifyGraphql/graphql";
+import { PriceCalculationType } from "~/adminBackend/shopifyGraphql/graphql";
 
 export class ShopifyProductVariantRepository {
     constructor() {}
