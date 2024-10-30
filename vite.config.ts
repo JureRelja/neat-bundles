@@ -1,4 +1,5 @@
 import { vitePlugin as remix } from "@remix-run/dev";
+import path from "path";
 import { defineConfig, type UserConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
@@ -45,6 +46,14 @@ export default defineConfig({
         }),
         tsconfigPaths(),
     ],
+
+    resolve: {
+        alias: {
+            "@": path.resolve(__dirname, "/app"),
+            "@adminBackend": path.resolve(__dirname, "/app/adminBackend"),
+        },
+    },
+
     build: {
         assetsInlineLimit: 0,
     },
