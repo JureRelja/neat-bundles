@@ -16,3 +16,5 @@ shopify-schema.json
 shopifyGraphql 
 
 .env
+
+shopify.app.toml
