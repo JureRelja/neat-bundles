@@ -1,5 +1,5 @@
 import { AdminApiContext } from "@shopify/shopify-app-remix/server";
-import { Catalog } from "~/adminBackend/shopifyGraphql/graphql";
+import { Catalog } from "~/shopifyGraphql/graphql";
 import userRepository from "./UserRepository";
 
 export class ShopifyCatalogRepository {

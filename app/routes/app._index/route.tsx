@@ -4,7 +4,7 @@ import { authenticate } from "../../shopify.server";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import { ShopifyCatalogRepository } from "~/adminBackend/repository/impl/ShopifyCatalogRepository";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
-import { Shop } from "~/adminBackend/shopifyGraphql/graphql";
+import { Shop } from "~/shopifyGraphql/graphql";
 import { useEffect } from "react";
 import { BlockStack, Card, SkeletonBodyText, SkeletonPage } from "@shopify/polaris";
 import { BillingPlanIdentifiers } from "~/constants";

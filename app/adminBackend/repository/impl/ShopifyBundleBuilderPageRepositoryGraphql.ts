@@ -1,7 +1,7 @@
 import { AdminApiContext, Session } from "@shopify/shopify-app-remix/server";
 import { bundlePageKey, bundlePageNamespace, bundlePageType } from "~/constants";
 import { ShopifyBundleBuilderPageRepository } from "../ShopifyBundleBuilderPageRepository";
-import { Page } from "~/adminBackend/shopifyGraphql/graphql";
+import { Page } from "~/shopifyGraphql/graphql";
 
 export class ShopifyBundleBuilderPageGraphql implements ShopifyBundleBuilderPageRepository {
     constructor() {}

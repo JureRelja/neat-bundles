@@ -1,5 +1,5 @@
 import { AdminApiContext } from "@shopify/shopify-app-remix/server";
-import { OnlineStoreTheme, OnlineStoreThemeConnection, OnlineStoreThemeFileBodyText } from "~/adminBackend/shopifyGraphql/graphql";
+import { OnlineStoreTheme, OnlineStoreThemeConnection, OnlineStoreThemeFileBodyText } from "~/shopifyGraphql/graphql";
 import { getMaxListeners } from "events";
 
 class ShopifyThemesRepository {
