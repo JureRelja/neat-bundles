@@ -1,6 +1,6 @@
 import { AdminApiContext } from "@shopify/shopify-app-remix/server";
 import { AddedProductVariantDto } from "~/adminBackend/service/dto/AddedProductVariantDto";
-import { PriceCalculationType } from "~/adminBackend/shopifyGraphql/graphql";
+// import { PriceCalculationType } from "~/adminBackend/shopifyGraphql/graphql";
 
 export class ShopifyProductVariantRepository {
     constructor() {}
@@ -106,7 +106,7 @@ export class ShopifyProductVariantRepository {
                         {
                             parentProductVariantId: variantId,
                             priceInput: {
-                                calculation: PriceCalculationType.Fixed,
+                                calculation: "FIXED",
                                 price: price,
                             },
                             productVariantRelationshipsToCreate: addedProductVariants.map((addedProductVariant) => {

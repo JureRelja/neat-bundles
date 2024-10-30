@@ -40,7 +40,6 @@
         "@shopify/shopify-app-remix": "^3.3.2",
         "@shopify/shopify-app-session-storage-prisma": "^5.0.0",
         "@shopify/shopify-app-session-storage-redis": "^4.0.2",
-        "alpinejs": "^3.14.1",
         "crypto-js": "^4.2.0",
         "graphql": "^16.9.0",
         "ioredis": "^5.4.1",
