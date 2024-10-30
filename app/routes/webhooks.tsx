@@ -1,7 +1,8 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
-import { redisClient } from "../redis.server";
+// import { redisClient } from "../redis.server";
 import db from "~/db.server";
+import { createClient } from "redis";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
     const { topic, shop, session, admin, payload } = await authenticate.webhook(request);
@@ -17,8 +18,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 const offlineStoreId = `shopify_sessions_${session.id}`;
                 const onlineStoreId = `shopify_sessions_${shop}`;
 
-                await redisClient.del(offlineStoreId);
-                await redisClient.del(onlineStoreId);
+                //Redis client for caching
+                let redis = createClient({
+                    url: process.env.REDIS_URL,
+                });
+
+                await redis.del(offlineStoreId);
+                await redis.del(onlineStoreId);
 
                 await db.user.update({
                     where: {
