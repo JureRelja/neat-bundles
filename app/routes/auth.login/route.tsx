@@ -8,32 +8,30 @@ import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 
 import { login } from "../../shopify.server";
 
-// import { loginErrorMessage } from './error.server';
+import { loginErrorMessage } from "./error.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const loginMsg = await login(request);
-    // const errors = loginErrorMessage(loginMsg);
+    const errors = loginErrorMessage(loginMsg);
 
-    // return json({ errors, polarisTranslations });
-    return json({ polarisTranslations });
+    return json({ errors, polarisTranslations });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-    // const errors = loginErrorMessage(await login(request));
+    const errors = loginErrorMessage(await login(request));
 
-    // return json({
-    //     errors,
-    // });
-    return null;
+    return json({
+        errors,
+    });
 };
 
 export default function Auth() {
     const loaderData = useLoaderData<typeof loader>();
     const actionData = useActionData<typeof action>();
     const [shop, setShop] = useState("");
-    // const { errors } = actionData || loaderData;
+    const { errors } = actionData || loaderData;
 
     return (
         <PolarisAppProvider i18n={loaderData.polarisTranslations}>
