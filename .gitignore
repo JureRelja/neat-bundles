@@ -18,4 +18,3 @@ shopifyGraphql
 .env
 
 shopify.app.toml
-shopify.app.dev.toml
