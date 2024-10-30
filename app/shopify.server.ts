@@ -4,6 +4,8 @@ import { RedisSessionStorage } from "@shopify/shopify-app-session-storage-redis"
 import { restResources } from "@shopify/shopify-api/rest/admin/2024-10";
 import { BillingPlanIdentifiers } from "./constants";
 
+import { createClient } from "redis";
+
 const shopify = shopifyApp({
     apiKey: process.env.SHOPIFY_API_KEY,
     apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
@@ -87,3 +89,20 @@ export const unauthenticated = shopify.unauthenticated;
 export const login = shopify.login;
 export const registerWebhooks = shopify.registerWebhooks;
 export const sessionStorage = shopify.sessionStorage;
+
+// //Redis client for caching
+// let redis = await createClient({
+//     url: process.env.REDIS_URL,
+// });
+
+// await redis.connect();
+
+// redis.on("error", (error: String) => {
+//     console.error(`Redis client error:`, error);
+// });
+
+//Exporting redis
+
+export const redisClient = await createClient({ url: process.env.REDIS_URL })
+    .on("error", (err) => console.error("Redis Client Error", err))
+    .connect();

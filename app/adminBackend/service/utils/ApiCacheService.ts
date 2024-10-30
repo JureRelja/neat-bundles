@@ -1,4 +1,4 @@
-import { redisClient } from "~/redis.server";
+import { redisClient } from "../../../shopify.server";
 
 export class ApiCacheService {
     private key: string;
