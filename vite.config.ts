@@ -47,14 +47,6 @@ export default defineConfig({
         tsconfigPaths(),
     ],
 
-    resolve: {
-        alias: {
-            "@": path.resolve(__dirname, "/app"),
-            "~": path.resolve(__dirname, "/app"),
-            "@adminBackend": path.resolve(__dirname, "/app/adminBackend"),
-        },
-    },
-
     build: {
         assetsInlineLimit: 0,
     },
