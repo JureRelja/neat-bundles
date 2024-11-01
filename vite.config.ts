@@ -49,5 +49,6 @@ export default defineConfig({
 
     build: {
         assetsInlineLimit: 0,
+        target: "ES2022", //
     },
 }) satisfies UserConfig;
