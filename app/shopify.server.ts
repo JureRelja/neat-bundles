@@ -91,18 +91,6 @@ export const registerWebhooks = shopify.registerWebhooks;
 export const sessionStorage = shopify.sessionStorage;
 
 // //Redis client for caching
-// let redis = await createClient({
-//     url: process.env.REDIS_URL,
-// });
-
-// await redis.connect();
-
-// redis.on("error", (error: String) => {
-//     console.error(`Redis client error:`, error);
-// });
-
-//Exporting redis
-
 export const redisClient = await createClient({ url: process.env.REDIS_URL })
     .on("error", (err) => console.error("Redis Client Error", err))
     .connect();

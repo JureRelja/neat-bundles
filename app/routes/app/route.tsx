@@ -1,19 +1,19 @@
-import type { HeadersFunction, LoaderFunctionArgs } from '@remix-run/node';
-import { json } from '@remix-run/node';
-import { isRouteErrorResponse, Link, Outlet, useLoaderData, useRouteError } from '@remix-run/react';
-import { boundary } from '@shopify/shopify-app-remix/server';
-import { AppProvider } from '@shopify/shopify-app-remix/react';
-import { NavMenu } from '@shopify/app-bridge-react';
-import polarisStyles from '@shopify/polaris/build/esm/styles.css?url';
+import type { HeadersFunction, LoaderFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { isRouteErrorResponse, Link, Outlet, useLoaderData, useRouteError } from "@remix-run/react";
+import { boundary } from "@shopify/shopify-app-remix/server";
+import { AppProvider } from "@shopify/shopify-app-remix/react";
+import { NavMenu } from "@shopify/app-bridge-react";
+import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 
-import { authenticate } from '../../shopify.server';
+import { authenticate } from "../../shopify.server";
 
-export const links = () => [{ rel: 'stylesheet', href: polarisStyles }];
+export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
 
-    return json({ apiKey: process.env.SHOPIFY_API_KEY || '' });
+    return json({ apiKey: process.env.SHOPIFY_API_KEY || "" });
 };
 
 export default function App() {
@@ -25,19 +25,19 @@ export default function App() {
                 <Link to="/app" rel="home">
                     Home
                 </Link>
-                <Link to="/app/global-settings" rel="globalSettings">
+                <Link to="global-settings" rel="globalSettings">
                     Global settings
                 </Link>
-                <Link to="/app/installation" rel="installation">
+                <Link to="installation" rel="installation">
                     Installation
                 </Link>
-                <Link to="/app/billing" rel="billing">
+                <Link to="billing" rel="billing">
                     Billing
                 </Link>
-                <Link to="/app/feature-request" rel="featureRequest">
+                <Link to="feature-request" rel="featureRequest">
                     Request a feature
                 </Link>
-                <Link to="/app/help" rel="help">
+                <Link to="help" rel="help">
                     Help
                 </Link>
             </NavMenu>
