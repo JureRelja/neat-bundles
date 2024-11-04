@@ -21,7 +21,10 @@ export type BillingPlan = {
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+    console.log("billing lodader", request);
     const { session, admin, billing } = await authenticate.admin(request);
+
+    console.log("billing lodader didn't throw auth error");
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
