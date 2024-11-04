@@ -26,7 +26,7 @@ import { QuestionCircleIcon, ExternalIcon, SettingsIcon, RefreshIcon } from "@sh
 import { useAppBridge, Modal, TitleBar } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
-import { bundlePagePreviewKey, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from "../../constants";
+import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from "../../constants";
 import db from "../../db.server";
 import { BundlePricing, BundleDiscountType, BundleBuilder } from "@prisma/client";
 import { JsonData, error } from "../../adminBackend/service/dto/jsonData";

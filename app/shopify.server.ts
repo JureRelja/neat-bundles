@@ -13,7 +13,7 @@ const shopify = shopifyApp({
     scopes: process.env.SCOPES?.split(","),
     appUrl: process.env.SHOPIFY_APP_URL || "",
     authPathPrefix: "/auth",
-    sessionStorage: new RedisSessionStorage(process.env.REDIS_URL || ""),
+    sessionStorage: new RedisSessionStorage(process.env.REDIS_URL as string),
     distribution: AppDistribution.AppStore,
     restResources,
     billing: {
