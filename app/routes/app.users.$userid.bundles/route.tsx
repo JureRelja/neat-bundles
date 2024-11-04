@@ -337,11 +337,7 @@ export default function Index() {
                                                 </Text>,
 
                                                 //
-                                                <Link
-                                                    to="#"
-                                                    onClick={(e) => {
-                                                        handleEditBundleBuilder(bundleBuilder.id);
-                                                    }}>
+                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
                                                     <Text as="p" tone="base">
                                                         {bundleBuilder.title}
                                                     </Text>
@@ -349,11 +345,7 @@ export default function Index() {
                                                 //
                                                 bundleBuilder.steps.length,
                                                 //
-                                                <Link
-                                                    to="#"
-                                                    onClick={(e) => {
-                                                        handleEditBundleBuilder(bundleBuilder.id);
-                                                    }}>
+                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
                                                     {bundleBuilder.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
                                                 </Link>,
                                                 //
@@ -382,12 +374,7 @@ export default function Index() {
                                                         Duplicate
                                                         </Button> */}
 
-                                                    <Button
-                                                        icon={EditIcon}
-                                                        variant="primary"
-                                                        onClick={() => {
-                                                            handleEditBundleBuilder(bundleBuilder.id);
-                                                        }}>
+                                                    <Button icon={EditIcon} variant="primary" url={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
                                                         Edit
                                                     </Button>
                                                 </ButtonGroup>,
