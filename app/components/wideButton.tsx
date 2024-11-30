@@ -1,16 +1,17 @@
-import { Button } from '@shopify/polaris';
+import { Button } from "@shopify/polaris";
 
 {
     /*  */
 }
 
-export default function Index({ onClick }: { onClick: () => void }) {
+export default function Index({ onClick, url }: { onClick: () => void; url?: string }) {
     return (
-        <div style={{ width: '200px' }}>
+        <div style={{ width: "200px" }}>
             {/* Save button */}
             <Button
                 fullWidth
                 variant="primary"
+                url={url}
                 onClick={() => {
                     onClick();
                 }}>

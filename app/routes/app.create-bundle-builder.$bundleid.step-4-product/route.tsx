@@ -7,16 +7,16 @@ import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
-import { BundleBuilder } from "@prisma/client";
+import type { BundleBuilder, Product } from "@prisma/client";
 import { useState } from "react";
 import ResourcePicker from "~/components/resourcePicer";
 import { GapBetweenTitleAndContent, GapInsideSection, HorizontalGap } from "~/constants";
-import { Product } from "@prisma/client";
 import WideButton from "~/components/wideButton";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
+import type { ProductStepDataDto } from "~/adminBackend/service/dto/ProductStepDataDto";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    const { session } = await authenticate.admin(request);
 
     const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
 
@@ -51,10 +51,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    await authenticate.admin(request);
 
-    const formData = await request.formData();
-    const action = formData.get("action");
+    // const formData = await request.formData();
+    // const action = formData.get("action");
 
     return json(
         {
@@ -86,14 +86,17 @@ export default function Index() {
 
         const form = new FormData();
 
-        const stepData = {
+        const stepData: ProductStepDataDto = {
             title: stepTitle,
             description: "",
             stepType: "PRODUCT",
+            stepNumber: 2,
             productInput: {
-                minProducts: minProducts,
-                maxProducts: maxProducts,
+                minProductsOnStep: minProducts,
+                maxProductsOnStep: maxProducts,
                 products: stepProducts,
+                allowProductDuplicates: false,
+                showProductPrice: true,
             },
         };
 

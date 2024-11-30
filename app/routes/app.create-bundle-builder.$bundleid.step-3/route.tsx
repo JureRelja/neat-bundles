@@ -1,5 +1,5 @@
 import { json, redirect } from "@remix-run/node";
-import { useNavigate, useParams } from "@remix-run/react";
+import { useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { BlockStack, Text, Button, ButtonGroup } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
@@ -7,14 +7,14 @@ import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
-import { BundleBuilder } from "@prisma/client";
+import type { BundleBuilder } from "@prisma/client";
 import { useState } from "react";
 import { GapInsideSection } from "~/constants";
 import WideButton from "~/components/wideButton";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    const { session } = await authenticate.admin(request);
 
     const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
 
@@ -52,10 +52,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    await authenticate.admin(request);
 
-    const formData = await request.formData();
-    const action = formData.get("action");
+    // const formData = await request.formData();
+    // const action = formData.get("action");
 
     return json(
         {
@@ -66,12 +66,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
-    const navigate = useNavigate();
     const params = useParams();
-
-    const handleNextBtnHandler = () => {
-        navigate(`/app/create-bundle-builder/${params.bundleid}/step-4-${activeBtnOption === "CONTENT" ? "content" : "product"}?stepNumber=3stepIndex=4&onboarding=true`);
-    };
 
     //step data
     const [activeBtnOption, setActiveBtnOption] = useState<"PRODUCT" | "CONTENT">("PRODUCT");
@@ -102,7 +97,10 @@ export default function Index() {
                 </BlockStack>
 
                 {/*  */}
-                <WideButton onClick={handleNextBtnHandler} />
+                <WideButton
+                    onClick={() => {}}
+                    url={`/create-bundle-builder/${params.bundleid}/step-4-${activeBtnOption === "CONTENT" ? "content" : "product"}?stepNumber=3&stepIndex=4&onboarding=true`}
+                />
             </BlockStack>
         </div>
     );

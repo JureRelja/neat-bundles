@@ -13,7 +13,7 @@ const shopify = shopifyApp({
     scopes: process.env.SCOPES?.split(","),
     appUrl: process.env.SHOPIFY_APP_URL || "",
     authPathPrefix: "/auth",
-    sessionStorage: new RedisSessionStorage(process.env.REDIS_URL || ""),
+    sessionStorage: new RedisSessionStorage(process.env.REDIS_URL as string),
     distribution: AppDistribution.AppStore,
     restResources,
     billing: {
@@ -76,13 +76,13 @@ const shopify = shopifyApp({
         },
     },
     future: {
-        unstable_newEmbeddedAuthStrategy: true,
+        unstable_newEmbeddedAuthStrategy: false,
     },
     ...(process.env.SHOP_CUSTOM_DOMAIN ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] } : {}),
 });
 
 export default shopify;
-export const apiVersion = ApiVersion.April24;
+export const apiVersion = ApiVersion.October24;
 export const addDocumentResponseHeaders = shopify.addDocumentResponseHeaders;
 export const authenticate = shopify.authenticate;
 export const unauthenticated = shopify.unauthenticated;
@@ -91,18 +91,6 @@ export const registerWebhooks = shopify.registerWebhooks;
 export const sessionStorage = shopify.sessionStorage;
 
 // //Redis client for caching
-// let redis = await createClient({
-//     url: process.env.REDIS_URL,
-// });
-
-// await redis.connect();
-
-// redis.on("error", (error: String) => {
-//     console.error(`Redis client error:`, error);
-// });
-
-//Exporting redis
-
 export const redisClient = await createClient({ url: process.env.REDIS_URL })
     .on("error", (err) => console.error("Redis Client Error", err))
     .connect();
