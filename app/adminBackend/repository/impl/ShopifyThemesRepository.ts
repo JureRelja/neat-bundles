@@ -29,6 +29,7 @@ class ShopifyThemesRepository {
         return data.nodes;
     }
 
+    //  get main theme with sections and templates
     public async getMainThemeWithTandS(admin: AdminApiContext): Promise<OnlineStoreTheme> {
         const response = await admin.graphql(`
             #graphql

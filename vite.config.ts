@@ -1,5 +1,5 @@
 import { vitePlugin as remix } from "@remix-run/dev";
-import path from "path";
+
 import { defineConfig, type UserConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 

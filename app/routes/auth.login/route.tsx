@@ -13,8 +13,7 @@ import { loginErrorMessage } from "./error.server";
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    const loginMsg = await login(request);
-    const errors = loginErrorMessage(loginMsg);
+    const errors = loginErrorMessage(await login(request));
 
     return json({ errors, polarisTranslations });
 };
@@ -37,9 +36,6 @@ export default function Auth() {
         <PolarisAppProvider i18n={loaderData.polarisTranslations}>
             <Page>
                 <Card>
-                    <Text variant="headingMd" as="h2">
-                        There was an error with your request. Make sure that you are logged in and have the necessary permissions to access this page.
-                    </Text>
                     <Form method="post">
                         <FormLayout>
                             <Text variant="headingMd" as="h2">
@@ -53,7 +49,7 @@ export default function Auth() {
                                 value={shop}
                                 onChange={setShop}
                                 autoComplete="on"
-                                // error={errors.shop}
+                                error={errors.shop}
                             />
                             <Button submit>Log in</Button>
                         </FormLayout>
