@@ -25,6 +25,7 @@ import ActivateVideo from "../../assets/installation-video.mp4";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import shopifyThemesRepository from "~/adminBackend/repository/impl/ShopifyThemesRepository";
 import { useEffect } from "react";
+import { JsonData } from "~/adminBackend/service/dto/jsonData";
 
 function parseMainPageBody(content: string) {
     // Find the start of the JSON object (the first '{') and the end (the last '}')
