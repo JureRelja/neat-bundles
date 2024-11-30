@@ -20,13 +20,13 @@ export type BillingPlan = {
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    const { session, admin, billing } = await authenticate.admin(request);
+    const { billing, session } = await authenticate.admin(request);
 
-    const user = await userRepository.getUserByStoreUrl(res.session.shop);
+    const user = await userRepository.getUserByStoreUrl(session.shop);
 
     if (!user) return redirect("/app");
 
-    const { hasActivePayment, appSubscriptions } = await res.billing.check({
+    const { hasActivePayment, appSubscriptions } = await billing.check({
         plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY, BillingPlanIdentifiers.BASIC_MONTHLY, BillingPlanIdentifiers.BASIC_YEARLY],
         isTest: true,
     });
