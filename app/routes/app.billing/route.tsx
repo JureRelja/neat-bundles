@@ -3,10 +3,9 @@ import { useState } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, InlineStack, Button, Banner, Spinner, Box } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
-import { LargeGapBetweenSections, BillingPlanIdentifiers } from "../../constants";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import PricingPlanComponent from "./pricingPlan";
-import { GapBetweenSections, GapInsideSection } from "~/constants";
+import { GapBetweenSections, GapInsideSection, LargeGapBetweenSections, BillingPlanIdentifiers } from "~/constants";
 import ToggleSwitch from "./toogleSwitch";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import styles from "./route.module.css";
@@ -21,16 +20,16 @@ export type BillingPlan = {
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    console.log("billing lodader", request);
-    const { session, admin, billing } = await authenticate.admin(request);
+    const res = await authenticate.admin(request);
+    console.log(res.redirect);
 
     console.log("billing lodader didn't throw auth error");
 
-    const user = await userRepository.getUserByStoreUrl(session.shop);
+    const user = await userRepository.getUserByStoreUrl(res.session.shop);
 
     if (!user) return redirect("/app");
 
-    const { hasActivePayment, appSubscriptions } = await billing.check({
+    const { hasActivePayment, appSubscriptions } = await res.billing.check({
         plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY, BillingPlanIdentifiers.BASIC_MONTHLY, BillingPlanIdentifiers.BASIC_YEARLY],
         isTest: true,
     });
@@ -83,7 +82,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-    const { admin, session, billing } = await authenticate.admin(request);
+    const { session, billing } = await authenticate.admin(request);
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
@@ -108,7 +107,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     switch (action) {
         case "CANCEL": {
             if (hasActivePayment) {
-                const cancelledSubscription = await billing.cancel({
+                await billing.cancel({
                     subscriptionId: appSubscriptions[0].id,
                     isTest: true,
                     prorate: false,
@@ -124,7 +123,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
             await userRepository.updateUser({ ...user, activeBillingPlan: "PRO" });
 
-            const res = await billing.request({
+            await billing.request({
                 plan: action,
                 isTest: true,
                 returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/${state === "downgrading" ? "billing" : state === "none" ? "thank-you?variant=firstPlan" : ""}`,
@@ -138,7 +137,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
             await userRepository.updateUser({ ...user, activeBillingPlan: "PRO" });
 
-            const res = await billing.request({
+            await billing.request({
                 plan: action,
                 isTest: true,
                 returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/${state === "downgrading" ? "billing" : state === "none" ? "thank-you?variant=firstPlan" : ""}`,
@@ -153,7 +152,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
             await userRepository.updateUser({ ...user, activeBillingPlan: "PRO" });
 
-            const res = await billing.request({
+            await billing.request({
                 plan: action,
                 isTest: true,
                 returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/thank-you?variant=${state === "upgrading" ? "upgrade" : state === "none" ? "firstPlan" : ""}`,
@@ -167,7 +166,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
             await userRepository.updateUser({ ...user, activeBillingPlan: "PRO" });
 
-            const res = await billing.request({
+            await billing.request({
                 plan: action,
                 isTest: true,
                 returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/thank-you?variant=${state === "upgrading" ? "upgrade" : state === "none" ? "firstPlan" : ""}`,

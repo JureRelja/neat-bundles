@@ -76,13 +76,13 @@ const shopify = shopifyApp({
         },
     },
     future: {
-        unstable_newEmbeddedAuthStrategy: true,
+        unstable_newEmbeddedAuthStrategy: false,
     },
     ...(process.env.SHOP_CUSTOM_DOMAIN ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] } : {}),
 });
 
 export default shopify;
-export const apiVersion = ApiVersion.April24;
+export const apiVersion = ApiVersion.October24;
 export const addDocumentResponseHeaders = shopify.addDocumentResponseHeaders;
 export const authenticate = shopify.authenticate;
 export const unauthenticated = shopify.unauthenticated;

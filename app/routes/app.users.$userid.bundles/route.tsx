@@ -1,10 +1,12 @@
-import { useNavigation, json, useLoaderData, Link, redirect, useFetcher, useRevalidator, useSubmit, useNavigate } from "@remix-run/react";
+/* eslint-disable react/jsx-key */
+import { useNavigation, json, useLoaderData, Link, redirect, useFetcher, useSubmit } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Card, Button, BlockStack, EmptyState, Text, Box, SkeletonPage, SkeletonBodyText, DataTable, ButtonGroup, Badge, Spinner, InlineStack, TextField } from "@shopify/polaris";
 import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from "@shopify/polaris-icons";
 import { authenticate } from "../../shopify.server";
 import db from "../../db.server";
-import { BundleAndStepsBasicClient, bundleAndSteps } from "../../adminBackend/service/dto/Bundle";
+import type { BundleAndStepsBasicClient } from "../../adminBackend/service/dto/Bundle";
+import { bundleAndSteps } from "../../adminBackend/service/dto/Bundle";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import { useEffect, useState } from "react";
@@ -14,11 +16,11 @@ import userRepository from "@adminBackend/repository/impl/UserRepository";
 import bundleBuilderRepository, { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
 import { shopifyBundleBuilderProductRepository } from "~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository";
 import { ShopifyRedirectRepository } from "~/adminBackend/repository/impl/ShopifyRedirectRepository";
-import { ShopifyBundleBuilderPageRepository } from "~/adminBackend/repository/ShopifyBundleBuilderPageRepository";
+import type { ShopifyBundleBuilderPageRepository } from "~/adminBackend/repository/ShopifyBundleBuilderPageRepository";
 import shopifyBundleBuilderPageGraphql from "@adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql";
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { session, admin } = await authenticate.admin(request);
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+    const { session } = await authenticate.admin(request);
 
     console.log("I'm on bundles loader");
 
@@ -103,7 +105,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     return;
                 }
 
-                const [urlRedirectRes, bundleBuilder] = await Promise.all([
+                const [, bundleBuilder] = await Promise.all([
                     //Create redirect
                     ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundlePage.handle as string, bundleProductId),
                     //Create new bundle
@@ -142,8 +144,7 @@ export default function Index() {
     const isSubmitting = nav.state === "submitting";
     const fetcher = useFetcher();
     const submit = useSubmit();
-    // const revalidator = useRevalidator();
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
 
     const loaderResponse = useLoaderData<typeof loader>();
 
@@ -194,9 +195,9 @@ export default function Index() {
         if (bundleForDelete) setShowBundleDeleteConfirmModal(true);
     }, [bundleForDelete]);
 
-    const handleEditBundleBuilder = (bundleBuilderId: number) => {
-        navigate(`/app/edit-bundle-builder/${bundleBuilderId}/builder`);
-    };
+    // const handleEditBundleBuilder = (bundleBuilderId: number) => {
+    //     navigate(`/app/edit-bundle-builder/${bundleBuilderId}/builder`);
+    // };
 
     return (
         <>

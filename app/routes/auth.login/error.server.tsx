@@ -1,4 +1,3 @@
-import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import type { LoginError } from "@shopify/shopify-app-remix/server";
 import { LoginErrorType } from "@shopify/shopify-app-remix/server";
 
@@ -14,10 +13,4 @@ export function loginErrorMessage(loginErrors: LoginError): LoginErrorMessage {
     }
 
     return {};
-}
-
-export function handleError(error: unknown, { request, params, context }: LoaderFunctionArgs | ActionFunctionArgs) {
-    if (!request.signal.aborted) {
-        console.error(error);
-    }
 }

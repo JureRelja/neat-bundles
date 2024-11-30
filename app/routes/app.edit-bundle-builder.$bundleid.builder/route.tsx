@@ -1,5 +1,5 @@
 import { json, redirect } from "@remix-run/node";
-import { Link, useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Outlet } from "@remix-run/react";
+import { Link, useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
     Page,
@@ -28,16 +28,18 @@ import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from "../../constants";
 import db from "../../db.server";
-import { BundlePricing, BundleDiscountType, BundleBuilder } from "@prisma/client";
-import { JsonData, error } from "../../adminBackend/service/dto/jsonData";
+import { BundlePricing, BundleDiscountType } from "@prisma/client";
+import type { BundleBuilder } from "@prisma/client";
+import { JsonData } from "../../adminBackend/service/dto/jsonData";
+import type { error } from "../../adminBackend/service/dto/jsonData";
 import { useNavigateSubmit } from "../../hooks/useNavigateSubmit";
 import userRepository from "../../adminBackend/repository/impl/UserRepository";
-import { BundleBuilderClient } from "../../frontend/types/BundleBuilderClient";
+import type { BundleBuilderClient } from "../../frontend/types/BundleBuilderClient";
 import BundleBuilderSteps from "./bundleBuilderSteps";
 import { bundleBuilderStepRepository } from "../../adminBackend//repository/impl/bundleBuilderStep/BundleBuilderStepRepository";
 import bundleBuilderRepository, { BundleBuilderRepository } from "../../adminBackend//repository/impl/BundleBuilderRepository";
 import { shopifyBundleBuilderProductRepository } from "../../adminBackend//repository/impl/ShopifyBundleBuilderProductRepository";
-import { ShopifyBundleBuilderPageRepository } from "../../adminBackend//repository/ShopifyBundleBuilderPageRepository";
+import type { ShopifyBundleBuilderPageRepository } from "../../adminBackend//repository/ShopifyBundleBuilderPageRepository";
 import { inclBundleFullStepsBasic } from "../../adminBackend//service/dto/Bundle";
 import { ApiCacheKeyService } from "../../adminBackend//service/utils/ApiCacheKeyService";
 import { ApiCacheService } from "../../adminBackend//service/utils/ApiCacheService";
@@ -46,7 +48,7 @@ import styles from "./route.module.css";
 import { AuthorizationCheck } from "../../adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    const { session } = await authenticate.admin(request);
 
     console.log("I'm on bundleId.builder, loader");
 
@@ -81,6 +83,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
+    console.log(request);
     const { admin, session } = await authenticate.admin(request);
 
     const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
@@ -98,7 +101,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const formData = await request.formData();
     const action = formData.get("action");
 
-    console.log("I'm on bundleID", action);
+    console.log("I'm on bundleid.builder", action);
 
     switch (action) {
         case "deleteBundle": {

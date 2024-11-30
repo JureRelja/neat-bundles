@@ -1,6 +1,6 @@
 import type { HeadersFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { isRouteErrorResponse, Link, Outlet, useLoaderData, useRouteError } from "@remix-run/react";
+import { Link, Outlet, useLoaderData, useRouteError } from "@remix-run/react";
 import { boundary } from "@shopify/shopify-app-remix/server";
 import { AppProvider } from "@shopify/shopify-app-remix/react";
 import { NavMenu } from "@shopify/app-bridge-react";
@@ -25,19 +25,19 @@ export default function App() {
                 <Link to="." rel="home">
                     Home
                 </Link>
-                <Link to="global-settings" rel="globalSettings">
+                <Link to="/app/global-settings" rel="globalSettings">
                     Global settings
                 </Link>
-                <Link to="installation" rel="installation">
+                <Link to="/app/installation" rel="installation">
                     Installation
                 </Link>
-                <Link to="billing" rel="billing">
+                <Link to="/app/billing" rel="billing">
                     Billing
                 </Link>
-                <Link to="feature-request" rel="featureRequest">
+                <Link to="/app/feature-request" rel="featureRequest">
                     Request a feature
                 </Link>
-                <Link to="help" rel="help">
+                <Link to="/app/help" rel="help">
                     Help
                 </Link>
             </NavMenu>
@@ -48,29 +48,7 @@ export default function App() {
 
 // Shopify needs Remix to catch some thrown responses, so that their headers are included in the response.
 export function ErrorBoundary() {
-    const error = useRouteError();
-
-    if (isRouteErrorResponse(error)) {
-        return (
-            <div>
-                <h1>
-                    {error.status} {error.statusText}
-                </h1>
-                <p>{error.data}</p>
-            </div>
-        );
-    } else if (error instanceof Error) {
-        return (
-            <div>
-                <h1>Error</h1>
-                <p>{error.message}</p>
-                <p>The stack trace is:</p>
-                <pre>{error.stack}</pre>
-            </div>
-        );
-    } else {
-        return <h1>Unknown Error</h1>;
-    }
+    return boundary.error(useRouteError());
 }
 
 export const headers: HeadersFunction = (headersArgs) => {
