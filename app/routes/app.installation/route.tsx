@@ -1,4 +1,4 @@
-import { useNavigation, json, useLoaderData, Link, useNavigate, redirect, useActionData, useFetcher, Form } from "@remix-run/react";
+import { useNavigation, json, useLoaderData, Link, useNavigate, redirect, useActionData, Form } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
     Page,
@@ -16,19 +16,35 @@ import {
     VideoThumbnail,
     Button,
     Badge,
-    Spinner,
     FooterHelp,
 } from "@shopify/polaris";
 import { CheckIcon, ExternalIcon, XSmallIcon } from "@shopify/polaris-icons";
 import { authenticate } from "../../shopify.server";
-import { JsonData } from "../../adminBackend/service/dto/jsonData";
-import { useAsyncSubmit } from "../../hooks/useAsyncSubmit";
-import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
 import { GapBetweenSections, GapInsideSection, LargeGapBetweenSections } from "~/constants";
 import ActivateVideo from "../../assets/installation-video.mp4";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import shopifyThemesRepository from "~/adminBackend/repository/impl/ShopifyThemesRepository";
 import { useEffect } from "react";
+
+function parseMainPageBody(content: string) {
+    // Find the start of the JSON object (the first '{') and the end (the last '}')
+    const jsonMatch = content.match(/{[\s\S]*}/);
+
+    // If a match is found, return the parsed JSON object, otherwise return null
+    if (jsonMatch) {
+        try {
+            const jsonString = jsonMatch[0].trim(); // Extract the JSON part and trim any leading/trailing spaces
+            const jsonObject = JSON.parse(jsonString);
+            return jsonObject;
+        } catch (error) {
+            console.error("Error parsing JSON:", error);
+            return null;
+        }
+    } else {
+        console.error("No JSON found in the log string");
+        return null;
+    }
+}
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);
@@ -60,7 +76,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         const templateBody = pageTemplate[0].body;
 
         if (templateBody.__typename === "OnlineStoreThemeFileBodyText") {
-            const bodyContent = JSON.parse(templateBody.content);
+            const bodyContent = parseMainPageBody(templateBody.content);
 
             const mainSection = Object.entries(bodyContent.sections).find(([id, section]: [any, any]) => id === "main" || section.type.startsWith("main-"));
 
@@ -116,7 +132,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 const themeSettings = mainTheme.files?.nodes[0];
 
                 if (themeSettings.body.__typename === "OnlineStoreThemeFileBodyText") {
-                    const bodyContent = JSON.parse(themeSettings.body.content);
+                    const bodyContent = parseMainPageBody(themeSettings.body.content);
 
                     const neatBundlesEmbedBlock = Object.entries(bodyContent.current.blocks).filter(([blockId, block]: [string, any]) => {
                         if (block.type.includes(process.env.SHOPIFY_BUNDLE_UI_ID)) {
@@ -170,10 +186,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function Index() {
     const nav = useNavigation();
     const isLoading = nav.state !== "idle";
-    const asyncSubmit = useAsyncSubmit(); //Function for doing the submit action where the only data is action and url
-    const navigateSubmit = useNavigateSubmit(); //Function for doing the submit action as if form was submitted
-    const fetcher = useFetcher();
-
     const loaderResponse = useLoaderData<typeof loader>();
     const actionResponse = useActionData<typeof action>();
 
