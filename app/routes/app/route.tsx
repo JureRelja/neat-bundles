@@ -14,6 +14,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     try {
         await authenticate.admin(request);
     } catch (error) {
+        console.log(request);
+
         console.error(error);
         throw error;
     }
@@ -52,9 +54,9 @@ export default function App() {
 }
 
 // Shopify needs Remix to catch some thrown responses, so that their headers are included in the response.
-// export function ErrorBoundary() {
-//     return boundary.error(useRouteError());
-// }
+export function ErrorBoundary() {
+    return boundary.error(useRouteError());
+}
 
 export const headers: HeadersFunction = (headersArgs) => {
     return boundary.headers(headersArgs);
