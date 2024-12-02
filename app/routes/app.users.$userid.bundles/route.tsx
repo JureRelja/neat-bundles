@@ -1,7 +1,23 @@
 /* eslint-disable react/jsx-key */
-import { useNavigation, json, useLoaderData, Link, useFetcher, useSubmit, isRouteErrorResponse, useRouteError } from "@remix-run/react";
+import { useNavigation, json, useLoaderData, useFetcher, useSubmit, isRouteErrorResponse, useRouteError } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Card, Button, BlockStack, EmptyState, Text, Box, SkeletonPage, SkeletonBodyText, DataTable, ButtonGroup, Badge, Spinner, InlineStack, TextField } from "@shopify/polaris";
+import {
+    Card,
+    Button,
+    BlockStack,
+    EmptyState,
+    Text,
+    Link,
+    Box,
+    SkeletonPage,
+    SkeletonBodyText,
+    DataTable,
+    ButtonGroup,
+    Badge,
+    Spinner,
+    InlineStack,
+    TextField,
+} from "@shopify/polaris";
 import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from "@shopify/polaris-icons";
 import { authenticate } from "../../shopify.server";
 import db from "../../db.server";
@@ -301,7 +317,7 @@ export default function Index() {
                             <BlockStack gap={GapBetweenSections}>
                                 <Text as="p">You are on the 'Basic' plan which only allows you to have up to 2 bundles at one time.</Text>
                                 <Text as="p" variant="headingSm">
-                                    If you want to create more bundles, go to <Link to={"/app/billing"}>billing</Link> and upgrade to paid plan.
+                                    If you want to create more bundles, go to <Link url={"/app/billing"}>billing</Link> and upgrade to paid plan.
                                 </Text>
                             </BlockStack>
                         </Box>
@@ -338,7 +354,7 @@ export default function Index() {
                                                 </Text>,
 
                                                 //
-                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
+                                                <Link url={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
                                                     <Text as="p" tone="base">
                                                         {bundleBuilder.title}
                                                     </Text>
@@ -346,7 +362,7 @@ export default function Index() {
                                                 //
                                                 bundleBuilder.steps.length,
                                                 //
-                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
+                                                <Link url={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
                                                     {bundleBuilder.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
                                                 </Link>,
                                                 //
