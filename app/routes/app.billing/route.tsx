@@ -1,4 +1,4 @@
-import { useNavigation, json, useLoaderData, useNavigate, redirect, useFetcher } from "@remix-run/react";
+import { useNavigation, json, useLoaderData, useNavigate, useFetcher } from "@remix-run/react";
 import { useState } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, InlineStack, Button, Banner, Spinner, Box } from "@shopify/polaris";
@@ -20,7 +20,7 @@ export type BillingPlan = {
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    const { billing, session } = await authenticate.admin(request);
+    const { billing, session, redirect } = await authenticate.admin(request);
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
@@ -79,7 +79,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-    const { session, billing } = await authenticate.admin(request);
+    const { session, billing, redirect } = await authenticate.admin(request);
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
