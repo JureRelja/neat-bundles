@@ -99,7 +99,7 @@ export default function Index() {
                 {/*  */}
                 <WideButton
                     onClick={() => {}}
-                    url={`/create-bundle-builder/${params.bundleid}/step-4-${activeBtnOption === "CONTENT" ? "content" : "product"}?stepNumber=3&stepIndex=4&onboarding=true`}
+                    url={`/app/create-bundle-builder/${params.bundleid}/step-4-${activeBtnOption === "CONTENT" ? "content" : "product"}?stepNumber=3&stepIndex=4&onboarding=true`}
                 />
             </BlockStack>
         </div>

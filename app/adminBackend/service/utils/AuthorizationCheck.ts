@@ -6,9 +6,12 @@ export async function AuthorizationCheck(storeUrl: string, bundleId: number): Pr
         //Checking if the the bundle is published and belongs to the store
         const bundleBuilder = await bundleBuilderRepository.getBundleBuilderByIdAndStoreUrl(bundleId, storeUrl);
 
+        console.log("bundleBuilder", bundleBuilder);
+
         if (!bundleBuilder) {
             return false;
         }
+        return true;
     } catch (error) {
         return false;
     }

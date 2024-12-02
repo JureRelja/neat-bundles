@@ -12,9 +12,9 @@ import type { BundleBuilder, ContentInput } from "@prisma/client";
 import { useState } from "react";
 import { GapBetweenTitleAndContent, GapInsideSection } from "../../constants";
 import WideButton from "../../components/wideButton";
-import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 import ContentStepInput from "../../components/contentStepInputs";
 import type { ContentStepDataDto } from "~/adminBackend/service/dto/ContentStepDataDto";
+import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { session } = await authenticate.admin(request);
@@ -24,7 +24,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     if (!isAuthorized) {
         throw new Response(null, {
             status: 404,
-            statusText: "Not Found",
+            statusText: "Not Founasdfasdfd",
         });
     }
 
@@ -39,7 +39,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         });
     }
 
+    // console.log("bundleid", params.bundleid);
+
     const bundleBuilder: BundleBuilder | null = await BundleBuilderRepository.getBundleBuilderById(Number(params.bundleid));
+    // console.log("bundleBuilder", bundleBuilder);
 
     if (!bundleBuilder) {
         throw new Response(null, {
@@ -52,10 +55,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    // const { admin, session } = await authenticate.admin(request);
 
-    const formData = await request.formData();
-    const action = formData.get("action");
+    // const formData = await request.formData();
+    // const action = formData.get("action");
 
     return json(
         {
