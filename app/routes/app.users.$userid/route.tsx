@@ -1,36 +1,15 @@
-import { useNavigation, json, useLoaderData, Link, useNavigate, Outlet, useParams, redirect } from "@remix-run/react";
+import { useNavigation, json, useLoaderData, Link, useNavigate, Outlet, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import {
-    Page,
-    Card,
-    BlockStack,
-    SkeletonPage,
-    Text,
-    SkeletonBodyText,
-    Divider,
-    FooterHelp,
-    CalloutCard,
-    Badge,
-    Banner,
-    Box,
-    Button,
-    ButtonGroup,
-    DataTable,
-    EmptyState,
-    MediaCard,
-    Spinner,
-    VideoThumbnail,
-} from "@shopify/polaris";
+import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, FooterHelp, Banner, Box, Button, MediaCard, VideoThumbnail } from "@shopify/polaris";
 import { authenticate } from "~/shopify.server";
 import { JsonData } from "@adminBackend/service/dto/jsonData";
-import { useAsyncSubmit } from "~/hooks/useAsyncSubmit";
 import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
-import { ExternalIcon, PlusIcon } from "@shopify/polaris-icons";
-import { GapBetweenSections, GapInsideSection, bundlePagePreviewKey } from "~/constants";
+import { ExternalIcon } from "@shopify/polaris-icons";
+import { GapBetweenSections, GapInsideSection } from "~/constants";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    const { session, admin } = await authenticate.admin(request);
+    const { session, redirect } = await authenticate.admin(request);
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
@@ -43,7 +22,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    const { redirect, session } = await authenticate.admin(request);
 
     const formData = await request.formData();
     const action = formData.get("action");

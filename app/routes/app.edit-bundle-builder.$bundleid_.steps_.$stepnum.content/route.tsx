@@ -6,9 +6,10 @@ import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, ButtonGro
 import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, LargeGapBetweenSections } from "../../constants";
-import { BundleStep, ContentInput, StepType } from "@prisma/client";
-import { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
-import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
+import type { BundleStep, ContentInput } from "@prisma/client";
+import type { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
+import type { error } from "../../adminBackend/service/dto/jsonData";
+import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import ContentStepInputs from "~/components/contentStepInputs";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import bundleBuilderContentStepRepository from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderContentStepRepository";
@@ -19,7 +20,7 @@ import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    const { session } = await authenticate.admin(request);
 
     console.log("I'm on stepnum.content loader");
 

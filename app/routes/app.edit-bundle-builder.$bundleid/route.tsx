@@ -10,7 +10,7 @@ import styles from "./route.module.css";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    const { session } = await authenticate.admin(request);
 
     console.log("I'm on bundleID loader");
 
@@ -36,10 +36,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    // const { admin, session } = await authenticate.admin(request);
 
-    const formData = await request.formData();
-    const action = formData.get("action");
+    // const formData = await request.formData();
+    // const action = formData.get("action");
 
     console.log("I'm on bundleID", action);
 

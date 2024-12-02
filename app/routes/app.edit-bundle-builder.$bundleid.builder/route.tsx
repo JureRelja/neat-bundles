@@ -1,4 +1,4 @@
-import { json, redirect } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { Link, useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
@@ -48,7 +48,7 @@ import styles from "./route.module.css";
 import { AuthorizationCheck } from "../../adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { session } = await authenticate.admin(request);
+    const { session, redirect } = await authenticate.admin(request);
 
     console.log("I'm on bundleId.builder, loader");
 
@@ -83,8 +83,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-    console.log(request);
-    const { admin, session } = await authenticate.admin(request);
+    const { admin, session, redirect } = await authenticate.admin(request);
 
     const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
 
@@ -100,8 +99,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
     const formData = await request.formData();
     const action = formData.get("action");
-
-    console.log("I'm on bundleid.builder", action);
 
     switch (action) {
         case "deleteBundle": {

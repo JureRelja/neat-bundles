@@ -1,4 +1,4 @@
-import { json, redirect } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { useParams, useSubmit } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { BlockStack, Text, InlineError, Box, InlineGrid, TextField } from "@shopify/polaris";
@@ -16,7 +16,7 @@ import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCh
 import type { ProductStepDataDto } from "~/adminBackend/service/dto/ProductStepDataDto";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { session } = await authenticate.admin(request);
+    const { session, redirect } = await authenticate.admin(request);
 
     const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
 

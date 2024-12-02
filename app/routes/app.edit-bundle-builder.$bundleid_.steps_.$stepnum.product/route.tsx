@@ -1,4 +1,4 @@
-import { json, redirect } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useNavigation, useLoaderData, useParams, useActionData, useFetcher } from "@remix-run/react";
 import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
@@ -6,9 +6,10 @@ import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, InlineGri
 import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, HorizontalGap, LargeGapBetweenSections } from "../../constants";
-import { BundleStep, Product } from "@prisma/client";
-import { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
-import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
+import type { BundleStep, Product } from "@prisma/client";
+import type { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
+import type { error } from "../../adminBackend/service/dto/jsonData";
+import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import ResourcePicker from "~/components/resourcePicer";
 import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
 import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
@@ -20,7 +21,7 @@ import { bundleBuilderStepService } from "~/adminBackend/service/impl/bundleBuil
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    const { session } = await authenticate.admin(request);
 
     const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
 
@@ -48,7 +49,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-    const { session } = await authenticate.admin(request);
+    const { session, redirect } = await authenticate.admin(request);
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
     if (!user) return redirect("/app");

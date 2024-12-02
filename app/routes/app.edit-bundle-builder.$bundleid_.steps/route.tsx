@@ -1,24 +1,24 @@
+import type { BundleStep } from "@prisma/client";
 import { StepType } from "@prisma/client";
-import { json, redirect } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { authenticate } from "../../shopify.server";
 import db from "../../db.server";
-import { BundleStep } from "@prisma/client";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
-import { BundleStepContent, BundleStepProduct } from "@adminBackend/service/dto/BundleStep";
+import type { BundleStepContent, BundleStepProduct } from "@adminBackend/service/dto/BundleStep";
 import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 import { ApiCacheKeyService } from "@adminBackend/service/utils/ApiCacheKeyService";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { bundleBuilderStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderStepRepository";
 import { bundleBuilderStepsService } from "~/adminBackend/service/impl/BundleBuilderStepsService";
-import { ProductStepDataDto } from "~/adminBackend/service/dto/ProductStepDataDto";
-import { ContentStepDataDto } from "~/adminBackend/service/dto/ContentStepDataDto";
+import type { ProductStepDataDto } from "~/adminBackend/service/dto/ProductStepDataDto";
+import type { ContentStepDataDto } from "~/adminBackend/service/dto/ContentStepDataDto";
 import { bundleBuilderProductStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderProductStepService";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 import { bundleBuilderContentStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderContentStepService";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    const { redirect, session } = await authenticate.admin(request);
 
     const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
 
@@ -41,7 +41,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-    const { session } = await authenticate.admin(request);
+    const { session, redirect } = await authenticate.admin(request);
 
     const formData = await request.formData();
     const action = formData.get("action") as string;

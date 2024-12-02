@@ -1,23 +1,19 @@
-import { json, redirect } from "@remix-run/node";
-import { useFetcher, useLoaderData, useNavigate, useNavigation, useParams } from "@remix-run/react";
+import { json } from "@remix-run/node";
+import { useLoaderData, useNavigate, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { BlockStack, Text, Button, ButtonGroup, Banner, InlineStack, InlineGrid, Divider } from "@shopify/polaris";
-import { useAppBridge } from "@shopify/app-bridge-react";
+import { BlockStack, Text, Button, Banner, InlineGrid, Divider } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
-import { BundleBuilder } from "@prisma/client";
-
-import { useState } from "react";
-import WideButton from "~/components/wideButton";
+import type { BundleBuilder } from "@prisma/client";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
-import { bundlePagePreviewKey, GapBetweenSections, GapInsideSection, LargeGapBetweenSections } from "~/constants";
+import { GapBetweenSections, GapInsideSection, LargeGapBetweenSections } from "~/constants";
 import { EditIcon, ExternalIcon } from "@shopify/polaris-icons";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    const { session, redirect } = await authenticate.admin(request);
 
     const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
 
@@ -55,10 +51,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    // const { admin, session } = await authenticate.admin(request);
 
-    const formData = await request.formData();
-    const action = formData.get("action");
+    // const formData = await request.formData();
+    // const action = formData.get("action");
 
     return json(
         {

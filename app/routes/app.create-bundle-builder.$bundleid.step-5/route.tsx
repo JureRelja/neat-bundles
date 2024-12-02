@@ -1,22 +1,22 @@
-import { json, redirect } from "@remix-run/node";
-import { useFetcher, useLoaderData, useNavigate, useNavigation, useParams, useSubmit } from "@remix-run/react";
+import { json } from "@remix-run/node";
+import { useLoaderData, useParams, useSubmit } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { BlockStack, Text, Button, ButtonGroup, Select, TextField } from "@shopify/polaris";
-import { useAppBridge } from "@shopify/app-bridge-react";
+import { BlockStack, Text, Select, TextField } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
-import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
+import type { error } from "../../adminBackend/service/dto/jsonData";
+import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
-import { BundleBuilder, BundleDiscountType } from "@prisma/client";
+import type { BundleBuilder } from "@prisma/client";
+import { BundleDiscountType } from "@prisma/client";
 import { useState } from "react";
 import WideButton from "~/components/wideButton";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
-import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, LargeGapBetweenSections } from "~/constants";
-import { BundleBuilderClient } from "~/frontend/types/BundleBuilderClient";
+import { GapInsideSection, LargeGapBetweenSections } from "~/constants";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    const { session, redirect } = await authenticate.admin(request);
 
     const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
 
@@ -51,10 +51,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    // const { admin, session } = await authenticate.admin(request);
 
-    const formData = await request.formData();
-    const action = formData.get("action");
+    // const formData = await request.formData();
+    // const action = formData.get("action");
 
     return json(
         {

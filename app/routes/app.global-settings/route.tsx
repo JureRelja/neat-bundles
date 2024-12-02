@@ -1,24 +1,7 @@
-import { json, redirect } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Link, useSubmit } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import {
-    Page,
-    Card,
-    Button,
-    BlockStack,
-    Text,
-    Box,
-    SkeletonPage,
-    SkeletonBodyText,
-    InlineGrid,
-    Divider,
-    FooterHelp,
-    Banner,
-    Tooltip,
-    ChoiceList,
-    Icon,
-    InlineStack,
-} from "@shopify/polaris";
+import { Page, Card, Button, BlockStack, Text, Box, SkeletonPage, SkeletonBodyText, InlineGrid, Divider, FooterHelp, Banner, Tooltip, InlineStack } from "@shopify/polaris";
 import { SaveBar, useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
 import { BigGapBetweenSections, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, LargeGapBetweenSections } from "../../constants";
@@ -27,7 +10,7 @@ import { useNavigateSubmit } from "../../hooks/useNavigateSubmit";
 import globalSettingsRepository from "~/adminBackend/repository/impl/GlobalSettingsRepository";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import bundleBuilderRepository from "~/adminBackend/repository/impl/BundleBuilderRepository";
-import { GlobalSettings } from "@prisma/client";
+import type { GlobalSettings } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { DesktopIcon, MobileIcon } from "@shopify/polaris-icons";
 import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
@@ -40,7 +23,7 @@ import RadioInput from "./imageRadioInput";
 import styles from "./route.module.css";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    const { redirect, session } = await authenticate.admin(request);
 
     const [globalSettings, user] = await Promise.all([globalSettingsRepository.getSettingsByStoreUrl(session.shop), userRepository.getUserByStoreUrl(session.shop)]);
 
@@ -59,7 +42,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    const { session } = await authenticate.admin(request);
 
     const formData = await request.formData();
     const action = formData.get("action");

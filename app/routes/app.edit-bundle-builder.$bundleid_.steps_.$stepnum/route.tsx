@@ -1,16 +1,18 @@
 import { json, redirect } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { useNavigation, Outlet, Link, useLoaderData, useNavigate, useParams } from "@remix-run/react";
-import { Badge, BlockStack, Card, FooterHelp, Page, Text, SkeletonPage } from "@shopify/polaris";
+import { Badge, BlockStack, FooterHelp, Page, SkeletonPage } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
-import { StepType, BundleStep } from "@prisma/client";
-import { error, JsonData } from "../../adminBackend/service/dto/jsonData";
+import type { BundleStep } from "@prisma/client";
+import { StepType } from "@prisma/client";
+import type { error } from "../../adminBackend/service/dto/jsonData";
+import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { bundleBuilderStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderStepRepository";
 import { bundleBuilderProductStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderProductStepService";
-import { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
+import type { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
 import { bundleBuilderStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderStepService";
 import { bundleBuilderContentStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderContentStepService";
 import { bundleBuilderStepsService } from "~/adminBackend/service/impl/BundleBuilderStepsService";
@@ -18,7 +20,7 @@ import { GapBetweenSections } from "~/constants";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    const { session } = await authenticate.admin(request);
 
     console.log("I'm on stepNum.product loader");
 
@@ -44,7 +46,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-    const { session } = await authenticate.admin(request);
+    const { session, redirect } = await authenticate.admin(request);
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
     if (!user) return redirect("/app");

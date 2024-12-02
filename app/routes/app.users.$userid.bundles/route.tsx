@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-key */
-import { useNavigation, json, useLoaderData, Link, redirect, useFetcher, useSubmit, isRouteErrorResponse, useRouteError } from "@remix-run/react";
+import { useNavigation, json, useLoaderData, Link, useFetcher, useSubmit, isRouteErrorResponse, useRouteError } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Card, Button, BlockStack, EmptyState, Text, Box, SkeletonPage, SkeletonBodyText, DataTable, ButtonGroup, Badge, Spinner, InlineStack, TextField } from "@shopify/polaris";
 import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from "@shopify/polaris-icons";
@@ -20,7 +20,7 @@ import type { ShopifyBundleBuilderPageRepository } from "~/adminBackend/reposito
 import shopifyBundleBuilderPageGraphql from "@adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    const { session } = await authenticate.admin(request);
+    const { session, redirect } = await authenticate.admin(request);
 
     console.log("I'm on bundles loader");
 
@@ -59,7 +59,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    const { admin, session, redirect } = await authenticate.admin(request);
 
     const formData = await request.formData();
     const action = formData.get("action");

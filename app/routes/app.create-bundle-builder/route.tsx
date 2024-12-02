@@ -1,5 +1,5 @@
-import { json, redirect } from "@remix-run/node";
-import { Link, Outlet, useLoaderData, useNavigation, useParams, useSubmit } from "@remix-run/react";
+import { json } from "@remix-run/node";
+import { Link, Outlet, useLoaderData, useNavigation } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Page, Card, BlockStack, FooterHelp, Divider, Spinner } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
@@ -7,11 +7,11 @@ import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
-import { BundleBuilder } from "@prisma/client";
+import type { BundleBuilder } from "@prisma/client";
 import { GapBetweenSections } from "~/constants";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    const { session, redirect } = await authenticate.admin(request);
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
 
@@ -43,10 +43,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-    const { admin, session } = await authenticate.admin(request);
+    // const { admin, session } = await authenticate.admin(request);
 
-    const formData = await request.formData();
-    const action = formData.get("action");
+    // const formData = await request.formData();
+    // const action = formData.get("action");
 
     return json(
         {
