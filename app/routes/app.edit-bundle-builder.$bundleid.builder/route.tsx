@@ -54,6 +54,8 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 
     const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
 
+    console.log("isAuthorized", isAuthorized);
+
     if (!isAuthorized) {
         throw new Response(null, {
             status: 404,
