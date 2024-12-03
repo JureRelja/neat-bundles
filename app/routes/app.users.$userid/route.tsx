@@ -180,7 +180,8 @@ export default function Index() {
                                 </Banner>
 
                                 <FooterHelp>
-                                    Are you stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
+                                    Are you stuck? <Link to="/app/edit-bundle-builder/7/builder">Get help</Link> from us, or{" "}
+                                    <Link to="/app/feature-request">suggest new features</Link>.
                                 </FooterHelp>
                             </BlockStack>
                         </BlockStack>
