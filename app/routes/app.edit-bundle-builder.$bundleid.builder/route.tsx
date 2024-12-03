@@ -32,7 +32,7 @@ import { BundlePricing, BundleDiscountType } from "@prisma/client";
 import type { BundleBuilder } from "@prisma/client";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import type { error } from "../../adminBackend/service/dto/jsonData";
-import { useNavigateSubmit } from "../../hooks/useNavigateSubmit";
+import { useNavigateSubmit } from "../../frontend/hooks/useNavigateSubmit";
 import userRepository from "../../adminBackend/repository/impl/UserRepository";
 import type { BundleBuilderClient } from "../../frontend/types/BundleBuilderClient";
 import BundleBuilderSteps from "./bundleBuilderSteps";
