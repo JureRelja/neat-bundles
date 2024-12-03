@@ -1,23 +1,7 @@
 /* eslint-disable react/jsx-key */
-import { useNavigation, json, useLoaderData, useFetcher, useSubmit, isRouteErrorResponse, useRouteError } from "@remix-run/react";
+import { useNavigation, json, useLoaderData, useFetcher, useSubmit, Link, useNavigate } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import {
-    Card,
-    Button,
-    BlockStack,
-    EmptyState,
-    Text,
-    Link,
-    Box,
-    SkeletonPage,
-    SkeletonBodyText,
-    DataTable,
-    ButtonGroup,
-    Badge,
-    Spinner,
-    InlineStack,
-    TextField,
-} from "@shopify/polaris";
+import { Card, Button, BlockStack, EmptyState, Text, Box, SkeletonPage, SkeletonBodyText, DataTable, ButtonGroup, Badge, Spinner, InlineStack, TextField } from "@shopify/polaris";
 import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from "@shopify/polaris-icons";
 import { authenticate } from "../../shopify.server";
 import db from "../../db.server";
@@ -160,7 +144,7 @@ export default function Index() {
     const isSubmitting = nav.state === "submitting";
     const fetcher = useFetcher();
     const submit = useSubmit();
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
 
     const loaderResponse = useLoaderData<typeof loader>();
 
@@ -211,9 +195,9 @@ export default function Index() {
         if (bundleForDelete) setShowBundleDeleteConfirmModal(true);
     }, [bundleForDelete]);
 
-    // const handleEditBundleBuilder = (bundleBuilderId: number) => {
-    //     navigate(`/app/edit-bundle-builder/${bundleBuilderId}/builder`);
-    // };
+    const handleEditBundleBuilder = (bundleBuilderId: number) => {
+        navigate(`/app/edit-bundle-builder/${bundleBuilderId}/builder`);
+    };
 
     return (
         <>
@@ -317,7 +301,7 @@ export default function Index() {
                             <BlockStack gap={GapBetweenSections}>
                                 <Text as="p">You are on the 'Basic' plan which only allows you to have up to 2 bundles at one time.</Text>
                                 <Text as="p" variant="headingSm">
-                                    If you want to create more bundles, go to <Link url={"/app/billing"}>billing</Link> and upgrade to paid plan.
+                                    If you want to create more bundles, go to <Link to={"/app/billing"}>billing</Link> and upgrade to paid plan.
                                 </Text>
                             </BlockStack>
                         </Box>
@@ -354,7 +338,11 @@ export default function Index() {
                                                 </Text>,
 
                                                 //
-                                                <Link url={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
+                                                <Link
+                                                    to="#"
+                                                    onClick={() => {
+                                                        handleEditBundleBuilder(bundleBuilder.id);
+                                                    }}>
                                                     <Text as="p" tone="base">
                                                         {bundleBuilder.title}
                                                     </Text>
@@ -362,7 +350,7 @@ export default function Index() {
                                                 //
                                                 bundleBuilder.steps.length,
                                                 //
-                                                <Link url={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
+                                                <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
                                                     {bundleBuilder.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
                                                 </Link>,
                                                 //
@@ -434,29 +422,3 @@ export default function Index() {
         </>
     );
 }
-
-// export function ErrorBoundary() {
-//     const error = useRouteError();
-
-//     if (isRouteErrorResponse(error)) {
-//         return (
-//             <div>
-//                 <h1>
-//                     {error.status} {error.statusText}
-//                 </h1>
-//                 <p>{error.data}</p>
-//             </div>
-//         );
-//     } else if (error instanceof Error) {
-//         return (
-//             <div>
-//                 <h1>Error</h1>
-//                 <p>{error.message}</p>
-//                 <p>The stack trace is:</p>
-//                 <pre>{error.stack}</pre>
-//             </div>
-//         );
-//     } else {
-//         return <h1>Unknown Error</h1>;
-//     }
-// }
