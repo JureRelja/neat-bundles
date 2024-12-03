@@ -3,8 +3,8 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, FooterHelp, Box, Button } from "@shopify/polaris";
 import { authenticate } from "~/shopify.server";
 import { JsonData } from "@adminBackend/service/dto/jsonData";
-import { useAsyncSubmit } from "~/frontend/hooks/useAsyncSubmit";
-import { useNavigateSubmit } from "~/frontend/hooks/useNavigateSubmit";
+import { useAsyncSubmit } from "~/hooks/useAsyncSubmit";
+import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, admin } = await authenticate.admin(request);

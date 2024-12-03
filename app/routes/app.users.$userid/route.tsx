@@ -3,7 +3,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, FooterHelp, Banner, Box, Button, MediaCard, VideoThumbnail } from "@shopify/polaris";
 import { authenticate } from "~/shopify.server";
 import { JsonData } from "@adminBackend/service/dto/jsonData";
-import { useNavigateSubmit } from "~/frontend/hooks/useNavigateSubmit";
+import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
 import { ExternalIcon } from "@shopify/polaris-icons";
 import { GapBetweenSections, GapInsideSection } from "~/constants";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";

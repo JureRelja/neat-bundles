@@ -6,7 +6,7 @@ import { SaveBar, useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
 import { BigGapBetweenSections, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, LargeGapBetweenSections } from "../../constants";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
-import { useNavigateSubmit } from "../../frontend/hooks/useNavigateSubmit";
+import { useNavigateSubmit } from "../../hooks/useNavigateSubmit";
 import globalSettingsRepository from "~/adminBackend/repository/impl/GlobalSettingsRepository";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import bundleBuilderRepository from "~/adminBackend/repository/impl/BundleBuilderRepository";

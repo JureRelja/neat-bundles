@@ -1,7 +1,7 @@
 import { json, redirect } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useNavigation, useLoaderData, useParams, useActionData } from "@remix-run/react";
-import { useNavigateSubmit } from "~/frontend/hooks/useNavigateSubmit";
+import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
 import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, ButtonGroup, Layout, Banner, Divider } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
