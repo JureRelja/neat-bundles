@@ -48,6 +48,8 @@ function parseMainPageBody(content: string) {
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+    console.log("installation loader", request);
+
     const { session, admin } = await authenticate.admin(request);
 
     const url = new URL(request.url);

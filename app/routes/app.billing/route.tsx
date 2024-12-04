@@ -20,6 +20,7 @@ export type BillingPlan = {
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+    console.log("billing loader", request);
     const { billing, session, redirect } = await authenticate.admin(request);
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
@@ -211,7 +212,7 @@ export default function Index() {
         const form = new FormData();
 
         form.append("action", "CANCEL");
-        fetcher.submit(form, { method: "POST", navigate: false });
+        fetcher.submit(form, { method: "POST" });
     };
 
     //
@@ -246,7 +247,7 @@ export default function Index() {
         const form = new FormData();
 
         form.append("action", newPlan.planId);
-        fetcher.submit(form, { method: "POST", navigate: false });
+        fetcher.submit(form, { method: "POST" });
     };
 
     return (
