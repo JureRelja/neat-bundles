@@ -20,7 +20,7 @@
         "prisma": "prisma",
         "graphql-codegen": "graphql-codegen",
         "vite": "vite",
-        "ngrok-tunnel": "ngrok http --domain=purely-decent-pup.ngrok-free.app 80",
+        "ngrok-tunnel": "ngrok http --domain=purely-decent-pup.ngrok-free.app 3000",
         "codegen": "graphql-codegen --config codegen.ts"
     },
     "type": "module",
