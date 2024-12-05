@@ -19,6 +19,7 @@ import { bundleBuilderProductStepRepository } from "~/adminBackend/repository/im
 import { bundleBuilderProductStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderProductStepService";
 import { bundleBuilderStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderStepService";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
+import { ProductClient } from "~/types/ProductClient";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { session } = await authenticate.admin(request);
@@ -163,7 +164,7 @@ export default function Index() {
     const [stepData, setStepData] = useState<BundleStepProduct>(errors?.length === 0 || !errors ? serverStepData : submittedStepData);
 
     //update selected products
-    const updateSelectedProducts = (products: Product[]) => {
+    const updateSelectedProducts = (products: ProductClient[]) => {
         setStepData((stepData: BundleStepProduct) => {
             if (!stepData.productInput) return stepData;
 
@@ -192,7 +193,7 @@ export default function Index() {
                 return;
             }
         });
-    }, [isLoading]);
+    }, [isLoading, errors]);
 
     //Update field error on change
     const updateFieldErrorHandler = (fieldId: string) => {
@@ -286,11 +287,11 @@ export default function Index() {
                                                     <input
                                                         name="products[]"
                                                         type="hidden"
-                                                        value={stepData.productInput?.products.map((product: Product) => product.shopifyProductId).join(",")}
+                                                        value={stepData.productInput?.products.map((product: ProductClient) => product.shopifyProductId).join(",")}
                                                     />
                                                     <ResourcePicker
                                                         stepId={stepData.id}
-                                                        selectedProducts={(stepData.productInput?.products as Product[]) || []}
+                                                        selectedProducts={(stepData.productInput?.products as ProductClient[]) || []}
                                                         updateSelectedProducts={updateSelectedProducts}
                                                     />
                                                     <Text as="p" variant="bodyMd" tone="subdued">

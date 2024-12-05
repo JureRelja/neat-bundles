@@ -1,4 +1,4 @@
-import { json, redirect } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { useNavigation, Outlet, Link, useLoaderData, useNavigate, useParams } from "@remix-run/react";
 import { Badge, BlockStack, FooterHelp, Page, SkeletonPage } from "@shopify/polaris";
@@ -18,6 +18,7 @@ import { bundleBuilderContentStepService } from "~/adminBackend/service/impl/bun
 import { bundleBuilderStepsService } from "~/adminBackend/service/impl/BundleBuilderStepsService";
 import { GapBetweenSections } from "~/constants";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
+import { StepTypeClient } from "~/types/StepTypeClient";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { session } = await authenticate.admin(request);
@@ -262,7 +263,7 @@ export default function Index() {
                 <SkeletonPage primaryAction></SkeletonPage>
             ) : (
                 <Page
-                    titleMetadata={stepData.stepType === StepType.PRODUCT ? <Badge tone="warning">Product step</Badge> : <Badge tone="magic">Content step</Badge>}
+                    titleMetadata={stepData.stepType === StepTypeClient.PRODUCT ? <Badge tone="warning">Product step</Badge> : <Badge tone="magic">Content step</Badge>}
                     backAction={{
                         content: "Products",
                         onAction: async () => {
