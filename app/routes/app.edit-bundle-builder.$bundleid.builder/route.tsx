@@ -28,8 +28,10 @@ import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from "../../constants";
 import db from "../../db.server";
-import { BundlePricing, BundleDiscountType } from "@prisma/client";
-import type { BundleBuilder } from "@prisma/client";
+import { BundlePricingClient } from "~/types/BundlePricingClient";
+import { BundleDiscountTypeClient } from "~/types/BundleDiscountTypeClient";
+import { BundlePricing } from "@prisma/client";
+import type { BundleBuilder, BundleDiscountType } from "@prisma/client";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import type { error } from "../../adminBackend/service/dto/jsonData";
 import { useNavigateSubmit } from "../../hooks/useNavigateSubmit";
@@ -704,7 +706,7 @@ export default function Index() {
                                                             choices={[
                                                                 {
                                                                     label: "Calculated price ",
-                                                                    value: BundlePricing.CALCULATED,
+                                                                    value: BundlePricingClient.CALCULATED,
                                                                     helpText: (
                                                                         <Tooltip
                                                                             width="wide"
@@ -730,7 +732,7 @@ export default function Index() {
                                                                 },
                                                                 {
                                                                     label: "Fixed price",
-                                                                    value: BundlePricing.FIXED,
+                                                                    value: BundlePricingClient.FIXED,
                                                                     helpText: (
                                                                         <Tooltip
                                                                             width="wide"
@@ -782,7 +784,7 @@ export default function Index() {
                                                                 setBundleState((prevBundle: BundleBuilderClient) => {
                                                                     return {
                                                                         ...prevBundle,
-                                                                        pricing: newPricing[0] as BundlePricing,
+                                                                        pricing: newPricing[0] as BundlePricingClient,
                                                                     };
                                                                 });
                                                             }}
@@ -803,16 +805,16 @@ export default function Index() {
                                                                 options={[
                                                                     {
                                                                         label: "Percentage (e.g. 25% off)",
-                                                                        value: BundleDiscountType.PERCENTAGE,
+                                                                        value: BundleDiscountTypeClient.PERCENTAGE,
                                                                     },
                                                                     {
                                                                         label: "Fixed (e.g. 10$ off)",
-                                                                        value: BundleDiscountType.FIXED,
+                                                                        value: BundleDiscountTypeClient.FIXED,
                                                                     },
 
                                                                     {
                                                                         label: "No discount",
-                                                                        value: BundleDiscountType.NO_DISCOUNT,
+                                                                        value: BundleDiscountTypeClient.NO_DISCOUNT,
                                                                     },
                                                                 ]}
                                                                 value={bundleState.discountType}
@@ -820,7 +822,7 @@ export default function Index() {
                                                                     setBundleState((prevBundle: BundleBuilderClient) => {
                                                                         return {
                                                                             ...prevBundle,
-                                                                            discountType: newDiscountType as BundleDiscountType,
+                                                                            discountType: newDiscountType as BundleDiscountTypeClient,
                                                                         };
                                                                     });
                                                                 }}
@@ -833,7 +835,7 @@ export default function Index() {
                                                                 inputMode="numeric"
                                                                 disabled={bundleState.discountType === "NO_DISCOUNT"}
                                                                 name={`discountValue`}
-                                                                prefix={bundleState.discountType === BundleDiscountType.PERCENTAGE ? "%" : "$"}
+                                                                prefix={bundleState.discountType === BundleDiscountTypeClient.PERCENTAGE ? "%" : "$"}
                                                                 min={0}
                                                                 max={100}
                                                                 value={bundleState.discountValue.toString()}
