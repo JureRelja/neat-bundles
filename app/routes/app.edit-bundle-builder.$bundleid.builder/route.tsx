@@ -34,7 +34,7 @@ import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import type { error } from "../../adminBackend/service/dto/jsonData";
 import { useNavigateSubmit } from "../../hooks/useNavigateSubmit";
 import userRepository from "../../adminBackend/repository/impl/UserRepository";
-import type { BundleBuilderClient } from "../../frontend/types/BundleBuilderClient";
+import type { BundleBuilderClient } from "../../types/BundleBuilderClient";
 import BundleBuilderSteps from "./bundleBuilderSteps";
 import { bundleBuilderStepRepository } from "../../adminBackend//repository/impl/bundleBuilderStep/BundleBuilderStepRepository";
 import bundleBuilderRepository, { BundleBuilderRepository } from "../../adminBackend//repository/impl/BundleBuilderRepository";
@@ -546,7 +546,7 @@ export default function Index() {
                 return;
             }
         });
-    }, [isLoading]);
+    }, [isLoading, errors]);
 
     //Update field error on change
     const updateFieldErrorHandler = (fieldId: string) => {

@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import './toogleSwitch.css';
+import "./toogleSwitch.css";
 
 export default function ToggleSwitch({ label, labelHidden = true, onChange }: { labelHidden: boolean; label: string; onChange: () => unknown }) {
     return (

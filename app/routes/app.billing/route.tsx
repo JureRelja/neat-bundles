@@ -4,13 +4,14 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, InlineStack, Button, Banner, Spinner, Box } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
-import PricingPlanComponent from "./pricingPlan";
+// import PricingPlanComponent from "./pricingPlan";
 import { GapBetweenSections, GapInsideSection, LargeGapBetweenSections, BillingPlanIdentifiers } from "~/constants";
 import ToggleSwitch from "./toogleSwitch";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import styles from "./route.module.css";
 import { Modal, TitleBar } from "@shopify/app-bridge-react";
-import { PricingPlan } from "@prisma/client";
+import { PricingPlanClient } from "~/types/PricingPlanClient";
+import PricingPlanComponent from "./pricingPlan";
 
 export type PricingInterval = "MONTHLY" | "YEARLY";
 
@@ -20,7 +21,6 @@ export type BillingPlan = {
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    console.log("billing loader", request);
     const { billing, session, redirect } = await authenticate.admin(request);
 
     const user = await userRepository.getUserByStoreUrl(session.shop);
@@ -192,7 +192,7 @@ export default function Index() {
     const fetcher = useFetcher();
     const navigate = useNavigate();
 
-    const activeSubscription: BillingPlan = useLoaderData<typeof loader>();
+    const activeSubscription = useLoaderData<typeof loader>();
 
     //
     //pricing interval
@@ -367,8 +367,8 @@ export default function Index() {
                                     <PricingPlanComponent
                                         activePlan={activeSubscription.planId === BillingPlanIdentifiers.FREE}
                                         subscriptionIdentifier={{
-                                            yearly: { planName: PricingPlan.FREE, planId: BillingPlanIdentifiers.FREE },
-                                            monthly: { planName: PricingPlan.FREE, planId: BillingPlanIdentifiers.FREE },
+                                            yearly: { planName: PricingPlanClient.FREE, planId: BillingPlanIdentifiers.FREE },
+                                            monthly: { planName: PricingPlanClient.FREE, planId: BillingPlanIdentifiers.FREE },
                                         }}
                                         handleSubscription={handleSubscription}
                                         title={{ yearly: "Development", monthly: "Development" }}
@@ -377,14 +377,14 @@ export default function Index() {
                                         pricingInterval={pricingInterval}
                                         features={["All features", "For development stores only"]}
                                     />
-                                    {/* Basic plan */}
-                                    <PricingPlanComponent
+                                    {/* Basic plan  */}
+                                    {/* <PricingPlanComponent
                                         activePlan={
                                             activeSubscription.planId === BillingPlanIdentifiers.BASIC_MONTHLY || activeSubscription.planId === BillingPlanIdentifiers.BASIC_YEARLY
                                         }
                                         subscriptionIdentifier={{
-                                            yearly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.BASIC_YEARLY },
-                                            monthly: { planName: PricingPlan.BASIC, planId: BillingPlanIdentifiers.BASIC_MONTHLY },
+                                            yearly: { planName: PricingPlanClient.BASIC, planId: BillingPlanIdentifiers.BASIC_YEARLY },
+                                            monthly: { planName: PricingPlanClient.BASIC, planId: BillingPlanIdentifiers.BASIC_MONTHLY },
                                         }}
                                         handleSubscription={handleSubscription}
                                         title={{ yearly: "Basic (yearly)", monthly: "Basic (monthly)" }}
@@ -399,15 +399,15 @@ export default function Index() {
                                             "Customize colors",
                                             "Customer support",
                                         ]}
-                                    />
-                                    {/* Pro plan */}
-                                    <PricingPlanComponent
+                                    /> */}
+                                    {/* Pro plan*/}
+                                    {/* <PricingPlanComponent
                                         activePlan={
                                             activeSubscription.planId === BillingPlanIdentifiers.PRO_MONTHLY || activeSubscription.planId === BillingPlanIdentifiers.PRO_YEARLY
                                         }
                                         subscriptionIdentifier={{
-                                            yearly: { planName: PricingPlan.PRO, planId: BillingPlanIdentifiers.PRO_YEARLY },
-                                            monthly: { planName: PricingPlan.PRO, planId: BillingPlanIdentifiers.PRO_MONTHLY },
+                                            yearly: { planName: PricingPlanClient.PRO, planId: BillingPlanIdentifiers.PRO_YEARLY },
+                                            monthly: { planName: PricingPlanClient.PRO, planId: BillingPlanIdentifiers.PRO_MONTHLY },
                                         }}
                                         handleSubscription={handleSubscription}
                                         trialDays={30}
@@ -424,7 +424,7 @@ export default function Index() {
                                             "Customize colors",
                                             "Priority support",
                                         ]}
-                                    />
+                                    /> */}
                                 </InlineStack>
 
                                 {/* Current plan */}
@@ -448,7 +448,6 @@ export default function Index() {
                                     Note: The plans displayed reflect current pricing. If you previously signed up at a different price, you will continue to be charged your
                                     original price until you change your plan.
                                 </Text>
-
                                 <Divider />
                             </BlockStack>
                         </div>
