@@ -4,7 +4,6 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, InlineStack, Button, Banner, Spinner, Box } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
-// import PricingPlanComponent from "./pricingPlan";
 import { GapBetweenSections, GapInsideSection, LargeGapBetweenSections, BillingPlanIdentifiers } from "~/constants";
 import ToggleSwitch from "./toogleSwitch";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
@@ -12,13 +11,8 @@ import styles from "./route.module.css";
 import { Modal, TitleBar } from "@shopify/app-bridge-react";
 import { PricingPlanClient } from "~/types/PricingPlanClient";
 import PricingPlanComponent from "./pricingPlan";
-
-export type PricingInterval = "MONTHLY" | "YEARLY";
-
-export type BillingPlan = {
-    planName: string;
-    planId: string;
-};
+import type { PricingInterval } from "~/types/PricingInterval";
+import type { BillingPlan } from "~/types/BillingPlan";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { billing, session, redirect } = await authenticate.admin(request);
@@ -378,7 +372,7 @@ export default function Index() {
                                         features={["All features", "For development stores only"]}
                                     />
                                     {/* Basic plan  */}
-                                    {/* <PricingPlanComponent
+                                    <PricingPlanComponent
                                         activePlan={
                                             activeSubscription.planId === BillingPlanIdentifiers.BASIC_MONTHLY || activeSubscription.planId === BillingPlanIdentifiers.BASIC_YEARLY
                                         }
@@ -399,9 +393,9 @@ export default function Index() {
                                             "Customize colors",
                                             "Customer support",
                                         ]}
-                                    /> */}
+                                    />
                                     {/* Pro plan*/}
-                                    {/* <PricingPlanComponent
+                                    <PricingPlanComponent
                                         activePlan={
                                             activeSubscription.planId === BillingPlanIdentifiers.PRO_MONTHLY || activeSubscription.planId === BillingPlanIdentifiers.PRO_YEARLY
                                         }
@@ -424,7 +418,7 @@ export default function Index() {
                                             "Customize colors",
                                             "Priority support",
                                         ]}
-                                    /> */}
+                                    />
                                 </InlineStack>
 
                                 {/* Current plan */}
