@@ -1,6 +1,7 @@
+/* eslint-disable react/jsx-key */
 import type { BundleStep, User } from "@prisma/client";
-import { StepType } from "@prisma/client";
-import { useNavigate, useNavigation, useParams, useFetcher, useSubmit, useRevalidator, Link } from "@remix-run/react";
+import { StepTypeClient } from "~/types/StepTypeClient";
+import { useNavigate, useNavigation, useParams, useFetcher, useSubmit, Link } from "@remix-run/react";
 import { useAppBridge, TitleBar, Modal } from "@shopify/app-bridge-react";
 import {
     SkeletonPage,
@@ -33,7 +34,7 @@ export default function Index({ user, bundleBuilderSteps }: { user: User; bundle
     const params = useParams();
     const fetcher = useFetcher();
     const submit = useSubmit();
-    const revalidator = useRevalidator();
+    // const revalidator = useRevalidator();
 
     const sortedBundleBuilderSteps = bundleBuilderSteps.sort((a, b) => a.stepNumber - b.stepNumber);
 
@@ -277,7 +278,7 @@ export default function Index({ user, bundleBuilderSteps }: { user: User; bundle
                                                         </Text>
                                                     </div>
                                                 </Link>,
-                                                step.stepType === StepType.PRODUCT ? <Badge tone="warning">Product step</Badge> : <Badge tone="magic">Content step</Badge>,
+                                                step.stepType === StepTypeClient.PRODUCT ? <Badge tone="warning">Product step</Badge> : <Badge tone="magic">Content step</Badge>,
                                                 <ButtonGroup>
                                                     <InlineStack align="space-between" blockAlign="stretch">
                                                         {step.stepNumber !== sortedBundleBuilderSteps.length ? (
@@ -312,7 +313,7 @@ export default function Index({ user, bundleBuilderSteps }: { user: User; bundle
                                                         variant="primary"
                                                         onClick={handleNavigationOnUnsavedChanges.bind(
                                                             null,
-                                                            `/app/edit-bundle-builder/${params.bundleid}/steps/${step.stepNumber}/${step.stepType === StepType.PRODUCT ? "product" : "content"}`,
+                                                            `/app/edit-bundle-builder/${params.bundleid}/steps/${step.stepNumber}/${step.stepType === StepTypeClient.PRODUCT ? "product" : "content"}`,
                                                         )}>
                                                         Edit
                                                     </Button>
