@@ -1,4 +1,4 @@
-import { useNavigation, json, useLoaderData, Link, useNavigate, Outlet, useParams } from "@remix-run/react";
+import { useNavigation, json, useLoaderData, Link, Outlet, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Page, Card, BlockStack, SkeletonPage, Text, SkeletonBodyText, Divider, FooterHelp, Banner, Box, Button, MediaCard, VideoThumbnail } from "@shopify/polaris";
 import { authenticate } from "~/shopify.server";
@@ -56,8 +56,6 @@ export default function Index() {
 
     const loaderResponse = useLoaderData<typeof loader>();
     const data = loaderResponse.data;
-
-    const navigate = useNavigate();
 
     return (
         <>

@@ -28,6 +28,7 @@ import { JsonData } from "~/adminBackend/service/dto/jsonData";
 import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
 import type { BundleSettings } from "@prisma/client";
+import type { BundleSettingsClient } from "~/types/BundleSettingsClient";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
@@ -103,7 +104,7 @@ export default function Index() {
     const shopify = useAppBridge();
     const isLoading: boolean = nav.state != "idle";
 
-    const serverSettings: BundleSettings = useLoaderData<typeof loader>().data;
+    const serverSettings: BundleSettingsClient = useLoaderData<typeof loader>().data;
 
     const [settingsState, setSetttingsState] = useState<BundleSettings>(serverSettings);
 

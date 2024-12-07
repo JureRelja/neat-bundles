@@ -19,7 +19,9 @@ import { bundleBuilderProductStepRepository } from "~/adminBackend/repository/im
 import { bundleBuilderProductStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderProductStepService";
 import { bundleBuilderStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderStepService";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
-import { ProductClient } from "~/types/ProductClient";
+import type { ProductClient } from "~/types/ProductClient";
+import type { BundleStepProductClient } from "~/types/BundleStepProductClient";
+import type { StepTypeClient } from "~/types/StepTypeClient";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { session } = await authenticate.admin(request);
@@ -154,18 +156,21 @@ export default function Index() {
     const actionData = useActionData<typeof action>();
 
     //Data that was previously submitted in the from
-    const submittedStepData: BundleStepProduct = actionData?.data as BundleStepProduct;
+    const submittedStepData: BundleStepProductClient = actionData?.data as BundleStepProductClient;
 
     const errors = actionData?.errors as error[]; //Errors from the form submission
 
-    const serverStepData: BundleStepProduct = useLoaderData<typeof loader>().data; //Data that was loaded from the server
+    const serverStepData: BundleStepProductClient = {
+        ...useLoaderData<typeof loader>().data,
+        stepType: useLoaderData<typeof loader>().data.stepType as StepTypeClient,
+    }; //Data that was loaded from the server
 
     //Diplaying previously submitted data if there were errors, otherwise displaying the data that was loaded from the server.
-    const [stepData, setStepData] = useState<BundleStepProduct>(errors?.length === 0 || !errors ? serverStepData : submittedStepData);
+    const [stepData, setStepData] = useState<BundleStepProductClient>(errors?.length === 0 || !errors ? serverStepData : submittedStepData);
 
     //update selected products
     const updateSelectedProducts = (products: ProductClient[]) => {
-        setStepData((stepData: BundleStepProduct) => {
+        setStepData((stepData: BundleStepProductClient) => {
             if (!stepData.productInput) return stepData;
 
             return {
@@ -257,7 +262,7 @@ export default function Index() {
                                                         stepData.productInput?.resourceType as string,
                                                     ]}
                                                     onChange={(selected: string[]) => {
-                                                        setStepData((stepData: BundleStepProduct) => {
+                                                        setStepData((stepData: BundleStepProductClient) => {
                                                         if (!stepData.productInput) return stepData;
 
                                                         return {
@@ -318,7 +323,7 @@ export default function Index() {
                                                                 min={1}
                                                                 value={stepData.productInput?.minProductsOnStep.toString()}
                                                                 onChange={(value) => {
-                                                                    setStepData((stepData: BundleStepProduct) => {
+                                                                    setStepData((stepData: BundleStepProductClient) => {
                                                                         if (!stepData.productInput)
                                                                             return {
                                                                                 ...stepData,
@@ -348,7 +353,7 @@ export default function Index() {
                                                                 min={stepData.productInput?.minProductsOnStep || 1} //Maximum number of products needs to be equal or greater than the minimum number of products
                                                                 value={stepData.productInput?.maxProductsOnStep.toString()}
                                                                 onChange={(value) => {
-                                                                    setStepData((stepData: BundleStepProduct) => {
+                                                                    setStepData((stepData: BundleStepProductClient) => {
                                                                         if (!stepData.productInput) return stepData;
                                                                         return {
                                                                             ...stepData,
@@ -383,7 +388,7 @@ export default function Index() {
                                                             stepData.productInput?.showProductPrice ? "showProductPrice" : "",
                                                         ]}
                                                         onChange={(selectedValues: string[]) => {
-                                                            setStepData((stepData: BundleStepProduct) => {
+                                                            setStepData((stepData: BundleStepProductClient) => {
                                                                 if (!stepData.productInput) return stepData;
                                                                 return {
                                                                     ...stepData,
@@ -418,7 +423,7 @@ export default function Index() {
                                                     value={stepData.title}
                                                     helpText="Customers will see this title when they build a bundle."
                                                     onChange={(newTitle: string) => {
-                                                        setStepData((stepData: BundleStepProduct) => {
+                                                        setStepData((stepData: BundleStepProductClient) => {
                                                             return {
                                                                 ...stepData,
                                                                 title: newTitle,
@@ -436,7 +441,7 @@ export default function Index() {
                                                     name={`stepDescription`}
                                                     helpText="Customers will see this description on this step."
                                                     onChange={(newDesc: string) => {
-                                                        setStepData((stepData: BundleStepProduct) => {
+                                                        setStepData((stepData: BundleStepProductClient) => {
                                                             return {
                                                                 ...stepData,
                                                                 description: newDesc,

@@ -1,5 +1,5 @@
 import { json } from "@remix-run/node";
-import { useLoaderData, useNavigate, useParams } from "@remix-run/react";
+import { useLoaderData, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { BlockStack, Text, Button, Banner, InlineGrid, Divider } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
@@ -65,14 +65,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
-    const navigate = useNavigate();
     const params = useParams();
 
     const loaderData = useLoaderData<typeof loader>();
-
-    const handleNextBtnHandler = () => {
-        navigate(`/app/create-bundle-builder/${params.bundleid}/step-2`);
-    };
 
     return (
         <div className={styles.fadeIn}>

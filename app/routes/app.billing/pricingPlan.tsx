@@ -1,7 +1,9 @@
 import { BlockStack, Box, Button, Card, Divider, Icon, InlineStack, Text } from "@shopify/polaris";
 import { CheckSmallIcon } from "@shopify/polaris-icons";
 import { GapBetweenTitleAndContent, GapInsideSection } from "~/constants";
-import type { BillingPlan, PricingInterval } from "./route";
+import type { PricingInterval } from "../../types/PricingInterval";
+import type { BillingPlan } from "../../types/BillingPlan";
+
 import styles from "./pricingPlan.module.css";
 
 export default function Index({

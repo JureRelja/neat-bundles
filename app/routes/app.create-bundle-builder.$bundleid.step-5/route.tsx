@@ -9,11 +9,11 @@ import styles from "./route.module.css";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
 import type { BundleBuilder } from "@prisma/client";
-import { BundleDiscountType } from "@prisma/client";
 import { useState } from "react";
 import WideButton from "~/components/wideButton";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 import { GapInsideSection, LargeGapBetweenSections } from "~/constants";
+import { BundleDiscountTypeClient } from "~/types/BundleDiscountTypeClient";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { session, redirect } = await authenticate.admin(request);
@@ -70,7 +70,7 @@ export default function Index() {
 
     const loaderData = useLoaderData<typeof loader>();
 
-    const [discountType, setDiscountType] = useState<BundleDiscountType>(loaderData.data.discountType);
+    const [discountType, setDiscountType] = useState<BundleDiscountTypeClient>(loaderData.data.discountType as BundleDiscountTypeClient);
     const [discountValue, setDiscountValue] = useState<number>(loaderData.data.discountValue);
 
     const [errors, setErrors] = useState<error[]>([]);
@@ -116,21 +116,21 @@ export default function Index() {
                             options={[
                                 {
                                     label: "Percentage (e.g. 25% off)",
-                                    value: BundleDiscountType.PERCENTAGE,
+                                    value: BundleDiscountTypeClient.PERCENTAGE,
                                 },
                                 {
                                     label: "Fixed (e.g. 10$ off)",
-                                    value: BundleDiscountType.FIXED,
+                                    value: BundleDiscountTypeClient.FIXED,
                                 },
 
                                 {
                                     label: "No discount",
-                                    value: BundleDiscountType.NO_DISCOUNT,
+                                    value: BundleDiscountTypeClient.NO_DISCOUNT,
                                 },
                             ]}
                             value={discountType}
                             onChange={(newDiscountType: string) => {
-                                setDiscountType(newDiscountType as BundleDiscountType);
+                                setDiscountType(newDiscountType as BundleDiscountTypeClient);
                             }}
                         />
                         <TextField
@@ -140,7 +140,7 @@ export default function Index() {
                             inputMode="numeric"
                             disabled={discountType === "NO_DISCOUNT"}
                             name={`discountValue`}
-                            prefix={discountType === BundleDiscountType.PERCENTAGE ? "%" : "$"}
+                            prefix={discountType === BundleDiscountTypeClient.PERCENTAGE ? "%" : "$"}
                             min={0}
                             max={100}
                             value={discountValue.toString()}

@@ -14,6 +14,7 @@ import { GapBetweenTitleAndContent, GapInsideSection, HorizontalGap } from "~/co
 import WideButton from "~/components/wideButton";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 import type { ProductStepDataDto } from "~/adminBackend/service/dto/ProductStepDataDto";
+import type { ProductClient } from "~/types/ProductClient";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { session, redirect } = await authenticate.admin(request);
@@ -109,7 +110,7 @@ export default function Index() {
     //step data
     const [productSelectionActivated, setProductSelectionActivated] = useState<boolean>(false);
     const [stepTitle, setStepTitle] = useState<string>();
-    const [stepProducts, setStepProducts] = useState<Product[]>([]);
+    const [stepProducts, setStepProducts] = useState<ProductClient[]>([]);
     const [minProducts, setMinProducts] = useState<number>(1);
     const [maxProducts, setMaxProducts] = useState<number>(3);
 

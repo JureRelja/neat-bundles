@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 //Bundle step with only basic resources
 export const bundleStepBasic = {

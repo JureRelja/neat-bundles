@@ -5,7 +5,7 @@ import { JsonData } from "~/adminBackend/service/dto/jsonData";
 import { checkPublicAuth } from "~/adminBackend/service/utils/publicApi.auth";
 import { ApiCacheService } from "../../adminBackend/service/utils/ApiCacheService";
 import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
-import { BundleSettings } from "@prisma/client";
+import type { BundleSettings } from "@prisma/client";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const res = await checkPublicAuth(request); //Public auth check
@@ -21,7 +21,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     //Get query params
     const bundleBuilderId = url.searchParams.get("bundleId");
-    const stepNumber = url.searchParams.get("stepNum");
     const storeUrl = url.searchParams.get("shop") as string;
 
     //Cache aside

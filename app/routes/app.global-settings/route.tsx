@@ -1,12 +1,11 @@
 import { json } from "@remix-run/node";
-import { useActionData, useNavigate, Form, useNavigation, useLoaderData, useParams, Link, useSubmit } from "@remix-run/react";
+import { useNavigate, Form, useNavigation, useLoaderData, Link, useSubmit } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Page, Card, Button, BlockStack, Text, Box, SkeletonPage, SkeletonBodyText, InlineGrid, Divider, FooterHelp, Banner, Tooltip, InlineStack } from "@shopify/polaris";
 import { SaveBar, useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
 import { BigGapBetweenSections, GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, LargeGapBetweenSections } from "../../constants";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
-import { useNavigateSubmit } from "../../hooks/useNavigateSubmit";
 import globalSettingsRepository from "~/adminBackend/repository/impl/GlobalSettingsRepository";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import bundleBuilderRepository from "~/adminBackend/repository/impl/BundleBuilderRepository";
@@ -21,6 +20,7 @@ import normalNavDesktop from "../../assets/navNormalDesktop.png";
 import stickyNavDesktop from "../../assets/navStickyDesktop.png";
 import RadioInput from "./imageRadioInput";
 import styles from "./route.module.css";
+import type { GlobalSettingsClient, StepNavigationType } from "~/types/GlobalSettingsClient";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { redirect, session } = await authenticate.admin(request);
@@ -80,10 +80,7 @@ export default function Index() {
     const shopify = useAppBridge();
     const isLoading: boolean = nav.state === "loading";
     const isSubmitting: boolean = nav.state === "submitting";
-    const params = useParams();
     const submit = useSubmit();
-    const navigateSubmit = useNavigateSubmit(); //Function for doing the submit with a navigation (the same if you were to use a From with a submit button)
-    const actionData = useActionData<typeof action>();
 
     const loaderData = useLoaderData<typeof loader>();
 
@@ -91,8 +88,14 @@ export default function Index() {
 
     const serverGlobalSettings = data.globalSettings;
 
+    const mappedGlobalSettings: GlobalSettingsClient = {
+        ...serverGlobalSettings,
+        stepNavigationTypeDesktop: serverGlobalSettings.stepNavigationTypeDesktop as StepNavigationType,
+        stepNavigationTypeMobile: serverGlobalSettings.stepNavigationTypeMobile as StepNavigationType,
+    };
+
     //Using 'old' bundle data if there were errors when submitting the form. Otherwise, use the data from the loader.
-    const [globalSettingsState, setGlobalSettingsState] = useState<GlobalSettings>(serverGlobalSettings);
+    const [globalSettingsState, setGlobalSettingsState] = useState<GlobalSettingsClient>(mappedGlobalSettings);
     const [activeMode, setActiveMode] = useState<"desktop" | "mobile">("desktop");
 
     const saveGlobalSettingsHandler = async () => {
@@ -116,7 +119,7 @@ export default function Index() {
 
     useEffect(() => {
         JSON.stringify(globalSettingsState) !== JSON.stringify(serverGlobalSettings) && shopify.saveBar.show("my-save-bar");
-    }, [globalSettingsState, serverGlobalSettings]);
+    }, [globalSettingsState, serverGlobalSettings, shopify.saveBar]);
 
     // const [activeEditorTab, setActiveEditorTab] = useState<'stepNavigation' | 'nav'>();
 

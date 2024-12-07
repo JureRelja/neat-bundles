@@ -6,7 +6,7 @@ import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, ButtonGro
 import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, LargeGapBetweenSections } from "../../constants";
-import type { BundleStep, ContentInput } from "@prisma/client";
+import type { BundleStep } from "@prisma/client";
 import type { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
 import type { error } from "../../adminBackend/service/dto/jsonData";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
@@ -18,6 +18,8 @@ import { bundleBuilderStepService } from "~/adminBackend/service/impl/bundleBuil
 import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
 import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
+import type { BundleStepContentClient } from "~/types/BundleStepContentClient";
+import type { ContentInputClient } from "~/types/ContentInputClient";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { session } = await authenticate.admin(request);
@@ -129,20 +131,22 @@ export default function Index() {
     const actionData = useActionData<typeof action>();
 
     //Data that was previously submitted in the from
-    const submittedStepData: BundleStepContent = actionData?.data as BundleStepContent;
+    const submittedStepData: BundleStepContentClient = actionData?.data as BundleStepContentClient;
 
     const errors = actionData?.errors as error[]; //Errors from the form submission
 
-    const serverStepData: BundleStepContent = useLoaderData<typeof loader>().data; //Data that was loaded from the server
+    const loaderData = useLoaderData<typeof loader>().data;
+
+    const serverStepData: BundleStepContentClient = loaderData; //Data that was loaded from the server
 
     //Diplaying previously submitted data if there were errors, otherwise displaying the data that was loaded from the server.
-    const [stepData, setStepData] = useState<BundleStepContent>(errors?.length === 0 || !errors ? serverStepData : submittedStepData);
+    const [stepData, setStepData] = useState<BundleStepContentClient>(errors?.length === 0 || !errors ? serverStepData : submittedStepData);
 
-    const updateContentInput = (contentInput: ContentInput) => {
-        setStepData((stepData: BundleStepContent) => {
+    const updateContentInput = (contentInput: ContentInputClient) => {
+        setStepData((stepData: BundleStepContentClient) => {
             return {
                 ...stepData,
-                contentInputs: stepData.contentInputs.map((input: ContentInput) => {
+                contentInputs: stepData.contentInputs.map((input: ContentInputClient) => {
                     if (input.id === contentInput.id) {
                         return contentInput;
                     }
@@ -165,7 +169,7 @@ export default function Index() {
                 return;
             }
         });
-    }, [isLoading]);
+    }, [errors, isLoading]);
 
     //Update field error on change
     const updateFieldErrorHandler = (fieldId: string) => {
@@ -177,7 +181,7 @@ export default function Index() {
     };
 
     const addContentInputFieldHandler = () => {
-        setStepData((stepData: BundleStepContent) => {
+        setStepData((stepData: BundleStepContentClient) => {
             return {
                 ...stepData,
                 contentInputs: [
@@ -196,10 +200,10 @@ export default function Index() {
     };
 
     const removeContentInputFieldHandler = (inputId: number) => {
-        setStepData((stepData: BundleStepContent) => {
+        setStepData((stepData: BundleStepContentClient) => {
             return {
                 ...stepData,
-                contentInputs: stepData.contentInputs.filter((input: ContentInput) => input.id !== inputId),
+                contentInputs: stepData.contentInputs.filter((input: ContentInputClient) => input.id !== inputId),
             };
         });
     };
@@ -291,7 +295,7 @@ export default function Index() {
                                                     value={stepData.title}
                                                     helpText="Customers will see this title when they build a bundle."
                                                     onChange={(newTitle: string) => {
-                                                        setStepData((stepData: BundleStepContent) => {
+                                                        setStepData((stepData: BundleStepContentClient) => {
                                                             return {
                                                                 ...stepData,
                                                                 title: newTitle,
@@ -309,7 +313,7 @@ export default function Index() {
                                                     name={`stepDescription`}
                                                     helpText="This description will be displayed to the customer."
                                                     onChange={(newDesc: string) => {
-                                                        setStepData((stepData: BundleStepContent) => {
+                                                        setStepData((stepData: BundleStepContentClient) => {
                                                             return {
                                                                 ...stepData,
                                                                 description: newDesc,

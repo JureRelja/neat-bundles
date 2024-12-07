@@ -1,6 +1,5 @@
 /* eslint-disable react/jsx-key */
 import type { BundleStep, User } from "@prisma/client";
-import { StepTypeClient } from "~/types/StepTypeClient";
 import { useNavigate, useNavigation, useParams, useFetcher, useSubmit, Link } from "@remix-run/react";
 import { useAppBridge, TitleBar, Modal } from "@shopify/app-bridge-react";
 import {
@@ -25,6 +24,7 @@ import type { BundleStepBasicResources } from "~/adminBackend/service/dto/Bundle
 import { GapBetweenSections } from "~/constants";
 import { ArrowDownIcon, ArrowUpIcon, DeleteIcon, EditIcon, PageAddIcon, PlusIcon } from "@shopify/polaris-icons";
 import styles from "./bundelBuilderSteps.module.css";
+import type { BundleBuilderStepClient } from "~/types/BundleBuilderStep";
 
 export default function Index({ user, bundleBuilderSteps }: { user: User; bundleBuilderSteps: BundleStep[] }): JSX.Element {
     const navigate = useNavigate();
@@ -36,7 +36,7 @@ export default function Index({ user, bundleBuilderSteps }: { user: User; bundle
     const submit = useSubmit();
     // const revalidator = useRevalidator();
 
-    const sortedBundleBuilderSteps = bundleBuilderSteps.sort((a, b) => a.stepNumber - b.stepNumber);
+    const sortedBundleBuilderSteps: BundleBuilderStepClient[] = bundleBuilderSteps.sort((a, b) => a.stepNumber - b.stepNumber);
 
     const checkStepCount = (): boolean => {
         if (bundleBuilderSteps.length >= 5) {
@@ -278,7 +278,7 @@ export default function Index({ user, bundleBuilderSteps }: { user: User; bundle
                                                         </Text>
                                                     </div>
                                                 </Link>,
-                                                step.stepType === StepTypeClient.PRODUCT ? <Badge tone="warning">Product step</Badge> : <Badge tone="magic">Content step</Badge>,
+                                                step.stepType === "PRODUCT" ? <Badge tone="warning">Product step</Badge> : <Badge tone="magic">Content step</Badge>,
                                                 <ButtonGroup>
                                                     <InlineStack align="space-between" blockAlign="stretch">
                                                         {step.stepNumber !== sortedBundleBuilderSteps.length ? (
@@ -313,7 +313,7 @@ export default function Index({ user, bundleBuilderSteps }: { user: User; bundle
                                                         variant="primary"
                                                         onClick={handleNavigationOnUnsavedChanges.bind(
                                                             null,
-                                                            `/app/edit-bundle-builder/${params.bundleid}/steps/${step.stepNumber}/${step.stepType === StepTypeClient.PRODUCT ? "product" : "content"}`,
+                                                            `/app/edit-bundle-builder/${params.bundleid}/steps/${step.stepNumber}/${step.stepType === "PRODUCT" ? "product" : "content"}`,
                                                         )}>
                                                         Edit
                                                     </Button>
