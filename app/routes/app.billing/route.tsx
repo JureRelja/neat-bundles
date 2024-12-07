@@ -414,7 +414,6 @@ export default function Index() {
                                             "Create up to 5 steps on all bundles",
                                             "Create product steps",
                                             "Collect images or text on steps",
-                                            "Remove Neat bundles branding",
                                             "Customize colors",
                                             "Priority support",
                                         ]}
