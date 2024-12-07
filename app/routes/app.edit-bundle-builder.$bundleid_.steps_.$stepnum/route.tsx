@@ -18,7 +18,6 @@ import { bundleBuilderContentStepService } from "~/adminBackend/service/impl/bun
 import { bundleBuilderStepsService } from "~/adminBackend/service/impl/BundleBuilderStepsService";
 import { GapBetweenSections } from "~/constants";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
-import { StepTypeClient } from "~/types/StepTypeClient";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { session } = await authenticate.admin(request);
@@ -263,7 +262,7 @@ export default function Index() {
                 <SkeletonPage primaryAction></SkeletonPage>
             ) : (
                 <Page
-                    titleMetadata={stepData.stepType === StepTypeClient.PRODUCT ? <Badge tone="warning">Product step</Badge> : <Badge tone="magic">Content step</Badge>}
+                    titleMetadata={stepData.stepType === "PRODUCT" ? <Badge tone="warning">Product step</Badge> : <Badge tone="magic">Content step</Badge>}
                     backAction={{
                         content: "Products",
                         onAction: async () => {
