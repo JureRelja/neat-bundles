@@ -20,7 +20,8 @@ import normalNavDesktop from "../../assets/navNormalDesktop.png";
 import stickyNavDesktop from "../../assets/navStickyDesktop.png";
 import RadioInput from "./imageRadioInput";
 import styles from "./route.module.css";
-import type { GlobalSettingsClient, StepNavigationType } from "~/types/GlobalSettingsClient";
+import type { GlobalSettingsClient } from "~/types/GlobalSettingsClient";
+import type { StepNavigationTypeClient } from "~/types/StepNavigationTypeClient";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { redirect, session } = await authenticate.admin(request);
@@ -90,8 +91,8 @@ export default function Index() {
 
     const mappedGlobalSettings: GlobalSettingsClient = {
         ...serverGlobalSettings,
-        stepNavigationTypeDesktop: serverGlobalSettings.stepNavigationTypeDesktop as StepNavigationType,
-        stepNavigationTypeMobile: serverGlobalSettings.stepNavigationTypeMobile as StepNavigationType,
+        stepNavigationTypeDesktop: serverGlobalSettings.stepNavigationTypeDesktop as StepNavigationTypeClient,
+        stepNavigationTypeMobile: serverGlobalSettings.stepNavigationTypeMobile as StepNavigationTypeClient,
     };
 
     //Using 'old' bundle data if there were errors when submitting the form. Otherwise, use the data from the loader.

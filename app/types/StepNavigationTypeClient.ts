@@ -1,1 +1,1 @@
-export type StepNavigationType = "STICKY" | "NORMAL";
+export type StepNavigationTypeClient = "STICKY" | "NORMAL";
