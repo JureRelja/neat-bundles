@@ -270,7 +270,10 @@ export default function Index({ user, bundleBuilderSteps }: { user: User; bundle
                                             return [
                                                 step.stepNumber,
                                                 <Link
-                                                    onClick={handleNavigationOnUnsavedChanges.bind(null, `/app/edit-bundle-builder/${params.bundleid}/steps/${step.stepNumber}`)}
+                                                    onClick={handleNavigationOnUnsavedChanges.bind(
+                                                        null,
+                                                        `/app/edit-bundle-builder/${params.bundleid}/steps/${step.stepNumber}/${step.stepType === "PRODUCT" ? "product" : "content"}`,
+                                                    )}
                                                     to={"#"}>
                                                     <div className={styles.stepTitleContainer}>
                                                         <Text as="p" tone="base">
