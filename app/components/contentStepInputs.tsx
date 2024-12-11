@@ -1,7 +1,8 @@
 import { BlockStack, Text, Select, TextField, InlineGrid, ChoiceList, InlineStack, Button } from "@shopify/polaris";
 import { GapInsideSection, HorizontalGap } from "../constants";
-import { ContentInput, InputType } from "@prisma/client";
-import { error } from "~/adminBackend/service/dto/jsonData";
+import type { error } from "~/adminBackend/service/dto/jsonData";
+import type { InputTypeClient } from "~/types/InputTypeClient";
+import type { ContentInputClient } from "~/types/ContentInputClient";
 import { DeleteIcon } from "@shopify/polaris-icons";
 
 export default function Index({
@@ -14,13 +15,13 @@ export default function Index({
     updateFieldErrorHandler,
     removeContentInputField,
 }: {
-    contentInput: ContentInput;
+    contentInput: ContentInputClient;
     errors: error[];
     inputId: number;
     index: number;
     single?: boolean;
     updateFieldErrorHandler: (fieldName: string) => void;
-    updateContentInput: (newContentInput: ContentInput) => void;
+    updateContentInput: (newContentInput: ContentInputClient) => void;
     removeContentInputField: (inputId: number) => void;
 }) {
     console.log(errors);
@@ -40,14 +41,14 @@ export default function Index({
                     label="Input field type"
                     options={[
                         { label: "None", value: "NONE" },
-                        { label: "Text", value: InputType.TEXT },
-                        { label: "Number", value: InputType.NUMBER },
-                        { label: "Image", value: InputType.IMAGE },
+                        { label: "Text", value: "TEXT" },
+                        { label: "Number", value: "NUMBER" },
+                        { label: "Image", value: "IMAGE" },
                     ]}
                     onChange={(newContentType: string) => {
                         updateContentInput({
                             ...contentInput,
-                            inputType: newContentType as InputType,
+                            inputType: newContentType as InputTypeClient,
                         });
                     }}
                     value={contentInput.inputType}
