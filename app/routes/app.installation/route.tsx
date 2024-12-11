@@ -21,7 +21,7 @@ import {
 import { CheckIcon, ExternalIcon, XSmallIcon } from "@shopify/polaris-icons";
 import { authenticate } from "../../shopify.server";
 import { GapBetweenSections, GapInsideSection, LargeGapBetweenSections } from "~/constants";
-import ActivateVideo from "../../assets/installation-video.mp4";
+import activateVideo from "../../assets/installation-video.mp4";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import shopifyThemesRepository from "~/adminBackend/repository/impl/ShopifyThemesRepository";
 import { useEffect } from "react";
@@ -312,7 +312,7 @@ export default function Index() {
                                                 </InlineStack>
                                             </Box>
                                         </BlockStack>
-                                        <video src={ActivateVideo} autoPlay width={370} loop></video>
+                                        <video src={activateVideo} autoPlay width={370} loop></video>
                                     </InlineStack>
                                 </Card>
                             </InlineGrid>
