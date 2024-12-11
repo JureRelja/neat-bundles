@@ -155,13 +155,14 @@ p {
     }
 
     .step-title {
-        font-size: 18px;
+        font-size: 15px;
     }
 }
 
 @media (max-width: 350px) {
     .step-heading-container {
         width: 60px;
+        gap: 5px;
     }
 }
 
