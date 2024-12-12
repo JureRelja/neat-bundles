@@ -312,7 +312,7 @@ export default function Index() {
                                                 </InlineStack>
                                             </Box>
                                         </BlockStack>
-                                        <video src={activateVideo} autoPlay width={370} loop></video>
+                                        <video src="https://storage.cloud.google.com/neat-bundles-misc/installation-video.mp4" autoPlay width={370} loop></video>
                                     </InlineStack>
                                 </Card>
                             </InlineGrid>
