@@ -48,8 +48,6 @@ function parseMainPageBody(content: string) {
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    console.log("installation loader", request);
-
     const { session, admin } = await authenticate.admin(request);
 
     const url = new URL(request.url);
@@ -312,7 +310,7 @@ export default function Index() {
                                                 </InlineStack>
                                             </Box>
                                         </BlockStack>
-                                        <video src="https://storage.cloud.google.com/neat-bundles-misc/installation-video.mp4" autoPlay width={370} loop></video>
+                                        <video src={activateVideo} autoPlay muted width={370} loop></video>
                                     </InlineStack>
                                 </Card>
                             </InlineGrid>
