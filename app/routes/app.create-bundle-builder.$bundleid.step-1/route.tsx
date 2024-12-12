@@ -11,6 +11,7 @@ import type { BundleBuilder } from "@prisma/client";
 import { useState } from "react";
 import WideButton from "~/components/wideButton";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
+import { GapBetweenTitleAndContent } from "~/constants";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { session, redirect } = await authenticate.admin(request);
@@ -78,18 +79,20 @@ export default function Index() {
                     How many steps do you want your bundle builder to have?
                 </Text>
 
-                <ButtonGroup variant="segmented">
-                    <Button pressed={activeBtnOption === "singleStep"} size="large" onClick={() => setActiveBtnOption("singleStep")}>
-                        One step
-                    </Button>
-                    <Button pressed={activeBtnOption === "multiStep"} size="large" onClick={() => setActiveBtnOption("multiStep")}>
-                        Multiple steps
-                    </Button>
-                </ButtonGroup>
+                <BlockStack gap={GapBetweenTitleAndContent} inlineAlign="center">
+                    <ButtonGroup variant="segmented">
+                        <Button pressed={activeBtnOption === "singleStep"} size="large" onClick={() => setActiveBtnOption("singleStep")}>
+                            One step
+                        </Button>
+                        <Button pressed={activeBtnOption === "multiStep"} size="large" onClick={() => setActiveBtnOption("multiStep")}>
+                            Multiple steps
+                        </Button>
+                    </ButtonGroup>
 
-                <Text as="p" variant="bodyMd">
-                    On each step, your customer can select products or input their content.
-                </Text>
+                    <Text as="p" variant="bodyMd">
+                        On each step, your customers can select products or input their content.
+                    </Text>
+                </BlockStack>
 
                 {/*  */}
                 <WideButton onClick={handleNextBtnHandler} />

@@ -159,15 +159,19 @@ p {
     }
 }
 
-@media (max-width: 350px) {
+@media (max-width: 450px) {
     .steps-heading-container {
         justify-content: space-between;
         gap: 5px;
     }
 
     .step-heading-container {
-        width: 60px;
+        width: fit-content;
         gap: 5px;
+    }
+
+    .step-title {
+        font-size: 10px;
     }
 }
 
