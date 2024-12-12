@@ -87,6 +87,10 @@ export default function Index() {
                     </Button>
                 </ButtonGroup>
 
+                <Text as="p" variant="bodyMd">
+                    On each step, your customer can select products or input their content.
+                </Text>
+
                 {/*  */}
                 <WideButton onClick={handleNextBtnHandler} />
             </BlockStack>
