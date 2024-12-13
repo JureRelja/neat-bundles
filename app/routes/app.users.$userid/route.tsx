@@ -7,6 +7,7 @@ import { useNavigateSubmit } from "~/hooks/useNavigateSubmit";
 import { ExternalIcon } from "@shopify/polaris-icons";
 import { GapBetweenSections, GapInsideSection } from "~/constants";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
+import tutorialTumbnail from "../../assets/tutorial_tumbnail.png";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, redirect } = await authenticate.admin(request);
@@ -124,7 +125,7 @@ export default function Index() {
                                             content: "Watch tutorial",
                                             onAction: () => {},
                                             icon: ExternalIcon,
-                                            url: "https://help.shopify.com",
+                                            url: "https://youtu.be/Mbzu7mI1jDE",
                                             target: "_blank",
                                         }}
                                         size="small"
@@ -137,11 +138,7 @@ export default function Index() {
                                                 },
                                             },
                                         ]}>
-                                        <VideoThumbnail
-                                            videoLength={80}
-                                            thumbnailUrl="https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850"
-                                            onClick={() => console.log("clicked")}
-                                        />
+                                        <VideoThumbnail videoLength={80} thumbnailUrl={tutorialTumbnail} onClick={() => console.log("clicked")} />
                                     </MediaCard>
                                 )}
 
