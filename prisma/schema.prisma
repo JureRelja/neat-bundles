@@ -11,14 +11,21 @@ datasource db {
 }
 
 model Session {
-  id          String    @id
-  shop        String
-  state       String
-  isOnline    Boolean   @default(false)
-  scope       String?
-  expires     DateTime?
-  accessToken String
-  userId      BigInt?
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  String?
+  locale        String?
+  collaborator  Boolean
+  emailVerified Boolean
 }
 
 enum PricingPlan {
@@ -33,7 +40,7 @@ model User {
   id                       Int             @id @default(autoincrement())
   hasAppInstalled          Boolean         @default(true)
   activeBillingPlan        PricingPlan     @default(NONE)
-  isDevelopmentStore      Boolean         @default(false)
+  isDevelopmentStore       Boolean         @default(false)
   completedInstallation    Boolean         @default(false)
   completedOnboarding      Boolean         @default(false)
   showTutorialBanner       Boolean         @default(true)
@@ -149,14 +156,14 @@ enum BundleDiscountType {
 }
 
 model GlobalSettings {
-  id       Int    @id @default(autoincrement())
-  user     User   @relation(fields: [storeUrl], references: [storeUrl], onDelete: Cascade)
-  storeUrl String @unique
+  id                        Int                @id @default(autoincrement())
+  user                      User               @relation(fields: [storeUrl], references: [storeUrl], onDelete: Cascade)
+  storeUrl                  String             @unique
   //Desktop settings
   stepNavigationTypeDesktop StepNavigationType @default(NORMAL)
-  
+
   //Mobile settings
-  stepNavigationTypeMobile  StepNavigationType @default(STICKY)
+  stepNavigationTypeMobile StepNavigationType @default(STICKY)
 
   bundleColors BundleColors?
   bundleLabels BundleLabels?
