@@ -22,7 +22,7 @@ model Session {
   firstName     String?
   lastName      String?
   email         String?
-  accountOwner  String?
+  accountOwner  Boolean
   locale        String?
   collaborator  Boolean
   emailVerified Boolean
