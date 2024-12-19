@@ -1,6 +1,5 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { authenticate, redisClient } from "../shopify.server";
-// import { redisClient } from "../redis.server";
+import { authenticate } from "../shopify.server";
 import db from "~/db.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -17,8 +16,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 const offlineStoreId = `shopify_sessions_${session.id}`;
                 const onlineStoreId = `shopify_sessions_${shop}`;
 
-                await redisClient.del(offlineStoreId);
-                await redisClient.del(onlineStoreId);
+                await db.session.delete({
+                    where: {
+                        id: session.id,
+                    },
+                });
 
                 await db.user.update({
                     where: {
