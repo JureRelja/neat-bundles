@@ -13,9 +13,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     switch (topic) {
         case "APP_UNINSTALLED":
             if (session) {
-                const offlineStoreId = `shopify_sessions_${session.id}`;
-                const onlineStoreId = `shopify_sessions_${shop}`;
-
                 await db.session.delete({
                     where: {
                         id: session.id,
