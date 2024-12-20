@@ -63,14 +63,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     //has active payment
     if (hasActivePayment) {
-        return json({ planName: user.activeBillingPlan, planId: appSubscriptions[0].name });
+        return json({ planName: user.activeBillingPlan, planId: appSubscriptions[0].name, user: user });
     }
     //is on free plan (development store)
     else if (user.activeBillingPlan === "FREE") {
-        return json({ planName: user.activeBillingPlan, planId: "FREE" });
+        return json({ planName: user.activeBillingPlan, planId: "FREE", user: user });
     }
     //doesn't have plan selected
-    else return json({ planName: user.activeBillingPlan, planId: "NONE" });
+    else return json({ planName: user.activeBillingPlan, planId: "NONE", user: user });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -107,6 +107,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             }
             await userRepository.updateUser({ ...user, activeBillingPlan: "NONE" });
             return redirect("/app/billing");
+        }
+
+        //basic plan handlers
+        case BillingPlanIdentifiers.BASIC_MONTHLY: {
+            if (user.activeBillingPlan === "PRO") state = "downgrading";
+
+            await userRepository.updateUser({ ...user, activeBillingPlan: "PRO" });
+
+            await billing.request({
+                plan: action,
+                isTest: true,
+                returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/${state === "downgrading" ? "billing" : state === "none" ? "thank-you?variant=firstPlan" : ""}`,
+            });
+
+            break;
         }
 
         //basic plan handlers
@@ -186,7 +201,11 @@ export default function Index() {
     const fetcher = useFetcher();
     const navigate = useNavigate();
 
-    const activeSubscription = useLoaderData<typeof loader>();
+    const loaderData = useLoaderData<typeof loader>();
+
+    const user = loaderData.user;
+
+    const activeSubscription = { planId: loaderData.planId, planName: loaderData.planName };
 
     //
     //pricing interval
@@ -230,6 +249,10 @@ export default function Index() {
         ) {
             setNewSelectedSubscription(newPlan);
             setIsDowngrading(true);
+            return;
+        }
+
+        if (!user.isDevelopmentStore && activeSubscription.planId !== "NONE") {
             return;
         }
 
@@ -369,6 +392,7 @@ export default function Index() {
                                         monthlyPricing={"Free"}
                                         yearlyPricing={"Free"}
                                         pricingInterval={pricingInterval}
+                                        planDisabled={!user.isDevelopmentStore}
                                         features={["All features", "For development stores only"]}
                                     />
                                     {/* Basic plan  */}
