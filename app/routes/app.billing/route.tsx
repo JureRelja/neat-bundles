@@ -23,7 +23,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     const { hasActivePayment, appSubscriptions } = await billing.check({
         plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY, BillingPlanIdentifiers.BASIC_MONTHLY, BillingPlanIdentifiers.BASIC_YEARLY],
-        isTest: true,
+        isTest: false,
     });
 
     //if the user doesn't have an active payment
@@ -82,7 +82,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     const { hasActivePayment, appSubscriptions } = await billing.check({
         plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY, BillingPlanIdentifiers.BASIC_MONTHLY, BillingPlanIdentifiers.BASIC_YEARLY],
-        isTest: true,
+        isTest: false,
     });
 
     const formData = await request.formData();
@@ -101,7 +101,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             if (hasActivePayment) {
                 await billing.cancel({
                     subscriptionId: appSubscriptions[0].id,
-                    isTest: true,
+                    isTest: false,
                     prorate: false,
                 });
             }
@@ -117,22 +117,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
             await billing.request({
                 plan: action,
-                isTest: true,
-                returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/${state === "downgrading" ? "billing" : state === "none" ? "thank-you?variant=firstPlan" : ""}`,
-            });
-
-            break;
-        }
-
-        //basic plan handlers
-        case BillingPlanIdentifiers.BASIC_MONTHLY: {
-            if (user.activeBillingPlan === "PRO") state = "downgrading";
-
-            await userRepository.updateUser({ ...user, activeBillingPlan: "PRO" });
-
-            await billing.request({
-                plan: action,
-                isTest: true,
+                isTest: false,
                 returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/${state === "downgrading" ? "billing" : state === "none" ? "thank-you?variant=firstPlan" : ""}`,
             });
 
@@ -146,7 +131,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
             await billing.request({
                 plan: action,
-                isTest: true,
+                isTest: false,
                 returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/${state === "downgrading" ? "billing" : state === "none" ? "thank-you?variant=firstPlan" : ""}`,
             });
 
@@ -161,7 +146,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
             await billing.request({
                 plan: action,
-                isTest: true,
+                isTest: false,
                 returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/thank-you?variant=${state === "upgrading" ? "upgrade" : state === "none" ? "firstPlan" : ""}`,
             });
 
@@ -175,7 +160,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
             await billing.request({
                 plan: action,
-                isTest: true,
+                isTest: false,
                 returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/thank-you?variant=${state === "upgrading" ? "upgrade" : state === "none" ? "firstPlan" : ""}`,
             });
 
@@ -330,8 +315,8 @@ export default function Index() {
                     <Modal id="downgrading-subscription-modal" open={isDowngrading} onHide={() => setIsDowngrading(false)}>
                         <Box padding="300">
                             <Text as="p">
-                                You are about to downgrade from the <b>{activeSubscription.planId}</b> plan to the <b>{newSelectedSubscription?.planId}</b> plan. You'll lose all
-                                the features from the <b>{activeSubscription.planId}</b> plan. Are you sure that you want to do that?
+                                You are about to downgrade from the <b>{activeSubscription.planId}</b> plan to the <b>{newSelectedSubscription?.planId}</b> plan. All the bundles
+                                that don't fit within the limitations of the new plan will be deleted. Are you sure that you want to do that?
                             </Text>
                         </Box>
                         <TitleBar title="Are you sure you want to downgrade your plan?">

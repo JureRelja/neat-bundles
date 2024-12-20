@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { BlockStack, Card, SkeletonBodyText, SkeletonPage } from "@shopify/polaris";
 import { BillingPlanIdentifiers } from "~/constants";
 import { loopsClient } from "../../email.server";
+import { bundleBuilderService } from "~/adminBackend/service/impl/BundleBuilderServiceImpl";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { admin, session, billing } = await authenticate.admin(request);
@@ -147,6 +148,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
                 case BillingPlanIdentifiers.BASIC_YEARLY:
                     user.activeBillingPlan = "BASIC";
             }
+            if (user.activeBillingPlan === "BASIC") {
+                await bundleBuilderService.deleteNonAllowedBundles(session.shop);
+            }
+
             await userRepository.updateUser(user);
         }
     }

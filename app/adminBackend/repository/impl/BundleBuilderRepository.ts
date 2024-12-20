@@ -258,6 +258,34 @@ export class BundleBuilderRepository {
 
         return bundleBuilders;
     }
+
+    public async getAllBundleBuilderAndBundleStepsAsc(storeUrl: string): Promise<BundleBuilderAndBundleSteps[] | null> {
+        const bundleBuilders: BundleBuilderAndBundleSteps[] = await db.bundleBuilder.findMany({
+            where: {
+                user: {
+                    storeUrl: storeUrl,
+                },
+                deleted: false,
+            },
+            include: bundleBuilderAndBundleSteps,
+            orderBy: {
+                createdAt: "asc",
+            },
+        });
+
+        return bundleBuilders;
+    }
+
+    public async deleteBundleBuilderById(id: number): Promise<undefined> {
+        await db.bundleBuilder.update({
+            where: {
+                id: id,
+            },
+            data: {
+                deleted: true,
+            },
+        });
+    }
 }
 
 const bundleBuilderRepository = new BundleBuilderRepository();
