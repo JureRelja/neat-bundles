@@ -121,6 +121,7 @@ export class ShopifyBundleBuilderProductRepository {
         query getBundleBuilderProduct($id: ID!) {
             product(id: $id) {
                 id
+                status
             }
         }`,
             {
@@ -130,9 +131,9 @@ export class ShopifyBundleBuilderProductRepository {
             },
         );
 
-        const doesBundleBuilderProductExistData = await doesBundleBuilderProductExistResponse.json();
+        const productData = await doesBundleBuilderProductExistResponse.json();
 
-        const doesBundleBuilderProductExist = doesBundleBuilderProductExistData.data.product !== null;
+        const doesBundleBuilderProductExist = productData.data.product !== null && productData.data.product.status !== "ARCHIVED";
 
         return doesBundleBuilderProductExist;
     }

@@ -158,7 +158,7 @@ export default function Index() {
                                             Pricing summary
                                         </Text>
                                         <Text as="p" variant="bodyMd">
-                                            Thep pricing summary shows customers the pricing and discount of the bundle that they are creating.
+                                            The pricing summary shows customers the pricing and discount of the bundle that they are creating.
                                         </Text>
                                     </BlockStack>
                                 </Box>

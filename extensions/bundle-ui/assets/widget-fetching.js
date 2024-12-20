@@ -151,6 +151,7 @@ const finishAndAddBundleToCart = async (stepInputs, bundleId, shopDomain, Shopif
             body: bundleContentFormData,
         })
             .then(() => {
+                // console.log("Bundle added to cart", skipTheCart);
                 setTimeout(() => {
                     if (skipTheCart) window.location.href = `/checkout`;
                     else window.location.href = `/cart`;
