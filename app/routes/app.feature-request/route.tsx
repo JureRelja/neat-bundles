@@ -74,7 +74,7 @@ export default function Index() {
                         }}>
                         <BlockStack gap={GapBetweenSections}>
                             <Text as="p">
-                                My team and I have been working hard to make Neat Bundles into a product you love and want to share with others, but we understand that there is
+                                My team and I have been working hard to make NeatBundles into a product you love and want to share with others, but we understand that there is
                                 always space for improvement.
                             </Text>
 
@@ -91,10 +91,10 @@ export default function Index() {
                                 , and we will reply as soon as possible. Every feature request will be personally reviewed by me and my team and considered for implementation.
                             </Text>
 
-                            <Text as="p">Thank you for your continued support and for helping us make Neat Bundles better every day.</Text>
+                            <Text as="p">Thank you for your continued support and for helping us make NeatBundles better every day.</Text>
 
                             <Text as="p" alignment="end">
-                                Jure Reljanovic, the creator of Neat Merchant and Neat Bundles
+                                Jure Reljanovic, the creator of Neat Merchant and NeatBundles
                             </Text>
                         </BlockStack>
 

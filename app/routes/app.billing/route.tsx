@@ -295,7 +295,7 @@ export default function Index() {
                     {/* Modal for users to confirm that they want to cancel the subscription. */}
                     <Modal id="cancel-subscription-modal">
                         <Box padding="300">
-                            <Text as="p">If you cancel the subscription, you won't be able to use Neat Bundles app. Are you sure that you want to to that?</Text>
+                            <Text as="p">If you cancel the subscription, you won't be able to use NeatBundles app. Are you sure that you want to to that?</Text>
                         </Box>
                         <TitleBar title="Cancel confirmation">
                             <button onClick={() => shopify.modal.hide("cancel-subscription-modal")}>Close</button>

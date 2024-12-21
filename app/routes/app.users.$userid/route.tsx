@@ -129,7 +129,7 @@ export default function Index() {
                                             target: "_blank",
                                         }}
                                         size="small"
-                                        description="We recommend watching this short tutorial to get started with creating Neat Bundles."
+                                        description="We recommend watching this short tutorial to get started with using NeatBundles."
                                         popoverActions={[
                                             {
                                                 content: "Dismiss",

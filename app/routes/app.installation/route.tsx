@@ -256,7 +256,7 @@ export default function Index() {
                                     </BlockStack>
                                 </Box>
                                 <MediaCard
-                                    title="Watch a short tutorial to get quickly started with Neat Bundles"
+                                    title="Watch a short tutorial to get quickly started with NeatBundles"
                                     primaryAction={{
                                         content: "Watch tutorial",
                                         icon: ExternalIcon,
@@ -325,7 +325,7 @@ export default function Index() {
                                             Theme compatibility
                                         </Text>
                                         <Text as="p" variant="bodyMd">
-                                            Neat Bundles is compatible with all{" "}
+                                            NeatBundles is compatible with all{" "}
                                             <Link to="https://www.shopify.com/partners/blog/shopify-online-store" target="_blank">
                                                 Online store 2.0
                                             </Link>{" "}
@@ -339,7 +339,7 @@ export default function Index() {
                                             <InlineStack gap={GapBetweenSections}>
                                                 <InlineStack gap={GapInsideSection}>
                                                     <Text as="h3">
-                                                        Your active theme <b>{data.activeTheme.name}</b> is compatible with Neat Bundles.
+                                                        Your active theme <b>{data.activeTheme.name}</b> is compatible with NeatBundles.
                                                     </Text>
                                                     <Badge tone="success" icon={CheckIcon}>
                                                         Theme compatible
@@ -347,7 +347,7 @@ export default function Index() {
                                                 </InlineStack>
 
                                                 <Text as="p" fontWeight="bold">
-                                                    If you change your theme, make sure to come back here and check if Neat Bundles supports your new theme.
+                                                    If you change your theme, make sure to come back here and check if NeatBundles supports your new theme.
                                                 </Text>
                                                 <Text as="p">
                                                     If you have trouble activating the app, send us an email at{" "}
@@ -358,7 +358,7 @@ export default function Index() {
                                             <InlineStack gap={GapInsideSection}>
                                                 <InlineStack gap={GapInsideSection}>
                                                     <Text as="h3">
-                                                        Your theme <b>{data.activeTheme.name}</b> is unfortunately not compatible with Neat Bundles.
+                                                        Your theme <b>{data.activeTheme.name}</b> is unfortunately not compatible with NeatBundles.
                                                     </Text>
 
                                                     <Badge tone="critical" icon={XSmallIcon}>

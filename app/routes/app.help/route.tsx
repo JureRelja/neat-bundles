@@ -95,7 +95,7 @@ export default function Index() {
                             </Text>
 
                             <Text as="p" alignment="end">
-                                Jure Reljanovic, the creator of Neat Merchant and Neat Bundles
+                                Jure Reljanovic, the creator of Neat Merchant and NeatBundles
                             </Text>
                         </BlockStack>
                         {/* <FooterHelp>

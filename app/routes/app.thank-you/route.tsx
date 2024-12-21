@@ -87,11 +87,11 @@ export default function Index() {
                                     <Banner title="Thank you for choosing a plan!" tone="success" onDismiss={() => {}}>
                                         <BlockStack gap={GapInsideSection}>
                                             <Text as={"p"} variant="headingMd">
-                                                You will be using Neat Bundles to let your customers create bundles they love in no time.
+                                                You will be using NeatBundles to let your customers create bundles they love in no time.
                                             </Text>
 
                                             <Text as={"p"}>
-                                                Just before you get there, you need to quickly go through the installation to get the Neat Bundles app properly connected to your
+                                                Just before you get there, you need to quickly go through the installation to get the NeatBundles app properly connected to your
                                                 store.
                                             </Text>
                                         </BlockStack>
