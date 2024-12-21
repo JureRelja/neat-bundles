@@ -65,7 +65,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 bundleBuilderId: Number(params.bundleid),
             },
             data: {
-                hidePricingSummary: bundleSettings.hidePricingSummary,
                 skipTheCart: bundleSettings.skipTheCart,
                 allowBackNavigation: bundleSettings.allowBackNavigation,
                 showOutOfStockProducts: bundleSettings.showOutOfStockProducts,
@@ -151,7 +150,7 @@ export default function Index() {
 
                         <BlockStack gap={BigGapBetweenSections}>
                             {/* Checkbox settings */}
-                            <InlineGrid columns={{ xs: "1fr", md: "3fr 4fr" }} gap="400">
+                            {/* <InlineGrid columns={{ xs: "1fr", md: "3fr 4fr" }} gap="400">
                                 <Box as="section">
                                     <BlockStack gap="400">
                                         <Text as="h3" variant="headingMd">
@@ -194,7 +193,7 @@ export default function Index() {
                                     />
                                 </Card>
                             </InlineGrid>
-                            <Divider />
+                            <Divider /> */}
                             <InlineGrid columns={{ xs: "1fr", md: "3fr 4fr" }} gap="400">
                                 <Box as="section">
                                     <BlockStack gap="400">
