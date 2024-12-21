@@ -120,7 +120,7 @@ export default function Index() {
 
     useEffect(() => {
         JSON.stringify(globalSettingsState) !== JSON.stringify(serverGlobalSettings) && shopify.saveBar.show("my-save-bar");
-    }, [globalSettingsState, serverGlobalSettings, shopify.saveBar]);
+    }, [globalSettingsState, serverGlobalSettings]);
 
     // const [activeEditorTab, setActiveEditorTab] = useState<'stepNavigation' | 'nav'>();
 

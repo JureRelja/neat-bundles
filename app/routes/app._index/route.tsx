@@ -12,7 +12,7 @@ import { loopsClient } from "../../email.server";
 import { bundleBuilderService } from "~/adminBackend/service/impl/BundleBuilderServiceImpl";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    const { admin, session, billing } = await authenticate.admin(request);
+    const { admin, session, billing, redirect } = await authenticate.admin(request);
 
     let user = await userRepository.getUserByStoreUrl(session.shop);
 
@@ -123,12 +123,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         } else if (user.activeBillingPlan !== "NONE" && !user.isDevelopmentStore) {
             user.activeBillingPlan = "NONE";
             await userRepository.updateUser(user);
-            return json(
-                {
-                    ...new JsonData(true, "success", "Customer doesn't have an active subscription.", [], { redirect: "/app/billing" }),
-                },
-                { status: 200 },
-            );
+
+            return redirect(`/app/billing`);
         }
     }
     //if the user has an active payment
@@ -156,21 +152,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     }
 
     //if the user hasn't completed the installation redirect to installation page
-    if (!user.completedInstallation) {
-        return json(
-            {
-                ...new JsonData(true, "success", "Customer freshly installed the app.", [], { redirect: "/app/installation" }),
-            },
-            { status: 500 },
-        );
-    }
+    if (!user.completedInstallation) return redirect(`/app/installation`);
 
-    return json(
-        {
-            ...new JsonData(true, "success", "Customer freshly installed the app.", [], { redirect: `/app/users/${user.id}/bundles` }),
-        },
-        { status: 500 },
-    );
+    return redirect(`/app/users/${user.id}/bundles`);
 };
 
 export default function Index() {
