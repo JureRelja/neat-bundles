@@ -108,7 +108,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     const { hasActivePayment, appSubscriptions } = await billing.check({
         plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY, BillingPlanIdentifiers.BASIC_MONTHLY, BillingPlanIdentifiers.BASIC_YEARLY],
-        isTest: true,
+        isTest: false,
     });
 
     //if the user doesn't have an active payment
@@ -127,33 +127,32 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
                 {
                     ...new JsonData(true, "success", "Customer doesn't have an active subscription.", [], { redirect: "/app/billing" }),
                 },
-                { status: 500 },
+                { status: 200 },
             );
         }
     }
     //if the user has an active payment
     else {
-        if (user.activeBillingPlan === "NONE") {
-            //update the user's active billing plan
-            switch (appSubscriptions[0].name) {
-                case BillingPlanIdentifiers.PRO_MONTHLY:
-                    user.activeBillingPlan = "PRO";
+        //update the user's active billing plan
+        switch (appSubscriptions[0].name) {
+            case BillingPlanIdentifiers.PRO_MONTHLY:
+                user.activeBillingPlan = "PRO";
 
-                case BillingPlanIdentifiers.PRO_YEARLY:
-                    user.activeBillingPlan = "PRO";
+            case BillingPlanIdentifiers.PRO_YEARLY:
+                user.activeBillingPlan = "PRO";
 
-                case BillingPlanIdentifiers.BASIC_MONTHLY:
-                    user.activeBillingPlan = "BASIC";
+            case BillingPlanIdentifiers.BASIC_MONTHLY:
+                if (user.activeBillingPlan === "PRO") await bundleBuilderService.deleteNonAllowedBundles(session.shop);
 
-                case BillingPlanIdentifiers.BASIC_YEARLY:
-                    user.activeBillingPlan = "BASIC";
-            }
-            if (user.activeBillingPlan === "BASIC") {
-                await bundleBuilderService.deleteNonAllowedBundles(session.shop);
-            }
+                user.activeBillingPlan = "BASIC";
 
-            await userRepository.updateUser(user);
+            case BillingPlanIdentifiers.BASIC_YEARLY:
+                if (user.activeBillingPlan === "PRO") await bundleBuilderService.deleteNonAllowedBundles(session.shop);
+
+                user.activeBillingPlan = "BASIC";
         }
+
+        await userRepository.updateUser(user);
     }
 
     //if the user hasn't completed the installation redirect to installation page

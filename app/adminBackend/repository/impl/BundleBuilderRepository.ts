@@ -286,6 +286,19 @@ export class BundleBuilderRepository {
             },
         });
     }
+
+    public async deleteBundles(bundlesForDeleting: number[]): Promise<undefined> {
+        await db.bundleBuilder.updateMany({
+            where: {
+                id: {
+                    in: bundlesForDeleting,
+                },
+            },
+            data: {
+                deleted: true,
+            },
+        });
+    }
 }
 
 const bundleBuilderRepository = new BundleBuilderRepository();
