@@ -137,7 +137,6 @@ model BundleSettings {
   id                     Int           @id @default(autoincrement())
   bundleBuilder          BundleBuilder @relation(fields: [bundleBuilderId], references: [id], onDelete: Cascade)
   bundleBuilderId        Int           @unique
-  hidePricingSummary     Boolean       @default(false)
   skipTheCart            Boolean
   allowBackNavigation    Boolean
   showOutOfStockProducts Boolean
