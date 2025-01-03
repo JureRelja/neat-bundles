@@ -206,64 +206,66 @@ export default function Index() {
                                     </BlockStack>
                                 </Box>
                                 <Card>
-                                    <ChoiceList
-                                        title="Navigation"
-                                        name={`allowBackNavigation`}
-                                        allowMultiple
-                                        choices={[
-                                            {
-                                                label: (
-                                                    <InlineStack>
-                                                        <Text as={"p"}>Allow customers to go back on steps</Text>
-                                                        <Tooltip
-                                                            width="wide"
-                                                            content="If this is not selected, customers won't be able to use the 'back' button to go back on steps.">
-                                                            <Icon source={QuestionCircleIcon}></Icon>
-                                                        </Tooltip>
-                                                    </InlineStack>
-                                                ),
-                                                value: "true",
-                                            },
-                                        ]}
-                                        selected={settingsState.allowBackNavigation ? ["true"] : []}
-                                        onChange={(value) => {
-                                            setSetttingsState((prevSettings: BundleSettings) => {
-                                                return {
-                                                    ...prevSettings,
-                                                    allowBackNavigation: value[0] === "true",
-                                                };
-                                            });
-                                        }}
-                                    />
-                                    <ChoiceList
-                                        title="Cart"
-                                        allowMultiple
-                                        name={`skipTheCart`}
-                                        choices={[
-                                            {
-                                                label: (
-                                                    <InlineStack>
-                                                        <Text as={"p"}>Skip the cart and go to checkout directly</Text>
-                                                        <Tooltip
-                                                            width="wide"
-                                                            content="Without this option selected, all the customer will be redirected to the cart page after they finish building their bundle.">
-                                                            <Icon source={QuestionCircleIcon}></Icon>
-                                                        </Tooltip>
-                                                    </InlineStack>
-                                                ),
-                                                value: "true",
-                                            },
-                                        ]}
-                                        selected={settingsState.skipTheCart ? ["true"] : []}
-                                        onChange={(value) => {
-                                            setSetttingsState((prevSettings: BundleSettings) => {
-                                                return {
-                                                    ...prevSettings,
-                                                    skipTheCart: value[0] === "true",
-                                                };
-                                            });
-                                        }}
-                                    />
+                                    <BlockStack gap={GapBetweenSections}>
+                                        <ChoiceList
+                                            title="Navigation"
+                                            name={`allowBackNavigation`}
+                                            allowMultiple
+                                            choices={[
+                                                {
+                                                    label: (
+                                                        <InlineStack>
+                                                            <Text as={"p"}>Allow customers to go back on steps</Text>
+                                                            <Tooltip
+                                                                width="wide"
+                                                                content="If this is not selected, customers won't be able to use the 'back' button to go back on steps.">
+                                                                <Icon source={QuestionCircleIcon}></Icon>
+                                                            </Tooltip>
+                                                        </InlineStack>
+                                                    ),
+                                                    value: "true",
+                                                },
+                                            ]}
+                                            selected={settingsState.allowBackNavigation ? ["true"] : []}
+                                            onChange={(value) => {
+                                                setSetttingsState((prevSettings: BundleSettings) => {
+                                                    return {
+                                                        ...prevSettings,
+                                                        allowBackNavigation: value[0] === "true",
+                                                    };
+                                                });
+                                            }}
+                                        />
+                                        <ChoiceList
+                                            title="Cart"
+                                            allowMultiple
+                                            name={`skipTheCart`}
+                                            choices={[
+                                                {
+                                                    label: (
+                                                        <InlineStack>
+                                                            <Text as={"p"}>Skip the cart and go to checkout directly</Text>
+                                                            <Tooltip
+                                                                width="wide"
+                                                                content="Without this option selected, all the customer will be redirected to the cart page after they finish building their bundle.">
+                                                                <Icon source={QuestionCircleIcon}></Icon>
+                                                            </Tooltip>
+                                                        </InlineStack>
+                                                    ),
+                                                    value: "true",
+                                                },
+                                            ]}
+                                            selected={settingsState.skipTheCart ? ["true"] : []}
+                                            onChange={(value) => {
+                                                setSetttingsState((prevSettings: BundleSettings) => {
+                                                    return {
+                                                        ...prevSettings,
+                                                        skipTheCart: value[0] === "true",
+                                                    };
+                                                });
+                                            }}
+                                        />
+                                    </BlockStack>
                                 </Card>
                             </InlineGrid>
                             <Divider />
@@ -279,35 +281,37 @@ export default function Index() {
                                     </BlockStack>
                                 </Box>
                                 <Card>
-                                    <ChoiceList
-                                        title="Products"
-                                        allowMultiple
-                                        name={`showOutOfStockProducts`}
-                                        choices={[
-                                            {
-                                                label: (
-                                                    <InlineStack>
-                                                        <Text as={"p"}>Show “out of stock” and unavailable products</Text>
-                                                        <Tooltip
-                                                            width="wide"
-                                                            content="By default, only products that have at least one variant that's in stock at the time of purchase will be displayed. If this is selected, all 'out of stock' products will be visible, but customers won't be able to add them to their bundles.">
-                                                            <Icon source={QuestionCircleIcon}></Icon>
-                                                        </Tooltip>
-                                                    </InlineStack>
-                                                ),
-                                                value: "true",
-                                            },
-                                        ]}
-                                        selected={settingsState.showOutOfStockProducts ? ["true"] : []}
-                                        onChange={(value) => {
-                                            setSetttingsState((prevSettings: BundleSettings) => {
-                                                return {
-                                                    ...prevSettings,
-                                                    showOutOfStockProducts: value[0] === "true",
-                                                };
-                                            });
-                                        }}
-                                    />
+                                    <BlockStack gap={GapBetweenSections}>
+                                        <ChoiceList
+                                            title="Products"
+                                            allowMultiple
+                                            name={`showOutOfStockProducts`}
+                                            choices={[
+                                                {
+                                                    label: (
+                                                        <InlineStack>
+                                                            <Text as={"p"}>Show “out of stock” and unavailable products</Text>
+                                                            <Tooltip
+                                                                width="wide"
+                                                                content="By default, only products that have at least one variant that's in stock at the time of purchase will be displayed. If this is selected, all 'out of stock' products will be visible, but customers won't be able to add them to their bundles.">
+                                                                <Icon source={QuestionCircleIcon}></Icon>
+                                                            </Tooltip>
+                                                        </InlineStack>
+                                                    ),
+                                                    value: "true",
+                                                },
+                                            ]}
+                                            selected={settingsState.showOutOfStockProducts ? ["true"] : []}
+                                            onChange={(value) => {
+                                                setSetttingsState((prevSettings: BundleSettings) => {
+                                                    return {
+                                                        ...prevSettings,
+                                                        showOutOfStockProducts: value[0] === "true",
+                                                    };
+                                                });
+                                            }}
+                                        />
+                                    </BlockStack>
                                 </Card>
                             </InlineGrid>
                             <BlockStack gap={GapBetweenSections}>

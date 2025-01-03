@@ -1,7 +1,8 @@
-import { Page } from "~/adminBackend/shopifyGraphql/graphql";
+import type { Page } from "~/adminBackend/shopifyGraphql/graphql";
 import db from "../../../db.server";
-import { BundleBuilder } from "@prisma/client";
-import { BundleBuilderAndBundleSteps, bundleBuilderAndBundleSteps } from "@adminBackend/model/BundleBuilderAndBundleSteps";
+import type { BundleBuilder } from "@prisma/client";
+import type { BundleBuilderAndBundleSteps } from "@adminBackend/model/BundleBuilderAndBundleSteps";
+import { bundleBuilderAndBundleSteps } from "@adminBackend/model/BundleBuilderAndBundleSteps";
 export class BundleBuilderRepository {
     public static async createNewBundleBuilder(shop: string, bundleTitle: string, bundleProductId: string, bundlePageId: string, bundleBuilderPageHandle: string) {
         //Create a new bundle in the database
@@ -21,7 +22,6 @@ export class BundleBuilderRepository {
                 discountValue: 10,
                 bundleSettings: {
                     create: {
-                        hidePricingSummary: false,
                         skipTheCart: false,
                         allowBackNavigation: true,
                         showOutOfStockProducts: false,
@@ -149,7 +149,6 @@ export class BundleBuilderRepository {
                 discountValue: 10,
                 bundleSettings: {
                     create: {
-                        hidePricingSummary: false,
                         skipTheCart: false,
                         allowBackNavigation: true,
                         showOutOfStockProducts: false,
