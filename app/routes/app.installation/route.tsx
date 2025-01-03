@@ -26,6 +26,7 @@ import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import shopifyThemesRepository from "~/adminBackend/repository/impl/ShopifyThemesRepository";
 import { useEffect } from "react";
 import { JsonData } from "~/adminBackend/service/dto/jsonData";
+import tutorialTumbnail from "../../assets/tutorial_tumbnail.png";
 
 function parseMainPageBody(content: string) {
     // Find the start of the JSON object (the first '{') and the end (the last '}')
@@ -260,16 +261,12 @@ export default function Index() {
                                     primaryAction={{
                                         content: "Watch tutorial",
                                         icon: ExternalIcon,
-                                        url: "https://help.shopify.com",
+                                        url: "https://youtu.be/Mbzu7mI1jDE",
                                         target: "_blank",
                                     }}
                                     size="small"
                                     description="We recommend watching this short tutorial to get quickly started with installation and creating your first bundles.">
-                                    <VideoThumbnail
-                                        videoLength={80}
-                                        thumbnailUrl="https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850"
-                                        onClick={() => console.log("clicked")}
-                                    />
+                                    <VideoThumbnail videoLength={80} thumbnailUrl={tutorialTumbnail} onClick={() => console.log("clicked")} />
                                 </MediaCard>
                             </InlineGrid>
 
