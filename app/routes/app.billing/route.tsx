@@ -33,7 +33,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         if (user.isDevelopmentStore && user.activeBillingPlan !== "FREE") {
             user.activeBillingPlan = "FREE";
             await userRepository.updateUser(user);
-
             //
         } else if (user.activeBillingPlan !== "NONE" && !user.isDevelopmentStore) {
             user.activeBillingPlan = "NONE";
