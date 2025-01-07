@@ -1,11 +1,8 @@
-import { json, useLoaderData, useNavigate } from "@remix-run/react";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { authenticate } from "../../shopify.server";
-import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import { ShopifyCatalogRepository } from "~/adminBackend/repository/impl/ShopifyCatalogRepository";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import type { Shop } from "~/adminBackend/shopifyGraphql/graphql";
-import { useEffect } from "react";
 import { BlockStack, Card, SkeletonBodyText, SkeletonPage } from "@shopify/polaris";
 import { BillingPlanIdentifiers } from "~/constants";
 import { loopsClient } from "../../email.server";
@@ -39,12 +36,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         const onlineStorePublicationId = await ShopifyCatalogRepository.getOnlineStorePublicationId(admin);
 
         if (!onlineStorePublicationId) {
-            return json(
-                {
-                    ...new JsonData(false, "error", "Failed to get the publication id of the online store", [], { redirect: "/app/error" }),
-                },
-                { status: 500 },
-            );
+            return redirect("/app/error?type=no-publication");
         }
 
         user = await userRepository.createUser(session.shop, data.email, data.name, data.primaryDomain.url, onlineStorePublicationId, data.shopOwnerName);
@@ -156,13 +148,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export default function Index() {
-    const loaderResponse = useLoaderData<typeof loader>();
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        navigate(loaderResponse.data.redirect);
-    }, [loaderResponse, navigate]);
-
     return (
         <SkeletonPage primaryAction>
             <BlockStack gap="500">
