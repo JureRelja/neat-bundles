@@ -41,11 +41,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
         user = await userRepository.createUser(session.shop, data.email, data.name, data.primaryDomain.url, onlineStorePublicationId, data.shopOwnerName);
 
-        if (data.plan.partnerDevelopment) {
-            user.activeBillingPlan = "FREE";
-            user.isDevelopmentStore = true;
-            await userRepository.updateUser(user);
-        }
+        // if (data.plan.partnerDevelopment) {
+        //     user.activeBillingPlan = "FREE";
+        //     user.isDevelopmentStore = true;
+        //     await userRepository.updateUser(user);
+        // }
 
         //welcome emails
         //etc.
