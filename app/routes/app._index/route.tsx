@@ -41,11 +41,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
         user = await userRepository.createUser(session.shop, data.email, data.name, data.primaryDomain.url, onlineStorePublicationId, data.shopOwnerName);
 
-        // if (data.plan.partnerDevelopment) {
-        //     user.activeBillingPlan = "FREE";
-        //     user.isDevelopmentStore = true;
-        //     await userRepository.updateUser(user);
-        // }
+        if (data.plan.partnerDevelopment) {
+            user.activeBillingPlan = "FREE";
+            user.isDevelopmentStore = true;
+            await userRepository.updateUser(user);
+        }
 
         //welcome emails
         //etc.
@@ -95,6 +95,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     //if the user is not a development store but the database says it is a development store (this can happen if the user was a development store and then switched to a paid plan)
     if (!data.plan.partnerDevelopment && user.isDevelopmentStore) {
         user.isDevelopmentStore = false;
+        await userRepository.updateUser(user);
+    } //
+    else if (data.plan.partnerDevelopment && !user.isDevelopmentStore) {
+        user.activeBillingPlan = "FREE";
+        user.isDevelopmentStore = true;
         await userRepository.updateUser(user);
     }
 
