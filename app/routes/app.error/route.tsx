@@ -87,12 +87,12 @@ export default function Index() {
                                     <Banner title="There was an error!" tone="critical" onDismiss={() => {}}>
                                         <BlockStack gap={GapInsideSection}>
                                             <Text as={"p"} variant="headingMd">
-                                                You don't have "Online store" app installed on your store.
+                                                You don't have an "Online store" app installed on your store.
                                             </Text>
 
                                             <Text as={"p"}>
-                                                NeatBundles app wasn't able to find "Online store" sales channel app by Shopify installed on your store. Please install the
-                                                mentioned app and then come back here. I this is a mistake on our part, please contact us.
+                                                NeatBundles app wasn't able to find an "Online store" sales channel app by Shopify installed on your store. Please install the
+                                                mentioned app and then come back here. If you think this was a mistake on our part, please contact us.
                                             </Text>
                                         </BlockStack>
                                     </Banner>

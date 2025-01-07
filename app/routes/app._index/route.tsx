@@ -35,8 +35,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
         const onlineStorePublicationId = await ShopifyCatalogRepository.getOnlineStorePublicationId(admin);
 
-        return redirect("/app/error?type=no-publication");
         if (!onlineStorePublicationId) {
+            return redirect("/app/error?type=no-publication");
         }
 
         user = await userRepository.createUser(session.shop, data.email, data.name, data.primaryDomain.url, onlineStorePublicationId, data.shopOwnerName);
