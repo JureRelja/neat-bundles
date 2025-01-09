@@ -112,12 +112,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         case BillingPlanIdentifiers.BASIC_MONTHLY: {
             if (user.activeBillingPlan === "PRO") state = "downgrading";
 
-            await userRepository.updateUser({ ...user, activeBillingPlan: "PRO" });
+            await userRepository.updateUser({ ...user, activeBillingPlan: "BASIC" });
 
             await billing.request({
                 plan: action,
                 isTest: false,
-                returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/${state === "downgrading" ? "billing" : state === "none" ? "thank-you?variant=firstPlan" : ""}`,
+                returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/${process.env.APP_HANDLE}/app/${state === "downgrading" ? "billing" : state === "none" ? "thank-you?variant=firstPlan" : ""}`,
             });
 
             break;
@@ -126,12 +126,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         case BillingPlanIdentifiers.BASIC_YEARLY: {
             if (user.activeBillingPlan === "PRO") state = "downgrading";
 
-            await userRepository.updateUser({ ...user, activeBillingPlan: "PRO" });
+            await userRepository.updateUser({ ...user, activeBillingPlan: "BASIC" });
 
             await billing.request({
                 plan: action,
                 isTest: false,
-                returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/${state === "downgrading" ? "billing" : state === "none" ? "thank-you?variant=firstPlan" : ""}`,
+                returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/${process.env.APP_HANDLE}/app/${state === "downgrading" ? "billing" : state === "none" ? "thank-you?variant=firstPlan" : ""}`,
             });
 
             break;
@@ -146,7 +146,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             await billing.request({
                 plan: action,
                 isTest: false,
-                returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/thank-you?variant=${state === "upgrading" ? "upgrade" : state === "none" ? "firstPlan" : ""}`,
+                returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/${process.env.APP_HANDLE}/app/thank-you?variant=${state === "upgrading" ? "upgrade" : state === "none" ? "firstPlan" : ""}`,
             });
 
             break;
@@ -160,7 +160,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             await billing.request({
                 plan: action,
                 isTest: false,
-                returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/neat-bundles/app/thank-you?variant=${state === "upgrading" ? "upgrade" : state === "none" ? "firstPlan" : ""}`,
+                returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/${process.env.APP_HANDLE}/app/thank-you?variant=${state === "upgrading" ? "upgrade" : state === "none" ? "firstPlan" : ""}`,
             });
 
             break;
@@ -233,10 +233,6 @@ export default function Index() {
         ) {
             setNewSelectedSubscription(newPlan);
             setIsDowngrading(true);
-            return;
-        }
-
-        if (!user.isDevelopmentStore && activeSubscription.planId !== "NONE") {
             return;
         }
 
