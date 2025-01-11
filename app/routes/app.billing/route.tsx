@@ -23,7 +23,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     const { hasActivePayment, appSubscriptions } = await billing.check({
         plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY, BillingPlanIdentifiers.BASIC_MONTHLY, BillingPlanIdentifiers.BASIC_YEARLY],
-        isTest: true,
+        isTest: false,
     });
 
     console.log(hasActivePayment, appSubscriptions);
@@ -83,7 +83,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     const { hasActivePayment, appSubscriptions } = await billing.check({
         plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY, BillingPlanIdentifiers.BASIC_MONTHLY, BillingPlanIdentifiers.BASIC_YEARLY],
-        isTest: true,
+        isTest: false,
     });
 
     const formData = await request.formData();
@@ -102,7 +102,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             if (hasActivePayment) {
                 await billing.cancel({
                     subscriptionId: appSubscriptions[0].id,
-                    isTest: true,
+                    isTest: false,
                     prorate: false,
                 });
             }
@@ -118,7 +118,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
             await billing.request({
                 plan: action,
-                isTest: true,
+                isTest: false,
                 returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/${process.env.APP_HANDLE}/app/${state === "downgrading" ? "billing" : state === "none" ? "thank-you?variant=firstPlan" : ""}`,
             });
 
@@ -132,7 +132,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
             await billing.request({
                 plan: action,
-                isTest: true,
+                isTest: false,
                 returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/${process.env.APP_HANDLE}/app/${state === "downgrading" ? "billing" : state === "none" ? "thank-you?variant=firstPlan" : ""}`,
             });
 
@@ -147,7 +147,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
             await billing.request({
                 plan: action,
-                isTest: true,
+                isTest: false,
                 returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/${process.env.APP_HANDLE}/app/thank-you?variant=${state === "upgrading" ? "upgrade" : state === "none" ? "firstPlan" : ""}`,
             });
 
@@ -161,7 +161,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
             await billing.request({
                 plan: action,
-                isTest: true,
+                isTest: false,
                 returnUrl: `https://admin.shopify.com/store/${session.shop.split(".")[0]}/apps/${process.env.APP_HANDLE}/app/thank-you?variant=${state === "upgrading" ? "upgrade" : state === "none" ? "firstPlan" : ""}`,
             });
 
