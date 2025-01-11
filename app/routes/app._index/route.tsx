@@ -105,7 +105,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     const result = await billing.check({
         plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY, BillingPlanIdentifiers.BASIC_MONTHLY, BillingPlanIdentifiers.BASIC_YEARLY],
-        isTest: false,
+        isTest: true,
     });
 
     console.log(result);
