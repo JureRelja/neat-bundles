@@ -21,12 +21,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     if (!user) return redirect("/app");
 
-    const { hasActivePayment, appSubscriptions } = await billing.check({
+    const result = await billing.check({
         plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY, BillingPlanIdentifiers.BASIC_MONTHLY, BillingPlanIdentifiers.BASIC_YEARLY],
         isTest: false,
     });
 
-    console.log(hasActivePayment, appSubscriptions);
+    console.log(result);
+
+    const { hasActivePayment, appSubscriptions } = result;
 
     //if the user doesn't have an active payment
     if (!hasActivePayment) {

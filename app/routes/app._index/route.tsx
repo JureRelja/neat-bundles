@@ -103,12 +103,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         await userRepository.updateUser(user);
     }
 
-    const { hasActivePayment, appSubscriptions } = await billing.check({
+    const result = await billing.check({
         plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY, BillingPlanIdentifiers.BASIC_MONTHLY, BillingPlanIdentifiers.BASIC_YEARLY],
         isTest: false,
     });
 
-    console.log(hasActivePayment, appSubscriptions);
+    console.log(result);
+
+    const hasActivePayment = result.hasActivePayment;
+    const appSubscriptions = result.appSubscriptions;
 
     //if the user doesn't have an active payment
     if (!hasActivePayment) {
