@@ -105,8 +105,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     const { hasActivePayment, appSubscriptions } = await billing.check({
         plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY, BillingPlanIdentifiers.BASIC_MONTHLY, BillingPlanIdentifiers.BASIC_YEARLY],
-        isTest: false,
+        isTest: true,
     });
+
+    console.log(hasActivePayment, appSubscriptions);
 
     //if the user doesn't have an active payment
     if (!hasActivePayment) {
