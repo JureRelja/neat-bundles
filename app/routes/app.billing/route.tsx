@@ -26,6 +26,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         isTest: true,
     });
 
+    console.log(hasActivePayment, appSubscriptions);
+
     //if the user doesn't have an active payment
     if (!hasActivePayment) {
         //if it says in the database that the user has an active billing plan that is not BASIC
@@ -83,8 +85,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         plans: [BillingPlanIdentifiers.PRO_MONTHLY, BillingPlanIdentifiers.PRO_YEARLY, BillingPlanIdentifiers.BASIC_MONTHLY, BillingPlanIdentifiers.BASIC_YEARLY],
         isTest: true,
     });
-
-    console.log(hasActivePayment, appSubscriptions);
 
     const formData = await request.formData();
     const action = formData.get("action");
