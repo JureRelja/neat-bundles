@@ -33,13 +33,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
         const data: Shop = (await response.json()).data.shop;
 
-        const onlineStorePublicationId = await ShopifyCatalogRepository.getOnlineStorePublicationId(admin);
+        // const onlineStorePublicationId = await ShopifyCatalogRepository.getOnlineStorePublicationId(admin);
 
         // if (!onlineStorePublicationId) {
         //     return redirect("/app/error?type=no-publication");
         // }
 
-        user = await userRepository.createUser(session.shop, data.email, data.name, data.primaryDomain.url, onlineStorePublicationId, data.shopOwnerName);
+        user = await userRepository.createUser(session.shop, data.email, data.name, data.primaryDomain.url, "asdf", data.shopOwnerName);
 
         if (data.plan.partnerDevelopment) {
             user.activeBillingPlan = "FREE";
