@@ -107,7 +107,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                 const [, bundleBuilder] = await Promise.all([
                     //Create redirect
-                    ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundlePage.handle as string, bundleProductId),
+                    ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundlePage.handle, bundleProductId),
                     //Create new bundle
                     BundleBuilderRepository.createNewEmptyBundleBuilder(session.shop, bundleBuilderTitle, bundleProductId, bundlePage.id, bundlePage.handle),
                 ]);
@@ -181,7 +181,7 @@ export default function Index() {
         }
 
         const form = new FormData();
-        form.append("bundleTitle", newBundleTitle as string);
+        form.append("bundleTitle", newBundleTitle);
         form.append("action", "createBundle");
 
         submit(form, { method: "POST", action: `/app/users/${user.id}/bundles${!user.completedOnboarding ? "?onboarding=true" : ""}`, navigate: true });
