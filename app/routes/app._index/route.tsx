@@ -125,6 +125,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             await userRepository.updateUser(user);
 
             return redirect(`/app/billing`);
+        } else if (user.activeBillingPlan === "NONE" && !user.isDevelopmentStore) {
+            return redirect(`/app/billing`);
         }
     }
     //if the user has an active payment
