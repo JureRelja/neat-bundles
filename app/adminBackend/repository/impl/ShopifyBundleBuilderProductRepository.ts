@@ -1,13 +1,13 @@
 import { AdminApiContext } from "@shopify/shopify-app-remix/server";
 import { bundleTagIndentifier } from "../../../constants";
-import { Product, ProductCreatePayload, ProductUpdatePayload } from "~/adminBackend/shopifyGraphql/graphql";
+import { ProductCreatePayload, ProductUpdatePayload } from "~/adminBackend/shopifyGraphql/graphql";
 import { ShopifyCatalogRepository } from "./ShopifyCatalogRepository";
 
 export class ShopifyBundleBuilderProductRepository {
     public async createBundleProduct(admin: AdminApiContext, productTitle: string, storeUrl: string): Promise<string> {
         const response = await admin.graphql(
             `#graphql
-              mutation createBundleBuilderProduct($productInput: ProductCreateInput!) {
+              mutation createBundleBuilderProduct($productInput: ProductInput!) {
                 productCreate(product: $productInput) {
                   product {
                     id
@@ -23,6 +23,7 @@ export class ShopifyBundleBuilderProductRepository {
                 variables: {
                     productInput: {
                         title: productTitle,
+                        published: true,
                         productType: "Neat Bundle",
                         vendor: "Neat Bundles",
                         status: "ACTIVE",
@@ -43,11 +44,11 @@ export class ShopifyBundleBuilderProductRepository {
             throw new Error("Failed to create the bundle product.");
         }
 
-        const publishProductReponse = await ShopifyCatalogRepository.publishProductToOnlineStore(admin, product.product.id, storeUrl);
+        // const publishProductReponse = await ShopifyCatalogRepository.publishProductToOnlineStore(admin, product.product.id, storeUrl);
 
-        if (!publishProductReponse) {
-            throw new Error("Failed to publish the product to the online store");
-        }
+        // if (!publishProductReponse) {
+        //     throw new Error("Failed to publish the product to the online store");
+        // }
 
         return product.product?.id as string;
     }
