@@ -23,6 +23,8 @@ export class ShopifyCatalogRepository {
 
         const allPUblicationsData: Catalog[] = (await getAllPublicationsResponse.json()).data.catalogs.nodes;
 
+        console.log(allPUblicationsData);
+
         const onlineStorePublication = allPUblicationsData.find((publication) => publication.title.includes("Online Store"));
 
         if (!onlineStorePublication || !onlineStorePublication.publication || !onlineStorePublication.publication.id) {
