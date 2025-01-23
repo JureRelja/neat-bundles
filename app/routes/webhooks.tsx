@@ -15,7 +15,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             if (session) {
                 await db.session.delete({
                     where: {
-                        id: session.id,
+                        id: shop,
                     },
                 });
 
