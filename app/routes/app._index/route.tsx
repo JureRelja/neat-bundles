@@ -16,7 +16,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     if (!user) {
         const response = await admin.graphql(
             `#graphql
-                query  {
+                query getStore {
                 shop {
                     name
                     shopOwnerName
@@ -33,13 +33,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
         const data: Shop = (await response.json()).data.shop;
 
-        const onlineStorePublicationId = await ShopifyCatalogRepository.getOnlineStorePublicationId(admin);
+        // const onlineStorePublicationId = await ShopifyCatalogRepository.getOnlineStorePublicationId(admin);
 
-        if (!onlineStorePublicationId) {
-            return redirect("/app/error?type=no-publication");
-        }
+        // if (!onlineStorePublicationId) {
+        //     return redirect("/app/error?type=no-publication");
+        // }
 
-        user = await userRepository.createUser(session.shop, data.email, data.name, data.primaryDomain.url, onlineStorePublicationId, data.shopOwnerName);
+        user = await userRepository.createUser(session.shop, data.email, data.name, data.primaryDomain.url, "", data.shopOwnerName);
 
         if (data.plan.partnerDevelopment) {
             user.activeBillingPlan = "FREE";
@@ -81,7 +81,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     //check if the user is a development store
     const response = await admin.graphql(
         `#graphql
-            query  {
+            query isStoreDevelopment {
             shop {
                 plan {
                     partnerDevelopment

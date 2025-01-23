@@ -378,4 +378,4 @@ export default config;
 
 Run the generation command
 
--   graphql-codegen --config codegen.ts
+-   npm run graphql-codegen --config codegen.ts

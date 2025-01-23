@@ -33,7 +33,7 @@ class ShopifyThemesRepository {
     public async getMainThemeWithTandS(admin: AdminApiContext): Promise<OnlineStoreTheme> {
         const response = await admin.graphql(`
             #graphql
-            query getThemes {
+            query getMainThemeWithTandS {
                 themes(first: 1, roles: MAIN) {
                     nodes {
                         name
@@ -63,7 +63,7 @@ class ShopifyThemesRepository {
     public async getMainThemeWithSettings(admin: AdminApiContext): Promise<OnlineStoreTheme> {
         const response = await admin.graphql(`
             #graphql
-            query getThemes {
+            query getMainThemeWithSettings {
                 themes(first: 1, roles: MAIN) {
                     nodes {
                         name

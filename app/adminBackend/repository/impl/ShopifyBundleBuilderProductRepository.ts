@@ -1,14 +1,13 @@
 import { AdminApiContext } from "@shopify/shopify-app-remix/server";
 import { bundleTagIndentifier } from "../../../constants";
 import { ProductCreatePayload, ProductUpdatePayload } from "~/adminBackend/shopifyGraphql/graphql";
-import { ShopifyCatalogRepository } from "./ShopifyCatalogRepository";
 
 export class ShopifyBundleBuilderProductRepository {
     public async createBundleProduct(admin: AdminApiContext, productTitle: string, storeUrl: string): Promise<string> {
         const response = await admin.graphql(
             `#graphql
               mutation createBundleBuilderProduct($productInput: ProductInput!) {
-                productCreate(product: $productInput) {
+                productCreate(input: $productInput) {
                   product {
                     id
                     handle
