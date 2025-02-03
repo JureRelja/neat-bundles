@@ -1,12 +1,12 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { authenticate } from "../../shopify.server";
-import { ShopifyCatalogRepository } from "~/adminBackend/repository/impl/ShopifyCatalogRepository";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import type { Shop } from "~/adminBackend/shopifyGraphql/graphql";
 import { BlockStack, Card, SkeletonBodyText, SkeletonPage } from "@shopify/polaris";
 import { BillingPlanIdentifiers } from "~/constants";
 import { loopsClient } from "../../email.server";
 import { bundleBuilderService } from "~/adminBackend/service/impl/BundleBuilderServiceImpl";
+import { StorefrontToken } from "~/adminBackend/service/shopify/StorefrontToken";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { admin, session, billing, redirect } = await authenticate.admin(request);
@@ -33,13 +33,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
         const data: Shop = (await response.json()).data.shop;
 
-        // const onlineStorePublicationId = await ShopifyCatalogRepository.getOnlineStorePublicationId(admin);
+        const storefrontAccessToken = await StorefrontToken.createToken(admin);
 
-        // if (!onlineStorePublicationId) {
-        //     return redirect("/app/error?type=no-publication");
-        // }
-
-        user = await userRepository.createUser(session.shop, data.email, data.name, data.primaryDomain.url, "", data.shopOwnerName);
+        user = await userRepository.createUser(session.shop, data.email, data.name, data.primaryDomain.url, data.shopOwnerName, storefrontAccessToken);
 
         if (data.plan.partnerDevelopment) {
             user.activeBillingPlan = "FREE";
@@ -57,7 +53,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             lastName: user.ownerName.replace(firstName, "").trim(),
             email: user.email,
             shopifyPrimaryDomain: user.primaryDomain,
-            myShopifyDomain: user.storeUrl,
+            myShopifyDomain: user.shop,
             source: "Shopify - Installed the app",
             userGroup: "neat-bundles",
         };
@@ -75,7 +71,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     }
 
     if (!user.hasAppInstalled) {
-        await userRepository.updateUser({ ...user, hasAppInstalled: true });
+        const storefrontAccessToken = await StorefrontToken.createToken(admin);
+
+        await userRepository.updateUser({ ...user, hasAppInstalled: true, storefrontAccessToken: storefrontAccessToken });
     }
 
     //check if the user is a development store

@@ -7,41 +7,20 @@ datasource db {
   url      = env("DATABASE_URL_DEV")
 }
 
-model Session {
-  id            String    @id
-  shop          String
-  state         String
-  isOnline      Boolean   @default(false)
-  scope         String?
-  expires       DateTime?
-  accessToken   String
-  userId        BigInt?
-  collaborator  Boolean
-  email         String?
-  emailVerified Boolean
-  firstName     String?
-  lastName      String?
-  locale        String?
-  accountOwner  Boolean
+model AddedContent {
+  id              Int           @id @default(autoincrement())
+  contentType     InputType
+  contentValue    String
+  createdBundleId Int
+  CreatedBundle   CreatedBundle @relation(fields: [createdBundleId], references: [id], onDelete: Cascade)
 }
 
-model User {
-  id                       Int             @id @default(autoincrement())
-  ownerName                String          @default("")
-  email                    String
-  storeName                String
-  primaryDomain            String
-  hasAppInstalled          Boolean         @default(true)
-  onlineStorePublicationId String
-  activeBillingPlan        PricingPlan     @default(NONE)
-  completedInstallation    Boolean         @default(false)
-  showTutorialBanner       Boolean         @default(true)
-  completedOnboarding      Boolean         @default(false)
-  isDevelopmentStore       Boolean         @default(false)
-  shop                     String          @unique
-  BundleBuilder            BundleBuilder[]
-  CreatedBundle            CreatedBundle[]
-  Settings                 Settings?
+model AddedProductVariant {
+  id              Int           @id @default(autoincrement())
+  productVariant  String
+  quantity        Int
+  createdBundleId Int
+  CreatedBundle   CreatedBundle @relation(fields: [createdBundleId], references: [id], onDelete: Cascade)
 }
 
 model BundleBuilder {
@@ -58,90 +37,6 @@ model BundleBuilder {
   User                User                 @relation(fields: [shop], references: [shop], onDelete: Cascade)
   BundleBuilderConfig BundleBuilderConfig?
   BundleBuilderStep   BundleBuilderStep[]
-}
-
-model ProductInput {
-  id                     Int                     @id @default(autoincrement())
-  bundleStepId           Int                     @unique
-  minProductsOnStep      Int
-  maxProductsOnStep      Int
-  allowProductDuplicates Boolean
-  showProductPrice       Boolean
-  bundleStep             BundleBuilderStep       @relation(fields: [bundleStepId], references: [id], onDelete: Cascade)
-  ProductToProductInput  ProductToProductInput[]
-}
-
-model Product {
-  shopifyProductId      String                  @id
-  shopifyProductHandle  String
-  ProductToProductInput ProductToProductInput[]
-}
-
-model ContentInput {
-  id           Int               @id @default(autoincrement())
-  bundleStepId Int
-  inputType    InputType
-  inputLabel   String
-  maxChars     Int
-  required     Boolean
-  bundleStep   BundleBuilderStep @relation(fields: [bundleStepId], references: [id], onDelete: Cascade)
-}
-
-model BundleColors {
-  id                    Int      @id @default(autoincrement())
-  stepsIcon             String
-  addToBundleBtn        String
-  addToBundleText       String
-  nextStepBtn           String
-  nextStepBtnText       String
-  titleAndDESC          String
-  viewProductBtn        String
-  removeProductsBtn     String
-  prevStepBtn           String
-  prevStepBtnText       String
-  removeProductsBtnText String
-  viewProductBtnText    String
-  globalSettingsId      Int      @unique
-  globalSettings        Settings @relation(fields: [globalSettingsId], references: [id], onDelete: Cascade)
-}
-
-model BundleLabels {
-  id             Int      @id @default(autoincrement())
-  addToBundleBtn String
-  nextStepBtn    String
-  prevStepBtn    String
-  viewProductBtn String
-  settingsId     Int      @unique
-  Settings       Settings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
-}
-
-model CreatedBundle {
-  id                   Int                   @id @default(autoincrement())
-  bundleBuilderId      Int?
-  finalPrice           Float
-  discountAmount       Float
-  createdAt            DateTime              @default(now())
-  isSold               Boolean               @default(false)
-  shop                 String
-  addedContent         AddedContent[]
-  addedProductVariants AddedProductVariant[]
-  User                 User                  @relation(fields: [shop], references: [shop], onDelete: Cascade)
-}
-
-model AddedProductVariant {
-  id              Int           @id @default(autoincrement())
-  productVariant  String
-  quantity        Int
-  createdBundleId Int
-  createdBundle   CreatedBundle @relation(fields: [createdBundleId], references: [id], onDelete: Cascade)
-}
-
-model AddedContent {
-  id              Int           @id @default(autoincrement())
-  contentType     InputType
-  contentValue    String
-  createdBundleId Int
-  createdBundle   CreatedBundle @relation(fields: [createdBundleId], references: [id], onDelete: Cascade)
 }
 
 model BundleBuilderConfig {
@@ -161,8 +56,94 @@ model BundleBuilderStep {
   description     String
   bundleBuilderId Int
   BundleBuilder   BundleBuilder  @relation(fields: [bundleBuilderId], references: [id], onDelete: Cascade)
-  contentInputs   ContentInput[]
-  productInput    ProductInput?
+  ContentInput    ContentInput[]
+  ProductInput    ProductInput?
+}
+
+model BundleColors {
+  id                    Int      @id @default(autoincrement())
+  stepsIcon             String
+  addToBundleBtn        String
+  addToBundleText       String
+  nextStepBtn           String
+  nextStepBtnText       String
+  titleAndDESC          String
+  viewProductBtn        String
+  removeProductsBtn     String
+  prevStepBtn           String
+  prevStepBtnText       String
+  removeProductsBtnText String
+  viewProductBtnText    String
+  settingsId            Int      @unique
+  Settings              Settings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+}
+
+model BundleLabels {
+  id             Int      @id @default(autoincrement())
+  addToBundleBtn String
+  nextStepBtn    String
+  prevStepBtn    String
+  viewProductBtn String
+  settingsId     Int      @unique
+  Settings       Settings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+}
+
+model ContentInput {
+  id                Int               @id @default(autoincrement())
+  bundleStepId      Int
+  inputType         InputType
+  inputLabel        String
+  maxChars          Int
+  required          Boolean
+  BundleBuilderStep BundleBuilderStep @relation(fields: [bundleStepId], references: [id], onDelete: Cascade)
+}
+
+model CreatedBundle {
+  id                  Int                   @id @default(autoincrement())
+  bundleBuilderId     Int?
+  finalPrice          Float
+  discountAmount      Float
+  createdAt           DateTime              @default(now())
+  isSold              Boolean               @default(false)
+  shop                String
+  AddedContent        AddedContent[]
+  AddedProductVariant AddedProductVariant[]
+  User                User                  @relation(fields: [shop], references: [shop], onDelete: Cascade)
+}
+
+model Product {
+  shopifyProductId      String                  @id
+  shopifyProductHandle  String
+  ProductToProductInput ProductToProductInput[]
+}
+
+model ProductInput {
+  id                     Int                     @id @default(autoincrement())
+  bundleStepId           Int                     @unique
+  minProductsOnStep      Int
+  maxProductsOnStep      Int
+  allowProductDuplicates Boolean
+  showProductPrice       Boolean
+  BundleBuilderStep      BundleBuilderStep       @relation(fields: [bundleStepId], references: [id], onDelete: Cascade)
+  ProductToProductInput  ProductToProductInput[]
+}
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  collaborator  Boolean
+  email         String?
+  emailVerified Boolean
+  firstName     String?
+  lastName      String?
+  locale        String?
+  accountOwner  Boolean
 }
 
 model Settings {
@@ -170,9 +151,28 @@ model Settings {
   stepNavigationTypeDesktop StepNavigationType @default(NORMAL)
   stepNavigationTypeMobile  StepNavigationType @default(STICKY)
   shop                      String             @unique
-  bundleColors              BundleColors?
+  BundleColors              BundleColors?
   BundleLabels              BundleLabels?
   User                      User               @relation(fields: [shop], references: [shop], onDelete: Cascade)
+}
+
+model User {
+  id                    Int             @id @default(autoincrement())
+  ownerName             String          @default("")
+  email                 String
+  storeName             String
+  primaryDomain         String
+  hasAppInstalled       Boolean         @default(true)
+  activeBillingPlan     PricingPlan     @default(NONE)
+  completedInstallation Boolean         @default(false)
+  showTutorialBanner    Boolean         @default(true)
+  completedOnboarding   Boolean         @default(false)
+  isDevelopmentStore    Boolean         @default(false)
+  shop                  String          @unique
+  storefrontAccessToken String?
+  BundleBuilder         BundleBuilder[]
+  CreatedBundle         CreatedBundle[]
+  Settings              Settings?
 }
 
 model ProductToProductInput {
@@ -186,16 +186,15 @@ model ProductToProductInput {
   @@map("_ProductToProductInput")
 }
 
-enum PricingPlan {
-  BASIC
-  PRO
-  NONE
-  FREE
+enum BundleDiscountType {
+  FIXED
+  PERCENTAGE
+  NO_DISCOUNT
 }
 
-enum StepType {
-  PRODUCT
-  CONTENT
+enum BundlePricing {
+  FIXED
+  CALCULATED
 }
 
 enum InputType {
@@ -205,18 +204,19 @@ enum InputType {
   NONE
 }
 
-enum BundlePricing {
-  FIXED
-  CALCULATED
-}
-
-enum BundleDiscountType {
-  FIXED
-  PERCENTAGE
-  NO_DISCOUNT
+enum PricingPlan {
+  BASIC
+  PRO
+  NONE
+  FREE
 }
 
 enum StepNavigationType {
   STICKY
   NORMAL
+}
+
+enum StepType {
+  PRODUCT
+  CONTENT
 }

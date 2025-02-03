@@ -2,28 +2,27 @@ import db from "../../../db.server";
 import { User } from "@prisma/client";
 
 class UserRepository {
-    public async getUserByStoreUrl(storeUrl: string): Promise<User | null> {
+    public async getUserByStoreUrl(shop: string): Promise<User | null> {
         const user = await db.user.findUnique({
             where: {
-                storeUrl: storeUrl,
+                shop: shop,
             },
         });
 
         return user;
     }
 
-    public async createUser(storeUrl: string, storeEmail: string, storeName: string, primaryDomain: string, onlineStorePublicationId: string, ownerName: string): Promise<User> {
+    public async createUser(shop: string, storeEmail: string, storeName: string, primaryDomain: string, ownerName: string, storefrontAccessToken: string): Promise<User> {
         const user = await db.user.create({
             data: {
                 ownerName: ownerName,
-                storeUrl: storeUrl,
+                shop: shop,
                 email: storeEmail,
                 storeName: storeName,
                 primaryDomain: primaryDomain,
-                onlineStorePublicationId: onlineStorePublicationId,
-                globalSettings: {
+                Settings: {
                     create: {
-                        bundleColors: {
+                        BundleColors: {
                             create: {
                                 addToBundleBtn: "#000000",
                                 addToBundleText: "#000000",
@@ -39,7 +38,7 @@ class UserRepository {
                                 prevStepBtn: "#000000",
                             },
                         },
-                        bundleLabels: {
+                        BundleLabels: {
                             create: {
                                 addToBundleBtn: "Add to bundle",
                                 prevStepBtn: "Previous step",
@@ -49,11 +48,12 @@ class UserRepository {
                         },
                     },
                 },
+                storefrontAccessToken: storefrontAccessToken,
             },
         });
 
         if (!user) {
-            throw new Error(`Could not create user with store url ${storeUrl}`);
+            throw new Error(`Could not create user with store url ${shop}`);
         }
 
         return user;
