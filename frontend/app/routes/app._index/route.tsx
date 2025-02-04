@@ -35,9 +35,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
         const storefrontAccessToken = await StorefrontToken.createToken(admin);
 
-        user = await userRepository.createUser(session.shop, data.email, data.name, data.primaryDomain.url, data.shopOwnerName, storefrontAccessToken);
+        user = await userRepository.createUser(session.shop, data.email ?? "", data.name ?? "", data.primaryDomain.url, data.shopOwnerName, storefrontAccessToken);
 
-        if (data.plan.partnerDevelopment) {
+        if (data.plan?.partnerDevelopment) {
             user.activeBillingPlan = "FREE";
             user.isDevelopmentStore = true;
             await userRepository.updateUser(user);
@@ -150,9 +150,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
         await userRepository.updateUser(user);
     }
-
-    //if the user hasn't completed the installation redirect to installation page
-    if (!user.completedInstallation) return redirect(`/app/installation`);
 
     return redirect(`/app/users/${user.id}/bundles`);
 };

@@ -20,8 +20,8 @@
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
         "test:e2e": "jest --config ./test/jest-e2e.json",
         "db:setup": "prisma generate && prisma migrate deploy",
-        "ngrok-tunnel": "ngrok http --domain=purely-decent-pup.ngrok-free.app 3000",
-        "cloudflare": "cloudflared tunnel --url http://localhost:3000",
+        "ngrok-tunnel": "ngrok http --domain=purely-decent-pup.ngrok-free.app 3001",
+        "cloudflare": "cloudflared tunnel --url http://localhost:3001",
         "codegen": "graphql-codegen --config src/shopify/schema/codegen.ts"
     },
     "dependencies": {

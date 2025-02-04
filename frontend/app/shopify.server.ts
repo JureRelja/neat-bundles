@@ -5,8 +5,6 @@ import { restResources } from "@shopify/shopify-api/rest/admin/2024-10";
 import { BillingPlanIdentifiers } from "./constants";
 import prisma from "./db.server";
 
-import { createClient } from "redis";
-
 const storage = new PrismaSessionStorage(prisma);
 
 const shopify = shopifyApp({
@@ -92,8 +90,3 @@ export const unauthenticated = shopify.unauthenticated;
 export const login = shopify.login;
 export const registerWebhooks = shopify.registerWebhooks;
 export const sessionStorage = shopify.sessionStorage;
-
-// //Redis client for caching
-export const redisClient = await createClient({ url: process.env.REDIS_URL })
-    .on("error", (err) => console.error("Redis Client Error", err))
-    .connect();
