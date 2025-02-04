@@ -1,0 +1,19 @@
+.small-text {
+    height: 20px;
+    border-radius: 5px;
+}
+
+.short-text {
+    width: 60px;
+    border-radius: 5px;
+}
+
+.big-text {
+    height: 30px;
+    border-radius: 5px;
+}
+
+.long-text {
+    width: 200px;
+    border-radius: 5px;
+}

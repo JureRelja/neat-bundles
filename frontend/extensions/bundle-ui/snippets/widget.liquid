@@ -1,0 +1,788 @@
+{% comment %} CSS code for widget {% endcomment %}
+{{ 'widget.css' | asset_url | stylesheet_tag }}
+
+{% comment %} JS import {% endcomment %}
+<script src="{{ 'widget-fetching.js' | asset_url }}" async></script>
+<script src="{{ 'widget-utils.js' | asset_url }}" async></script>
+
+<style>
+  body.modal-open {
+    overflow: hidden;
+  }
+  [x-cloak] {
+    display: none !important;
+  }
+
+  /* User inputed settings */
+
+  .bundle_border_radius_big {
+    border-radius: {{ settings.bundle_border_radius_big }}px;
+  }
+  .bundle_border_radius_small {
+    border-radius: {{ settings.bundle_border_radius_small }}px;
+
+  }
+  .step_icon_color {
+    color: {{ settings.step_icon_color }};
+    border-color: {{ settings.step_icon_color }}
+  }
+  .passed_step_icon_color {
+    background-color: {{ settings.step_icon_color }};
+    border-color: {{ settings.step_icon_color }}
+  }
+  .step_title_color {
+    color: {{ settings.step_title_color }}
+  }
+  .step_description_color {
+    color: {{ settings.step_description_color }}
+  }
+  .step_description_bg_color {
+    background-color: {{ settings.step_description_bg_color }}
+  }
+  .add_to_bundle_text_bg_color {
+    background-color: {{ settings.add_to_bundle_bg_color }};
+    border-color: {{ settings.add_to_bundle_bg_color }};
+    color: {{ settings.add_to_bundle_text_color }}
+
+  }
+  .view_product_text_border_color {
+    color: {{ settings.view_product_text_border_color }};
+    border-color: {{ settings.view_product_text_border_color }}
+  }
+  .remove_product_text_border_color {
+    color: {{ settings.remove_product_text_border_color }};
+    border-color: {{ settings.remove_product_text_border_color }}
+  }
+
+  .prev_step_text_border_color {
+    color: {{ settings.prev_step_text_color }};
+    border-color: {{ settings.prev_step_bg_color }};
+  }
+  .next_step_text_bg_color {
+    color: {{ settings.next_step_text_color }};
+    background-color: {{ settings.next_step_bg_color }};
+  }
+
+  /* Global settings */
+  @media (max-width: 768px) {
+    .nav-wrapper-sticky-mobile {
+      position: fixed;
+      bottom: 0;
+      background-color: #fff;
+      z-index: 5;
+      padding: 10px;
+      border-top: 1px solid #9e9999;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .nav-wrapper-sticky-desktop {
+      position: fixed;
+      bottom: 0;
+      background-color: #fff;
+      z-index: 5;
+      padding: 10px;
+      border-top: 1px solid #9e9999;
+    }
+  }
+
+</style>
+
+{% comment %} Widget body start {% endcomment %}
+{% if bundleId != blank %}
+  <div id="neat-bundles-widget-container">
+
+    {% comment %} Loading sceleton {% endcomment %}
+    <div id="widget-skeleton">
+      {{ widgetSkeleton }}
+    </div>
+
+    {% comment %} Not loading {% endcomment %}
+    <div class="neat-bundles-inner-container" x-data="bundle">
+      <template x-if="!initialLoading">
+        <div
+          class="neat-bundles-inner-container"
+          x-init="$nextTick(() => { fetchDataForStep()})"
+          x-show="!showSkeleton">
+
+          <p x-show="isBundleInPreview">Your are viewing the bundle in
+            <u>preview</u>
+            mode.</p>
+
+
+          {% comment %} Step heading {% endcomment %}
+          <div class="steps-heading-container">
+            <template x-for="step in bundleData.steps">
+              {% comment %} Passed steps icon {% endcomment %}
+              <div>
+                {% comment %} Passed step icon {% endcomment %}
+                <div
+                  class="step-heading-container"
+                  @click="setActiveStep(step.stepNumber)"
+                  x-show="step.stepNumber < reachedStep">
+                  <div class="step-icon-container passed_step_icon_color">
+                    <span x-text="step.stepNumber" class="icon-number passed-step"></span>
+                  </div>
+                  <span
+                    x-text="step.title"
+                    class="step-title step_title_color"
+                    x-bind:class="activeStep < reachedStep ? 'active-step' : ''"></span>
+                </div>
+
+                {% comment %} Current step icon {% endcomment %}
+                <div
+                  class="step-heading-container"
+                  @click="setActiveStep(step.stepNumber)"
+                  x-show="step.stepNumber == reachedStep">
+                  <div class="step-icon-container step-icon-container-border step_icon_color">
+                    <span x-text="step.stepNumber" class="icon-number step_icon_color"></span>
+                  </div>
+                  <span
+                    x-text="step.title"
+                    class="step-title step_title_color"
+                    x-bind:class="activeStep == reachedStep ? 'active-step' : ''"></span>
+                </div>
+
+                {% comment %} Inactive step icon {% endcomment %}
+                <div
+                  class="step-heading-container inactive-step"
+                  @click="setActiveStep(step.stepNumber)"
+                  x-show="step.stepNumber > reachedStep">
+                  <div class="step-icon-container step-icon-container-border step_icon_color">
+                    <span x-text="step.stepNumber" class="icon-number step_icon_color"></span>
+                  </div>
+                  <span x-text="step.title" class="step-title step_title_color"></span>
+                </div>
+              </div>
+            </template>
+          </div>
+
+
+          {% comment %} Step body {% endcomment %}
+          <div
+            class="width-full"
+            x-show="stepLoading && !showSkeleton"
+            x-cloak>
+            {{ stepSkeleton }}
+          </div>
+
+          {% comment %} Products loaded {% endcomment %}
+          <template x-if="!stepLoading">
+            <div class="step-body">
+
+              {% comment %} Step description {% endcomment %}
+              <div class="step-description-container bundle_border_radius_big step_description_bg_color">
+                <p x-text="activeStepData.description" class="step_description_color"></p>
+              </div>
+
+              {% comment %} Product step {% endcomment %}
+              <div class="products-container product_align" x-show="activeStepData.stepType == 'PRODUCT' && activeStepProducts.length != 0">
+                {% comment %} Individualproducts {% endcomment %}
+                <template x-for="product in activeStepProducts">
+                  <div class="product bundle_border_radius_big" x-show="bundleSettings.showOutOfStockProducts || !product.outOfStock">
+
+                    <div class="product-img">
+                      <img
+                        x-bind:src="product.variants[product.selectedVariantIndex].featured_image?.src || product.featured_image"
+                        alt="product image"
+                        width="200"
+                        height="200">
+                      <div class="product-added-overlay" x-show="getProductQuantity(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep) > 0">
+                        <svg
+                          width="55"
+                          height="55"
+                          viewBox="0 0 13 9"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path d="M4.69632 8.92638L0.5 4.73006L1.54908 3.68098L4.69632 6.82822L11.4509 0.0736198L12.5 1.1227L4.69632 8.92638Z" fill="#282828" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="product-details">
+                      <div class="product-title-and-price">
+                        <p x-text="product.title" class="product-title"></p>
+                        <span
+                          x-text="product.variants[product.selectedVariantIndex].priceForDisplay"
+                          x-show="activeStepData.productInput.showProductPrice"
+                          class="product-price"></span>
+                      </div>
+
+                      {% comment %} Product action buttons {% endcomment %}
+
+                      {% comment %} This product is not added to bundle storage {% endcomment %}
+                      <div class="width-full">
+                        <div
+                          x-data="{showModal: false}"
+                          class="product-action-btns-container"
+                          x-show="!isProductInBundle(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep)">
+                          <button class="small-btn view-product-btn view_product_text_border_color bundle_border_radius_small" @click="() => {document.body.classList.add('modal-open'); showModal = true}">View product</button>
+
+                          {% comment %} Adding product that has no variants besides the default{% endcomment %}
+                          <button
+                            x-show="product.options.length == 0"
+                            class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small"
+                            :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
+                            @click="addProduct(product.variants[product.selectedVariantIndex].id, product.variants[product.selectedVariantIndex].price, activeStep, stepInputs)">Add product</button>
+
+                          {% comment %} Adding product that has other variants besides the default {% endcomment %}
+                          <button
+                            x-show="product.options.length > 0"
+                            class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small"
+                            :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
+                            @click="() => {document.body.classList.add('modal-open'); showModal = true}">Select option</button>
+
+
+                          {% comment %} View product modal {% endcomment %}
+                          <div
+                            class="view-product-modal"
+                            x-show="showModal"
+                            x-transition>
+                            <div class="view-product-modal-inner bundle_border_radius_big" @click.away="() => {document.body.classList.remove('modal-open'); showModal = false}">
+                              <div class="mobile-close-btn close-modal-container">
+                                <span class="close" @click="() => {document.body.classList.remove('modal-open'); showModal = false}">&times;</span>
+                              </div>
+
+                              <div class="modal-product-img">
+                                <img
+                                  class="bundle_border_radius_big"
+                                  x-bind:src="product.variants[product.selectedVariantIndex].featured_image?.src || product.featured_image"
+                                  alt="product image"
+                                  width="400"
+                                  height="400">
+                              </div>
+                              <div class="modal-product-details">
+                                <div class="desktop-close-btn close-modal-container ">
+                                  <span class="close" @click="() => {document.body.classList.remove('modal-open'); showModal = false}">&times;</span>
+                                </div>
+
+                                <h2 x-text="product.title"></h2>
+
+                                {% comment %} Product variant selector {% endcomment %}
+                                <div
+                                  x-data="{selectedOptions: product.variants[product.selectedVariantIndex].options.map(option => option)}"
+                                  x-init="$watch('selectedOptions', value => {
+                              product.selectedVariantIndex = findVariantIndex(value, product.variants)
+                            })"
+                                  class="product-options-container">
+
+                                  {% comment %} Option values {% endcomment %}
+                                  <template x-for="option in product.options">
+                                    <div class="product-option-picker-container">
+                                      <label x-text="option.name" class="option-title"></label>
+                                      <select class="variant-selector bundle_border_radius_small" x-model="selectedOptions[product.options.indexOf(option)]">
+                                        <template x-for="value in option.values">
+                                          <option x-text="value" class="option-value"></option>
+                                        </template>
+                                      </select>
+                                    </div>
+                                  </template>
+                                  <p class="product-variant-unavailable-text" x-text="!product.variants[product.selectedVariantIndex].available ? 'This product option is currenty unavailable.' : ''"></p>
+                                </div>
+
+                                <button
+                                  class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small"
+                                  :disabled="!product.variants[product.selectedVariantIndex].available || !canAddMoreProducts()"
+                                  @click="() => { addProduct(product.variants[product.selectedVariantIndex].id, product.variants[product.selectedVariantIndex].price, activeStep, stepInputs);
+                            document.body.classList.remove('modal-open');
+                            showModal = false;}
+                          ">
+                                  Add product</button>
+
+                                <div class="product-description">
+                                  <p x-html="product.description"></p>
+                                </div>
+
+
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <p class="product-variant-unavailable-text" x-text="!product.variants[product.selectedVariantIndex].available ? 'This product is currenty unavailable.' : ''"></p>
+                      </div>
+
+
+                      {% comment %} This product is added to bundle storage {% endcomment %}
+                      <div class="width-full" x-show="isProductInBundle(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep)">
+
+                        {% comment %} This step doesn't allow duplicates {% endcomment %}
+                        <div class="product-action-btns-container" x-show="!activeStepData.productInput.allowProductDuplicates">
+                          <button class="small-btn remove-from-bundle-btn remove_product_text_border_color bundle_border_radius_small" @click="removeProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs)">Remove
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 16 16"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg">
+                              <path
+                                d="M12.6667 3.83333L3.33334 13.1667"
+                                stroke="{{ settings.remove_product_text_border_color }}"
+                                stroke-width="1.33333"
+                                stroke-linecap="round" />
+                              <path
+                                d="M3.33334 3.83333L12.6667 13.1667"
+                                stroke="{{ settings.remove_product_text_border_color }}"
+                                stroke-width="1.33333"
+                                stroke-linecap="round" />
+                            </svg>
+                          </button>
+                          <button class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small" disabled>Added
+                            <svg
+                              width="13"
+                              height="9"
+                              viewBox="0 0 13 9"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg">
+                              <path d="M4.69632 8.92638L0.5 4.73006L1.54908 3.68098L4.69632 6.82822L11.4509 0.0736198L12.5 1.1227L4.69632 8.92638Z" fill="{{ settings.add_to_bundle_text_color }}" />
+                            </svg>
+                          </button>
+                        </div>
+
+                        {% comment %} The step allows duplicates {% endcomment %}
+                        <div class="increment-decrement-container" x-show="activeStepData.productInput.allowProductDuplicates">
+                          <button class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small" @click="removeProduct(product.variants[product.selectedVariantIndex].id, activeStep, stepInputs)">-</button>
+                          <p x-text="getProductQuantity(product.variants[product.selectedVariantIndex].id, stepInputs, activeStep)"></p>
+                          <button
+                            class="small-btn add_to_bundle_text_bg_color bundle_border_radius_small"
+                            @click="addProduct(product.variants[product.selectedVariantIndex].id, product.variants[product.selectedVariantIndex].price, activeStep, stepInputs)"
+                            x-bind:disabled="!canAddMoreProducts()">+</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+
+
+              <template x-if="activeStepData.stepType == 'PRODUCT' && activeStepProducts.length == 0">
+                <p class="no-products-text">There are no products available on this step.</p>
+              </template>
+
+              {% comment %} Content step {% endcomment %}
+              <div
+                x-show="activeStepData.stepType == 'CONTENT'"
+                x-cloak
+                class="content-step-container">
+                <template x-for="contentInput in activeStepData.contentInputs">
+                  <div class="content-input-containers">
+
+                    {% comment %} Content input of tpye 'TEXT' {% endcomment %}
+                    <div x-show="contentInput.inputType == 'TEXT'" class="content-input">
+                      <label
+                        x-text="contentInput.inputLabel"
+                        :for="`text-input-${contentInput.id}`"
+                        class="bundle_border_radius_small"></label>
+                      <input
+                        class="bundle_border_radius_small"
+                        x-bind:id="`text-input-${contentInput.id}`"
+                        type="text"
+                        :minlength="contentInput.required ? 1 : 0"
+                        :maxlength="contentInput.maxChars"
+                        x-model="contentInput.value"
+                        x-on:change="contentInputHandler($event, stepInputs, activeStep, contentInput.id)">
+                    </div>
+                    {% comment %} Content input of tpye 'NUMBER' {% endcomment %}
+                    <div x-show="contentInput.inputType == 'NUMBER'" class="content-input">
+                      <label
+                        x-text="contentInput.inputLabel"
+                        :for="`number-input-${contentInput.id}`"
+                        class="bundle_border_radius_small"></label>
+                      <input
+                        class="bundle_border_radius_small"
+                        x-bind:id="`number-input-${contentInput.id}`"
+                        type="number"
+                        :minlength="contentInput.required ? 1 : 0"
+                        :maxlength="contentInput.maxChars"
+                        x-model="contentInput.value"
+                        x-on:change="contentInputHandler($event, stepInputs, activeStep, contentInput.id)">
+                    </div>
+                    {% comment %} Content input of tpye 'IMAGE' {% endcomment %}
+                    <template x-if="contentInput.inputType == 'IMAGE'">
+                      <div class="content-input ">
+                        <label
+                          :for="`image-input-${contentInput.id}`"
+                          class="bundle_border_radius_small"
+                          x-text="contentInput.inputLabel"></label>
+                        <input
+                          type="file"
+                          max="1"
+                          x-on:change="() => {
+                            if ($event.target.files.length == 0) return;
+                            contentInput.value = $el.value; newImageSelected($event, contentInput.id, stepInputs, activeStep)
+                            }"
+                          accept="image/*"
+                          placeholder="Select image">
+                      </div>
+                    </template>
+
+                  </div>
+                </template>
+              </div>
+
+            </div>
+          </template>
+
+          {% comment %}  Step navigation {% endcomment %}
+          <div class="nav-wrapper" x-bind:class="`${globalSettings.stepNavigationTypeDesktop === 'STICKY' ? 'nav-wrapper-sticky-desktop' : ''} ${globalSettings.stepNavigationTypeMobile === 'STICKY' ? 'nav-wrapper-sticky-mobile' : ''}`">
+            <div class="nav-buttons" x-show="!stepLoading">
+              <button
+                class="nav-button prev-step-btn prev_step_text_bg_color bundle_border_radius_small"
+                @click="decrementStep"
+                x-show="bundleSettings.allowBackNavigation"
+                x-bind:disabled="activeStep == 1">
+                <svg
+                  width="12"
+                  height="8"
+                  viewBox="0 0 12 8"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M1.33333 4.00004H10.6667M1.33333 4.00004L3.99999 1.33337M1.33333 4.00004L3.99999 6.66671"
+                    stroke="{{ settings.prev_step_text_color }}"
+                    stroke-width="1.33333"
+                    stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+                Previous step</button>
+              <p x-show="!bundleSettings.allowBackNavigation">&nbsp;</p>
+
+              <button
+                class="nav-button next_step_text_bg_color bundle_border_radius_small"
+                @click="incrementStep"
+                x-bind:disabled="!stepInputsFulfiled()"
+                x-show="activeStep < bundleData.steps.length"
+                x-ref="nextStepBtn">Next step
+                <svg
+                  width="11"
+                  height="8"
+                  viewBox="0 0 11 8"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M10.1667 4.00004H0.833374M10.1667 4.00004L7.50004 6.66671M10.1667 4.00004L7.50004 1.33337"
+                    stroke="{{ settings.next_step_text_color }}"
+                    stroke-width="1.33333"
+                    stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </button>
+
+              <button
+                class="nav-button add_to_bundle_text_bg_color bundle_border_radius_small"
+                @click="addBundleToCart()"
+                x-bind:disabled="!stepInputsFulfiled()"
+                x-show="activeStep == bundleData.steps.length"
+                x-ref="finishBtn">Finish</button>
+            </div>
+
+            {% comment %} Tooltip to indicate how many products a customer needs to select on all steps except final step{% endcomment %}
+            <template x-if="activeStepData.stepType == 'PRODUCT' && !stepLoading">
+              <div
+                class="tooltip bundle_border_radius_small tooltip-border"
+                x-show="!stepInputsFulfiled()"
+                x-text="`Please select between ${activeStepData.productInput?.minProductsOnStep} and ${activeStepData.productInput?.maxProductsOnStep} products`"></div>
+            </template>
+          </div>
+
+          {% comment %} Price and discount {% endcomment %}
+          <template x-if="!stepLoading">
+            <div class="bundle-pricing-container">
+              <div class="bundle-pricing-summary">
+                <h4>Pricing summary</h4>
+                <div class="bundle-pricing-row">
+                  <p>Total price:
+                  </p>
+                  <p x-text="getCurrentTotalProductsPrice()" class="total-price"></p>
+
+                </div>
+                <div class="bundle-pricing-row">
+                  <p>Discount:
+                  </p>
+                  <p x-text="'-' + getDiscountAmount()"></p>
+
+                </div>
+
+                <div class="bundle-pricing-row">
+                  <p>Final price:
+                  </p>
+                  <p x-text="getCurrentDiscountedProductsPrice()"></p>
+                </div>
+
+              </div>
+            </div>
+          </template>
+
+
+          <template x-if="finalLoading">
+            <div class="final-loading-container">
+              <div class="final-loading-inner">
+                <img
+                  src="{{ 'finalAnimation.svg' | asset_url }}"
+                  alt="loader"
+                  width="201"
+                  height="201">
+
+              </div>
+            </div>
+          </template>
+
+        </div>
+      </template>
+    </div>
+
+  </div>
+{% endif %}
+
+{% comment %} JS code for widget {% endcomment %}
+<script>
+    let APP_URL = `https://{{ shop.domain }}/apps/neat-bundles/api`;
+  
+    //Money format from shopify used to format prices
+    Shopify.money_format = "{{ shop.money_format }}";
+  
+    document.addEventListener("alpine:init", () => {
+      Alpine.data("bundle", () => ({
+        async init(){
+          const queryString = window.location.search;
+
+          const urlParams = new URLSearchParams(queryString);
+
+          const isNeatBundlePreview = urlParams.get("neatBundlePreview") === "true"
+
+          if (isNeatBundlePreview) {
+            this.isBundleInPreview = true;
+          }
+
+          const response = await fetch(`${APP_URL}/bundleData?bundleId={{ bundleId }}&neatBundlePreview=${isNeatBundlePreview}`, {mode: 'cors'})
+
+          try {
+            const data = await response.json();
+  
+            if (data.ok) {
+              this.bundleData = data.data;
+
+              this.bundleSettings = data.data.bundleSettings;
+              this.activeStepData = data.data.steps[0];
+              this.initialLoading = false;
+
+              const globalSettingsResponse = await fetch(`${APP_URL}/globalSettings?neatBundlePreview=${isNeatBundlePreview}`, {mode: 'cors'})
+
+              const globalResponseData = await globalSettingsResponse.json();
+
+              // console.log(globalResponseData);
+              if (globalResponseData.ok) {
+                this.globalSettings = globalResponseData.data;
+              }
+
+            }
+            else {
+              console.log(data.message);
+              alert("The bundle that's displayed on this page is either not published or doesn't exist. Try refreshing the page.");
+            }
+          } catch (error) {
+            console.log(error);
+            alert("The bundle that's displayed on this page is either not published or doesn't exist. Try refreshing the page.");
+            }
+         
+        },
+  
+        shopDomain: "{{ shop.permanent_domain }}", // Shopify store domain
+        bundleId: "{{ bundleId }}", // Bundle ID
+        isBundleInPreview: false,
+  
+        showSkeleton: true, // Show sceleton loader
+        initialLoading: true, // Initial loading state
+        stepLoading: true, // Step loading state
+        finalLoading: false, // Final loading state
+        bundleData: {}, // Bundle settings data
+        bundleSettings: {}, // Bundle settings
+        globalSettings: {}, // Global app settings
+  
+        //Current bundle selects and inputs 
+        stepInputs: [], //Inputs on steps in format [{stepNumber: 1, stepType: "PRODUCT", inputs: [{id: id, quantity: quantity, price: productPrice }]}, {stepNumber: 2, stepType: "CONTENT" inputs: [{type: text, value: value}]}]
+        reachedStep: 1, // Farthes step reached by the user
+        activeStep: 1, // Current active step
+        activeStepData: {}, // Current active step data
+        activeStepProducts: [], // Products data
+
+        //total price of all products currentlly in bundle
+        getCurrentTotalProductsPrice(forCalculation = false) {
+          let totalPrice = 0;
+
+          if (!this.stepInputs) return totalPrice;
+
+          this.stepInputs.forEach((stepInput) => {
+            if (!stepInput || !stepInput.stepType) return;
+
+            if (stepInput.stepType != "PRODUCT") return;
+            
+            stepInput.inputs.forEach((input) => {
+              totalPrice += input.quantity * input.price
+            })
+          })
+
+          if (forCalculation) {
+            return totalPrice;
+          }
+          
+          return Shopify.formatMoney(totalPrice);
+        },
+
+        getDiscountAmount(forCalculation = false) {
+          let discountAmount = 0;
+
+          if (this.bundleData.discountType == "FIXED") {
+            discountAmount = this.bundleData.discountValue * 100
+            
+          } else if (this.bundleData.discountType == "PERCENTAGE") {
+            discountAmount = this.getCurrentTotalProductsPrice(true) * (this.bundleData.discountValue / 100)
+          } 
+
+          if (forCalculation) {
+            return discountAmount;
+          }
+          
+          return Shopify.formatMoney(discountAmount);
+        },
+
+        getCurrentDiscountedProductsPrice() {
+          let discountedPrice =  this.getCurrentTotalProductsPrice(true) - this.getDiscountAmount(true)
+
+          if (discountedPrice < 0) discountedPrice = this.getCurrentTotalProductsPrice(true);
+
+          return Shopify.formatMoney(discountedPrice)
+        },
+  
+        //Fetch data for the current step (either products or content)
+        async fetchDataForStep(){
+          this.stepLoading = true;
+
+          //Get data for current step
+          this.activeStepData = await fetchActiveStepData(this.bundleId, this.activeStep, this.isBundleInPreview);
+  
+          if (!this.activeStepData) return;
+  
+          if (this.bundleData.steps[this.activeStep - 1].stepType == "PRODUCT") {
+            await this.fetchProductForStep();
+          } else if (this.bundleData.steps[this.activeStep - 1].stepType == "CONTENT") {
+            //Fetch content data
+  
+          }
+          
+          this.showSkeleton = false;
+          document.getElementById('widget-skeleton').style.display = 'none';
+          this.stepLoading = false;
+        },
+
+        //Product functions
+  
+        // Fetch products data
+        async fetchProductForStep(){        
+          await fetchProducts(this.activeStepData, this.activeStepProducts, window.Shopify, Shopify)
+        },
+  
+        //Add product to the bundle
+        addProduct(productId, productPrice, activeStep, stepInputs){
+          addProductToBundle(productId, productPrice, activeStep, stepInputs, this.activeStepData.productInput.maxProductsOnStep);
+        },
+  
+        //Remove product from the bundle
+        removeProduct(productId, activeStep, stepInputs){
+          removeProductFromBundle(productId, activeStep, stepInputs);
+        },
+  
+        //Get product quanity
+        getProductQuantity(productId, stepInputs, activeStep){
+          return getProductQuantityInBundle(productId, stepInputs, activeStep);
+        },
+  
+        //Check if the user can add more products on this step
+        canAddMoreProducts() {
+          return getProductsOnStep(this.activeStep, this.stepInputs) < this.activeStepData.productInput.maxProductsOnStep;
+        },
+
+        // Content functions
+
+        //Handle content input change
+        newImageSelected(event, contentInputId, stepInputs, activeStep){
+        // createImagePreview(event); 
+        this.contentInputHandler(event, stepInputs, activeStep, contentInputId);
+        },
+  
+        //Handle content input change
+        contentInputHandler(event, stepInputs, activeStep, contentInputId){
+          handleContentInput(event, stepInputs, activeStep, contentInputId);
+        },
+  
+        //Check if the user can proceed to the next step
+        stepInputsFulfiled(){
+          if (!this.activeStepData) return false;
+  
+          //Check if the user has selected the required amount of products
+          if (this.activeStepData.stepType == 'PRODUCT') {
+            const productsQuantity = getProductsOnStep(this.activeStep, this.stepInputs);
+            return productsQuantity >= this.activeStepData.productInput?.minProductsOnStep && productsQuantity <= this.activeStepData?.productInput.maxProductsOnStep;
+          }
+          //Check if all content inputs are filled or not (depending if the fields are required)
+          else if (this.activeStepData.stepType == 'CONTENT') {
+            if (!this.activeStepData.contentInputs || this.activeStepData.contentInputs.length == 0) return false;
+  
+            for (let i = 0; i < this.activeStepData.contentInputs.length; i++) {
+
+              if (this.activeStepData.contentInputs[i].inputType == "NONE") continue;
+              if (this.activeStepData.contentInputs[i].required && (!this.activeStepData.contentInputs[i].value || this.activeStepData.contentInputs[i].value == "" )) return false;
+            }
+
+            return true;
+          }
+        },
+        
+        //Add bundle to cart
+        async addBundleToCart(){
+          if (this.isBundleInPreview) {
+            alert("This bundle is in preview mode. You can't add it to cart.");
+            return;
+          }
+
+          this.finalLoading = true;
+  
+          await finishAndAddBundleToCart(this.stepInputs, this.bundleId, this.shopDomain, window.Shopify, this.bundleSettings.skipTheCart);
+  
+          this.finalLoading = false;
+        },
+  
+        // Set active step
+        setActiveStep(stepNumber){
+         if (stepNumber <= this.reachedStep){
+            this.activeStep = stepNumber;
+            this.fetchDataForStep();
+         }
+        },
+  
+        // Increment step
+        incrementStep(){
+          if (this.activeStep < this.reachedStep){
+            this.activeStep++;
+            this.fetchDataForStep();
+          }
+          else if (this.activeStep == this.reachedStep){
+            if (this.reachedStep == this.bundleData.steps.length) return;
+            this.reachedStep++;
+            this.activeStep++;
+            this.fetchDataForStep();
+          }
+        },
+  
+        // Decrement step
+        decrementStep(){
+          if (this.activeStep > 1){
+            this.activeStep--;      
+            this.fetchDataForStep(); 
+          }
+        }
+  
+      }));
+    });
+</script>
+
+{% comment %} Alpine.js import {% endcomment %}
+<script src="{{ 'Alpine-3.14.1.js' | asset_url }}" defer></script>
