@@ -22,7 +22,7 @@
         "db:setup": "prisma generate && prisma migrate deploy",
         "ngrok-tunnel": "ngrok http --domain=purely-decent-pup.ngrok-free.app 3000",
         "cloudflare": "cloudflared tunnel --url http://localhost:3000",
-        "codegen": "graphql-codegen --config src/shopify-schema/codegen.ts"
+        "codegen": "graphql-codegen --config src/shopify/schema/codegen.ts"
     },
     "dependencies": {
         "@nestjs/cli": "^11.0.0",
@@ -54,6 +54,7 @@
         "@graphql-codegen/typescript-resolvers": "4.4.2",
         "@nestjs/schematics": "^11.0.0",
         "@nestjs/testing": "^11.0.1",
+        "@shopify/api-codegen-preset": "^1.1.4",
         "@types/crypto-js": "^4.2.2",
         "@types/express": "^5.0.0",
         "@types/hbs": "^4.0.4",
