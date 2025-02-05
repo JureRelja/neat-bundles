@@ -24,19 +24,20 @@ model AddedProductVariant {
 }
 
 model BundleBuilder {
-  id                  Int                  @id @default(autoincrement())
-  shopifyProductId    String               @unique
-  title               String
-  published           Boolean              @default(false)
-  createdAt           DateTime             @default(now())
-  pricing             BundlePricing        @default(CALCULATED)
-  priceAmount         Float?
-  discountType        BundleDiscountType   @default(NO_DISCOUNT)
-  discountValue       Float?
-  shop                String
-  User                User                 @relation(fields: [shop], references: [shop], onDelete: Cascade)
-  BundleBuilderConfig BundleBuilderConfig?
-  BundleBuilderStep   BundleBuilderStep[]
+  id                   Int                  @id @default(autoincrement())
+  shopifyProductId     String               @unique
+  title                String
+  published            Boolean              @default(false)
+  createdAt            DateTime             @default(now())
+  pricing              BundlePricing        @default(CALCULATED)
+  priceAmount          Float?
+  discountType         BundleDiscountType   @default(NO_DISCOUNT)
+  discountValue        Float?
+  shop                 String
+  bundleBuilderPageUrl String
+  User                 User                 @relation(fields: [shop], references: [shop], onDelete: Cascade)
+  BundleBuilderConfig  BundleBuilderConfig?
+  BundleBuilderStep    BundleBuilderStep[]
 }
 
 model BundleBuilderConfig {

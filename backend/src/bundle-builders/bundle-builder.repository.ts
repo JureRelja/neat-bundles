@@ -59,8 +59,8 @@ export class BundleBuilderRepository {
         });
     }
 
-    public async getAll(shop: string): Promise<BundleBuilderEntity[] | null> {
-        return db.bundleBuilder.findMany({
+    public async getAll(shop: string): Promise<BundleBuilderEntity[]> {
+        return await db.bundleBuilder.findMany({
             where: {
                 shop: shop,
             },

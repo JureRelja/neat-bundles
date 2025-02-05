@@ -10,6 +10,7 @@ export const bundleBuilderAndStepsBasicSelect: Prisma.BundleBuilderSelect = {
     title: true,
     published: true,
     createdAt: true,
+    bundleBuilderPageUrl: true,
     pricing: true,
     priceAmount: true,
     BundleBuilderStep: {

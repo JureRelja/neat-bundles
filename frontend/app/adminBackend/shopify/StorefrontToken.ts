@@ -18,7 +18,7 @@ export class StorefrontToken {
                     handle
                   }
                   accessToken
-                  titleb
+                  title
                 }
               }
             }`,

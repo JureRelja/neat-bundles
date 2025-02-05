@@ -23,7 +23,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         });
     }
 
-    const bundleBuilder = await bundleBuilderRepository.getBundleBuilderByIdAndStoreUrl(Number(params.bundleid), session.shop);
+    const bundleBuilder = await bundleBuilderRepository.get(Number(params.bundleid), session.shop);
 
     if (!bundleBuilder) {
         throw new Response(null, {

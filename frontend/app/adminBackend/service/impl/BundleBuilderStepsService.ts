@@ -56,7 +56,7 @@ class BundleBuilderStepsService {
 
     public async incrementStepNumberForStepsGreater(bundleId: number, stepNumber: number): Promise<void> {
         //Incrementing the step number for all steps with stepNumber greater than the duplicated step
-        const res = await db.bundleStep.updateMany({
+        const res = await db.bundleBuilderStep.updateMany({
             where: {
                 bundleBuilderId: bundleId,
                 stepNumber: {

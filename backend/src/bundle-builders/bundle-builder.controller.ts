@@ -10,13 +10,13 @@ export class BundleBuilderController {
     constructor(private readonly bundleBuilderService: BundleBuilderService) {}
 
     @Post()
-    create(@Body() createBundleBuilderDto: CreateBundleBuilderDto) {
+    async create(@Body() createBundleBuilderDto: CreateBundleBuilderDto) {
         return this.bundleBuilderService.create(createBundleBuilderDto);
     }
 
-    @Get()
-    findAll() {
-        return this.bundleBuilderService.findAll();
+    @Get("/:shop")
+    async findAll(@Param("shop") shop: string): Promise<BundleBuilderEntity[]> {
+        return this.bundleBuilderService.findAll(shop);
     }
 
     @Get("/:shop/:id")

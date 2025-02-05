@@ -59,6 +59,7 @@ model BundleBuilder {
   published           Boolean              @default(false)
   createdAt           DateTime             @default(now())
   pricing             BundlePricing        @default(CALCULATED)
+  bundleBuilderPageUrl String
   priceAmount         Float?
   discountType        BundleDiscountType   @default(NO_DISCOUNT)
   discountValue       Float?

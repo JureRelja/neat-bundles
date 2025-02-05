@@ -45,9 +45,8 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     }
 
     //Url of the bundle page
-    const bundleBuilderPageUrl = `${user.primaryDomain}/pages/${bundleBuilder.bundleBuilderPageHandle}`;
 
-    return json(new JsonData(true, "success", "Loader response", [], { bundleBuilder, bundleBuilderPageUrl }), { status: 200 });
+    return json(new JsonData(true, "success", "Loader response", [], { bundleBuilder }), { status: 200 });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -82,7 +81,7 @@ export default function Index() {
                                 <Button url={`/app/edit-bundle-builder/${params.bundleid}/builder`} icon={EditIcon}>
                                     Edit bundle
                                 </Button>
-                                <Button variant="primary" icon={ExternalIcon} url={`${loaderData.data.bundleBuilderPageUrl}`} target="_blank">
+                                <Button variant="primary" icon={ExternalIcon} url={`${loaderData.data}`} target="_blank">
                                     See live on your store
                                 </Button>
                             </InlineGrid>

@@ -42,7 +42,6 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     // console.log("bundleid", params.bundleid);
 
     const bundleBuilder: BundleBuilder | null = await BundleBuilderRepository.getBundleBuilderById(Number(params.bundleid));
-    // console.log("bundleBuilder", bundleBuilder);
 
     if (!bundleBuilder) {
         throw new Response(null, {

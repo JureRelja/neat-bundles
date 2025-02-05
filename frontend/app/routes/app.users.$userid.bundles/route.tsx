@@ -1,53 +1,46 @@
 /* eslint-disable react/jsx-key */
-import { useNavigation, json, useLoaderData, useFetcher, useSubmit, Link, useNavigate } from "@remix-run/react";
+import { useNavigation, json, useLoaderData, useFetcher, useSubmit, Link, useNavigate, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Card, Button, BlockStack, EmptyState, Text, Box, SkeletonPage, SkeletonBodyText, DataTable, ButtonGroup, Badge, Spinner, InlineStack, TextField } from "@shopify/polaris";
 import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from "@shopify/polaris-icons";
 import { authenticate } from "../../shopify.server";
-import db from "../../db.server";
 import type { BundleAndStepsBasicClient } from "../../adminBackend/service/dto/Bundle";
-import { bundleAndSteps } from "../../adminBackend/service/dto/Bundle";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import { useEffect, useState } from "react";
 import { Modal, TitleBar } from "@shopify/app-bridge-react";
 import { bundlePagePreviewKey, GapBetweenSections, GapInsideSection } from "~/constants";
 import userRepository from "@adminBackend/repository/impl/UserRepository";
-import bundleBuilderRepository, { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
+import bundleBuilderRepository from "~/adminBackend/repository/impl/BundleBuilderRepository";
 import { shopifyBundleBuilderProductRepository } from "~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository";
 import { ShopifyRedirectRepository } from "~/adminBackend/repository/impl/ShopifyRedirectRepository";
+import { CreateBundleBuilderDto } from "~/adminBackend/bundle-builders/dto/create-bundle-builder.dto";
+import { BundleBuilderClient } from "~/types/BundleBuilderClient";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, redirect } = await authenticate.admin(request);
 
     console.log("I'm on bundles loader");
 
-    const [user, bundleBuildersWithoutPageUrl] = await Promise.all([
+    const [user, bundleBuilders] = await Promise.all([
         userRepository.getUserByStoreUrl(session.shop),
 
-        db.bundleBuilder.findMany({
-            where: {
-                shop: session.shop,
-            },
-            select: bundleAndSteps,
-            orderBy: {
-                createdAt: "desc",
-            },
-        }),
+        bundleBuilderRepository.getAll(session.shop),
+        // fetch(`${process.env.BACKEND_URL}/bundle-builders/${session.shop}/`, {
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //         Authorization: `Bearer ${session.accessToken}`,
+        //     },
+        // }).then((res) => res.json() as Promise<BundleBuilderEntity[]>),
     ]);
+
+    console.log(bundleBuilders);
 
     if (!user) return redirect("/app");
 
-    const bundleBuildersWithPageUrl = bundleBuildersWithoutPageUrl.map((bundleBuilder) => {
-        return {
-            ...bundleBuilder,
-            bundleBuilderPageUrl: `${user.primaryDomain}/pages/${bundleBuilder.bundleBuilderPageHandle}`, //Url of the bundle page
-        };
-    });
-
     return json(
         {
-            ...new JsonData(true, "success", "Bundles succesfuly retrieved.", [], { bundleBuildersWithPageUrl, user }),
+            ...new JsonData(true, "success", "Bundles succesfuly retrieved.", [], { bundleBuilders, user }),
         },
         { status: 200 },
     );
@@ -89,23 +82,21 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 const bundleBuilderTitle = formData.get("bundleTitle") as string;
 
                 //Create a new product that will be used as a bundle wrapper
-                const [bundleProductId, bundlePage] = await Promise.all([
-                    shopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilderTitle, session.shop),
-                    shopifyBundleBuilderPageRepository.createPage(admin, session, bundleBuilderTitle),
-                ]);
+                const bundleProductId = await shopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilderTitle, session.shop);
 
-                if (!bundleProductId || !bundlePage) {
+                if (!bundleProductId) {
                     return;
                 }
 
-                const [, bundleBuilder] = await Promise.all([
-                    //Create redirect
-                    ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundlePage.handle, bundleProductId),
-                    //Create new bundle
-                    bundleBuilderRepository.create(session.shop, bundleBuilderTitle, bundleProductId, bundlePage.id, bundlePage.handle),
-                ]);
+                const newBundleBuilder = new CreateBundleBuilderDto(bundleProductId, bundleBuilderTitle, false, new Date(), "FIXED", null, "PERCENTAGE", null, session.shop);
 
-                await shopifyBundleBuilderPageRepository.setPageMetafields(bundleBuilder.id, bundlePage.id, session, admin);
+                const [bundleBuilder] = await Promise.all([
+                    //Create redirect
+                    // ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundlePage.handle, bundleProductId),
+
+                    //Create new bundle
+                    bundleBuilderRepository.create(newBundleBuilder),
+                ]);
 
                 //If the user is onboarding, redirect to onboarding flow
                 if (isOnboarding) {
@@ -141,7 +132,7 @@ export default function Index() {
 
     const loaderResponse = useLoaderData<typeof loader>();
 
-    const bundleBuilders: BundleAndStepsBasicClient[] = loaderResponse.data.bundleBuildersWithPageUrl;
+    const bundleBuilders: BundleBuilderClient[] = loaderResponse.data.bundleBuilders;
 
     const user = loaderResponse.data.user;
 
@@ -184,7 +175,6 @@ export default function Index() {
     const [showBundleDeleteConfirmModal, setShowBundleDeleteConfirmModal] = useState(false);
 
     useEffect(() => {
-        // revalidator.revalidate();
         if (bundleForDelete) setShowBundleDeleteConfirmModal(true);
     }, [bundleForDelete]);
 
@@ -322,8 +312,8 @@ export default function Index() {
                             <Card>
                                 {bundleBuilders.length > 0 ? (
                                     <DataTable
-                                        columnContentTypes={["text", "text", "text", "text", "text", "text"]}
-                                        headings={["Bundle ID", "Name", "Steps", "Status", "Actions", "Settings", "Preview"]}
+                                        columnContentTypes={["text", "text", "text", "text", "text"]}
+                                        headings={["Bundle ID", "Name", "Status", "Actions", "Preview"]}
                                         rows={bundleBuilders.map((bundleBuilder: BundleAndStepsBasicClient) => {
                                             return [
                                                 <Text as="p" tone="base">
@@ -340,8 +330,6 @@ export default function Index() {
                                                         {bundleBuilder.title}
                                                     </Text>
                                                 </Link>,
-                                                //
-                                                bundleBuilder.steps.length,
                                                 //
                                                 <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
                                                     {bundleBuilder.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
@@ -377,13 +365,6 @@ export default function Index() {
                                                     </Button>
                                                 </ButtonGroup>,
                                                 //
-                                                <Button
-                                                    icon={SettingsIcon}
-                                                    variant="secondary"
-                                                    tone="success"
-                                                    url={`/app/edit-bundle-builder/${bundleBuilder.id}/settings/?redirect=/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
-                                                    Settings
-                                                </Button>,
                                                 <Button
                                                     icon={ExternalIcon}
                                                     variant="secondary"

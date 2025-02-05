@@ -14,6 +14,7 @@ export class BundleBuilderRepository {
                 title: createBundleBuilderDto.title,
                 published: true,
                 shopifyProductId: createBundleBuilderDto.title,
+                bundleBuilderPageUrl: "",
                 BundleBuilderConfig: {
                     create: {
                         skipTheCart: false,
@@ -35,6 +36,17 @@ export class BundleBuilderRepository {
     //         },
     //     });
     // }
+
+    public static updateBundleBuilderProductId(id: number, productId: string) {
+        return db.bundleBuilder.update({
+            where: {
+                id: id,
+            },
+            data: {
+                shopifyProductId: productId,
+            },
+        });
+    }
 
     public static async getBundleBuilderById(bundleBuilderId: number) {
         return db.bundleBuilder.findUnique({
@@ -118,7 +130,7 @@ export class BundleBuilderRepository {
         });
     }
 
-    public async getAll(shop: string): Promise<BundleBuilderEntity[] | null> {
+    public async getAll(shop: string): Promise<BundleBuilderEntity[]> {
         return db.bundleBuilder.findMany({
             where: {
                 shop: shop,

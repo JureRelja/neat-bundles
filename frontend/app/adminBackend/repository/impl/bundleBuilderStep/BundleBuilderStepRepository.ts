@@ -1,11 +1,11 @@
-import { BundleStep, StepType } from "@prisma/client";
+import { BundleBuilderStep, StepType } from "@prisma/client";
 import { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
 
 import db from "~/db.server";
 
 export class BundleBuilderStepRepository {
-    public async getStepById(stepId: number): Promise<BundleStep | BundleStepProduct | BundleStepContent | null> {
-        const step: BundleStep | null = await db.bundleStep.findFirst({
+    public async getStepById(stepId: number): Promise<BundleBuilderStep | BundleStepProduct | BundleStepContent | null> {
+        const step: BundleBuilderStep | null = await db.bundleBuilderStep.findFirst({
             where: {
                 id: stepId,
             },
@@ -14,8 +14,8 @@ export class BundleBuilderStepRepository {
         return step;
     }
 
-    public async getAllStepsForBundleId(bundleId: number): Promise<BundleStep[]> {
-        const steps: BundleStep[] = await db.bundleStep.findMany({
+    public async getAllStepsForBundleId(bundleId: number): Promise<BundleBuilderStep[]> {
+        const steps: BundleBuilderStep[] = await db.bundleBuilderStep.findMany({
             where: {
                 bundleBuilderId: bundleId,
             },
@@ -25,7 +25,7 @@ export class BundleBuilderStepRepository {
     }
 
     public async getNumberOfSteps(bundleId: number): Promise<number> {
-        const steps: number = await db.bundleStep.count({
+        const steps: number = await db.bundleBuilderStep.count({
             where: {
                 bundleBuilderId: bundleId,
             },
@@ -34,12 +34,12 @@ export class BundleBuilderStepRepository {
         return steps;
     }
 
-    public async getStepByBundleIdAndStepNumber(bundleId: number, stepNumber: number, storeUrl: string): Promise<BundleStep | null> {
-        const step: BundleStep | null = await db.bundleStep.findFirst({
+    public async getStepByBundleIdAndStepNumber(bundleId: number, stepNumber: number, storeUrl: string): Promise<BundleBuilderStep | null> {
+        const step: BundleBuilderStep | null = await db.bundleBuilderStep.findFirst({
             where: {
-                bundleBuilder: {
+                BundleBuilder: {
                     id: bundleId,
-                    storeUrl: storeUrl,
+                    shop: storeUrl,
                 },
                 stepNumber: stepNumber,
             },
@@ -48,8 +48,8 @@ export class BundleBuilderStepRepository {
         return step;
     }
 
-    public async addNewEmptyStep(bundleId: number, stepType: StepType, stepDescription: string, stepNumber: number, newStepTitle: string): Promise<BundleStep> {
-        const newStep: BundleStep = await db.bundleStep.create({
+    public async addNewEmptyStep(bundleId: number, stepType: StepType, stepDescription: string, stepNumber: number, newStepTitle: string): Promise<BundleBuilderStep> {
+        const newStep: BundleBuilderStep = await db.bundleBuilderStep.create({
             data: {
                 bundleBuilderId: bundleId,
                 stepNumber: stepNumber,
@@ -66,13 +66,13 @@ export class BundleBuilderStepRepository {
 
     public async deleteStepByBundleBuilderIdAndStepNumber(bundleId: number, stepNumber: number): Promise<void> {
         const [deletedSteps, updatedSteps] = await db.$transaction([
-            db.bundleStep.deleteMany({
+            db.bundleBuilderStep.deleteMany({
                 where: {
                     bundleBuilderId: bundleId,
                     stepNumber: stepNumber,
                 },
             }),
-            db.bundleStep.updateMany({
+            db.bundleBuilderStep.updateMany({
                 where: {
                     bundleBuilderId: bundleId,
                     stepNumber: {

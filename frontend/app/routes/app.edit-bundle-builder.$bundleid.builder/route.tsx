@@ -41,11 +41,9 @@ import BundleBuilderSteps from "./bundleBuilderSteps";
 import { bundleBuilderStepRepository } from "../../adminBackend//repository/impl/bundleBuilderStep/BundleBuilderStepRepository";
 import bundleBuilderRepository, { BundleBuilderRepository } from "../../adminBackend//repository/impl/BundleBuilderRepository";
 import { shopifyBundleBuilderProductRepository } from "../../adminBackend//repository/impl/ShopifyBundleBuilderProductRepository";
-import type { ShopifyBundleBuilderPageRepository } from "../../adminBackend//repository/ShopifyBundleBuilderPageRepository";
 import { inclBundleFullStepsBasic } from "../../adminBackend//service/dto/Bundle";
 import { ApiCacheKeyService } from "../../adminBackend//service/utils/ApiCacheKeyService";
 import { ApiCacheService } from "../../adminBackend//service/utils/ApiCacheService";
-import shopifyBundleBuilderPageRepositoryGraphql from "../../adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql";
 import styles from "./route.module.css";
 import { AuthorizationCheck } from "../../adminBackend/service/utils/AuthorizationCheck";
 
@@ -69,7 +67,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 
     if (!user) return redirect("/app");
 
-    const bundleBuilder: BundleBuilder | null = await bundleBuilderRepository.getBundleBuilderByIdAndStoreUrl(Number(params.bundleid), session.shop);
+    const bundleBuilder: BundleBuilder | null = await bundleBuilderRepository.get(Number(params.bundleid), session.shop);
 
     if (!bundleBuilder) {
         throw new Response(null, {
@@ -79,7 +77,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     }
 
     //Url of the bundle page
-    const bundleBuilderPageUrl = `${user.primaryDomain}/pages/${bundleBuilder.bundleBuilderPageHandle}`;
+    const bundleBuilderPageUrl = `${user.primaryDomain}/pages/${bundleBuilder.id}`;
 
     let allBundleSteps = await bundleBuilderStepRepository.getAllStepsForBundleId(Number(params.bundleid));
 
@@ -108,16 +106,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         case "deleteBundle": {
             try {
                 //Delete the bundle along with its steps, contentInputs, bundleSettings?, bundleColors, and bundleLabels
-                const bundleBuilderToDelete = await db.bundleBuilder.update({
+                const bundleBuilderToDelete = await db.bundleBuilder.delete({
                     where: {
                         id: Number(params.bundleid),
                     },
-                    data: {
-                        deleted: true,
-                    },
                     select: {
                         shopifyProductId: true,
-                        shopifyPageId: true,
                     },
                 });
 
@@ -135,15 +129,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         { status: 400 },
                     );
 
-                const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
-
-                await Promise.all([
-                    //Deleting a associated bundle page
-                    shopifyBundleBuilderPage.deletePage(admin, session, bundleBuilderToDelete.shopifyPageId),
-
-                    //Deleting a associated bundle product
-                    shopifyBundleBuilderProductRepository.deleteBundleBuilderProduct(admin, bundleBuilderToDelete.shopifyProductId),
-                ]);
+                //Deleting a associated bundle product
+                await shopifyBundleBuilderProductRepository.deleteBundleBuilderProduct(admin, bundleBuilderToDelete.shopifyProductId);
             } catch (error) {
                 console.log(error, "Either the bundle product or the bundle page was already deleted.");
             } finally {
@@ -175,7 +162,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             await db.bundleBuilder.update({
                 where: {
                     id: Number(params.bundleid),
-                    storeUrl: session.shop,
+                    shop: session.shop,
                 },
                 data: {
                     discountValue: Number(discountValue),
@@ -213,13 +200,18 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     field: "Price amount",
                     message: "Please enter a valid price for Fixed bundle.",
                 });
-            } else if (bundleData.discountType != "NO_DISCOUNT" && bundleData.discountValue <= 0) {
+            } else if (bundleData.discountType != "NO_DISCOUNT" && (!bundleData.discountValue || bundleData.discountValue <= 0)) {
                 errors.push({
                     fieldId: "discountValue",
                     field: "Discount value",
                     message: "Please enter a desired discount.",
                 });
-            } else if (bundleData.discountType === "FIXED" && bundleData.pricing === "FIXED" && bundleData.discountValue > (bundleData.priceAmount || 0)) {
+            } else if (
+                bundleData.discountType === "FIXED" &&
+                bundleData.pricing === "FIXED" &&
+                bundleData.discountValue &&
+                bundleData.discountValue > (bundleData.priceAmount || 0)
+            ) {
                 errors.push({
                     fieldId: "discountValue",
                     field: "Discount value",
@@ -231,9 +223,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 return json({
                     ...new JsonData(false, "error", "There was an error while trying to update the bundle.", errors, bundleData),
                 });
-
-            //Repository for creating a new page
-            const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
 
             try {
                 await Promise.all([
@@ -251,7 +240,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         },
                     }),
                     shopifyBundleBuilderProductRepository.updateBundleProductTitle(admin, bundleData.shopifyProductId, bundleData.title),
-                    shopifyBundleBuilderPage.updateBundleBuilderPageTitle(admin, session, bundleData.shopifyPageId, bundleData.title),
                 ]);
 
                 // Clear the cache for the bundle
@@ -281,9 +269,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             }
 
         case "recreateBundleBuilder": {
-            //Repository for creating a new page
-            const shopifyBundleBuilderPage: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageRepositoryGraphql;
-
             const bundleBuilder = await db.bundleBuilder.findUnique({
                 where: {
                     id: Number(params.bundleid),
@@ -317,20 +302,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                         //set bundle product to new product
                         await BundleBuilderRepository.updateBundleBuilderProductId(Number(params.bundleid), newBundleBuilderProductId);
-                    }
-                    res(null);
-                }),
-
-                new Promise(async (res, rej) => {
-                    //Check if the page exists
-                    const doesBundleBuilderPageExist = await shopifyBundleBuilderPage.checkIfPageExists(admin, bundleBuilder.shopifyPageId);
-
-                    if (!doesBundleBuilderPageExist) {
-                        //create new page
-                        const newBundleBuilderPage = await shopifyBundleBuilderPage.createPageWithMetafields(admin, session, bundleBuilder.title, Number(params.bundleid));
-
-                        //set bundle page to new page
-                        await BundleBuilderRepository.updateBundleBuilderPage(Number(params.bundleid), newBundleBuilderPage);
                     }
                     res(null);
                 }),
@@ -831,7 +802,7 @@ export default function Index() {
                                                                 prefix={bundleState.discountType === BundleDiscountTypeClient.PERCENTAGE ? "%" : "$"}
                                                                 min={0}
                                                                 max={100}
-                                                                value={bundleState.discountValue.toString()}
+                                                                value={bundleState.discountValue?.toString() ?? ""}
                                                                 error={errors?.find((err: error) => err.fieldId === "discountValue")?.message}
                                                                 onChange={(newDiscountValue) => {
                                                                     setBundleState((prevBundle: BundleBuilderClient) => {

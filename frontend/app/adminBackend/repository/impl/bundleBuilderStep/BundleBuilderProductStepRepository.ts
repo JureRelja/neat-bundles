@@ -7,14 +7,14 @@ import { ProductStepDataDto } from "~/adminBackend/service/dto/ProductStepDataDt
 
 export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRepository {
     public async getStepById(stepId: number): Promise<BundleStepProduct | null> {
-        const step: BundleStepProduct | null = await db.bundleStep.findFirst({
+        const step: BundleStepProduct | null = await db.bundleBuilderStep.findFirst({
             where: {
                 id: stepId,
             },
             include: {
-                productInput: {
+                ProductInput: {
                     include: {
-                        products: true,
+                        ProductToProductInput: true,
                     },
                 },
             },
@@ -24,15 +24,15 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
     }
 
     public async getStepByBundleIdAndStepNumber(bundleId: number, stepNumber: number): Promise<BundleStepProduct | null> {
-        const step: BundleStepProduct | null = await db.bundleStep.findFirst({
+        const step: BundleStepProduct | null = await db.bundleBuilderStep.findFirst({
             where: {
                 bundleBuilderId: bundleId,
                 stepNumber: stepNumber,
             },
             include: {
-                productInput: {
+                ProductInput: {
                     include: {
-                        products: true,
+                        ProductToProductInput: true,
                     },
                 },
             },
@@ -42,14 +42,14 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
     }
 
     public async addNewStep(bundleId: number, stepData: ProductStepDataDto): Promise<BundleStepProduct> {
-        const newStep: BundleStepProduct = await db.bundleStep.create({
+        const newStep: BundleStepProduct = await db.bundleBuilderStep.create({
             data: {
                 bundleBuilderId: bundleId,
                 stepNumber: stepData.stepNumber,
                 stepType: StepType.PRODUCT,
                 title: stepData.title,
                 description: stepData.description,
-                productInput: {
+                ProductInput: {
                     create: {
                         minProductsOnStep: stepData.productInput?.minProductsOnStep || 1,
                         maxProductsOnStep: stepData.productInput?.maxProductsOnStep || 3,
@@ -59,9 +59,9 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
                 },
             },
             include: {
-                productInput: {
+                ProductInput: {
                     include: {
-                        products: true,
+                        ProductToProductInput: true,
                     },
                 },
             },
@@ -75,14 +75,14 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
     }
 
     public async updateStep(stepData: BundleStepProduct): Promise<BundleStepProduct> {
-        const updatedStep: BundleStepProduct = await db.bundleStep.update({
+        const updatedStep: BundleStepProduct = await db.bundleBuilderStep.update({
             where: {
                 id: stepData.id,
             },
             data: {
                 title: stepData.title,
                 description: stepData.description,
-                productInput: {
+                ProductInput: {
                     update: {
                         minProductsOnStep: stepData.productInput?.minProductsOnStep,
                         maxProductsOnStep: stepData.productInput?.maxProductsOnStep,
@@ -92,9 +92,9 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
                 },
             },
             include: {
-                productInput: {
+                ProductInput: {
                     include: {
-                        products: true,
+                        ProductToProductInput: true,
                     },
                 },
             },

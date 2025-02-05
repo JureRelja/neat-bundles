@@ -1,5 +1,5 @@
-import { Prisma, BundleBuilder } from '@prisma/client';
-import { bundleStepBasic } from '@adminBackend/service/dto/BundleStep';
+import { Prisma, BundleBuilder } from "@prisma/client";
+import { bundleStepBasic } from "@adminBackend/service/dto/BundleStep";
 
 //Defining basic bundle resources
 export const bundleAndSteps = {
@@ -9,8 +9,7 @@ export const bundleAndSteps = {
     createdAt: true,
     pricing: true,
     priceAmount: true,
-    bundleBuilderPageHandle: true,
-    steps: {
+    BundleBuilderStep: {
         select: {
             title: true,
             stepNumber: true,
@@ -33,7 +32,7 @@ export type BundleAndStepsBasicServer = Prisma.BundleBuilderGetPayload<{
 
 //Bundle payload with steps
 export const inclBundleFullStepsBasic = {
-    steps: {
+    BundleBuilderStep: {
         select: bundleStepBasic,
     },
 } satisfies Prisma.BundleBuilderSelect;
@@ -43,7 +42,7 @@ export type BundleFullStepBasicServer = Prisma.BundleBuilderGetPayload<{
     include: typeof inclBundleFullStepsBasic;
 }> & { bundleBuilderPageUrl: string };
 
-type BundleFullStepBasic_noDate = Omit<BundleFullStepBasicServer, 'createdAt'>;
+type BundleFullStepBasic_noDate = Omit<BundleFullStepBasicServer, "createdAt">;
 
 // On the client, Date object is converted to a string
 export type BundleFullStepBasicClient = BundleFullStepBasic_noDate & {
@@ -53,18 +52,17 @@ export type BundleFullStepBasicClient = BundleFullStepBasic_noDate & {
 /////////////////
 
 //Bundle payload without 'cratedAt'
-type BundleAndStepsBasic_noDate = Omit<BundleAndStepsBasicServer, 'createdAt'>;
+type BundleAndStepsBasic_noDate = Omit<BundleAndStepsBasicServer, "createdAt">;
 
 // On the client, Date object is converted to a string
 export type BundleAndStepsBasicClient = BundleAndStepsBasic_noDate & {
     createdAt: string;
-    bundleBuilderPageUrl: string;
 };
 
 /////////////////
 
 //Basic bundle without 'createdAt'
-type BundleBasic_temp = Omit<BundleBuilder, 'createdAt'>;
+type BundleBasic_temp = Omit<BundleBuilder, "createdAt">;
 
 //Basic bundle with string 'createdAt' date attribute
 export type BundleBasic = BundleBasic_temp & {
@@ -75,17 +73,17 @@ export type BundleBasic = BundleBasic_temp & {
 
 //Bundle payload with all resources (used for duplicating bundles)
 export const bundleAllResources = {
-    bundleSettings: {
+    BundleBuilderConfig: {
         include: {},
     },
-    steps: {
+    BundleBuilderStep: {
         include: {
-            productInput: {
+            ProductInput: {
                 include: {
-                    products: true,
+                    ProductToProductInput: true,
                 },
             },
-            contentInputs: true,
+            ContentInput: true,
         },
     },
 } satisfies Prisma.BundleBuilderSelect;
@@ -96,7 +94,7 @@ export type BundleAllResources = Prisma.BundleBuilderGetPayload<{
 
 export const bundleBasicAndSettings = {
     ...bundleAndSteps,
-    bundleSettings: {
+    BundleBuilderConfig: {
         include: {},
     },
 } satisfies Prisma.BundleBuilderSelect;
