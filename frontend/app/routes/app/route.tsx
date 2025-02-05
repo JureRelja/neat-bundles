@@ -25,17 +25,11 @@ export default function App() {
                 <Link to="." rel="home">
                     Home
                 </Link>
-                <Link to="/app/global-settings" rel="globalSettings">
-                    Global settings
-                </Link>
-                <Link to="/app/installation" rel="installation">
-                    Installation
-                </Link>
                 <Link to="/app/billing" rel="billing">
                     Billing
                 </Link>
-                <Link to="/app/feature-request" rel="featureRequest">
-                    Request a feature
+                <Link to="/app/global-settings" rel="globalSettings">
+                    Settings
                 </Link>
                 <Link to="/app/help" rel="help">
                     Help

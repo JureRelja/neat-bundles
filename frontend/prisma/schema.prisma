@@ -164,7 +164,6 @@ model User {
   primaryDomain         String
   hasAppInstalled       Boolean         @default(true)
   activeBillingPlan     PricingPlan     @default(NONE)
-  completedInstallation Boolean         @default(false)
   showTutorialBanner    Boolean         @default(true)
   completedOnboarding   Boolean         @default(false)
   isDevelopmentStore    Boolean         @default(false)
