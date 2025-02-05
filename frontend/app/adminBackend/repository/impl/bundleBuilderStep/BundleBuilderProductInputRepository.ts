@@ -8,7 +8,7 @@ export class BundleBuilderProductInputRepository {
                 bundleStepId: bundleStepId,
             },
             data: {
-                products: {
+                Product: {
                     set: [],
                     connectOrCreate: selectedProducts.map((product: Product) => {
                         return {

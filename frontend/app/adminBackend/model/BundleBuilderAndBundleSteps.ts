@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client";
 
 export const bundleBuilderAndBundleSteps = {
-    BundleBuilderStep: true,
+    bundleBuilderSteps: true,
 } satisfies Prisma.BundleBuilderSelect;
 
 export type BundleBuilderAndBundleSteps = Prisma.BundleBuilderGetPayload<{

@@ -1,4 +1,4 @@
-import type { BundleStep } from "@prisma/client";
+import type { BundleBuilderStep } from "@prisma/client";
 import { StepType } from "@prisma/client";
 import { json } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
@@ -179,7 +179,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     ? (formData.get("stepDescription") as string)
                     : "This is the description for this step. Feel free to change it.";
 
-                let newStep: BundleStep | null = null;
+                let newStep: BundleBuilderStep | null = null;
 
                 if (newStepType === "PRODUCT") {
                     newStep = await bundleBuilderStepRepository.addNewEmptyStep(Number(params.bundleid), StepType.PRODUCT, newStepDescription, numOfSteps + 1, newStepTitle);
@@ -232,7 +232,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             try {
                 const stepId: string = formData.get("stepId") as string;
 
-                let step: BundleStep | null = await db.bundleStep.findUnique({
+                let step: BundleBuilderStep | null = await db.bundleBuilderStep.findUnique({
                     where: {
                         id: Number(stepId),
                     },
@@ -253,7 +253,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     );
 
                 const StepThatWasDown = (
-                    await db.bundleStep.findMany({
+                    await db.bundleBuilderStep.findMany({
                         where: {
                             stepNumber: step?.stepNumber + 1,
                             bundleBuilderId: step.bundleBuilderId,
@@ -261,7 +261,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     })
                 )[0];
 
-                const maxStep: { _max: { stepNumber: number | null } } = await db.bundleStep.aggregate({
+                const maxStep: { _max: { stepNumber: number | null } } = await db.bundleBuilderStep.aggregate({
                     _max: {
                         stepNumber: true,
                     },
@@ -287,7 +287,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                 await db.$transaction([
                     //Increment the step on which the operation was clicked
-                    db.bundleStep.update({
+                    db.bundleBuilderStep.update({
                         where: {
                             id: step.id,
                         },
@@ -298,7 +298,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         },
                     }),
 
-                    db.bundleStep.update({
+                    db.bundleBuilderStep.update({
                         where: {
                             id: StepThatWasDown.id,
                         },
@@ -336,7 +336,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             try {
                 const stepId: string = formData.get("stepId") as string;
 
-                let step: BundleStep | null = await db.bundleStep.findUnique({
+                let step: BundleBuilderStep | null = await db.bundleBuilderStep.findUnique({
                     where: {
                         id: Number(stepId),
                     },
@@ -357,7 +357,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     );
 
                 const stepThatWasUp = (
-                    await db.bundleStep.findMany({
+                    await db.bundleBuilderStep.findMany({
                         where: {
                             stepNumber: step?.stepNumber - 1,
                             bundleBuilderId: step.bundleBuilderId,
@@ -381,7 +381,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 }
                 await db.$transaction([
                     //Update the step
-                    db.bundleStep.update({
+                    db.bundleBuilderStep.update({
                         where: {
                             id: Number(stepId),
                         },
@@ -392,7 +392,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         },
                     }),
                     //Update the step that was before this step
-                    db.bundleStep.update({
+                    db.bundleBuilderStep.update({
                         where: {
                             id: stepThatWasUp.id,
                         },

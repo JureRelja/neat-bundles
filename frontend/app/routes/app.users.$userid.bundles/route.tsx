@@ -14,7 +14,7 @@ import userRepository from "@adminBackend/repository/impl/UserRepository";
 import bundleBuilderRepository from "~/adminBackend/repository/impl/BundleBuilderRepository";
 import { shopifyBundleBuilderProductRepository } from "~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository";
 import { ShopifyRedirectRepository } from "~/adminBackend/repository/impl/ShopifyRedirectRepository";
-import { CreateBundleBuilderDto } from "~/adminBackend/bundle-builders/dto/create-bundle-builder.dto";
+
 import { BundleBuilderClient } from "~/types/BundleBuilderClient";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -88,14 +88,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     return;
                 }
 
-                const newBundleBuilder = new CreateBundleBuilderDto(bundleProductId, bundleBuilderTitle, false, new Date(), "FIXED", null, "PERCENTAGE", null, session.shop);
-
                 const [bundleBuilder] = await Promise.all([
                     //Create redirect
                     // ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundlePage.handle, bundleProductId),
 
                     //Create new bundle
-                    bundleBuilderRepository.create(newBundleBuilder),
+                    bundleBuilderRepository.create(session.shop, bundleBuilderTitle, bundleProductId),
                 ]);
 
                 //If the user is onboarding, redirect to onboarding flow

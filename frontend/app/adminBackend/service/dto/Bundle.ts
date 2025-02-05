@@ -9,7 +9,8 @@ export const bundleAndSteps = {
     createdAt: true,
     pricing: true,
     priceAmount: true,
-    BundleBuilderStep: {
+    bundleBuilderPageUrl: true,
+    bundleBuilderSteps: {
         select: {
             title: true,
             stepNumber: true,
@@ -32,7 +33,7 @@ export type BundleAndStepsBasicServer = Prisma.BundleBuilderGetPayload<{
 
 //Bundle payload with steps
 export const inclBundleFullStepsBasic = {
-    BundleBuilderStep: {
+    bundleBuilderSteps: {
         select: bundleStepBasic,
     },
 } satisfies Prisma.BundleBuilderSelect;
@@ -73,17 +74,17 @@ export type BundleBasic = BundleBasic_temp & {
 
 //Bundle payload with all resources (used for duplicating bundles)
 export const bundleAllResources = {
-    BundleBuilderConfig: {
+    bundleBuilderConfig: {
         include: {},
     },
-    BundleBuilderStep: {
+    bundleBuilderSteps: {
         include: {
-            ProductInput: {
+            productInput: {
                 include: {
-                    ProductToProductInput: true,
+                    products: true,
                 },
             },
-            ContentInput: true,
+            contentInput: true,
         },
     },
 } satisfies Prisma.BundleBuilderSelect;
@@ -94,7 +95,7 @@ export type BundleAllResources = Prisma.BundleBuilderGetPayload<{
 
 export const bundleBasicAndSettings = {
     ...bundleAndSteps,
-    BundleBuilderConfig: {
+    bundleBuilderConfig: {
         include: {},
     },
 } satisfies Prisma.BundleBuilderSelect;
