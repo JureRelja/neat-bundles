@@ -2,15 +2,15 @@ import db from "../../../db.server";
 import type { BundleBuilder } from "@prisma/client";
 import type { BundleBuilderAndBundleSteps } from "@adminBackend/model/BundleBuilderAndBundleSteps";
 import { bundleBuilderAndBundleSteps } from "@adminBackend/model/BundleBuilderAndBundleSteps";
+import { CreateBundleBuilderDto } from "../../bundle-builders/dto/create-bundle-builder.dto";
+import { BundleBuilderEntity } from "../../bundle-builders/entities/bundle-builder.entity";
+import { UpdateBundleBuilderDto } from "../../bundle-builders/dto/update-bundle-builder.dto";
+import { BundleBuilderAndStepsBasicDto, bundleBuilderAndStepsBasicSelect } from "../../bundle-builders/dto/bundle-builder-basic.dto";
 export class BundleBuilderRepository {
-    public async create(createBundleBuilderDto: CreateBundleBuilderDto): Promise<BundleBuilderEntity> {
-        const bundleBuilder: BundleBuilderEntity = await db.bundleBuilder.create({
+    public async create(createBundleBuilderDto: CreateBundleBuilderDto): Promise<BundleBuilder> {
+        const bundleBuilder: BundleBuilder = await db.bundleBuilder.create({
             data: {
-                User: {
-                    connect: {
-                        shop: createBundleBuilderDto.shop,
-                    },
-                },
+                shop: createBundleBuilderDto.shop,
                 title: createBundleBuilderDto.title,
                 published: true,
                 shopifyProductId: createBundleBuilderDto.title,
@@ -90,7 +90,7 @@ export class BundleBuilderRepository {
         });
     }
 
-    public async delete(id: number): Promise<BundleBuilderEntity | null> {
+    public async delete(id: number): Promise<BundleBuilder | null> {
         return await db.bundleBuilder.update({
             where: {
                 id: id,
@@ -99,7 +99,7 @@ export class BundleBuilderRepository {
         });
     }
 
-    public async get(id: number, shop: string): Promise<BundleBuilderEntity | null> {
+    public async get(id: number, shop: string): Promise<BundleBuilder | null> {
         return db.bundleBuilder.findUnique({
             where: {
                 id: id,

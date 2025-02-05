@@ -1,15 +1,11 @@
-import { Prisma } from '@prisma/client';
+import { Prisma } from "@prisma/client";
 
 //Defining basic bundle resources
 export const bundleFullStepsFull = {
-    steps: {
+    BundleBuilderStep: {
         include: {
-            productInput: {
-                include: {
-                    products: true,
-                },
-            },
-            contentInputs: true,
+            ProductInput: true,
+            ContentInput: true,
         },
     },
 } satisfies Prisma.BundleBuilderSelect;

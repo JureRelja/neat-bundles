@@ -16,8 +16,6 @@ import userRepository from "@adminBackend/repository/impl/UserRepository";
 import bundleBuilderRepository, { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
 import { shopifyBundleBuilderProductRepository } from "~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository";
 import { ShopifyRedirectRepository } from "~/adminBackend/repository/impl/ShopifyRedirectRepository";
-import type { ShopifyBundleBuilderPageRepository } from "~/adminBackend/repository/ShopifyBundleBuilderPageRepository";
-import shopifyBundleBuilderPageGraphql from "@adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session, redirect } = await authenticate.admin(request);
@@ -29,10 +27,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
         db.bundleBuilder.findMany({
             where: {
-                user: {
-                    storeUrl: session.shop,
-                },
-                deleted: false,
+                shop: session.shop,
             },
             select: bundleAndSteps,
             orderBy: {
@@ -79,7 +74,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 }
                 // Check if the user has reached the limit of bundles for the basic plan
                 else if (user.activeBillingPlan === "BASIC") {
-                    const bundleBuilderCount = await bundleBuilderRepository.getBundleBuilderCountByStoreUrl(session.shop);
+                    const bundleBuilderCount = await bundleBuilderRepository.getCount(session.shop);
 
                     if (bundleBuilderCount >= 2) {
                         return json(new JsonData(false, "error", "You have reached the limit of 2 bundles for the basic plan."), { status: 400 });
@@ -90,8 +85,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 const urlParams = url.searchParams;
 
                 const isOnboarding = urlParams.get("onboarding") === "true";
-
-                const shopifyBundleBuilderPageRepository: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageGraphql;
 
                 const bundleBuilderTitle = formData.get("bundleTitle") as string;
 
@@ -109,7 +102,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     //Create redirect
                     ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundlePage.handle, bundleProductId),
                     //Create new bundle
-                    BundleBuilderRepository.createNewEmptyBundleBuilder(session.shop, bundleBuilderTitle, bundleProductId, bundlePage.id, bundlePage.handle),
+                    bundleBuilderRepository.create(session.shop, bundleBuilderTitle, bundleProductId, bundlePage.id, bundlePage.handle),
                 ]);
 
                 await shopifyBundleBuilderPageRepository.setPageMetafields(bundleBuilder.id, bundlePage.id, session, admin);
