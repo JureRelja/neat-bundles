@@ -1,0 +1,9 @@
+{% comment %} CSS code  {% endcomment %}
+{{ 'btnSkeleton.css' | asset_url | stylesheet_tag }}
+{{ 'widgetSkeleton.css' | asset_url | stylesheet_tag }}
+
+{% if type == 'small' %}
+  <div class="skeleton-bg small-btn-skeleton">&nbsp;</div>
+{% elsif type == 'big' %}
+  <div class="skeleton-bg big-btn-skeleton">&nbsp;</div>
+{% endif %}

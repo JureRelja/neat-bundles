@@ -1,0 +1,254 @@
+{% assign pageBundleNamespace = page.metafields.neat_bundles_app %}
+
+{% comment %} Checking if page is a bundle page to begin with {% endcomment %}
+{% if pageBundleNamespace %}
+  {% if pageBundleNamespace.bundle_id_page %}
+    {% comment %} Rendering a widget  {% endcomment %}
+    <template id="neat-bundles-widget-347204u230">
+      <div class="neat-bundles-widget-container">
+        <div class="neat-bundles-widget-container-inner">
+
+          {% comment %} Button skeleton used in widgetSkeleton.liquid {% endcomment %}
+          {% capture bigBtnSkeleton %}
+            {% render 'btnSkeleton' type: "big" %}
+          {% endcapture %}
+          {% comment %} Button skeleton used in widgetSkeleton.liquid {% endcomment %}
+          {% capture smallBtnSkeleton %}
+            {% render 'btnSkeleton' type: "small" %}
+          {% endcapture %}
+          {% comment %} Button skeleton used in widgetSkeleton.liquid {% endcomment %}
+          {% capture smallLongTextSkeleton %}
+            {% render 'textSkeleton' type: "small-long" %}
+          {% endcapture %}
+          {% comment %} Button skeleton used in widgetSkeleton.liquid {% endcomment %}
+          {% capture smallShortTextSkeleton %}
+            {% render 'textSkeleton' type: "small-short" %}
+          {% endcapture %}
+          {% comment %} Products skeleton {% endcomment %}
+          {% capture productsSkeleton %}
+            {% render 'productsSkeleton', 
+              smallBtnSkeleton: smallBtnSkeleton, 
+              smallLongTextSkeleton: smallLongTextSkeleton,
+              smallShortTextSkeleton: smallShortTextSkeleton  %}
+          {% endcapture %}
+          {% comment %} Step skeleton {% endcomment %}
+          {% capture stepSkeleton %}
+            {% render 'stepSkeleton'
+              , productsSkeleton: productsSkeleton
+              , bigBtnSkeleton: bigBtnSkeleton
+              , smallBtnSkeleton: smallBtnSkeleton
+               %}
+          {% endcapture %}
+          {% comment %} Skeleton snippet used in embed block {% endcomment %}
+          {% capture widgetSkeleton %}
+            {% render 'widgetSkeleton', 
+              bigBtnSkeleton: bigBtnSkeleton, 
+              smallBtnSkeleton: smallBtnSkeleton, 
+              smallLongTextSkeleton: smallLongTextSkeleton, 
+              smallShortTextSkeleton: smallShortTextSkeleton 
+              stepSkeleton: stepSkeleton %}
+          {% endcapture %}
+          {% comment %} Render a placeholder widget if the user is in theme editor {% endcomment %}
+          {% if request.design_mode == true %}
+            {% render 'widget'
+              , bundleId: 1
+              , settings: block.settings
+              , widgetSkeleton: widgetSkeleton
+              , stepSkeleton: stepSkeleton %}
+
+          {% else %}
+            {% render 'widget'
+              , bundleId: pageBundleNamespace.bundle_id_page.value
+              , settings: block.settings
+              , widgetSkeleton: widgetSkeleton
+              , stepSkeleton: stepSkeleton %}
+
+          {% endif %}
+        </div>
+      </div>
+    </template>
+
+  {% endif %}
+{% endif %}
+
+
+{% schema %}
+  {
+    "name": "NeatBundles widget",
+    "target": "body",
+    "javascript": "embed-block.js",
+    "stylesheet": "embed-block.css",
+    "settings": [
+
+
+      {
+        "type": "header",
+        "content": "GLOBAL BUNDLE SETTINGS"
+      },
+      {
+        "type": "range",
+        "id": "bundle_border_radius_big",
+        "label": "Rounded corners on big elements",
+        "info": "Changes the rounding of corners on all 'big' elements, such as product image, description box, modal, etc.",
+        "default": 1,
+        "min": 0,
+        "max": 30,
+        "step": 1,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "bundle_border_radius_small",
+        "label": "Rounded corners on small elements",
+        "info": "Changes the rounding of corners on all 'smaller' elements, such as buttons, input fields, option fields, etc.",
+        "default": 1,
+        "min": 0,
+        "max": 20,
+        "step": 1,
+        "unit": "px"
+      },
+
+
+      {
+        "type": "header",
+        "content": "STEP NUMBER & TITLE"
+      },
+      {
+        "type": "color",
+        "id": "step_icon_color",
+        "label": "Step number",
+        "default": "#121212"
+      },
+      {
+        "type": "color",
+        "id": "step_title_color",
+        "label": "Step title text",
+        "default": "#121212"
+      },
+
+
+      {
+        "type": "header",
+        "content": "STEP DESCRIPTION"
+      },
+      {
+        "type": "color",
+        "id": "step_description_color",
+        "label": "Step description text",
+        "default": "#121212"
+      },
+      {
+        "type": "color",
+        "id": "step_description_bg_color",
+        "label": "Step description background",
+        "default": "#ffffff"
+      },
+
+
+      {
+        "type": "header",
+        "content": "PRODUCT SETTINGS"
+      },
+      {
+        "type": "color",
+        "id": "add_to_bundle_text_color",
+        "label": "'Add product' text",
+        "default": "#ffffff"
+      },
+      {
+        "type": "color",
+        "id": "add_to_bundle_bg_color",
+        "label": "'Add product' background",
+        "default": "#121212",
+        "info": "--------------------------"
+      },
+      {
+        "type": "color",
+        "id": "view_product_text_border_color",
+        "label": "'View product' text & border",
+        "default": "#121212",
+        "info": "--------------------------"
+
+      },
+      {
+        "type": "color",
+        "id": "remove_product_text_border_color",
+        "label": "'Remove product' text & border",
+        "default": "#F32013"
+      },
+
+
+      {
+        "type": "header",
+        "content": "NAVIGATION SETTINGS"
+      },
+      {
+        "type": "color",
+        "id": "prev_step_text_color",
+        "label": "'Previous step' text & border",
+        "default": "#121212",
+        "info": "--------------------------"
+      },
+      {
+        "type": "color",
+        "id": "next_step_text_color",
+        "label": "'Next step' text",
+        "default": "#ffffff"
+      },
+      {
+        "type": "color",
+        "id": "next_step_bg_color",
+        "label": "'Next step' background",
+        "default": "#121212"
+      }
+
+
+    ]
+  }
+{% endschema %}
+
+
+{% comment %} 
+          {
+                  "type": "header",
+                  "content": "INPUT FIELDS SETTINGS"
+                },
+                {
+                  "type": "range",
+                  "id": "input_field_border_radius",
+                  "label": "Input field rounding (border radius)",
+                  "info": "The higher the value, the rounder the corners will be on input fields.",
+                  "min": 0,
+                  "max": 30,
+                  "step": 1,
+                  "unit": "px",
+                  "default": 5
+      }, {% endcomment %}
+
+{% comment %} 
+
+              {
+                "type": "select",
+                "id": "product_align",
+                "label": "Vertical alignment",
+                "options": [
+                  {
+                    "value": "flex-start",
+                    "label": "Left"
+                  },
+                  {
+                    "value": "center",
+                    "label": "Middle"
+                  },
+                  {
+                    "value": "flex-end",
+                    "label": "Right"
+                  },
+                  {
+                    "value": "space-between",
+                    "label": "Justify"
+                  }
+                ],
+                "default": "space-between",
+                "info": "Controls the horizontal aligment of products on steps."
+      }, {% endcomment %}

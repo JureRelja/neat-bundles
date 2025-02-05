@@ -1,0 +1,27 @@
+{% comment %} CSS code for widget {% endcomment %}
+{{ 'stepSkeleton.css' | asset_url | stylesheet_tag }}
+{{ 'widget.css' | asset_url | stylesheet_tag }}
+{{ 'widgetSkeleton.css' | asset_url | stylesheet_tag }}
+
+
+  <div class="step-skeleton">
+
+  {% comment %} Step description {% endcomment %}
+  <div class="skeleton-bg step-description-skeleton">&nbsp;
+</div>
+
+  {% comment %} Products skeleton {% endcomment %}
+  {{ productsSkeleton }}
+
+  {% comment %} Desktop step navigation {% endcomment %}
+  <div class="nav-wrapper">
+    <div class="nav-buttons">
+      {{ bigBtnSkeleton }}
+
+      {{ bigBtnSkeleton }}
+    </div>
+    {% comment %} Tooltip to indicate how many products a customer needs to select {% endcomment %}
+    <div class="skeleton-bg tooltip tooltip-skeleton">&nbsp;</div>
+  </div>
+
+</div>
