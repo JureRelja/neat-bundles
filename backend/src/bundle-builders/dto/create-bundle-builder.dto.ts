@@ -1,6 +1,7 @@
 import type { $Enums } from "@prisma/client";
+import { CreateBundleBuilderClient } from "../../dto/bundle-builder/create-bundle-builder.client";
 
-export class CreateBundleBuilderDto {
+export class CreateBundleBuilderDto implements CreateBundleBuilderClient {
     shopifyProductId: string;
     title: string;
     published: boolean;

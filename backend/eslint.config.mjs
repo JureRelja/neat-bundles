@@ -32,6 +32,7 @@ export default tseslint.config(
             "@typescript-eslint/no-explicit-any": "error",
             "@typescript-eslint/no-unused-vars": "warn",
             "@typescript-eslint/restrict-template-expressions": "off",
+            "@typescript-eslint/consistent-type-definitions": ["error", { interface: "type", object: "type" }],
             "@typescript-eslint/no-inferrable-types": "off",
             "@typescript-eslintno-extraneous-class": "off",
             "@typescript-eslint/no-floating-promises": "warn",
