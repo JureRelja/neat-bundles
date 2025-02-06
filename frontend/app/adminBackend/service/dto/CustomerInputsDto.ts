@@ -1,12 +1,13 @@
-import { AdminApiContext } from '@shopify/shopify-app-remix/server';
-import { AddedProductVariantDto } from '@adminBackend/service/dto/AddedProductVariantDto';
-import { BundleFullAndStepsFullDto } from '@adminBackend/service/dto/BundleFullAndStepsFullDto';
-import { CustomerInputDto } from '@adminBackend/service/dto/CustomerInputDto';
-import { ProductDto } from '@adminBackend/service/dto/ProductDto';
-import { shopifyProductVariantRepository, ShopifyProductVariantRepository } from '../../repository/impl/ShopifyProductVariantRepository';
-import { AddedContentDto } from '@adminBackend/service/dto/AddedContentDto';
-import { ContentDto } from '@adminBackend/service/dto/ContentDto';
-import { AddedContentItemDto } from '@adminBackend/service/dto/AddedContentItemDto';
+import type { AdminApiContext } from "@shopify/shopify-app-remix/server";
+import type { AddedProductVariantDto } from "@adminBackend/service/dto/AddedProductVariantDto";
+import type { BundleBuilderAndBundleStepsDto } from "@adminBackend/service/dto/BundleBuilderAndBundleStepsDto";
+import type { CustomerInputDto } from "@adminBackend/service/dto/CustomerInputDto";
+import type { ProductDto } from "@adminBackend/service/dto/ProductDto";
+import type { ShopifyProductVariantRepository } from "../../repository/impl/ShopifyProductVariantRepository";
+import { shopifyProductVariantRepository } from "../../repository/impl/ShopifyProductVariantRepository";
+import { AddedContentDto } from "@adminBackend/service/dto/AddedContentDto";
+import type { ContentDto } from "@adminBackend/service/dto/ContentDto";
+import { AddedContentItemDto } from "@adminBackend/service/dto/AddedContentItemDto";
 
 export class CustomerInputsDto {
     constructor() {}
@@ -19,7 +20,7 @@ export class CustomerInputsDto {
     public static async extractDataFromCustomerInputs(
         admin: AdminApiContext,
         customerInputs: CustomerInputDto[],
-        bundle: BundleFullAndStepsFullDto,
+        bundle: BundleBuilderAndBundleStepsDto,
         productVariantService: ShopifyProductVariantRepository,
     ) {
         let addedProductVariants: AddedProductVariantDto[] = [];
@@ -30,7 +31,7 @@ export class CustomerInputsDto {
 
         await Promise.all(
             customerInputs.map(async (input) => {
-                if (input.stepType === 'PRODUCT') {
+                if (input.stepType === "PRODUCT") {
                     const products: ProductDto[] = input.inputs as ProductDto[];
 
                     await Promise.all(
@@ -43,7 +44,7 @@ export class CustomerInputsDto {
                                 quantity: product.quantity,
                             });
 
-                            if (bundle.pricing === 'CALCULATED') {
+                            if (bundle.pricing === "CALCULATED") {
                                 const price = await productVariantService.getProductVariantPrice(admin, product.id);
 
                                 //Add the price of the product to the bundle price
@@ -51,14 +52,14 @@ export class CustomerInputsDto {
                             }
                         }),
                     );
-                } else if (input.stepType === 'CONTENT') {
+                } else if (input.stepType === "CONTENT") {
                     const contentInputs: ContentDto[] = input.inputs as ContentDto[];
 
                     const addedContentOnThisStep = new AddedContentDto(input.stepNumber, []);
 
                     contentInputs.forEach((contentInput) => {
                         addedContentOnThisStep.addContentItem({
-                            contentType: contentInput.type === 'file' ? 'IMAGE' : 'TEXT',
+                            contentType: contentInput.type === "file" ? "IMAGE" : "TEXT",
                             value: contentInput.value,
                         });
                     });

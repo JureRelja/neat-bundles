@@ -1,6 +1,6 @@
-import { AddedProductVariantDto } from '@adminBackend/service/dto/AddedProductVariantDto';
-import db from '../../../db.server';
-import { AddedContentDto } from '@adminBackend/service/dto/AddedContentDto';
+import { AddedProductVariantDto } from "@adminBackend/service/dto/AddedProductVariantDto";
+import db from "../../../db.server";
+import { AddedContentDto } from "@adminBackend/service/dto/AddedContentDto";
 
 export class CreatedBundleRepository {
     constructor() {}
@@ -18,9 +18,14 @@ export class CreatedBundleRepository {
                 createdAt: new Date(),
                 finalPrice: finalPrice,
                 discountAmount: discountAmount,
+                user: {
+                    connect: {
+                        id: 1, //TODO: Replace with actual user id
+                    },
+                },
 
                 //Extract product variants from all steps
-                addedProductVariants: {
+                addedProductVariant: {
                     create: productVariants?.map((variant) => {
                         return variant;
                     }),

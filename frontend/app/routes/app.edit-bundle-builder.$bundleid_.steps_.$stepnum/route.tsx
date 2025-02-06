@@ -3,12 +3,11 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { useNavigation, Outlet, Link, useLoaderData, useNavigate, useParams } from "@remix-run/react";
 import { Badge, BlockStack, FooterHelp, Page, SkeletonPage } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
-import type { BundleStep } from "@prisma/client";
+import type { BundleBuilderStep } from "@prisma/client";
 import { StepType } from "@prisma/client";
 import type { error } from "../../adminBackend/service/dto/jsonData";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
-import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
-import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
+
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { bundleBuilderStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderStepRepository";
 import { bundleBuilderProductStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderProductStepService";
@@ -33,7 +32,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         });
     }
 
-    const stepData: BundleStep | null = await bundleBuilderStepRepository.getStepByBundleIdAndStepNumber(Number(params.bundleid), Number(params.stepnum), session.shop);
+    const stepData: BundleBuilderStep | null = await bundleBuilderStepRepository.getStepByBundleIdAndStepNumber(Number(params.bundleid), Number(params.stepnum), session.shop);
 
     if (!stepData) {
         throw new Response(null, {
@@ -106,14 +105,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 return redirect(`/app/edit-bundle-builder/${params.bundleid}`);
             }
 
-            // Clear the cache for the bundle
-            const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-            await Promise.all([
-                ApiCacheService.multiKeyDelete(await cacheKeyService.getAllStepsKeys(params.bundleid as string)),
-                ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
-            ]);
-
             return json({
                 ...new JsonData(true, "success", "Step was deleted"),
             });
@@ -128,7 +119,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             }
 
             try {
-                let stepToDuplicate: BundleStep | null = await bundleBuilderStepRepository.getStepByBundleIdAndStepNumber(
+                let stepToDuplicate: BundleBuilderStep | null = await bundleBuilderStepRepository.getStepByBundleIdAndStepNumber(
                     Number(params.bundleid),
                     Number(params.stepnum),
                     session.shop,
@@ -156,14 +147,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     await bundleBuilderContentStepService.duplicateStep(Number(bundleId), stepToDuplicate.id);
                 }
 
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await Promise.all([
-                    ApiCacheService.multiKeyDelete(await cacheKeyService.getAllStepsKeys(params.bundleid as string)),
-                    ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
-                ]);
-
                 return json({
                     ...new JsonData(true, "success", "Step was duplicated"),
                 });
@@ -181,7 +164,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
         //Updating the step
         case "updateStep": {
-            const stepData: BundleStep | BundleStepProduct | BundleStepContent = JSON.parse(formData.get("stepData") as string);
+            const stepData: BundleBuilderStep | BundleStepProduct | BundleStepContent = JSON.parse(formData.get("stepData") as string);
 
             const errors: error[] = [];
 
@@ -214,14 +197,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 else if (stepData.stepType === StepType.CONTENT) {
                     await bundleBuilderContentStepService.updateStep(stepData as BundleStepContent);
                 }
-
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await Promise.all([
-                    ApiCacheService.singleKeyDelete(cacheKeyService.getStepKey(stepData.stepNumber.toString(), params.bundleid as string)),
-                    ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
-                ]);
 
                 return redirect(`/app/edit-bundle-builder/${params.bundleid}/steps/${params.stepnum}/${stepData.stepType === StepType.PRODUCT ? "product" : "content"}`);
             } catch (error) {

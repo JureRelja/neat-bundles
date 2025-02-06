@@ -37,7 +37,7 @@ export class BundleBuilderStepRepository {
     public async getStepByBundleIdAndStepNumber(bundleId: number, stepNumber: number, storeUrl: string): Promise<BundleBuilderStep | null> {
         const step: BundleBuilderStep | null = await db.bundleBuilderStep.findFirst({
             where: {
-                BundleBuilder: {
+                bundleBuilder: {
                     id: bundleId,
                     shop: storeUrl,
                 },

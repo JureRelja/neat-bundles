@@ -20,7 +20,7 @@ class UserRepository {
                 email: storeEmail,
                 storeName: storeName,
                 primaryDomain: primaryDomain,
-                Settings: {
+                settings: {
                     create: {
                         BundleColors: {
                             create: {

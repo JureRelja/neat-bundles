@@ -25,15 +25,13 @@ import { BigGapBetweenSections, GapBetweenSections } from "../../constants";
 import { QuestionCircleIcon } from "@shopify/polaris-icons";
 import { useState } from "react";
 import { JsonData } from "~/adminBackend/service/dto/jsonData";
-import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
-import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
-import type { BundleSettings } from "@prisma/client";
+import type { BundleBuilderConfig } from "@prisma/client";
 import type { BundleSettingsClient } from "~/types/BundleSettingsClient";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
 
-    const bundleSettings: BundleSettings | null = await db.bundleSettings.findUnique({
+    const bundleSettings: BundleBuilderConfig | null = await db.bundleBuilderConfig.findUnique({
         where: {
             bundleBuilderId: Number(params.bundleid),
         },
@@ -57,10 +55,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
     const formData = await request.formData();
 
-    const bundleSettings: BundleSettings = JSON.parse(formData.get("bundleSettings") as string);
+    const bundleSettings: BundleBuilderConfig = JSON.parse(formData.get("bundleSettings") as string);
 
     try {
-        const result: BundleSettings | null = await db.bundleSettings.update({
+        const result: BundleBuilderConfig | null = await db.bundleBuilderConfig.update({
             where: {
                 bundleBuilderId: Number(params.bundleid),
             },
@@ -74,11 +72,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         if (!result) {
             throw new Error("Failed to update bundle settings");
         }
-
-        // Clear the cache for the bundle
-        const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-        await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
 
         const url: URL = new URL(request.url);
 
@@ -105,7 +98,7 @@ export default function Index() {
 
     const serverSettings: BundleSettingsClient = useLoaderData<typeof loader>().data;
 
-    const [settingsState, setSetttingsState] = useState<BundleSettings>(serverSettings);
+    const [settingsState, setSetttingsState] = useState<BundleSettingsClient>(serverSettings);
 
     return (
         <>
@@ -228,7 +221,7 @@ export default function Index() {
                                             ]}
                                             selected={settingsState.allowBackNavigation ? ["true"] : []}
                                             onChange={(value) => {
-                                                setSetttingsState((prevSettings: BundleSettings) => {
+                                                setSetttingsState((prevSettings: BundleSettingsClient) => {
                                                     return {
                                                         ...prevSettings,
                                                         allowBackNavigation: value[0] === "true",
@@ -257,7 +250,7 @@ export default function Index() {
                                             ]}
                                             selected={settingsState.skipTheCart ? ["true"] : []}
                                             onChange={(value) => {
-                                                setSetttingsState((prevSettings: BundleSettings) => {
+                                                setSetttingsState((prevSettings: BundleSettingsClient) => {
                                                     return {
                                                         ...prevSettings,
                                                         skipTheCart: value[0] === "true",
@@ -303,7 +296,7 @@ export default function Index() {
                                             ]}
                                             selected={settingsState.showOutOfStockProducts ? ["true"] : []}
                                             onChange={(value) => {
-                                                setSetttingsState((prevSettings: BundleSettings) => {
+                                                setSetttingsState((prevSettings: BundleSettingsClient) => {
                                                     return {
                                                         ...prevSettings,
                                                         showOutOfStockProducts: value[0] === "true",

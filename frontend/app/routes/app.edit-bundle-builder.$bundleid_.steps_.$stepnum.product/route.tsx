@@ -6,13 +6,11 @@ import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, InlineGri
 import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, HorizontalGap, LargeGapBetweenSections } from "../../constants";
-import type { BundleStep, Product } from "@prisma/client";
+import type { BundleBuilderStep, Product } from "@prisma/client";
 import type { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
 import type { error } from "../../adminBackend/service/dto/jsonData";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import ResourcePicker from "~/components/resourcePicer";
-import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
-import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { bundleBuilderProductInputRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderProductInputRepository";
 import { bundleBuilderProductStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderProductStepRepository";
@@ -77,17 +75,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
             await bundleBuilderProductInputRepository.updateSelectedProducts(selectedProducts.stepId, selectedProducts.selectedProducts);
 
-            // Clear the cache for the step
-            const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-            ApiCacheService.singleKeyDelete(cacheKeyService.getStepKey(params.stepnum as string, params.bundleid as string));
-
             return json(new JsonData(true, "success", "Selected products were updated"));
         }
 
         //Updating the step
         case "updateStep": {
-            const stepData: BundleStep | BundleStepProduct | BundleStepContent = JSON.parse(formData.get("stepData") as string);
+            const stepData: BundleBuilderStep | BundleStepProduct | BundleStepContent = JSON.parse(formData.get("stepData") as string);
 
             const errors: error[] = [];
 
@@ -108,14 +101,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
             try {
                 await bundleBuilderProductStepService.updateStep(stepData as BundleStepProduct);
-
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await Promise.all([
-                    ApiCacheService.singleKeyDelete(cacheKeyService.getStepKey(stepData.stepNumber.toString(), params.bundleid as string)),
-                    ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
-                ]);
 
                 return json(
                     {

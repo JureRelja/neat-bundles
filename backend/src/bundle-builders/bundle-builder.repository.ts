@@ -16,7 +16,7 @@ export class BundleBuilderRepository {
                     },
                 },
                 title: createBundleBuilderDto.title,
-                bundleBuilderPageUrl: createBundleBuilderDto.bundleBuilderPageUrl,
+                bundleBuilderPageUrl: "",
                 published: true,
                 shopifyProductId: createBundleBuilderDto.title,
                 bundleBuilderConfig: {

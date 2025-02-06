@@ -6,7 +6,7 @@ import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, ButtonGro
 import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, LargeGapBetweenSections } from "../../constants";
-import type { BundleStep } from "@prisma/client";
+import type { BundleBuilderStep } from "@prisma/client";
 import type { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
 import type { error } from "../../adminBackend/service/dto/jsonData";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
@@ -15,8 +15,6 @@ import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import bundleBuilderContentStepRepository from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderContentStepRepository";
 import { bundleBuilderContentStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderContentStepService";
 import { bundleBuilderStepService } from "~/adminBackend/service/impl/bundleBuilder/step/BundleBuilderStepService";
-import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
-import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 import type { BundleStepContentClient } from "~/types/BundleStepContentClient";
 import type { ContentInputClient } from "~/types/ContentInputClient";
@@ -63,7 +61,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     switch (action) {
         //Updating the step
         case "updateStep": {
-            const stepData: BundleStep | BundleStepProduct | BundleStepContent = JSON.parse(formData.get("stepData") as string);
+            const stepData: BundleBuilderStep | BundleStepProduct | BundleStepContent = JSON.parse(formData.get("stepData") as string);
 
             const errors: error[] = [];
 
@@ -84,14 +82,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
             try {
                 await bundleBuilderContentStepService.updateStep(stepData as BundleStepContent);
-
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await Promise.all([
-                    ApiCacheService.singleKeyDelete(cacheKeyService.getStepKey(stepData.stepNumber.toString(), params.bundleid as string)),
-                    ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
-                ]);
 
                 return json(
                     {
@@ -146,7 +136,7 @@ export default function Index() {
         setStepData((stepData: BundleStepContentClient) => {
             return {
                 ...stepData,
-                contentInputs: stepData.contentInputs.map((input: ContentInputClient) => {
+                contentInputs: stepData.contentInput.map((input: ContentInputClient) => {
                     if (input.id === contentInput.id) {
                         return contentInput;
                     }
@@ -185,9 +175,9 @@ export default function Index() {
             return {
                 ...stepData,
                 contentInputs: [
-                    ...stepData.contentInputs,
+                    ...stepData.contentInput,
                     {
-                        id: stepData.contentInputs.length + 1,
+                        id: stepData.contentInput.length + 1,
                         bundleStepId: stepData.id,
                         inputType: "TEXT",
                         inputLabel: "Enter your name",
@@ -203,7 +193,7 @@ export default function Index() {
         setStepData((stepData: BundleStepContentClient) => {
             return {
                 ...stepData,
-                contentInputs: stepData.contentInputs.filter((input: ContentInputClient) => input.id !== inputId),
+                contentInputs: stepData.contentInput.filter((input: ContentInputClient) => input.id !== inputId),
             };
         });
     };
@@ -242,9 +232,9 @@ export default function Index() {
                                                 </BlockStack>
 
                                                 <BlockStack gap={GapBetweenSections}>
-                                                    {stepData.contentInputs.length > 0 ? (
+                                                    {stepData.contentInput.length > 0 ? (
                                                         <BlockStack gap={GapBetweenSections}>
-                                                            {stepData.contentInputs.map((contentInput, index) => (
+                                                            {stepData.contentInput.map((contentInput, index) => (
                                                                 <>
                                                                     <ContentStepInputs
                                                                         removeContentInputField={removeContentInputFieldHandler}
@@ -256,10 +246,10 @@ export default function Index() {
                                                                         updateFieldErrorHandler={updateFieldErrorHandler}
                                                                         updateContentInput={updateContentInput}
                                                                     />
-                                                                    {stepData.contentInputs.indexOf(contentInput) !== stepData.contentInputs.length - 1 && <Divider />}
+                                                                    {stepData.contentInput.indexOf(contentInput) !== stepData.contentInput.length - 1 && <Divider />}
                                                                 </>
                                                             ))}
-                                                            {stepData.contentInputs.length < 2 && (
+                                                            {stepData.contentInput.length < 2 && (
                                                                 <Button variant="primary" fullWidth onClick={addContentInputFieldHandler}>
                                                                     Add another input field
                                                                 </Button>

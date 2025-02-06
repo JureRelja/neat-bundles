@@ -1,6 +1,6 @@
 import { get } from "http";
 import { AddedContentDto } from "./AddedContentDto";
-import { BundleFullAndStepsFullDto } from "./BundleFullAndStepsFullDto";
+import { BundleBuilderAndBundleStepsDto } from "./BundleBuilderAndBundleStepsDto";
 
 export class BundleVariantForCartDto {
     private bundleId: number;
@@ -91,7 +91,7 @@ export class BundleVariantForCartDto {
     }
 
     //Calculate the price of the bundle
-    public static getFinalBundlePrices(bundle: BundleFullAndStepsFullDto, totalProductPrice: number) {
+    public static getFinalBundlePrices(bundle: BundleBuilderAndBundleStepsDto, totalProductPrice: number) {
         //Getting bundle price before the discount
         let bundlePrice = 0;
 

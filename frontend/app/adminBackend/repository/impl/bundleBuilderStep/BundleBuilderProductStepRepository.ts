@@ -12,9 +12,9 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
                 id: stepId,
             },
             include: {
-                ProductInput: {
+                productInput: {
                     include: {
-                        ProductToProductInput: true,
+                        products: true,
                     },
                 },
             },
@@ -30,9 +30,9 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
                 stepNumber: stepNumber,
             },
             include: {
-                ProductInput: {
+                productInput: {
                     include: {
-                        ProductToProductInput: true,
+                        products: true,
                     },
                 },
             },
@@ -49,7 +49,7 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
                 stepType: StepType.PRODUCT,
                 title: stepData.title,
                 description: stepData.description,
-                ProductInput: {
+                productInput: {
                     create: {
                         minProductsOnStep: stepData.productInput?.minProductsOnStep || 1,
                         maxProductsOnStep: stepData.productInput?.maxProductsOnStep || 3,
@@ -59,9 +59,9 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
                 },
             },
             include: {
-                ProductInput: {
+                productInput: {
                     include: {
-                        ProductToProductInput: true,
+                        products: true,
                     },
                 },
             },
@@ -82,7 +82,7 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
             data: {
                 title: stepData.title,
                 description: stepData.description,
-                ProductInput: {
+                productInput: {
                     update: {
                         minProductsOnStep: stepData.productInput?.minProductsOnStep,
                         maxProductsOnStep: stepData.productInput?.maxProductsOnStep,
@@ -92,9 +92,9 @@ export class BundleBuilderProductStepRepository extends BundleBuilderStepTypeRep
                 },
             },
             include: {
-                ProductInput: {
+                productInput: {
                     include: {
-                        ProductToProductInput: true,
+                        products: true,
                     },
                 },
             },

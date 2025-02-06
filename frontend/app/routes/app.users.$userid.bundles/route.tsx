@@ -4,7 +4,6 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Card, Button, BlockStack, EmptyState, Text, Box, SkeletonPage, SkeletonBodyText, DataTable, ButtonGroup, Badge, Spinner, InlineStack, TextField } from "@shopify/polaris";
 import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from "@shopify/polaris-icons";
 import { authenticate } from "../../shopify.server";
-import type { BundleAndStepsBasicClient } from "../../adminBackend/service/dto/Bundle";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import { useEffect, useState } from "react";
@@ -169,7 +168,7 @@ export default function Index() {
         submit(form, { method: "POST", action: `/app/users/${user.id}/bundles${!user.completedOnboarding ? "?onboarding=true" : ""}`, navigate: true });
     };
 
-    const [bundleForDelete, setBundleForDelete] = useState<BundleAndStepsBasicClient | null>(null);
+    const [bundleForDelete, setBundleForDelete] = useState<BundleBuilderClient | null>(null);
     const [showBundleDeleteConfirmModal, setShowBundleDeleteConfirmModal] = useState(false);
 
     useEffect(() => {
@@ -312,7 +311,7 @@ export default function Index() {
                                     <DataTable
                                         columnContentTypes={["text", "text", "text", "text", "text"]}
                                         headings={["Bundle ID", "Name", "Status", "Actions", "Preview"]}
-                                        rows={bundleBuilders.map((bundleBuilder: BundleAndStepsBasicClient) => {
+                                        rows={bundleBuilders.map((bundleBuilder: BundleBuilderClient) => {
                                             return [
                                                 <Text as="p" tone="base">
                                                     {bundleBuilder.id}

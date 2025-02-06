@@ -6,6 +6,7 @@ export class BundleBuilderClient {
     createdAt: string;
     pricing: "CALCULATED" | "FIXED";
     priceAmount: number | null;
+    bundleBuilderPageUrl: string;
     discountType: "PERCENTAGE" | "FIXED" | "NO_DISCOUNT";
     discountValue: number | null;
     shop: string;

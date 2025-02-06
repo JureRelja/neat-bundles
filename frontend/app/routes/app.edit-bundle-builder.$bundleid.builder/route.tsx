@@ -42,8 +42,7 @@ import { bundleBuilderStepRepository } from "../../adminBackend//repository/impl
 import bundleBuilderRepository, { BundleBuilderRepository } from "../../adminBackend//repository/impl/BundleBuilderRepository";
 import { shopifyBundleBuilderProductRepository } from "../../adminBackend//repository/impl/ShopifyBundleBuilderProductRepository";
 import { inclBundleFullStepsBasic } from "../../adminBackend//service/dto/Bundle";
-import { ApiCacheKeyService } from "../../adminBackend//service/utils/ApiCacheKeyService";
-import { ApiCacheService } from "../../adminBackend//service/utils/ApiCacheService";
+
 import styles from "./route.module.css";
 import { AuthorizationCheck } from "../../adminBackend/service/utils/AuthorizationCheck";
 
@@ -137,9 +136,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 const url: URL = new URL(request.url);
 
                 // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await ApiCacheService.multiKeyDelete(await cacheKeyService.getAllBundleKeys(params.bundleid as string));
 
                 if (url.searchParams.get("redirect") === "true") {
                     return redirect("/app");
@@ -243,9 +239,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 ]);
 
                 // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
 
                 const saveBtn = formData.get("submitBtn");
 

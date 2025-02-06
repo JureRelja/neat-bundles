@@ -27,7 +27,7 @@ export type BundleBuilderDto = Prisma.BundleBuilderGetPayload<{
 // On the server, date is a Date object
 export type BundleAndStepsBasicServer = Prisma.BundleBuilderGetPayload<{
     select: typeof bundleAndSteps;
-}> & { bundleBuilderPageUrl: string };
+}>;
 
 /////////////////
 
@@ -41,7 +41,7 @@ export const inclBundleFullStepsBasic = {
 // On the server, date is a Date object
 export type BundleFullStepBasicServer = Prisma.BundleBuilderGetPayload<{
     include: typeof inclBundleFullStepsBasic;
-}> & { bundleBuilderPageUrl: string };
+}>;
 
 type BundleFullStepBasic_noDate = Omit<BundleFullStepBasicServer, "createdAt">;
 

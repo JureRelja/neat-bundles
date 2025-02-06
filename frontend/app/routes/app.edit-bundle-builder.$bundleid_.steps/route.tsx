@@ -6,8 +6,6 @@ import { authenticate } from "../../shopify.server";
 import db from "../../db.server";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import type { BundleStepContent, BundleStepProduct } from "@adminBackend/service/dto/BundleStep";
-import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
-import { ApiCacheKeyService } from "@adminBackend/service/utils/ApiCacheKeyService";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { bundleBuilderStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderStepRepository";
 import { bundleBuilderStepsService } from "~/adminBackend/service/impl/BundleBuilderStepsService";
@@ -70,11 +68,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                 if (!newStep) throw new Error("New step couldn't be created.");
 
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
-
                 const url = new URL(request.url);
 
                 if (url.searchParams.get("onboarding") === "true") {
@@ -123,11 +116,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 const newStep: BundleStepContent = await bundleBuilderContentStepService.addNewStep(Number(params.bundleid), contentStepData);
 
                 if (!newStep) throw new Error("New step couldn't be created.");
-
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
 
                 const url = new URL(request.url);
 
@@ -188,11 +176,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 }
 
                 if (!newStep) throw new Error("New step couldn't be created.");
-
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
 
                 const url = new URL(request.url);
 
@@ -310,14 +293,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     }),
                 ]);
 
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await Promise.all([
-                    ApiCacheService.multiKeyDelete(await cacheKeyService.getAllStepsKeys(params.bundleid as string)),
-                    ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
-                ]);
-
                 return json({
                     ...new JsonData(true, "success", "Step moved down"),
                 });
@@ -402,14 +377,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                             },
                         },
                     }),
-                ]);
-
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await Promise.all([
-                    ApiCacheService.multiKeyDelete(await cacheKeyService.getAllStepsKeys(params.bundleid as string)),
-                    ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
                 ]);
 
                 return json({
