@@ -3,18 +3,14 @@ import type { BundleBuilder } from "@prisma/client";
 import type { BundleBuilderAndBundleSteps } from "@adminBackend/model/BundleBuilderAndBundleSteps";
 import { bundleBuilderAndBundleSteps } from "@adminBackend/model/BundleBuilderAndBundleSteps";
 export class BundleBuilderRepository {
-    public async create(createBundleBuilderDto: CreateBundleBuilderDto): Promise<BundleBuilderEntity> {
-        const bundleBuilder: BundleBuilderEntity = await db.bundleBuilder.create({
+    public async create(shop: string, title: string, productId: string): Promise<BundleBuilder> {
+        const bundleBuilder: BundleBuilder = await db.bundleBuilder.create({
             data: {
-                User: {
-                    connect: {
-                        shop: createBundleBuilderDto.shop,
-                    },
-                },
-                title: createBundleBuilderDto.title,
+                shop: shop,
+                title: title,
                 published: true,
-                shopifyProductId: createBundleBuilderDto.title,
-                BundleBuilderConfig: {
+                shopifyProductId: productId,
+                bundleBuilderConfig: {
                     create: {
                         skipTheCart: false,
                         allowBackNavigation: true,
@@ -35,6 +31,17 @@ export class BundleBuilderRepository {
     //         },
     //     });
     // }
+
+    public static updateBundleBuilderProductId(id: number, productId: string) {
+        return db.bundleBuilder.update({
+            where: {
+                id: id,
+            },
+            data: {
+                shopifyProductId: productId,
+            },
+        });
+    }
 
     public static async getBundleBuilderById(bundleBuilderId: number) {
         return db.bundleBuilder.findUnique({
@@ -90,7 +97,7 @@ export class BundleBuilderRepository {
         });
     }
 
-    public async delete(id: number): Promise<BundleBuilderEntity | null> {
+    public async delete(id: number): Promise<BundleBuilder | null> {
         return await db.bundleBuilder.update({
             where: {
                 id: id,
@@ -99,7 +106,7 @@ export class BundleBuilderRepository {
         });
     }
 
-    public async get(id: number, shop: string): Promise<BundleBuilderEntity | null> {
+    public async get(id: number, shop: string): Promise<BundleBuilder | null> {
         return db.bundleBuilder.findUnique({
             where: {
                 id: id,
@@ -108,30 +115,21 @@ export class BundleBuilderRepository {
         });
     }
 
-    async getWithSteps(id: number, shop: string): Promise<BundleBuilderAndStepsBasicDto | null> {
-        return db.bundleBuilder.findUnique({
+    async getWithSteps(id: number, shop: string): Promise<BundleBuilderAndBundleSteps | null> {
+        return await db.bundleBuilder.findUnique({
             where: {
                 id: id,
                 shop: shop,
             },
-            select: bundleBuilderAndStepsBasicSelect,
+            include: bundleBuilderAndBundleSteps,
         });
     }
 
-    public async getAll(shop: string): Promise<BundleBuilderEntity[] | null> {
+    public async getAll(shop: string): Promise<BundleBuilder[]> {
         return db.bundleBuilder.findMany({
             where: {
                 shop: shop,
             },
-        });
-    }
-
-    public async update(updateBundleBuilderDto: UpdateBundleBuilderDto): Promise<BundleBuilderEntity> {
-        return await db.bundleBuilder.update({
-            where: {
-                id: updateBundleBuilderDto.id,
-            },
-            data: updateBundleBuilderDto,
         });
     }
 

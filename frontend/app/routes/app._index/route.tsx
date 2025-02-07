@@ -6,7 +6,7 @@ import { BlockStack, Card, SkeletonBodyText, SkeletonPage } from "@shopify/polar
 import { BillingPlanIdentifiers } from "~/constants";
 import { loopsClient } from "../../email.server";
 import { bundleBuilderService } from "~/adminBackend/service/impl/BundleBuilderServiceImpl";
-import { StorefrontToken } from "~/adminBackend/service/shopify/StorefrontToken";
+import { StorefrontToken } from "~/adminBackend/shopify/StorefrontToken";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { admin, session, billing, redirect } = await authenticate.admin(request);

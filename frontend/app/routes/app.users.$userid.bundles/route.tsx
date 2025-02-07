@@ -1,58 +1,54 @@
-/* eslint-disable react/jsx-key */
-import { useNavigation, json, useLoaderData, useFetcher, useSubmit, Link, useNavigate } from "@remix-run/react";
+import { useNavigation, json, useLoaderData, useFetcher, useSubmit, Link, useNavigate, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Card, Button, BlockStack, EmptyState, Text, Box, SkeletonPage, SkeletonBodyText, DataTable, ButtonGroup, Badge, Spinner, InlineStack, TextField } from "@shopify/polaris";
 import { PlusIcon, ExternalIcon, EditIcon, DeleteIcon, SettingsIcon } from "@shopify/polaris-icons";
 import { authenticate } from "../../shopify.server";
-import db from "../../db.server";
-import type { BundleAndStepsBasicClient } from "../../adminBackend/service/dto/Bundle";
-import { bundleAndSteps } from "../../adminBackend/service/dto/Bundle";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import { useEffect, useState } from "react";
 import { Modal, TitleBar } from "@shopify/app-bridge-react";
 import { bundlePagePreviewKey, GapBetweenSections, GapInsideSection } from "~/constants";
 import userRepository from "@adminBackend/repository/impl/UserRepository";
-import bundleBuilderRepository, { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
+import bundleBuilderRepository from "~/adminBackend/repository/impl/BundleBuilderRepository";
 import { shopifyBundleBuilderProductRepository } from "~/adminBackend/repository/impl/ShopifyBundleBuilderProductRepository";
 import { ShopifyRedirectRepository } from "~/adminBackend/repository/impl/ShopifyRedirectRepository";
-import type { ShopifyBundleBuilderPageRepository } from "~/adminBackend/repository/ShopifyBundleBuilderPageRepository";
-import shopifyBundleBuilderPageGraphql from "@adminBackend/repository/impl/ShopifyBundleBuilderPageRepositoryGraphql";
+
+import { BundleBuilderClient } from "~/types/BundleBuilderClient";
+import { Shop } from "~/adminBackend/shopifyGraphql/graphql";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    const { session, redirect } = await authenticate.admin(request);
+    const { session, redirect, admin } = await authenticate.admin(request);
 
     console.log("I'm on bundles loader");
 
-    const [user, bundleBuildersWithoutPageUrl] = await Promise.all([
+    const [user, bundleBuilders, primaryDomainResponse] = await Promise.all([
         userRepository.getUserByStoreUrl(session.shop),
 
-        db.bundleBuilder.findMany({
-            where: {
-                user: {
-                    storeUrl: session.shop,
-                },
-                deleted: false,
-            },
-            select: bundleAndSteps,
-            orderBy: {
-                createdAt: "desc",
-            },
-        }),
+        bundleBuilderRepository.getAll(session.shop),
+
+        await admin.graphql(
+            `#graphql
+                query getStore {
+                shop {
+                    
+                    primaryDomain {
+                        url
+                    }
+                    
+                }
+                }`,
+        ),
     ]);
+
+    const primaryDomain: Partial<Shop> = (await primaryDomainResponse.json()).data.shop;
+
+    const userPrimaryDomain = primaryDomain?.primaryDomain?.url as string;
 
     if (!user) return redirect("/app");
 
-    const bundleBuildersWithPageUrl = bundleBuildersWithoutPageUrl.map((bundleBuilder) => {
-        return {
-            ...bundleBuilder,
-            bundleBuilderPageUrl: `${user.primaryDomain}/pages/${bundleBuilder.bundleBuilderPageHandle}`, //Url of the bundle page
-        };
-    });
-
     return json(
         {
-            ...new JsonData(true, "success", "Bundles succesfuly retrieved.", [], { bundleBuildersWithPageUrl, user }),
+            ...new JsonData(true, "success", "Bundles succesfuly retrieved.", [], { bundleBuilders, user, userPrimaryDomain }),
         },
         { status: 200 },
     );
@@ -79,7 +75,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 }
                 // Check if the user has reached the limit of bundles for the basic plan
                 else if (user.activeBillingPlan === "BASIC") {
-                    const bundleBuilderCount = await bundleBuilderRepository.getBundleBuilderCountByStoreUrl(session.shop);
+                    const bundleBuilderCount = await bundleBuilderRepository.getCount(session.shop);
 
                     if (bundleBuilderCount >= 2) {
                         return json(new JsonData(false, "error", "You have reached the limit of 2 bundles for the basic plan."), { status: 400 });
@@ -91,28 +87,18 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                 const isOnboarding = urlParams.get("onboarding") === "true";
 
-                const shopifyBundleBuilderPageRepository: ShopifyBundleBuilderPageRepository = shopifyBundleBuilderPageGraphql;
-
                 const bundleBuilderTitle = formData.get("bundleTitle") as string;
 
                 //Create a new product that will be used as a bundle wrapper
-                const [bundleProductId, bundlePage] = await Promise.all([
-                    shopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilderTitle, session.shop),
-                    shopifyBundleBuilderPageRepository.createPage(admin, session, bundleBuilderTitle),
-                ]);
+                const bundleProductId = await shopifyBundleBuilderProductRepository.createBundleProduct(admin, bundleBuilderTitle, session.shop);
 
-                if (!bundleProductId || !bundlePage) {
+                if (!bundleProductId) {
                     return;
                 }
 
-                const [, bundleBuilder] = await Promise.all([
-                    //Create redirect
-                    ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundlePage.handle, bundleProductId),
-                    //Create new bundle
-                    BundleBuilderRepository.createNewEmptyBundleBuilder(session.shop, bundleBuilderTitle, bundleProductId, bundlePage.id, bundlePage.handle),
-                ]);
+                const bundleBuilder = await bundleBuilderRepository.create(session.shop, bundleBuilderTitle, bundleProductId);
 
-                await shopifyBundleBuilderPageRepository.setPageMetafields(bundleBuilder.id, bundlePage.id, session, admin);
+                const res = await ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundleBuilder.id, bundleProductId);
 
                 //If the user is onboarding, redirect to onboarding flow
                 if (isOnboarding) {
@@ -148,7 +134,7 @@ export default function Index() {
 
     const loaderResponse = useLoaderData<typeof loader>();
 
-    const bundleBuilders: BundleAndStepsBasicClient[] = loaderResponse.data.bundleBuildersWithPageUrl;
+    const bundleBuilders: BundleBuilderClient[] = loaderResponse.data.bundleBuilders;
 
     const user = loaderResponse.data.user;
 
@@ -187,11 +173,10 @@ export default function Index() {
         submit(form, { method: "POST", action: `/app/users/${user.id}/bundles${!user.completedOnboarding ? "?onboarding=true" : ""}`, navigate: true });
     };
 
-    const [bundleForDelete, setBundleForDelete] = useState<BundleAndStepsBasicClient | null>(null);
+    const [bundleForDelete, setBundleForDelete] = useState<BundleBuilderClient | null>(null);
     const [showBundleDeleteConfirmModal, setShowBundleDeleteConfirmModal] = useState(false);
 
     useEffect(() => {
-        // revalidator.revalidate();
         if (bundleForDelete) setShowBundleDeleteConfirmModal(true);
     }, [bundleForDelete]);
 
@@ -329,9 +314,9 @@ export default function Index() {
                             <Card>
                                 {bundleBuilders.length > 0 ? (
                                     <DataTable
-                                        columnContentTypes={["text", "text", "text", "text", "text", "text"]}
-                                        headings={["Bundle ID", "Name", "Steps", "Status", "Actions", "Settings", "Preview"]}
-                                        rows={bundleBuilders.map((bundleBuilder: BundleAndStepsBasicClient) => {
+                                        columnContentTypes={["text", "text", "text", "text", "text"]}
+                                        headings={["Bundle ID", "Name", "Status", "Actions", "Preview"]}
+                                        rows={bundleBuilders.map((bundleBuilder: BundleBuilderClient) => {
                                             return [
                                                 <Text as="p" tone="base">
                                                     {bundleBuilder.id}
@@ -347,8 +332,6 @@ export default function Index() {
                                                         {bundleBuilder.title}
                                                     </Text>
                                                 </Link>,
-                                                //
-                                                bundleBuilder.steps.length,
                                                 //
                                                 <Link to={`/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
                                                     {bundleBuilder.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
@@ -385,17 +368,10 @@ export default function Index() {
                                                 </ButtonGroup>,
                                                 //
                                                 <Button
-                                                    icon={SettingsIcon}
-                                                    variant="secondary"
-                                                    tone="success"
-                                                    url={`/app/edit-bundle-builder/${bundleBuilder.id}/settings/?redirect=/app/edit-bundle-builder/${bundleBuilder.id}/builder`}>
-                                                    Settings
-                                                </Button>,
-                                                <Button
                                                     icon={ExternalIcon}
                                                     variant="secondary"
                                                     tone="success"
-                                                    url={`${bundleBuilder.bundleBuilderPageUrl}?${bundlePagePreviewKey}=true`}
+                                                    url={`${loaderResponse.data.userPrimaryDomain}/apps/nb/widgets/${bundleBuilder.id}`}
                                                     target="_blank">
                                                     Preview
                                                 </Button>,

@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-key */
-import type { BundleStep, User } from "@prisma/client";
+import type { BundleBuilderStep, User } from "@prisma/client";
 import { useNavigate, useNavigation, useParams, useFetcher, useSubmit, Link } from "@remix-run/react";
 import { useAppBridge, TitleBar, Modal } from "@shopify/app-bridge-react";
 import {
@@ -26,7 +26,7 @@ import { ArrowDownIcon, ArrowUpIcon, DeleteIcon, EditIcon, PageAddIcon, PlusIcon
 import styles from "./bundelBuilderSteps.module.css";
 import type { BundleBuilderStepClient } from "~/types/BundleBuilderStep";
 
-export default function Index({ user, bundleBuilderSteps }: { user: User; bundleBuilderSteps: BundleStep[] }): JSX.Element {
+export default function Index({ user, bundleBuilderSteps }: { user: User; bundleBuilderSteps: BundleBuilderStep[] }): JSX.Element {
     const navigate = useNavigate();
     const nav = useNavigation();
     const shopify = useAppBridge();

@@ -1,4 +1,4 @@
-import { BundleStep, StepType } from "@prisma/client";
+import { BundleBuilderStep, StepType } from "@prisma/client";
 import { BundleBuilderStepTypeRepository } from "./BundleBuilderStepTypeRepository";
 import db from "~/db.server";
 import { BundleStepContent, selectBundleStepContent } from "~/adminBackend/service/dto/BundleStep";
@@ -6,12 +6,12 @@ import { ContentStepDataDto } from "~/adminBackend/service/dto/ContentStepDataDt
 
 class BundleBuilderContentStepRepository extends BundleBuilderStepTypeRepository {
     public async getStepById(stepId: number): Promise<BundleStepContent | null> {
-        const step: BundleStepContent | null = await db.bundleStep.findFirst({
+        const step: BundleStepContent | null = await db.bundleBuilderStep.findFirst({
             where: {
                 id: stepId,
             },
             include: {
-                contentInputs: true,
+                contentInput: true,
             },
         });
 
@@ -19,19 +19,19 @@ class BundleBuilderContentStepRepository extends BundleBuilderStepTypeRepository
     }
 
     public async addNewStep(bundleId: number, stepData: ContentStepDataDto): Promise<BundleStepContent> {
-        const newStep: BundleStepContent = await db.bundleStep.create({
+        const newStep: BundleStepContent = await db.bundleBuilderStep.create({
             data: {
                 bundleBuilderId: bundleId,
                 stepNumber: stepData.stepNumber,
                 stepType: StepType.CONTENT,
                 title: stepData.title,
                 description: stepData.description,
-                contentInputs: {
+                contentInput: {
                     create: stepData.contentInputs,
                 },
             },
             include: {
-                contentInputs: true,
+                contentInput: true,
             },
         });
 
@@ -41,13 +41,13 @@ class BundleBuilderContentStepRepository extends BundleBuilderStepTypeRepository
     }
 
     public async getStepByBundleIdAndStepNumber(bundleId: number, stepNumber: number): Promise<BundleStepContent | null> {
-        const step: BundleStepContent | null = await db.bundleStep.findFirst({
+        const step: BundleStepContent | null = await db.bundleBuilderStep.findFirst({
             where: {
                 bundleBuilderId: bundleId,
                 stepNumber: stepNumber,
             },
             include: {
-                contentInputs: true,
+                contentInput: true,
             },
         });
 
@@ -55,20 +55,20 @@ class BundleBuilderContentStepRepository extends BundleBuilderStepTypeRepository
     }
 
     public async updateStep(stepData: BundleStepContent): Promise<BundleStepContent> {
-        const updatedStep: BundleStepContent = await db.bundleStep.update({
+        const updatedStep: BundleStepContent = await db.bundleBuilderStep.update({
             where: {
                 id: stepData.id,
             },
             data: {
                 title: stepData.title,
                 description: stepData.description,
-                contentInputs: {
+                contentInput: {
                     deleteMany: {
                         id: {
-                            notIn: stepData.contentInputs.map((input) => input.id),
+                            notIn: stepData.contentInput.map((input) => input.id),
                         },
                     },
-                    upsert: stepData.contentInputs.map((input) => ({
+                    upsert: stepData.contentInput.map((input) => ({
                         where: {
                             id: input.id,
                         },
@@ -88,7 +88,7 @@ class BundleBuilderContentStepRepository extends BundleBuilderStepTypeRepository
                 },
             },
             include: {
-                contentInputs: true,
+                contentInput: true,
             },
         });
 

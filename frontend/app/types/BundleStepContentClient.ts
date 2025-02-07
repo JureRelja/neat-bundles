@@ -7,7 +7,7 @@ export type BundleStepContentClient = {
     title: string;
     description: string;
     stepType: StepTypeClient;
-    contentInputs: {
+    contentInput: {
         id: number;
         bundleStepId: number;
         inputLabel: string;

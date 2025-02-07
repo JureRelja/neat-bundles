@@ -1,9 +1,9 @@
-import { BundleStep } from "@prisma/client";
+import { BundleBuilderStep } from "@prisma/client";
 import { error } from "../../../dto/jsonData";
 import { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
 
 class BundleBuilderDefaultStepService {
-    public checkIfErrorsInStepData(stepData: BundleStep | BundleStepProduct | BundleStepContent): error[] {
+    public checkIfErrorsInStepData(stepData: BundleBuilderStep | BundleStepProduct | BundleStepContent): error[] {
         const errors: error[] = [];
 
         if (!stepData.title) {

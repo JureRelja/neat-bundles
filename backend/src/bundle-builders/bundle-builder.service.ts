@@ -9,12 +9,21 @@ import { BundleBuilderAndStepsBasicDto } from "./dto/bundle-builder-basic.dto";
 export class BundleBuilderService {
     constructor(private readonly bundleBuilderRepository: BundleBuilderRepository) {}
 
-    create(createBundleBuilderDto: CreateBundleBuilderDto) {
-        return "This action adds a new bundleBuilder";
+    create(createBundleBuilderDto: CreateBundleBuilderDto): Promise<BundleBuilderEntity> {
+        try {
+            return this.bundleBuilderRepository.create(createBundleBuilderDto);
+        } catch (error) {
+            throw new BadRequestException("There was an error with your request. BundleBuilder not created.");
+        }
     }
 
-    findAll() {
-        return `This action returns all bundleBuilder`;
+    async findAll(shop: string): Promise<BundleBuilderEntity[]> {
+        try {
+            const bundleBuilders = await this.bundleBuilderRepository.getAll(shop);
+            return bundleBuilders;
+        } catch (error) {
+            throw new BadRequestException("There was an error with your request. BundleBuilders not found.");
+        }
     }
 
     async findOne(id: number, shop: string, includeSteps: boolean): Promise<BundleBuilderEntity | BundleBuilderAndStepsBasicDto> {

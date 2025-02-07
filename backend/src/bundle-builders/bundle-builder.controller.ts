@@ -1,22 +1,22 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from "@nestjs/common";
 import { BundleBuilderService } from "./bundle-builder.service";
+import { BundleBuilderDto } from "./dto/bundle-builder.dto";
+import { BundleBuilderAndStepsBasicDto } from "./dto/bundle-builder-basic.dto";
 import { CreateBundleBuilderDto } from "./dto/create-bundle-builder.dto";
 import { UpdateBundleBuilderDto } from "./dto/update-bundle-builder.dto";
-import { BundleBuilderAndStepsBasicDto } from "./dto/bundle-builder-basic.dto";
-import { BundleBuilderEntity } from "./entities/bundle-builder.entity";
 
 @Controller("bundle-builders")
 export class BundleBuilderController {
     constructor(private readonly bundleBuilderService: BundleBuilderService) {}
 
     @Post()
-    create(@Body() createBundleBuilderDto: CreateBundleBuilderDto) {
+    async create(@Body() createBundleBuilderDto: CreateBundleBuilderDto): Promise<BundleBuilderDto> {
         return this.bundleBuilderService.create(createBundleBuilderDto);
     }
 
-    @Get()
-    findAll() {
-        return this.bundleBuilderService.findAll();
+    @Get("/:shop")
+    async findAll(@Param("shop") shop: string): Promise<BundleBuilderDto[]> {
+        return this.bundleBuilderService.findAll(shop);
     }
 
     @Get("/:shop/:id")
@@ -24,7 +24,7 @@ export class BundleBuilderController {
         @Param("id") id: string,
         @Param("shop") shop: string,
         @Query("includeSteps") includeSteps: boolean,
-    ): Promise<BundleBuilderEntity | BundleBuilderAndStepsBasicDto | null> {
+    ): Promise<BundleBuilderDto | BundleBuilderAndStepsBasicDto | null> {
         return this.bundleBuilderService.findOne(+id, shop, includeSteps);
     }
 

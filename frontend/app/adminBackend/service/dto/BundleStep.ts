@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { BundleBuilderStep } from "../../../../../backend/src/db/prisma/generatedPrismaClasses/bundle_builder_step";
 
 //Bundle step with only basic resources
 export const bundleStepBasic = {
@@ -7,9 +8,9 @@ export const bundleStepBasic = {
     description: true,
     title: true,
     stepType: true,
-} satisfies Prisma.BundleStepSelect;
+} satisfies Prisma.BundleBuilderStepSelect;
 
-export type BundleStepBasicResources = Prisma.BundleStepGetPayload<{
+export type BundleStepBasicResources = Prisma.BundleBuilderStepGetPayload<{
     select: typeof bundleStepBasic;
 }>;
 
@@ -22,10 +23,10 @@ export const bundleStepFull = {
             products: true,
         },
     },
-    contentInputs: true,
-} satisfies Prisma.BundleStepSelect;
+    contentInput: true,
+} satisfies Prisma.BundleBuilderStepSelect;
 
-export type BundleStepAllResources = Prisma.BundleStepGetPayload<{
+export type BundleStepAllResources = Prisma.BundleBuilderStepGetPayload<{
     include: typeof bundleStepFull;
 }>;
 
@@ -37,18 +38,18 @@ export const selectBundleStepProduct = {
             products: true,
         },
     },
-} satisfies Prisma.BundleStepSelect;
+} satisfies Prisma.BundleBuilderStepSelect;
 
-export type BundleStepProduct = Prisma.BundleStepGetPayload<{
+export type BundleStepProduct = Prisma.BundleBuilderStepGetPayload<{
     select: typeof selectBundleStepProduct;
 }>;
 
 //Bundle step of type content
 export const selectBundleStepContent = {
     ...bundleStepBasic,
-    contentInputs: true,
-} satisfies Prisma.BundleStepSelect;
+    contentInput: true,
+} satisfies Prisma.BundleBuilderStepSelect;
 
-export type BundleStepContent = Prisma.BundleStepGetPayload<{
+export type BundleStepContent = Prisma.BundleBuilderStepGetPayload<{
     select: typeof selectBundleStepContent;
 }>;

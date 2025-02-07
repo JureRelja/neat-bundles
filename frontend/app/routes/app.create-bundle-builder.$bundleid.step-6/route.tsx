@@ -11,9 +11,10 @@ import type { BundleBuilder } from "@prisma/client";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 import { GapBetweenSections, GapInsideSection, LargeGapBetweenSections } from "~/constants";
 import { EditIcon, ExternalIcon } from "@shopify/polaris-icons";
+import { Shop } from "~/adminBackend/shopifyGraphql/graphql";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { session, redirect } = await authenticate.admin(request);
+    const { session, admin, redirect } = await authenticate.admin(request);
 
     const isAuthorized = await AuthorizationCheck(session.shop, Number(params.bundleid));
 
@@ -45,9 +46,23 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     }
 
     //Url of the bundle page
-    const bundleBuilderPageUrl = `${user.primaryDomain}/pages/${bundleBuilder.bundleBuilderPageHandle}`;
+    const primaryDomainResponse = await admin.graphql(
+        `#graphql
+            query getStore {
+            shop {
+                
+                primaryDomain {
+                    url
+                }
+                
+            }
+            }`,
+    );
+    const primaryDomain: Partial<Shop> = (await primaryDomainResponse.json()).data;
 
-    return json(new JsonData(true, "success", "Loader response", [], { bundleBuilder, bundleBuilderPageUrl }), { status: 200 });
+    const userPrimaryDomain = primaryDomain?.primaryDomain?.url as string;
+
+    return json(new JsonData(true, "success", "Loader response", [], { bundleBuilder, userPrimaryDomain }), { status: 200 });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -82,7 +97,11 @@ export default function Index() {
                                 <Button url={`/app/edit-bundle-builder/${params.bundleid}/builder`} icon={EditIcon}>
                                     Edit bundle
                                 </Button>
-                                <Button variant="primary" icon={ExternalIcon} url={`${loaderData.data.bundleBuilderPageUrl}`} target="_blank">
+                                <Button
+                                    variant="primary"
+                                    icon={ExternalIcon}
+                                    url={`${loaderData.data.userPrimaryDomain}/apps/nb/widgets/${loaderData.data.bundleBuilder.id}`}
+                                    target="_blank">
                                     See live on your store
                                 </Button>
                             </InlineGrid>

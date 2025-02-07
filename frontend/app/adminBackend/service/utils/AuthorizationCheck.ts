@@ -4,7 +4,7 @@ import bundleBuilderRepository from "~/adminBackend/repository/impl/BundleBuilde
 export async function AuthorizationCheck(storeUrl: string, bundleId: number): Promise<boolean> {
     try {
         //Checking if the the bundle is published and belongs to the store
-        const bundleBuilder = await bundleBuilderRepository.getBundleBuilderByIdAndStoreUrl(bundleId, storeUrl);
+        const bundleBuilder = await bundleBuilderRepository.get(bundleId, storeUrl);
 
         if (!bundleBuilder) {
             return false;

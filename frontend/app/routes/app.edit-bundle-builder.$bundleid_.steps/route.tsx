@@ -1,4 +1,4 @@
-import type { BundleStep } from "@prisma/client";
+import type { BundleBuilderStep } from "@prisma/client";
 import { StepType } from "@prisma/client";
 import { json } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
@@ -6,8 +6,6 @@ import { authenticate } from "../../shopify.server";
 import db from "../../db.server";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import type { BundleStepContent, BundleStepProduct } from "@adminBackend/service/dto/BundleStep";
-import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
-import { ApiCacheKeyService } from "@adminBackend/service/utils/ApiCacheKeyService";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { bundleBuilderStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderStepRepository";
 import { bundleBuilderStepsService } from "~/adminBackend/service/impl/BundleBuilderStepsService";
@@ -70,11 +68,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                 if (!newStep) throw new Error("New step couldn't be created.");
 
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
-
                 const url = new URL(request.url);
 
                 if (url.searchParams.get("onboarding") === "true") {
@@ -123,11 +116,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 const newStep: BundleStepContent = await bundleBuilderContentStepService.addNewStep(Number(params.bundleid), contentStepData);
 
                 if (!newStep) throw new Error("New step couldn't be created.");
-
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
 
                 const url = new URL(request.url);
 
@@ -179,7 +167,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     ? (formData.get("stepDescription") as string)
                     : "This is the description for this step. Feel free to change it.";
 
-                let newStep: BundleStep | null = null;
+                let newStep: BundleBuilderStep | null = null;
 
                 if (newStepType === "PRODUCT") {
                     newStep = await bundleBuilderStepRepository.addNewEmptyStep(Number(params.bundleid), StepType.PRODUCT, newStepDescription, numOfSteps + 1, newStepTitle);
@@ -188,11 +176,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 }
 
                 if (!newStep) throw new Error("New step couldn't be created.");
-
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string));
 
                 const url = new URL(request.url);
 
@@ -232,7 +215,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             try {
                 const stepId: string = formData.get("stepId") as string;
 
-                let step: BundleStep | null = await db.bundleStep.findUnique({
+                let step: BundleBuilderStep | null = await db.bundleBuilderStep.findUnique({
                     where: {
                         id: Number(stepId),
                     },
@@ -253,7 +236,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     );
 
                 const StepThatWasDown = (
-                    await db.bundleStep.findMany({
+                    await db.bundleBuilderStep.findMany({
                         where: {
                             stepNumber: step?.stepNumber + 1,
                             bundleBuilderId: step.bundleBuilderId,
@@ -261,7 +244,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     })
                 )[0];
 
-                const maxStep: { _max: { stepNumber: number | null } } = await db.bundleStep.aggregate({
+                const maxStep: { _max: { stepNumber: number | null } } = await db.bundleBuilderStep.aggregate({
                     _max: {
                         stepNumber: true,
                     },
@@ -287,7 +270,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
                 await db.$transaction([
                     //Increment the step on which the operation was clicked
-                    db.bundleStep.update({
+                    db.bundleBuilderStep.update({
                         where: {
                             id: step.id,
                         },
@@ -298,7 +281,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         },
                     }),
 
-                    db.bundleStep.update({
+                    db.bundleBuilderStep.update({
                         where: {
                             id: StepThatWasDown.id,
                         },
@@ -308,14 +291,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                             },
                         },
                     }),
-                ]);
-
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await Promise.all([
-                    ApiCacheService.multiKeyDelete(await cacheKeyService.getAllStepsKeys(params.bundleid as string)),
-                    ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
                 ]);
 
                 return json({
@@ -336,7 +311,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             try {
                 const stepId: string = formData.get("stepId") as string;
 
-                let step: BundleStep | null = await db.bundleStep.findUnique({
+                let step: BundleBuilderStep | null = await db.bundleBuilderStep.findUnique({
                     where: {
                         id: Number(stepId),
                     },
@@ -357,7 +332,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     );
 
                 const stepThatWasUp = (
-                    await db.bundleStep.findMany({
+                    await db.bundleBuilderStep.findMany({
                         where: {
                             stepNumber: step?.stepNumber - 1,
                             bundleBuilderId: step.bundleBuilderId,
@@ -381,7 +356,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 }
                 await db.$transaction([
                     //Update the step
-                    db.bundleStep.update({
+                    db.bundleBuilderStep.update({
                         where: {
                             id: Number(stepId),
                         },
@@ -392,7 +367,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                         },
                     }),
                     //Update the step that was before this step
-                    db.bundleStep.update({
+                    db.bundleBuilderStep.update({
                         where: {
                             id: stepThatWasUp.id,
                         },
@@ -402,14 +377,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                             },
                         },
                     }),
-                ]);
-
-                // Clear the cache for the bundle
-                const cacheKeyService = new ApiCacheKeyService(session.shop);
-
-                await Promise.all([
-                    ApiCacheService.multiKeyDelete(await cacheKeyService.getAllStepsKeys(params.bundleid as string)),
-                    ApiCacheService.singleKeyDelete(cacheKeyService.getBundleDataKey(params.bundleid as string)),
                 ]);
 
                 return json({

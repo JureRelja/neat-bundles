@@ -20,7 +20,7 @@ export class BundleBuilderServiceImpl {
         const bundlesForDeleting: number[] = [];
 
         bundles.forEach((bundle) => {
-            if (bundle.steps.length > 2) {
+            if (bundle.bundleBuilderSteps.length > 2) {
                 bundlesForDeleting.push(bundle.id);
             }
         });

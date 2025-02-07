@@ -1,19 +1,19 @@
-import db from '../../../db.server';
-import { GlobalSettings, User } from '@prisma/client';
+import db from "../../../db.server";
+import { Settings, User } from "@prisma/client";
 
 class GlobalSettingsRepository {
-    public async getSettingsByStoreUrl(storeUrl: string): Promise<GlobalSettings | null> {
-        const globalSettings = await db.globalSettings.findUnique({
+    public async getSettingsByStoreUrl(storeUrl: string): Promise<Settings | null> {
+        const globalSettings = await db.settings.findUnique({
             where: {
-                storeUrl: storeUrl,
+                shop: storeUrl,
             },
         });
 
         return globalSettings;
     }
 
-    public async updateGlobalSettings(newGlobalSettings: GlobalSettings): Promise<boolean> {
-        const updatedSettings = await db.globalSettings.update({
+    public async updateGlobalSettings(newGlobalSettings: Settings): Promise<boolean> {
+        const updatedSettings = await db.settings.update({
             where: {
                 id: newGlobalSettings.id,
             },

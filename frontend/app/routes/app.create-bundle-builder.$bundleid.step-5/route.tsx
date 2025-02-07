@@ -71,7 +71,7 @@ export default function Index() {
     const loaderData = useLoaderData<typeof loader>();
 
     const [discountType, setDiscountType] = useState<BundleDiscountTypeClient>(loaderData.data.discountType as BundleDiscountTypeClient);
-    const [discountValue, setDiscountValue] = useState<number>(loaderData.data.discountValue);
+    const [discountValue, setDiscountValue] = useState<number>(loaderData.data.discountValue ?? 0);
 
     const [errors, setErrors] = useState<error[]>([]);
 

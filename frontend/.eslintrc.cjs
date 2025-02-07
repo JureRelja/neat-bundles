@@ -7,6 +7,7 @@ module.exports = {
     },
     rules: {
         // "@typescript-eslint/consistent-type-imports": "error",
+        "@typescript-eslint/no-unused-vars": "warn",
     },
 };
 

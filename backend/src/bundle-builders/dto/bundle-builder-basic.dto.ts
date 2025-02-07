@@ -1,28 +1,20 @@
-import { Prisma } from "@prisma/client";
+import { BundleBuilderWithStepsBasicClient } from "../../dto/bundle-builder/bundle-builder-with-steps-basic.client";
 
-//Defining basic bundle resources
-export const bundleBuilderAndStepsBasicSelect: Prisma.BundleBuilderSelect = {
-    id: true,
-    shopifyProductId: true,
-    discountType: true,
-    discountValue: true,
-    shop: true,
-    title: true,
-    published: true,
-    createdAt: true,
-    pricing: true,
-    priceAmount: true,
+export class BundleBuilderAndStepsBasicDto implements BundleBuilderWithStepsBasicClient {
+    id: number;
+    shopifyProductId: string;
+    discountType: "NO_DISCOUNT" | "FIXED" | "PERCENTAGE";
+    discountValue: number | null;
+    shop: string;
+    title: string;
+    published: boolean;
+    createdAt: Date;
+    pricing: "FIXED" | "CALCULATED";
+    priceAmount: number | null;
     bundleBuilderSteps: {
-        select: {
-            id: true,
-            title: true,
-            stepNumber: true,
-            stepType: true,
-        },
-    },
-} satisfies Prisma.BundleBuilderSelect;
-
-// On the server, date is a Date object
-export type BundleBuilderAndStepsBasicDto = Prisma.BundleBuilderGetPayload<{
-    select: typeof bundleBuilderAndStepsBasicSelect;
-}>;
+        id: number;
+        title: string;
+        stepNumber: number;
+        stepType: "PRODUCT" | "CONTENT";
+    }[];
+}

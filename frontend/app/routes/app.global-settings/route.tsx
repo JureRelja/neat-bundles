@@ -9,11 +9,9 @@ import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import globalSettingsRepository from "~/adminBackend/repository/impl/GlobalSettingsRepository";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import bundleBuilderRepository from "~/adminBackend/repository/impl/BundleBuilderRepository";
-import type { GlobalSettings } from "@prisma/client";
+import type { Settings } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { DesktopIcon, MobileIcon } from "@shopify/polaris-icons";
-import { ApiCacheKeyService } from "~/adminBackend/service/utils/ApiCacheKeyService";
-import { ApiCacheService } from "~/adminBackend/service/utils/ApiCacheService";
 import stickyNavMobile from "../../assets/navStickyMobile.png";
 import normalNavMobile from "../../assets/navNormalMobile.png";
 import normalNavDesktop from "../../assets/navNormalDesktop.png";
@@ -30,13 +28,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     if (!globalSettings || !user) return redirect("/app");
 
-    const bundleBuilder = await bundleBuilderRepository.getFirstActiveBundleBuilder(session.shop);
-
     return json(
         new JsonData(true, "success", "Global settings retrieved", [], {
             user,
             appId: process.env.SHOPIFY_BUNDLE_UI_ID,
-            bundleBuilderHandle: bundleBuilder?.bundleBuilderPageHandle,
             globalSettings: globalSettings,
         }),
     );
@@ -51,14 +46,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     switch (action) {
         case "updateSettings": {
             try {
-                const newGlobalSettings = JSON.parse(formData.get("globalSettings") as string) as GlobalSettings;
+                const newGlobalSettings = JSON.parse(formData.get("globalSettings") as string) as Settings;
 
                 await globalSettingsRepository.updateGlobalSettings(newGlobalSettings);
 
                 //Cache aside delete
-                const cacheKey = new ApiCacheKeyService(session.shop);
-
-                await ApiCacheService.singleKeyDelete(cacheKey.getGlobalSettingsKey());
             } catch (error) {
                 console.error(error);
             }
@@ -172,99 +164,85 @@ export default function Index() {
                             <input type="hidden" name="action" defaultValue="updateSettings" />
                             <input type="hidden" name="globalSettings" defaultValue={JSON.stringify(globalSettingsState)} />
 
-                            {!data.bundleBuilderHandle ? (
-                                <Banner title="Uups, there are no bundles created." tone="warning" onDismiss={() => {}}>
-                                    <BlockStack gap={GapInsideSection}>
-                                        <Text as={"p"} variant="headingMd">
-                                            Please create your first bundle, and then come back here to edit settings.
-                                        </Text>
-                                        <Box>
-                                            <Button variant="secondary" url="/app">
-                                                Create bundle
-                                            </Button>
+                            <BlockStack gap={BigGapBetweenSections}>
+                                {/* Edit colors */}
+                                <BlockStack gap={LargeGapBetweenSections}>
+                                    <InlineGrid columns={{ xs: "1fr", md: "3fr 4fr" }} gap="400">
+                                        <Box as="section">
+                                            <BlockStack gap="400">
+                                                <Text as="h3" variant="headingLg">
+                                                    Colors
+                                                </Text>
+                                                <Text as={"p"}>Edit colors to match your brand.</Text>
+                                            </BlockStack>
                                         </Box>
-                                    </BlockStack>
-                                </Banner>
-                            ) : (
-                                <BlockStack gap={BigGapBetweenSections}>
-                                    {/* Edit colors */}
-                                    <BlockStack gap={LargeGapBetweenSections}>
-                                        <InlineGrid columns={{ xs: "1fr", md: "3fr 4fr" }} gap="400">
-                                            <Box as="section">
-                                                <BlockStack gap="400">
-                                                    <Text as="h3" variant="headingLg">
-                                                        Colors
-                                                    </Text>
-                                                    <Text as={"p"}>Edit colors to match your brand.</Text>
-                                                </BlockStack>
-                                            </Box>
-                                            <Card>
-                                                <BlockStack gap={GapInsideSection}>
-                                                    <Text as="p">All styling changes are done using Shopify's native theme editor.</Text>
-                                                    <Text as="p">Just click 'Edit styles'. The editing process is the same as if you were editing your theme.</Text>
+                                        <Card>
+                                            <BlockStack gap={GapInsideSection}>
+                                                <Text as="p">All styling changes are done using Shopify's native theme editor.</Text>
+                                                <Text as="p">Just click 'Edit styles'. The editing process is the same as if you were editing your theme.</Text>
 
-                                                    <Button
+                                                {/* <Button
                                                         variant="primary"
                                                         target="_blank"
                                                         url={`https://${data.user.storeUrl}/admin/themes/current/editor?context=apps&previewPath=/pages/${data.bundleBuilderHandle}?neatBundlePreview=true&appEmbed=${data.appId}/${"embed_block"}`}>
                                                         Edit colors
-                                                    </Button>
-                                                </BlockStack>
-                                            </Card>
-                                        </InlineGrid>
+                                                    </Button> */}
+                                            </BlockStack>
+                                        </Card>
+                                    </InlineGrid>
 
-                                        <Divider />
+                                    <Divider />
 
-                                        {/* Sticky header for separate mobile and desktop editing */}
+                                    {/* Sticky header for separate mobile and desktop editing */}
 
-                                        <InlineStack align="center">
-                                            <Text as="h3" variant="headingLg">
-                                                <InlineStack>
-                                                    {/* <Icon source={ArrowDownIcon} /> */}
-                                                    The settings below apply separately for desktop and mobile.
-                                                    {/* <Icon source={ArrowDownIcon} /> */}
+                                    <InlineStack align="center">
+                                        <Text as="h3" variant="headingLg">
+                                            <InlineStack>
+                                                {/* <Icon source={ArrowDownIcon} /> */}
+                                                The settings below apply separately for desktop and mobile.
+                                                {/* <Icon source={ArrowDownIcon} /> */}
+                                            </InlineStack>
+                                        </Text>
+                                    </InlineStack>
+                                    <div className={styles.sticky}>
+                                        <Card padding={"200"}>
+                                            <InlineStack gap={GapBetweenTitleAndContent} align="space-between" blockAlign="center">
+                                                <Text as="h3" variant="headingMd">
+                                                    You are currently editing settings for: <u>{activeMode === "desktop" ? "Desktop" : "Mobile"}</u>
+                                                </Text>
+
+                                                <InlineStack gap={GapInsideSection}>
+                                                    <Tooltip content="Desktop">
+                                                        <Button
+                                                            variant="secondary"
+                                                            icon={DesktopIcon}
+                                                            disabled={activeMode === "desktop"}
+                                                            onClick={() => {
+                                                                setActiveMode("desktop");
+                                                            }}></Button>
+                                                    </Tooltip>
+
+                                                    <Tooltip content="Mobile">
+                                                        <Button
+                                                            variant="secondary"
+                                                            icon={MobileIcon}
+                                                            disabled={activeMode === "mobile"}
+                                                            onClick={() => {
+                                                                setActiveMode("mobile");
+                                                            }}></Button>
+                                                    </Tooltip>
                                                 </InlineStack>
-                                            </Text>
-                                        </InlineStack>
-                                        <div className={styles.sticky}>
-                                            <Card padding={"200"}>
-                                                <InlineStack gap={GapBetweenTitleAndContent} align="space-between" blockAlign="center">
-                                                    <Text as="h3" variant="headingMd">
-                                                        You are currently editing settings for: <u>{activeMode === "desktop" ? "Desktop" : "Mobile"}</u>
-                                                    </Text>
+                                            </InlineStack>
+                                        </Card>
+                                    </div>
 
-                                                    <InlineStack gap={GapInsideSection}>
-                                                        <Tooltip content="Desktop">
-                                                            <Button
-                                                                variant="secondary"
-                                                                icon={DesktopIcon}
-                                                                disabled={activeMode === "desktop"}
-                                                                onClick={() => {
-                                                                    setActiveMode("desktop");
-                                                                }}></Button>
-                                                        </Tooltip>
+                                    <Divider />
 
-                                                        <Tooltip content="Mobile">
-                                                            <Button
-                                                                variant="secondary"
-                                                                icon={MobileIcon}
-                                                                disabled={activeMode === "mobile"}
-                                                                onClick={() => {
-                                                                    setActiveMode("mobile");
-                                                                }}></Button>
-                                                        </Tooltip>
-                                                    </InlineStack>
-                                                </InlineStack>
-                                            </Card>
-                                        </div>
+                                    {/* Settings  */}
 
-                                        <Divider />
-
-                                        {/* Settings  */}
-
-                                        {/* Editor beta */}
-                                        {/* It's currently hidden, but will become active once there are a little more settings to customize */}
-                                        {/* <InlineGrid columns={{ xs: '1fr', md: '1fr 6fr' }} gap="400">
+                                    {/* Editor beta */}
+                                    {/* It's currently hidden, but will become active once there are a little more settings to customize */}
+                                    {/* <InlineGrid columns={{ xs: '1fr', md: '1fr 6fr' }} gap="400">
                                             <Card>
                                                 <Box as="section">
                                                     <BlockStack>
@@ -399,83 +377,82 @@ export default function Index() {
                                             )}
                                         </InlineGrid> */}
 
-                                        <InlineGrid columns={{ xs: "1fr", md: `${activeMode === "desktop" ? "2fr 5fr" : "3fr 4fr"}` }} gap="400">
-                                            <Box as="section">
-                                                <BlockStack gap="400">
-                                                    <Text as="h3" variant="headingLg">
-                                                        Step navigation
-                                                    </Text>
-                                                    <Text as="p" variant="bodyMd">
-                                                        Navigation can be sticky or normal. Sticky navigation will be always visible on the screen, while normal navigation is only
-                                                        visible when the user scrolls down.
-                                                    </Text>
+                                    <InlineGrid columns={{ xs: "1fr", md: `${activeMode === "desktop" ? "2fr 5fr" : "3fr 4fr"}` }} gap="400">
+                                        <Box as="section">
+                                            <BlockStack gap="400">
+                                                <Text as="h3" variant="headingLg">
+                                                    Step navigation
+                                                </Text>
+                                                <Text as="p" variant="bodyMd">
+                                                    Navigation can be sticky or normal. Sticky navigation will be always visible on the screen, while normal navigation is only
+                                                    visible when the user scrolls down.
+                                                </Text>
+                                            </BlockStack>
+                                        </Box>
+                                        <Card>
+                                            {activeMode === "desktop" ? (
+                                                <BlockStack gap={GapBetweenSections}>
+                                                    <InlineStack gap={GapInsideSection} align="center" blockAlign="center">
+                                                        <RadioInput
+                                                            label="Normal navigation"
+                                                            imgSrc={normalNavDesktop}
+                                                            attributeKey="stepNavigationTypeDesktop"
+                                                            selectedValue={globalSettingsState.stepNavigationTypeDesktop}
+                                                            value={"NORMAL"}
+                                                            updateHandler={updateHandler}
+                                                            horizontal
+                                                        />
+                                                        <RadioInput
+                                                            imgSrc={stickyNavDesktop}
+                                                            label="Sticky navigation"
+                                                            attributeKey="stepNavigationTypeDesktop"
+                                                            selectedValue={globalSettingsState.stepNavigationTypeDesktop}
+                                                            value={"STICKY"}
+                                                            updateHandler={updateHandler}
+                                                            horizontal
+                                                        />
+                                                    </InlineStack>
                                                 </BlockStack>
-                                            </Box>
-                                            <Card>
-                                                {activeMode === "desktop" ? (
-                                                    <BlockStack gap={GapBetweenSections}>
-                                                        <InlineStack gap={GapInsideSection} align="center" blockAlign="center">
-                                                            <RadioInput
-                                                                label="Normal navigation"
-                                                                imgSrc={normalNavDesktop}
-                                                                attributeKey="stepNavigationTypeDesktop"
-                                                                selectedValue={globalSettingsState.stepNavigationTypeDesktop}
-                                                                value={"NORMAL"}
-                                                                updateHandler={updateHandler}
-                                                                horizontal
-                                                            />
-                                                            <RadioInput
-                                                                imgSrc={stickyNavDesktop}
-                                                                label="Sticky navigation"
-                                                                attributeKey="stepNavigationTypeDesktop"
-                                                                selectedValue={globalSettingsState.stepNavigationTypeDesktop}
-                                                                value={"STICKY"}
-                                                                updateHandler={updateHandler}
-                                                                horizontal
-                                                            />
-                                                        </InlineStack>
-                                                    </BlockStack>
-                                                ) : (
-                                                    <BlockStack gap={GapBetweenSections}>
-                                                        <InlineStack gap={GapInsideSection} align="center" blockAlign="center">
-                                                            <RadioInput
-                                                                label="Normal navigation"
-                                                                imgSrc={normalNavMobile}
-                                                                attributeKey="stepNavigationTypeMobile"
-                                                                selectedValue={globalSettingsState.stepNavigationTypeMobile}
-                                                                value={"NORMAL"}
-                                                                updateHandler={updateHandler}
-                                                            />
-                                                            <RadioInput
-                                                                imgSrc={stickyNavMobile}
-                                                                label="Sticky navigation"
-                                                                attributeKey="stepNavigationTypeMobile"
-                                                                selectedValue={globalSettingsState.stepNavigationTypeMobile}
-                                                                value={"STICKY"}
-                                                                updateHandler={updateHandler}
-                                                            />
-                                                        </InlineStack>
-                                                    </BlockStack>
-                                                )}
-                                            </Card>
-                                        </InlineGrid>
+                                            ) : (
+                                                <BlockStack gap={GapBetweenSections}>
+                                                    <InlineStack gap={GapInsideSection} align="center" blockAlign="center">
+                                                        <RadioInput
+                                                            label="Normal navigation"
+                                                            imgSrc={normalNavMobile}
+                                                            attributeKey="stepNavigationTypeMobile"
+                                                            selectedValue={globalSettingsState.stepNavigationTypeMobile}
+                                                            value={"NORMAL"}
+                                                            updateHandler={updateHandler}
+                                                        />
+                                                        <RadioInput
+                                                            imgSrc={stickyNavMobile}
+                                                            label="Sticky navigation"
+                                                            attributeKey="stepNavigationTypeMobile"
+                                                            selectedValue={globalSettingsState.stepNavigationTypeMobile}
+                                                            value={"STICKY"}
+                                                            updateHandler={updateHandler}
+                                                        />
+                                                    </InlineStack>
+                                                </BlockStack>
+                                            )}
+                                        </Card>
+                                    </InlineGrid>
+                                </BlockStack>
+
+                                <Box width="full">
+                                    {/* Save button */}
+                                    <BlockStack inlineAlign="end">
+                                        <Button variant="primary" submit>
+                                            Save
+                                        </Button>
                                     </BlockStack>
 
-                                    <Box width="full">
-                                        {/* Save button */}
-                                        <BlockStack inlineAlign="end">
-                                            <Button variant="primary" submit>
-                                                Save
-                                            </Button>
-                                        </BlockStack>
-
-                                        {/* Footer help */}
-                                        <FooterHelp>
-                                            Are you stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
-                                        </FooterHelp>
-                                    </Box>
-                                </BlockStack>
-                            )}
+                                    {/* Footer help */}
+                                    <FooterHelp>
+                                        Are you stuck? <Link to="/app/help">Get help</Link> from us, or <Link to="/app/feature-request">suggest new features</Link>.
+                                    </FooterHelp>
+                                </Box>
+                            </BlockStack>
                         </Form>
                     </Page>
                 </>

@@ -21,7 +21,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
                 await db.user.update({
                     where: {
-                        storeUrl: shop,
+                        shop: shop,
                     },
                     data: {
                         hasAppInstalled: false,

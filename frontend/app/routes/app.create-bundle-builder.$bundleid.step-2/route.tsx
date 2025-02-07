@@ -6,7 +6,7 @@ import { authenticate } from "../../shopify.server";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
-import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
+import bundleBuilderRepository from "~/adminBackend/repository/impl/BundleBuilderRepository";
 import type { BundleBuilder, Product } from "@prisma/client";
 import { useState } from "react";
 import ResourcePicker from "~/components/resourcePicer";
@@ -38,7 +38,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         });
     }
 
-    const bundleBuilder: BundleBuilder | null = await BundleBuilderRepository.getBundleBuilderById(Number(params.bundleid));
+    const bundleBuilder: BundleBuilder | null = await bundleBuilderRepository.get(Number(params.bundleid), session.shop);
 
     if (!bundleBuilder) {
         throw new Response(null, {

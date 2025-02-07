@@ -1,23 +1,14 @@
-import { BundlePricing, BundleDiscountType, BundleBuilder } from "@prisma/client";
+import { $Enums, BundleBuilder } from "@prisma/client";
 
 export class BundleBuilderEntity implements BundleBuilder {
     id: number;
-
-    shopifyProductId: string;
-
     title: string;
-
+    shopifyProductId: string;
     published: boolean;
-
     createdAt: Date;
-
-    pricing: BundlePricing = BundlePricing.CALCULATED;
-
     priceAmount: number | null;
-
-    discountType: BundleDiscountType = BundleDiscountType.NO_DISCOUNT;
-
+    pricing: $Enums.BundlePricing;
+    discountType: $Enums.BundleDiscountType;
     discountValue: number | null;
-
     shop: string;
 }

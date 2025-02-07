@@ -1,8 +1,8 @@
-import type { StepNavigationType } from "./StepNavigationTypeClient";
+import type { StepNavigationTypeClient } from "./StepNavigationTypeClient";
 
 export type GlobalSettingsClient = {
     id: number;
-    storeUrl: string;
-    stepNavigationTypeDesktop: StepNavigationType;
-    stepNavigationTypeMobile: StepNavigationType;
+    shop: string;
+    stepNavigationTypeDesktop: StepNavigationTypeClient;
+    stepNavigationTypeMobile: StepNavigationTypeClient;
 };
