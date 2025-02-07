@@ -15,7 +15,7 @@ async function bootstrap() {
 }
 bootstrap()
     .then(() => {
-        console.log("Server started");
+        console.log("Server started at port" + (process.env.PORT ?? 3000));
     })
     .catch((err: unknown) => {
         console.error("Error starting server", err);
