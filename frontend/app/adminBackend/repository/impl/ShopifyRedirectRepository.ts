@@ -2,7 +2,7 @@ import { UrlRedirectCreatePayload } from "~/adminBackend/shopifyGraphql/graphql"
 import { AdminApiContext } from "@shopify/shopify-app-remix/server";
 
 export class ShopifyRedirectRepository {
-    public static async createProductToBundleRedirect(admin: AdminApiContext, pageHandle: string, productHandle: string) {
+    public static async createProductToBundleRedirect(admin: AdminApiContext, bundleId: number, productHandle: string) {
         const response = await admin.graphql(
             `#graphql
             mutation createProductToBundleRedirect($input: UrlRedirectInput!) {
@@ -19,7 +19,7 @@ export class ShopifyRedirectRepository {
             {
                 variables: {
                     input: {
-                        target: `/pages/${pageHandle}`,
+                        target: `/apps/nb/widget${bundleId}`,
                         path: `/products/${productHandle}`,
                     },
                 },

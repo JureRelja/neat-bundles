@@ -22,7 +22,8 @@
         "db:setup": "prisma generate && prisma migrate deploy",
         "ngrok-tunnel": "ngrok http --domain=purely-decent-pup.ngrok-free.app 3001",
         "cloudflare": "cloudflared tunnel --url http://localhost:3001",
-        "codegen": "graphql-codegen --config src/shopify/schema/codegen.ts"
+        "codegen": "graphql-codegen --config src/shopify/schema/codegen.ts",
+        "prisma-migrate": "npx prisma migrate dev --schema=./src/db/prisma/schema.prisma"
     },
     "dependencies": {
         "@nestjs/cli": "^11.0.0",

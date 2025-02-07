@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-key */
 import { useNavigation, json, useLoaderData, useFetcher, useSubmit, Link, useNavigate, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Card, Button, BlockStack, EmptyState, Text, Box, SkeletonPage, SkeletonBodyText, DataTable, ButtonGroup, Badge, Spinner, InlineStack, TextField } from "@shopify/polaris";
@@ -87,13 +86,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                     return;
                 }
 
-                const [bundleBuilder] = await Promise.all([
-                    //Create redirect
-                    // ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundlePage.handle, bundleProductId),
+                const bundleBuilder = await bundleBuilderRepository.create(session.shop, bundleBuilderTitle, bundleProductId);
 
-                    //Create new bundle
-                    bundleBuilderRepository.create(session.shop, bundleBuilderTitle, bundleProductId),
-                ]);
+                const res = await ShopifyRedirectRepository.createProductToBundleRedirect(admin, bundleBuilder.id, bundleProductId);
 
                 //If the user is onboarding, redirect to onboarding flow
                 if (isOnboarding) {

@@ -11,8 +11,6 @@ export type BundleBuilderWithStepsBasicClient = {
 
     pricing: "FIXED" | "CALCULATED";
 
-    bundleBuilderPageUrl: string;
-
     priceAmount: number | null;
 
     discountType: "NO_DISCOUNT" | "FIXED" | "PERCENTAGE";
@@ -26,7 +24,5 @@ export type BundleBuilderWithStepsBasicClient = {
         title: string;
         stepNumber: number;
         stepType: "PRODUCT" | "CONTENT";
-        description: string;
-        bundleBuilderId: number;
     }[];
 };

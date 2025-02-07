@@ -11,8 +11,6 @@ export type BundleBuilderClient = {
 
     pricing: "FIXED" | "CALCULATED";
 
-    bundleBuilderPageUrl: string;
-
     priceAmount: number | null;
 
     discountType: "NO_DISCOUNT" | "FIXED" | "PERCENTAGE";

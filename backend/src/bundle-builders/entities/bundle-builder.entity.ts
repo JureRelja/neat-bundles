@@ -11,5 +11,4 @@ export class BundleBuilderEntity implements BundleBuilder {
     discountType: $Enums.BundleDiscountType;
     discountValue: number | null;
     shop: string;
-    bundleBuilderPageUrl: string;
 }

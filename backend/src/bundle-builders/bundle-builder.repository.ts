@@ -2,7 +2,7 @@ import db from "@db";
 import { Injectable } from "@nestjs/common";
 import { CreateBundleBuilderDto } from "./dto/create-bundle-builder.dto";
 import { UpdateBundleBuilderDto } from "./dto/update-bundle-builder.dto";
-import { bundleBuilderAndStepsBasicSelect, BundleBuilderAndStepsBasicDto } from "./dto/bundle-builder-basic.dto";
+import { BundleBuilderAndStepsBasicDto } from "./dto/bundle-builder-basic.dto";
 import { BundleBuilderEntity } from "./entities/bundle-builder.entity";
 
 @Injectable()
@@ -16,7 +16,6 @@ export class BundleBuilderRepository {
                     },
                 },
                 title: createBundleBuilderDto.title,
-                bundleBuilderPageUrl: "",
                 published: true,
                 shopifyProductId: createBundleBuilderDto.title,
                 bundleBuilderConfig: {
@@ -56,7 +55,27 @@ export class BundleBuilderRepository {
                 id: id,
                 shop: shop,
             },
-            select: bundleBuilderAndStepsBasicSelect,
+            select: {
+                id: true,
+                shopifyProductId: true,
+                discountType: true,
+                discountValue: true,
+                shop: true,
+                title: true,
+                published: true,
+                createdAt: true,
+                pricing: true,
+                priceAmount: true,
+                bundleBuilderSteps: {
+                    select: {
+                        id: true,
+                        title: true,
+                        stepNumber: true,
+                        stepType: true,
+                        description: true,
+                    },
+                },
+            },
         });
     }
 

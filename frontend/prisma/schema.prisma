@@ -2,6 +2,14 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// generator prismaClassGenerator {
+//   provider      = "prisma-class-generator"
+//   output        = "./generatedPrismaClasses"
+//   dryRun        = false
+//   makeIndexFile = false
+//   useSwagger    = false
+// }
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL_DEV")
@@ -29,7 +37,6 @@ model User {
   id                    Int             @id @default(autoincrement())
   ownerName             String          @default("")
   email                 String
-  shop                  String          @unique
   storeName             String
   primaryDomain         String
   hasAppInstalled       Boolean         @default(true)
@@ -37,6 +44,7 @@ model User {
   showTutorialBanner    Boolean         @default(true)
   completedOnboarding   Boolean         @default(false)
   isDevelopmentStore    Boolean         @default(false)
+  shop                  String          @unique
   storefrontAccessToken String?
   bundleBuilders        BundleBuilder[]
   createdBundles        CreatedBundle[]
@@ -44,31 +52,19 @@ model User {
 }
 
 model BundleBuilder {
-  id                  Int                  @id @default(autoincrement())
-  shopifyProductId    String               @unique
-  title               String
-  published           Boolean              @default(false)
-  createdAt           DateTime             @default(now())
-  pricing             BundlePricing        @default(CALCULATED)
-  bundleBuilderPageUrl String
-  priceAmount         Float?
-  discountType        BundleDiscountType   @default(NO_DISCOUNT)
-  discountValue       Float?
-  shop                String
-  user                User                 @relation(fields: [shop], references: [shop], onDelete: Cascade)
-  bundleBuilderConfig BundleBuilderConfig?
-  bundleBuilderSteps  BundleBuilderStep[]
-}
-
-enum BundlePricing {
-  FIXED
-  CALCULATED
-}
-
-enum BundleDiscountType {
-  FIXED
-  PERCENTAGE
-  NO_DISCOUNT
+  id                   Int                  @id @default(autoincrement())
+  shopifyProductId     String               @unique
+  title                String
+  published            Boolean              @default(false)
+  createdAt            DateTime             @default(now())
+  pricing              BundlePricing        @default(CALCULATED)
+  priceAmount          Float?
+  discountType         BundleDiscountType   @default(NO_DISCOUNT)
+  discountValue        Float?
+  shop                 String
+  user                 User                 @relation(fields: [shop], references: [shop], onDelete: Cascade)
+  bundleBuilderConfig  BundleBuilderConfig?
+  bundleBuilderSteps   BundleBuilderStep[]
 }
 
 model AddedContent {
@@ -153,9 +149,9 @@ model CreatedBundle {
   discountAmount      Float
   createdAt           DateTime              @default(now())
   isSold              Boolean               @default(false)
+  shop                String
   addedContent        AddedContent[]
   addedProductVariant AddedProductVariant[]
-  shop                String
   user                User                  @relation(fields: [shop], references: [shop], onDelete: Cascade)
 }
 
@@ -172,7 +168,7 @@ model Settings {
 model Product {
   shopifyProductId     String         @id
   shopifyProductHandle String
-  ProductInput         ProductInput[]
+  ProductInput         ProductInput[] 
 }
 
 model ProductInput {
@@ -183,7 +179,18 @@ model ProductInput {
   allowProductDuplicates Boolean
   showProductPrice       Boolean
   BundleStep             BundleBuilderStep @relation(fields: [bundleStepId], references: [id], onDelete: Cascade)
-  products               Product[]
+  Product                Product[]         
+}
+
+enum BundlePricing {
+  FIXED
+  CALCULATED
+}
+
+enum BundleDiscountType {
+  FIXED
+  PERCENTAGE
+  NO_DISCOUNT
 }
 
 enum InputType {
