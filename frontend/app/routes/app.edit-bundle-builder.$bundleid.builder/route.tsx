@@ -21,8 +21,10 @@ import {
     Layout,
     FooterHelp,
     Banner,
+    InlineStack,
+    InlineGrid,
 } from "@shopify/polaris";
-import { QuestionCircleIcon, ExternalIcon, SettingsIcon, RefreshIcon } from "@shopify/polaris-icons";
+import { QuestionCircleIcon, ExternalIcon, SettingsIcon, RefreshIcon, ClipboardIcon } from "@shopify/polaris-icons";
 import { useAppBridge, Modal, TitleBar } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
@@ -45,9 +47,10 @@ import { inclBundleFullStepsBasic } from "../../adminBackend//service/dto/Bundle
 
 import styles from "./route.module.css";
 import { AuthorizationCheck } from "../../adminBackend/service/utils/AuthorizationCheck";
+import { Shop } from "~/adminBackend/shopifyGraphql/graphql";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { session, redirect } = await authenticate.admin(request);
+    const { session, admin, redirect } = await authenticate.admin(request);
 
     console.log("I'm on bundleId.builder, loader");
 
@@ -76,11 +79,25 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     }
 
     //Url of the bundle page
-    const bundleBuilderPageUrl = `${user.primaryDomain}/pages/${bundleBuilder.id}`;
+    //Url of the bundle page
+    const primaryDomainResponse = await admin.graphql(
+        `#graphql
+            query getStore {
+                shop {
+                    primaryDomain {
+                        url
+                    }
+                    
+                }
+        }`,
+    );
+    const primaryDomain: Partial<Shop> = (await primaryDomainResponse.json()).data.shop;
+
+    const userPrimaryDomain = primaryDomain?.primaryDomain?.url as string;
 
     let allBundleSteps = await bundleBuilderStepRepository.getAllStepsForBundleId(Number(params.bundleid));
 
-    return json(new JsonData(true, "success", "Bundle succesfuly retrieved", [], { bundleBuilderPageUrl, bundleBuilder, allBundleSteps, user }), { status: 200 });
+    return json(new JsonData(true, "success", "Bundle succesfuly retrieved", [], { userPrimaryDomain, bundleBuilder, allBundleSteps, user }), { status: 200 });
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -303,155 +320,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             return json({ ...new JsonData(true, "success", "Bundle builder refreshed") }, { status: 200 });
         }
 
-        // case "duplicateBundle":
-        //   const bundleToDuplicate: BundleAllResources | null =
-        //     await db.bundle.findUnique({
-        //       where: {
-        //         id: Number(params.bundleid),
-        //       },
-        //       include: bundleAllResources,
-        //     });
-
-        //   if (!bundleToDuplicate) {
-        //     return json(
-        //       {
-        //         ...new JsonData(
-        //           false,
-        //           "error",
-        //           "There was an error with your request",
-        //           "The bundle you are trying to duplicate does not exist",
-        //         ),
-        //       },
-        //       { status: 400 },
-        //     );
-        //   }
-
-        //   try {
-        //     //Create a new product that will be used as a bundle wrapper
-        //     const { _max }: { _max: { id: number | null } } =
-        //       await db.bundle.aggregate({
-        //         _max: {
-        //           id: true,
-        //         },
-        //         where: {
-        //           storeUrl: session.shop,
-        //         },
-        //       });
-
-        //     //Create a new product that will be used as a bundle wrapper
-        //     const response = await admin.graphql(
-        //       `#graphql
-        //     mutation productCreate($productInput: ProductInput!) {
-        //       productCreate(input: $productInput) {
-        //         product {
-        //           id
-        //         }
-        //       }
-        //     }`,
-        //       {
-        //         variables: {
-        //           productInput: {
-        //             title: `Neat Bundle ${_max.id ? _max.id : ""}`,
-        //             productType: "Neat Bundle",
-        //             vendor: "Neat Bundles",
-        //             published: true,
-        //             tags: [bundleTagIndentifier],
-        //           },
-        //         },
-        //       },
-        //     );
-
-        //     const data = await response.json();
-
-        //     await db.bundle.create({
-        //       data: {
-        //         storeUrl: bundleToDuplicate.storeUrl,
-        //         title: `${bundleToDuplicate.title} - Copy`,
-        //         shopifyProductId: data.data.productCreate.product.id,
-        //         pricing: bundleToDuplicate.pricing,
-        //         priceAmount: bundleToDuplicate.priceAmount,
-        //         discountType: bundleToDuplicate.discountType,
-        //         discountValue: bundleToDuplicate.discountValue,
-        //         bundleSettings: {
-        //           create: {
-        //             displayDiscountBanner:
-        //               bundleToDuplicate.bundleSettings?.displayDiscountBanner,
-        //             skipTheCart: bundleToDuplicate.bundleSettings?.skipTheCart,
-        //             showOutOfStockProducts:
-        //               bundleToDuplicate.bundleSettings?.showOutOfStockProducts,
-        //             numOfProductColumns:
-        //               bundleToDuplicate.bundleSettings?.numOfProductColumns,
-
-        //             bundleColors: {
-        //               create: {
-        //                 stepsIcon:
-        //                   bundleToDuplicate.bundleSettings?.bundleColors.stepsIcon,
-        //               },
-        //             },
-        //             bundleLabels: {
-        //               create: {},
-        //             },
-        //           },
-        //         },
-        //         steps: {
-        //           create: [
-        //             {
-        //               stepNumber: 1,
-        //               title: "Step 1",
-        //               stepType: "PRODUCT",
-        //               productsData: {
-        //                 create: {},
-        //               },
-        //               contentInputs: {
-        //                 create: [{}, {}],
-        //               },
-        //             },
-        //             {
-        //               stepNumber: 2,
-        //               title: "Step 2",
-        //               stepType: "PRODUCT",
-        //               productsData: {
-        //                 create: {},
-        //               },
-        //               contentInputs: {
-        //                 create: [{}, {}],
-        //               },
-        //             },
-        //             {
-        //               stepNumber: 3,
-        //               title: "Step 3",
-        //               stepType: "PRODUCT",
-        //               productsData: {
-        //                 create: {},
-        //               },
-        //               contentInputs: {
-        //                 create: [{}, {}],
-        //               },
-        //             },
-        //           ],
-        //         },
-        //       },
-        //     });
-        //   } catch (error) {
-        //     console.log(error);
-        //     return json(
-        //       {
-        //         ...new JsonData(
-        //           false,
-        //           "error",
-        //           "There was an error with your request",
-        //           "The bundle you are trying to duplicate does not exist",
-        //         ),
-        //       },
-        //       { status: 400 },
-        //     );
-        //   }
-
-        //   return json(
-        //     { ...new JsonData(true, "success", "Bundle duplicated") },
-        //     { status: 200 },
-        //   );
-
         default: {
             return json(
                 {
@@ -484,7 +352,6 @@ export default function Index() {
 
     //Data from the loader
     const serverBundle = loaderData.bundleBuilder;
-    const bundleBuilderPageUrl = loaderData.bundleBuilderPageUrl;
 
     //Using 'old' bundle data if there were errors when submitting the form. Otherwise, use the data from the loader.
     const [bundleState, setBundleState] = useState<BundleBuilderClient>(errors?.length === 0 || !errors ? serverBundle : submittedBundle);
@@ -509,7 +376,6 @@ export default function Index() {
         errors?.forEach((err: error) => {
             if (err.fieldId) {
                 document.getElementById(err.fieldId)?.scrollIntoView();
-                return;
             }
         });
     }, [isLoading, errors]);
@@ -528,6 +394,8 @@ export default function Index() {
 
         navigateSubmit("recreateBundleBuilder", `/app/edit-bundle-builder/${params.bundleid}/builder`);
     };
+
+    const bundleBuilderPageUrl = `${loaderData.userPrimaryDomain}/apps/nb/widgets/${serverBundle.id}`;
 
     return (
         <>
@@ -580,7 +448,7 @@ export default function Index() {
                         secondaryActions={[
                             {
                                 content: "Settings",
-                                url: `/app/edit-bundle-builder/${serverBundle.id}/settings/?redirect=/app/edit-bundle-builder/${serverBundle.id}/builder`,
+                                url: `${bundleBuilderPageUrl}`,
                                 icon: SettingsIcon,
                             },
                             {
@@ -594,8 +462,7 @@ export default function Index() {
                                 icon: RefreshIcon,
                                 onAction: refreshBundleBuilderHandler,
                                 content: "Recreate bundle",
-                                helpText:
-                                    "If you accidentally deleted the page where this bundle is displayed or you deleted the dummy product associated with this bundle, click this button to recreate both of them.",
+                                helpText: "If you accidentally deleted the dummy product associated with this bundle, click this button to recreate it.",
                             },
                         ]}
                         titleMetadata={serverBundle.published ? <Badge tone="success">Active</Badge> : <Badge tone="info">Draft</Badge>}
@@ -636,18 +503,30 @@ export default function Index() {
                                                             Bundle page
                                                         </Text>
 
-                                                        <BlockStack gap={GapInsideSection}>
-                                                            <TextField
-                                                                label="Bundle page"
-                                                                labelHidden
-                                                                autoComplete="off"
-                                                                readOnly
-                                                                name="bundlePage"
-                                                                helpText="Send customers to this page to let them create their unique bundles."
-                                                                value={bundleBuilderPageUrl}
-                                                                type="url"
-                                                            />
-                                                        </BlockStack>
+                                                        <InlineGrid columns={{ xs: "1fr", md: "88% 10%" }} gap="100">
+                                                            <Box width="full">
+                                                                <TextField
+                                                                    label="Bundle page"
+                                                                    labelHidden
+                                                                    autoComplete="off"
+                                                                    readOnly
+                                                                    name="bundlePage"
+                                                                    value={bundleBuilderPageUrl}
+                                                                    type="url"
+                                                                />
+                                                            </Box>
+
+                                                            <Tooltip
+                                                                width="wide"
+                                                                activatorWrapper="div"
+                                                                content={`Share this link with your customers to let them access the bundle page.`}>
+                                                                <Box width="full">
+                                                                    <Button size="large" icon={ClipboardIcon}>
+                                                                        Copy
+                                                                    </Button>
+                                                                </Box>
+                                                            </Tooltip>
+                                                        </InlineGrid>
                                                     </BlockStack>
                                                 </Card>
 

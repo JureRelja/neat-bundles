@@ -179,7 +179,7 @@ model ProductInput {
   allowProductDuplicates Boolean
   showProductPrice       Boolean
   BundleStep             BundleBuilderStep @relation(fields: [bundleStepId], references: [id], onDelete: Cascade)
-  Product                Product[]         
+  products                Product[]         
 }
 
 enum BundlePricing {

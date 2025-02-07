@@ -10,7 +10,6 @@ export class BundleBuilderRepository {
                 title: title,
                 published: true,
                 shopifyProductId: productId,
-                bundleBuilderPageUrl: "",
                 bundleBuilderConfig: {
                     create: {
                         skipTheCart: false,

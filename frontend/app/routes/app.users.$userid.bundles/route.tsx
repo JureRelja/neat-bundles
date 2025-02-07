@@ -14,31 +14,41 @@ import { shopifyBundleBuilderProductRepository } from "~/adminBackend/repository
 import { ShopifyRedirectRepository } from "~/adminBackend/repository/impl/ShopifyRedirectRepository";
 
 import { BundleBuilderClient } from "~/types/BundleBuilderClient";
+import { Shop } from "~/adminBackend/shopifyGraphql/graphql";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    const { session, redirect } = await authenticate.admin(request);
+    const { session, redirect, admin } = await authenticate.admin(request);
 
     console.log("I'm on bundles loader");
 
-    const [user, bundleBuilders] = await Promise.all([
+    const [user, bundleBuilders, primaryDomainResponse] = await Promise.all([
         userRepository.getUserByStoreUrl(session.shop),
 
         bundleBuilderRepository.getAll(session.shop),
-        // fetch(`${process.env.BACKEND_URL}/bundle-builders/${session.shop}/`, {
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //         Authorization: `Bearer ${session.accessToken}`,
-        //     },
-        // }).then((res) => res.json() as Promise<BundleBuilderEntity[]>),
+
+        await admin.graphql(
+            `#graphql
+                query getStore {
+                shop {
+                    
+                    primaryDomain {
+                        url
+                    }
+                    
+                }
+                }`,
+        ),
     ]);
 
-    console.log(bundleBuilders);
+    const primaryDomain: Partial<Shop> = (await primaryDomainResponse.json()).data.shop;
+
+    const userPrimaryDomain = primaryDomain?.primaryDomain?.url as string;
 
     if (!user) return redirect("/app");
 
     return json(
         {
-            ...new JsonData(true, "success", "Bundles succesfuly retrieved.", [], { bundleBuilders, user }),
+            ...new JsonData(true, "success", "Bundles succesfuly retrieved.", [], { bundleBuilders, user, userPrimaryDomain }),
         },
         { status: 200 },
     );
@@ -361,7 +371,7 @@ export default function Index() {
                                                     icon={ExternalIcon}
                                                     variant="secondary"
                                                     tone="success"
-                                                    url={`${bundleBuilder.bundleBuilderPageUrl}?${bundlePagePreviewKey}=true`}
+                                                    url={`${loaderResponse.data.userPrimaryDomain}/apps/nb/widgets/${bundleBuilder.id}`}
                                                     target="_blank">
                                                     Preview
                                                 </Button>,
