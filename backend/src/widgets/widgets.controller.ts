@@ -1,13 +1,13 @@
 import { Controller, Get, Render, Header, Query } from "@nestjs/common";
-import { WidgetService } from "./widget.service";
+import { WidgetsService } from "./widgets.service";
 import { BundleBuilderWidgetDto } from "./dto/BundleBuilderWidgetDto";
 
-@Controller("widget")
-export class WidgetController {
-    constructor(private readonly widgetService: WidgetService) {}
+@Controller("widgets")
+export class WidgetsController {
+    constructor(private readonly widgetService: WidgetsService) {}
 
     @Get()
-    @Render("widget")
+    @Render("widgets")
     @Header("Content-type", "application/liquid")
     async root(@Query("shop") shop: string): Promise<BundleBuilderWidgetDto> {
         return this.widgetService.getWidget(1, shop);

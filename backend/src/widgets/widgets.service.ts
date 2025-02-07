@@ -4,7 +4,7 @@ import { BundleBuilderAndStepsBasicDto } from "../bundle-builders/dto/bundle-bui
 import { BundleBuilderWidgetDto } from "./dto/BundleBuilderWidgetDto";
 
 @Injectable()
-export class WidgetService {
+export class WidgetsService {
     constructor(private readonly bundleBuilderService: BundleBuilderService) {}
 
     async getWidget(bundleId: number, shop: string): Promise<BundleBuilderWidgetDto> {
