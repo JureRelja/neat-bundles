@@ -521,7 +521,7 @@ export default function Index() {
                                                                 activatorWrapper="div"
                                                                 content={`Share this link with your customers to let them access the bundle page.`}>
                                                                 <Box width="full">
-                                                                    <Button size="large" icon={ClipboardIcon}>
+                                                                    <Button size="large" icon={ClipboardIcon} onClick={() => navigator.clipboard.writeText(bundleBuilderPageUrl)}>
                                                                         Copy
                                                                     </Button>
                                                                 </Box>
