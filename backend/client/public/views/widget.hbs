@@ -11,12 +11,14 @@
             <div class="neat-bundles-widget-container-inner">
                 <div class="neat-bundles-widget">
                     <h1>This is the title</h1>
+                    <p>{{bundleBuilder.title}}</p>
+                    <p>{{bundleBuilder.id}}</p>
                 </div>
             </div>
         </div>
 
-        <script src="{{absoluteUrl '/js/widget-fetching.js'}}" async></script>
-        <script src="{{absoluteUrl '/js/Alpine-3.14.1.js'}}" async></script>
-        <script src="{{absoluteUrl '/js/widget-utils.js'}}" async></script>
+        <script src="{{absoluteUrl '/js/dist/widget-fetching.js'}}" async></script>
+        <script src="{{absoluteUrl '/js/dist/Alpine-3.14.1.js'}}" async></script>
+        <script src="{{absoluteUrl '/js/dist/widget-utils.js'}}" async></script>
     </body>
 </html>
