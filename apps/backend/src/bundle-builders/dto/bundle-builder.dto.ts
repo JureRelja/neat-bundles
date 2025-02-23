@@ -1,4 +1,4 @@
-import { BundleBuilderClient } from "../../../../../packages/shared-types/bundle-builder/bundle-builder.client";
+import { BundleBuilderClient } from "../../../../../packages/shared-types/src/bundle-builder/bundle-builder.client";
 
 export class BundleBuilderDto implements BundleBuilderClient {
     id: number;

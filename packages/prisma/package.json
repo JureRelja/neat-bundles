@@ -1,5 +1,5 @@
 {
-  "name": "prisma",
+  "name": "@prisma/db",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -7,12 +7,12 @@
     "dev": "tsc --watch",
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
-    "postinstall": "tsc && cp src/index.d.ts dist/index.d.ts && npx prisma@2.18.0 generate"
+    "setup": "prisma generate && prisma migrate deploy"
   },
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "default": "./dist/index.js"
+      "types": "./src/db.server.ts",
+      "default": "./dist/db.server.ts"
     }
   },
   "dependencies": {
@@ -24,7 +24,7 @@
     "@types/node": "^22.13.5",
     "dotenv-cli": "^4.0.0",
     "eslint": "9.0.0",
-    "prisma": "2.18.0",
+    "prisma": "^6.2.1",
     "typescript": "5.7.3"
   }
 }

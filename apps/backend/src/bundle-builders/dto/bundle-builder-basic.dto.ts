@@ -1,4 +1,4 @@
-import { BundleBuilderWithStepsBasicClient } from "../../../../../packages/shared-types/bundle-builder/bundle-builder-with-steps-basic.client";
+import { BundleBuilderWithStepsBasicClient } from "@repo/shared-types";
 
 export class BundleBuilderAndStepsBasicDto implements BundleBuilderWithStepsBasicClient {
     id: number;

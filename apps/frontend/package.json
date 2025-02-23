@@ -14,10 +14,8 @@
         "env": "shopify app env",
         "start": "remix-serve ./build/server/index.js",
         "docker-start": "npm run setup && npm run start",
-        "setup": "prisma generate && prisma migrate deploy",
         "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
         "shopify": "shopify",
-        "prisma": "prisma",
         "graphql-codegen": "graphql-codegen",
         "vite": "vite",
         "ngrok-tunnel": "ngrok http --domain=purely-decent-pup.ngrok-free.app 3000",
@@ -28,8 +26,8 @@
         "node": ">=18.20.0"
     },
     "dependencies": {
+        "@prisma/db": "*",
         "@google-cloud/storage": "^7.12.1",
-        "@prisma/client": "^5.11.0",
         "@remix-run/dev": "^2.7.1",
         "@remix-run/node": "^2.7.1",
         "@remix-run/react": "^2.7.1",
@@ -44,7 +42,6 @@
         "graphql": "^16.9.0",
         "isbot": "^5.1.0",
         "loops": "^3.3.0",
-        "prisma": "^5.11.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "uuid": "^10.0.0",

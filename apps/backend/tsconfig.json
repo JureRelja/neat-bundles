@@ -22,8 +22,7 @@
         "noFallthroughCasesInSwitch": false,
         "paths": {
             "~/*": ["./src/*"],
-            "@shopifyGraphql/*": ["./shopifyGraphql/*"],
-            "@db": ["./src/db/db.server.ts"]
+            "@shopifyGraphql/*": ["./shopifyGraphql/*"]
         }
     }
 }

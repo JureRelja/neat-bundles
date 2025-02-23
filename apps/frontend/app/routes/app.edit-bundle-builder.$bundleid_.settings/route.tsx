@@ -3,7 +3,7 @@ import { json } from "@remix-run/node";
 import { useLoaderData, useNavigation, useNavigate, Form, Link } from "@remix-run/react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
-import db from "../../db.server";
+import { db } from "@prisma/db";
 import {
     Card,
     BlockStack,
