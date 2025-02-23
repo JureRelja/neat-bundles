@@ -1,0 +1,30 @@
+{
+  "name": "prisma",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc --build",
+    "dev": "tsc --watch",
+    "lint": "eslint . --max-warnings 0",
+    "check-types": "tsc --noEmit",
+    "postinstall": "tsc && cp src/index.d.ts dist/index.d.ts && npx prisma@2.18.0 generate"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@prisma/client": "^6.2.1",
+    "prisma": "^6.2.1",
+    "prisma-class-generator": "^0.2.11"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.5",
+    "dotenv-cli": "^4.0.0",
+    "eslint": "9.0.0",
+    "prisma": "2.18.0",
+    "typescript": "5.7.3"
+  }
+}

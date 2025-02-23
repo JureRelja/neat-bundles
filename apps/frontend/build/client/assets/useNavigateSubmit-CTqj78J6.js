@@ -1,0 +1,1 @@
+import{u as i}from"./index-y3bcNOgC.js";function r(){const n=i();return(o,e,a)=>{const t=new FormData;t.append("action",o),a&&t.append("id",a.toString()),n(t,{method:"POST",navigate:!0,action:e})}}export{r as u};

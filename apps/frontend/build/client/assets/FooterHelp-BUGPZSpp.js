@@ -1,0 +1,1 @@
+import{R as e}from"./jsx-runtime-BMrMXMSG.js";import{T as a}from"./BlockStack-CBC_PXe6.js";var l={FooterHelp:"Polaris-FooterHelp"};function n({children:t,align:o="center"}){const r={"--pc-footer-help-align":o};return e.createElement("div",{className:l.FooterHelp,style:r},e.createElement(a,{as:"p",variant:"bodyLg"},t))}export{n as F};
