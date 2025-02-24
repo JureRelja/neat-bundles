@@ -1,0 +1,1 @@
+import{j as t}from"./jsx-runtime-BMrMXMSG.js";import{B as n}from"./use-toggle-Eq3DVTD9.js";function s({onClick:r,url:i}){return t.jsx("div",{style:{width:"200px"},children:t.jsx(n,{fullWidth:!0,variant:"primary",url:i,onClick:()=>{r()},children:"Next"})})}export{s as I};

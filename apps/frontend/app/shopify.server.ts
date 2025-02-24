@@ -1,11 +1,11 @@
 import "@shopify/shopify-app-remix/adapters/node";
 import { ApiVersion, AppDistribution, BillingInterval, BillingReplacementBehavior, DeliveryMethod, shopifyApp } from "@shopify/shopify-app-remix/server";
-import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
+// import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import { restResources } from "@shopify/shopify-api/rest/admin/2024-10";
 import { BillingPlanIdentifiers } from "./constants";
-import prisma from "@db/server";
+// import prisma from "@db/server";
 
-const storage = new PrismaSessionStorage(prisma);
+// const storage = new PrismaSessionStorage(prisma);
 
 const shopify = shopifyApp({
     apiKey: process.env.SHOPIFY_API_KEY,
@@ -14,7 +14,7 @@ const shopify = shopifyApp({
     scopes: process.env.SCOPES?.split(","),
     appUrl: process.env.SHOPIFY_APP_URL || "",
     authPathPrefix: "/auth",
-    sessionStorage: storage,
+    // sessionStorage: storage,
     distribution: AppDistribution.AppStore,
     restResources,
     billing: {

@@ -1,19 +1,13 @@
 import { createClient } from "redis";
+import { config } from "dotenv";
+import { resolve } from "path";
+
+// Load .env from backend directory
+config({ path: resolve(__dirname, "../../.env") });
 
 //Redis client for caching
-
 const client = createClient({
     url: process.env.REDIS_URL,
-    socket: {
-        reconnectStrategy: function (retries) {
-            if (retries > 20) {
-                console.log("Too many attempts to reconnect. Redis connection was terminated");
-                return new Error("Too many retries.");
-            } else {
-                return retries * 500;
-            }
-        },
-    },
 });
 client.on("error", (error) => console.error("Redis client error:", error));
 

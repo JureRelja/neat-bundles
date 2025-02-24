@@ -1,4 +1,4 @@
-import { PricingPlan, User } from "@prisma/client";
+import { PricingPlan, User } from "@db/server";
 
 export class UserEntity implements User {
     id: number;

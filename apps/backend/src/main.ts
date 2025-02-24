@@ -3,6 +3,11 @@ import { NestExpressApplication } from "@nestjs/platform-express";
 import { join } from "path";
 import { AppModule } from "./app.module";
 import handlebars from "hbs";
+import { config } from "dotenv";
+import { resolve } from "path";
+
+// Load .env from backend directory
+config({ path: resolve(__dirname, "../.env") });
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -15,7 +20,7 @@ async function bootstrap() {
 }
 bootstrap()
     .then(() => {
-        console.log("Server started at port" + (process.env.PORT ?? 3000));
+        console.log("Server started at port " + (process.env.PORT ?? 3000));
     })
     .catch((err: unknown) => {
         console.error("Error starting server", err);
