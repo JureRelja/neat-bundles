@@ -7,7 +7,7 @@ import { config } from "dotenv";
 import { resolve } from "path";
 
 // Load .env from backend directory
-config({ path: resolve(__dirname, "../.env") });
+config({ path: resolve(__dirname, "/.env") });
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);

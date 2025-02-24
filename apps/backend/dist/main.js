@@ -14,7 +14,7 @@ function _interop_require_default(obj) {
 }
 // Load .env from backend directory
 (0, _dotenv.config)({
-    path: (0, _path.resolve)(__dirname, "../.env")
+    path: (0, _path.resolve)(__dirname, "/.env")
 });
 async function bootstrap() {
     const app = await _core.NestFactory.create(_appmodule.AppModule);
@@ -29,9 +29,7 @@ bootstrap().then(()=>{
     console.error("Error starting server", err);
 });
 //uncomment this line in production
-// const BASE_URL = process.env.BASE_URL ?? "http://localhost:3000";
-const BASE_URL = process.env.TUNNEL_URL ?? "http://localhost:3000";
-console.log("BASE_URL", BASE_URL);
+const BASE_URL = process.env.BASE_URL;
 // Register a Handlebars helper to make URLs absolute
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 _hbs.default.registerHelper("absoluteUrl", (path)=>{
