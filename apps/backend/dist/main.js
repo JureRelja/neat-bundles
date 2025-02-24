@@ -30,7 +30,8 @@ bootstrap().then(()=>{
 });
 //uncomment this line in production
 // const BASE_URL = process.env.BASE_URL ?? "http://localhost:3000";
-const BASE_URL = "https://context-prisoners-manufacturing-cyprus.trycloudflare.com";
+const BASE_URL = process.env.TUNNEL_URL ?? "http://localhost:3000";
+console.log("BASE_URL", BASE_URL);
 // Register a Handlebars helper to make URLs absolute
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 _hbs.default.registerHelper("absoluteUrl", (path)=>{
