@@ -7,7 +7,7 @@ import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import bundleBuilderRepository from "~/adminBackend/repository/impl/BundleBuilderRepository";
-import type { BundleBuilder, Product } from "@prisma/client";
+import type { BundleBuilder, Product } from "@db/server";
 import { useState } from "react";
 import ResourcePicker from "~/components/resourcePicer";
 import { GapBetweenTitleAndContent, GapInsideSection, HorizontalGap } from "~/constants";

@@ -7,7 +7,7 @@ import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
-import type { BundleBuilder } from "@prisma/client";
+import type { BundleBuilder } from "@db/server";
 import { AuthorizationCheck } from "~/adminBackend/service/utils/AuthorizationCheck";
 import { GapBetweenSections, GapInsideSection, LargeGapBetweenSections } from "~/constants";
 import { EditIcon, ExternalIcon } from "@shopify/polaris-icons";

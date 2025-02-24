@@ -1,4 +1,4 @@
-import { Product } from "@prisma/client";
+import { Product } from "@db/server";
 
 export interface UserProductInputDto {
     minProductsOnStep: number;

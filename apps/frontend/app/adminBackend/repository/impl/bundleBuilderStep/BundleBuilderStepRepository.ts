@@ -1,7 +1,5 @@
-import { BundleBuilderStep, StepType } from "@prisma/client";
+import db, { BundleBuilderStep, StepType } from "@db/server";
 import { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
-
-import db from "~/db.server";
 
 export class BundleBuilderStepRepository {
     public async getStepById(stepId: number): Promise<BundleBuilderStep | BundleStepProduct | BundleStepContent | null> {

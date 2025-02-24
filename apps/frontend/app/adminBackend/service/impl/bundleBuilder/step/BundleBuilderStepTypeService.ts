@@ -1,4 +1,4 @@
-import { BundleBuilderStep } from "@prisma/client";
+import { BundleBuilderStep } from "@db/server";
 import { BundleStepContent, BundleStepProduct } from "../../../dto/BundleStep";
 import { bundleBuilderDeleteStepService } from "../../../impl/bundleBuilder/step/BundleBuilderDeleteStepService";
 import { error } from "../../../dto/jsonData";

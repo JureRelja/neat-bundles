@@ -9,7 +9,7 @@ import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import globalSettingsRepository from "~/adminBackend/repository/impl/GlobalSettingsRepository";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import bundleBuilderRepository from "~/adminBackend/repository/impl/BundleBuilderRepository";
-import type { Settings } from "@prisma/client";
+import type { Settings } from "@db/server";
 import { useEffect, useState } from "react";
 import { DesktopIcon, MobileIcon } from "@shopify/polaris-icons";
 import stickyNavMobile from "../../assets/navStickyMobile.png";

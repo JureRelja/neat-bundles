@@ -1,6 +1,5 @@
-import { BundleBuilderStep, StepType } from "@prisma/client";
+import db, { BundleBuilderStep, StepType } from "@db/server";
 import { BundleBuilderStepTypeRepository } from "./BundleBuilderStepTypeRepository";
-import db from "~/db.server";
 import { BundleStepContent, selectBundleStepContent } from "~/adminBackend/service/dto/BundleStep";
 import { ContentStepDataDto } from "~/adminBackend/service/dto/ContentStepDataDto";
 

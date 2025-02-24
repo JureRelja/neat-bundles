@@ -1,4 +1,4 @@
-import { StepType } from "@prisma/client";
+import { StepType } from "@db/server";
 
 export interface BundleBuilderStepDto {
     stepNumber: number;

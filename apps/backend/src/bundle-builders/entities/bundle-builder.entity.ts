@@ -1,4 +1,4 @@
-import { $Enums, BundleBuilder } from "@prisma/db";
+import { $Enums, BundleBuilder } from "@db/server";
 
 export class BundleBuilderEntity implements BundleBuilder {
     id: number;

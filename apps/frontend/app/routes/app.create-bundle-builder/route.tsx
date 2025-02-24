@@ -7,7 +7,7 @@ import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import styles from "./route.module.css";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";
 import { BundleBuilderRepository } from "~/adminBackend/repository/impl/BundleBuilderRepository";
-import type { BundleBuilder } from "@prisma/client";
+import type { BundleBuilder } from "@db/server";
 import { GapBetweenSections } from "~/constants";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {

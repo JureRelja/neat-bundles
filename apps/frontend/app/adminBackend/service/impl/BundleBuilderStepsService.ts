@@ -1,7 +1,6 @@
-import { User } from "@prisma/client";
+import db, { User } from "@db/server";
 import { bundleBuilderStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderStepRepository";
 import { JsonData } from "../dto/jsonData";
-import db from "~/db.server";
 
 class BundleBuilderStepsService {
     public async canAddMoreSteps(bundleId: number, user: User) {

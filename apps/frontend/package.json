@@ -1,5 +1,5 @@
 {
-    "name": "neat-bundle-builder",
+    "name": "neat-bundles-frontend",
     "private": true,
     "scripts": {
         "build": "remix vite:build",
@@ -26,7 +26,7 @@
         "node": ">=18.20.0"
     },
     "dependencies": {
-        "@prisma/db": "*",
+        "@db/server": "*",
         "@google-cloud/storage": "^7.12.1",
         "@remix-run/dev": "^2.7.1",
         "@remix-run/node": "^2.7.1",

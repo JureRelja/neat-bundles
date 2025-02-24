@@ -29,11 +29,10 @@ import { useAppBridge, Modal, TitleBar } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection } from "../../constants";
-import db from "../../db.server";
+import db, { BundlePricing } from "@db/server";
 import { BundlePricingClient } from "~/types/BundlePricingClient";
 import { BundleDiscountTypeClient } from "~/types/BundleDiscountTypeClient";
-import { BundlePricing } from "@prisma/client";
-import type { BundleBuilder, BundleDiscountType } from "@prisma/client";
+import type { BundleBuilder, BundleDiscountType } from "@db/server";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import type { error } from "../../adminBackend/service/dto/jsonData";
 import { useNavigateSubmit } from "../../hooks/useNavigateSubmit";
@@ -47,7 +46,7 @@ import { inclBundleFullStepsBasic } from "../../adminBackend//service/dto/Bundle
 
 import styles from "./route.module.css";
 import { AuthorizationCheck } from "../../adminBackend/service/utils/AuthorizationCheck";
-import { Shop } from "~/adminBackend/shopifyGraphql/graphql";
+import type { Shop } from "~/adminBackend/shopifyGraphql/graphql";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     const { session, admin, redirect } = await authenticate.admin(request);

@@ -1,13 +1,16 @@
 {
-  "name": "@prisma/db",
+  "name": "@db/server",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "tsc --build",
     "dev": "tsc --watch",
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
-    "setup": "prisma generate && prisma migrate deploy"
+    "setup": "prisma generate && prisma migrate deploy",
+    "generate": "npx prisma generate --schema=./src/prisma/schema.prisma",
+    "migrate": "npx prisma migrate dev --schema=./src/prisma/schema.prisma"
   },
   "exports": {
     ".": {
@@ -24,7 +27,6 @@
     "@types/node": "^22.13.5",
     "dotenv-cli": "^4.0.0",
     "eslint": "9.0.0",
-    "prisma": "^6.2.1",
     "typescript": "5.7.3"
   }
 }

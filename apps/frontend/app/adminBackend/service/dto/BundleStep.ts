@@ -1,5 +1,4 @@
-import type { Prisma } from "@prisma/client";
-import { BundleBuilderStep } from "../../../../../backend/src/db/prisma/generatedPrismaClasses/bundle_builder_step";
+import type { Prisma } from "@db/server";
 
 //Bundle step with only basic resources
 export const bundleStepBasic = {

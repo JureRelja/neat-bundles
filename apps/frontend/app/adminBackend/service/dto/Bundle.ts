@@ -1,4 +1,4 @@
-import { Prisma, BundleBuilder } from "@prisma/client";
+import { Prisma, BundleBuilder } from "@db/server";
 import { bundleStepBasic } from "@adminBackend/service/dto/BundleStep";
 
 //Defining basic bundle resources

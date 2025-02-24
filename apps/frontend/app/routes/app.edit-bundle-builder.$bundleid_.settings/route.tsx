@@ -3,7 +3,7 @@ import { json } from "@remix-run/node";
 import { useLoaderData, useNavigation, useNavigate, Form, Link } from "@remix-run/react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../../shopify.server";
-import { db } from "@prisma/db";
+import db from "@db/server";
 import {
     Card,
     BlockStack,
@@ -25,7 +25,7 @@ import { BigGapBetweenSections, GapBetweenSections } from "../../constants";
 import { QuestionCircleIcon } from "@shopify/polaris-icons";
 import { useState } from "react";
 import { JsonData } from "~/adminBackend/service/dto/jsonData";
-import type { BundleBuilderConfig } from "@prisma/client";
+import type { BundleBuilderConfig } from "@db/server";
 import type { BundleSettingsClient } from "~/types/BundleSettingsClient";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {

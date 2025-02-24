@@ -1,4 +1,4 @@
-import { BundleDiscountType, BundlePricing, Prisma } from "@prisma/client";
+import { BundleDiscountType, BundlePricing, Prisma } from "@db/server";
 import { BundleBuilderStepDto } from "./BundleBuilderStepDto";
 
 export interface BundleBuilderAndBundleStepsDto {

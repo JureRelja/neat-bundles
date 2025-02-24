@@ -1,5 +1,4 @@
-import { Product, ProductInput } from "@prisma/client";
-import db from "~/db.server";
+import db, { Product, ProductInput } from "@db/server";
 
 export class BundleBuilderProductInputRepository {
     public async updateSelectedProducts(bundleStepId: number, selectedProducts: Product[]): Promise<ProductInput> {

@@ -1,4 +1,4 @@
-import { ContentInput } from "@prisma/client";
+import { ContentInput } from "@db/server";
 import { BundleBuilderStepTypeService } from "./BundleBuilderStepTypeService";
 import { BundleStepContent } from "../../../dto/BundleStep";
 import { error } from "../../../dto/jsonData";

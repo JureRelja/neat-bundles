@@ -6,7 +6,7 @@ import { Card, Button, BlockStack, TextField, Text, Box, SkeletonPage, ButtonGro
 import { authenticate } from "../../shopify.server";
 import { useEffect, useState } from "react";
 import { GapBetweenSections, GapBetweenTitleAndContent, GapInsideSection, LargeGapBetweenSections } from "../../constants";
-import type { BundleBuilderStep } from "@prisma/client";
+import type { BundleBuilderStep } from "@db/server";
 import type { BundleStepContent, BundleStepProduct } from "~/adminBackend/service/dto/BundleStep";
 import type { error } from "../../adminBackend/service/dto/jsonData";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";

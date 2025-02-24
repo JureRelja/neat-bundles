@@ -1,5 +1,4 @@
-import db from "../../../db.server";
-import { Settings, User } from "@prisma/client";
+import db, { Settings, User } from "@db/server";
 
 class GlobalSettingsRepository {
     public async getSettingsByStoreUrl(storeUrl: string): Promise<Settings | null> {

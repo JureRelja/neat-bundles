@@ -3,8 +3,8 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { useNavigation, Outlet, Link, useLoaderData, useNavigate, useParams } from "@remix-run/react";
 import { Badge, BlockStack, FooterHelp, Page, SkeletonPage } from "@shopify/polaris";
 import { authenticate } from "../../shopify.server";
-import type { BundleBuilderStep } from "@prisma/client";
-import { StepType } from "@prisma/client";
+import type { BundleBuilderStep } from "@db/server";
+import { StepType } from "@db/server";
 import type { error } from "../../adminBackend/service/dto/jsonData";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 

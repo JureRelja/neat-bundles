@@ -1,5 +1,4 @@
-import db from "../../../db.server";
-import { User } from "@prisma/client";
+import db, { User } from "@db/server";
 
 class UserRepository {
     public async getUserByStoreUrl(shop: string): Promise<User | null> {

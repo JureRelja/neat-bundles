@@ -1,5 +1,5 @@
-import db from "../../../db.server";
-import type { BundleBuilder } from "@prisma/client";
+import db from "@db/server";
+import type { BundleBuilder } from "@db/server";
 import type { BundleBuilderAndBundleSteps } from "@adminBackend/model/BundleBuilderAndBundleSteps";
 import { bundleBuilderAndBundleSteps } from "@adminBackend/model/BundleBuilderAndBundleSteps";
 export class BundleBuilderRepository {

@@ -1,9 +1,8 @@
-import type { BundleBuilderStep } from "@prisma/client";
-import { StepType } from "@prisma/client";
+import type { BundleBuilderStep } from "@db/server";
+import db, { StepType } from "@db/server";
 import { json } from "@remix-run/node";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { authenticate } from "../../shopify.server";
-import db from "../../db.server";
 import { JsonData } from "../../adminBackend/service/dto/jsonData";
 import type { BundleStepContent, BundleStepProduct } from "@adminBackend/service/dto/BundleStep";
 import userRepository from "~/adminBackend/repository/impl/UserRepository";

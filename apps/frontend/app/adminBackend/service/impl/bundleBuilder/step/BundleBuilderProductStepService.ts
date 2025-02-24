@@ -4,7 +4,7 @@ import { error } from "../../../dto/jsonData";
 import { bundleBuilderProductStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderProductStepRepository";
 import { bundleBuilderStepsService } from "../../BundleBuilderStepsService";
 import { ProductStepDataDto } from "~/adminBackend/service/dto/ProductStepDataDto";
-import { StepType } from "@prisma/client";
+import { StepType } from "@db/server";
 import bundleBuilderRepository from "~/adminBackend/repository/impl/BundleBuilderRepository";
 import { bundleBuilderStepRepository } from "~/adminBackend/repository/impl/bundleBuilderStep/BundleBuilderStepRepository";
 

@@ -1,5 +1,5 @@
 import { AddedProductVariantDto } from "@adminBackend/service/dto/AddedProductVariantDto";
-import db from "../../../db.server";
+import db from "@db/server";
 import { AddedContentDto } from "@adminBackend/service/dto/AddedContentDto";
 
 export class CreatedBundleRepository {

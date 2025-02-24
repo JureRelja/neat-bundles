@@ -3,7 +3,7 @@ import { ApiVersion, AppDistribution, BillingInterval, BillingReplacementBehavio
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import { restResources } from "@shopify/shopify-api/rest/admin/2024-10";
 import { BillingPlanIdentifiers } from "./constants";
-import prisma from "./db.server";
+import prisma from "@db/server";
 
 const storage = new PrismaSessionStorage(prisma);
 

@@ -1,4 +1,4 @@
-import db from "~/db.server";
+import db from "@db/server";
 import bundleBuilderRepository from "~/adminBackend/repository/impl/BundleBuilderRepository";
 
 export class BundleBuilderServiceImpl {

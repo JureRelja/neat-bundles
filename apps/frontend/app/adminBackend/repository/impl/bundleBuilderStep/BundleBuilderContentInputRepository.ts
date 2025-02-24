@@ -1,5 +1,4 @@
-import { ContentInput } from "@prisma/client";
-import db from "~/db.server";
+import db, { ContentInput } from "@db/server";
 
 export class BundleBuilderContentInputRepository {
     public async addContentInputs(bundleStepId: number, contentInputs: ContentInput[]): Promise<number> {

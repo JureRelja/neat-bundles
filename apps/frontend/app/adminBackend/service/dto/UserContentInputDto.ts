@@ -1,4 +1,4 @@
-import { InputType } from "@prisma/client";
+import { InputType } from "@db/server";
 
 export interface UserContentInputDto {
     inputType: InputType;

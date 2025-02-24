@@ -1,4 +1,4 @@
-import db from "@db";
+import db from "@db/server";
 import { Injectable } from "@nestjs/common";
 import { CreateBundleBuilderDto } from "./dto/create-bundle-builder.dto";
 import { UpdateBundleBuilderDto } from "./dto/update-bundle-builder.dto";
